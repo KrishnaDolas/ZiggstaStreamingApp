@@ -14,8 +14,7 @@ import {
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import io from 'socket.io-client';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-
-// Theme Context for light/dark theme management
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 const ThemeContext = createContext();
 
 const ThemeProvider = ({ children }) => {
@@ -570,8 +569,8 @@ const MainScreen = () => {
   return (
     <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
       <Text style={[styles.title, themeStyles[theme].text]}>🎥 Live Streaming App</Text>
-      <TouchableOpacity style={[styles.themeButton, themeStyles[theme].button]} onPress={toggleTheme}>
-        <Text style={styles.buttonText}>Toggle {theme === 'light' ? 'Dark' : 'Light'} Theme</Text>
+      <TouchableOpacity style={[styles.themeButton]} onPress={toggleTheme}>
+        <Text>{theme !== 'light' ?  <FontAwesome name="sun-o" size={25} color="#FFA500" /> :  <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
       </TouchableOpacity>
       <View style={styles.mainBox}>
         {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>👁️ {viewerCount}</Text> : null}
