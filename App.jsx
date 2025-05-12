@@ -41,10 +41,7 @@ const socket = io('https://streamalong.live', {
 
 // WebRTC ICE configuration with STUN and TURN servers
 const iceServers = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-    {
+  iceServers: [{
       urls: 'turn:coturn.streamalong.live:3478?transport=udp',
       username: 'vikram',
       credential: 'vikram',
