@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, createContext, useContext } from 'react';
 import {
   View,
   Text,
@@ -13,15 +13,37 @@ import {
 } from 'react-native';
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import io from 'socket.io-client';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 
+// Theme Context for light/dark theme management
+const ThemeContext = createContext();
+
+const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState('light');
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+// Socket.IO client initialization
 const socket = io('https://streamalong.live', {
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
 });
 
+// WebRTC ICE configuration with STUN and TURN servers
 const iceServers = {
   iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
     {
       urls: 'turn:coturn.streamalong.live:3478?transport=udp',
       username: 'vikram',
@@ -30,10 +52,30 @@ const iceServers = {
   ],
 };
 
+// Utility to clean up WebRTC resources
+const closePeerConnections = (peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream) => {
+  try {
+    Object.values(peerConnections.current).forEach(pc => pc.close());
+    peerConnections.current = {};
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      setLocalStream(null);
+    }
+    setRemoteStream(null);
+  } catch (err) {
+    console.error('Error cleaning up WebRTC resources:', err);
+  }
+};
+
 // Login Form Component
 const LoginForm = ({ onLogin, onToggleForm, setError }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { theme } = useContext(ThemeContext);
 
   const handleLogin = () => {
     if (email === 'vikram' && password === 'Test@123') {
@@ -44,28 +86,30 @@ const LoginForm = ({ onLogin, onToggleForm, setError }) => {
   };
 
   return (
-    <View style={styles.formContainer}>
-      <Text style={styles.formTitle}>Login</Text>
+    <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
+      <Text style={[styles.formTitle, themeStyles[theme].text]}>Login</Text>
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        style={[styles.input, themeStyles[theme].input]}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor={themeStyles[theme].placeholder.color}
       />
       <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        style={styles.input}
+        style={[styles.input, themeStyles[theme].input]}
         secureTextEntry
+        placeholderTextColor={themeStyles[theme].placeholder.color}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onToggleForm}>
-        <Text style={styles.toggleText}>Don't have an account? Register</Text>
+        <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
       </TouchableOpacity>
     </View>
   );
@@ -76,13 +120,13 @@ const RegisterForm = ({ onRegister, onToggleForm, setError }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { theme } = useContext(ThemeContext);
 
   const handleRegister = () => {
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    // Dummy registration (replace with real backend logic)
     if (email && password) {
       onRegister();
     } else {
@@ -91,35 +135,38 @@ const RegisterForm = ({ onRegister, onToggleForm, setError }) => {
   };
 
   return (
-    <View style={styles.formContainer}>
-      <Text style={styles.formTitle}>Register</Text>
+    <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
+      <Text style={[styles.formTitle, themeStyles[theme].text]}>Register</Text>
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
-        style={styles.input}
+        style={[styles.input, themeStyles[theme].input]}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor={themeStyles[theme].placeholder.color}
       />
       <TextInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        style={styles.input}
+        style={[styles.input, themeStyles[theme].input]}
         secureTextEntry
+        placeholderTextColor={themeStyles[theme].placeholder.color}
       />
       <TextInput
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        style={styles.input}
+        style={[styles.input, themeStyles[theme].input]}
         secureTextEntry
+        placeholderTextColor={themeStyles[theme].placeholder.color}
       />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
+      <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={handleRegister}>
         <Text style={styles.buttonText}>Register</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={onToggleForm}>
-        <Text style={styles.toggleText}>Already have an account? Login</Text>
+        <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>
   );
@@ -129,18 +176,19 @@ const RegisterForm = ({ onRegister, onToggleForm, setError }) => {
 const AuthScreen = ({ onLogin }) => {
   const [showLogin, setShowLogin] = useState(true);
   const [error, setError] = useState('');
+  const { theme } = useContext(ThemeContext);
 
   const toggleForm = () => setShowLogin(!showLogin);
 
   return (
-    <View style={styles.authContainer}>
-      <Text style={styles.title}>🎥 Live Streaming App</Text>
+    <View style={[styles.authContainer, themeStyles[theme].container]}>
+      <Text style={[styles.title, themeStyles[theme].text]}>🎥 Live Streaming App</Text>
       {showLogin ? (
         <LoginForm onLogin={onLogin} onToggleForm={toggleForm} setError={setError} />
       ) : (
         <RegisterForm onRegister={onLogin} onToggleForm={toggleForm} setError={setError} />
       )}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
     </View>
   );
 };
@@ -162,79 +210,107 @@ const MainScreen = () => {
   const [loading, setLoading] = useState(false);
   const [streamRequest, setStreamRequest] = useState(null);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
+  const { theme, toggleTheme } = useContext(ThemeContext);
 
   const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnections = useRef({});
 
-  const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-      ]);
-      const allGranted = Object.values(granted).every(value => value === PermissionsAndroid.RESULTS.GRANTED);
-      if (!allGranted) {
-        throw new Error('Permissions not granted');
+  // Unified permission handling for iOS and Android
+  const checkAndRequestPermissions = async () => {
+    try {
+      if (Platform.OS === 'ios') {
+        const cameraStatus = await check(PERMISSIONS.IOS.CAMERA);
+        const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);
+
+        if (cameraStatus !== RESULTS.GRANTED) {
+          const result = await request(PERMISSIONS.IOS.CAMERA);
+          if (result !== RESULTS.GRANTED) throw new Error('Camera permission denied');
+        }
+        if (micStatus !== RESULTS.GRANTED) {
+          const result = await request(PERMISSIONS.IOS.MICROPHONE);
+          if (result !== RESULTS.GRANTED) throw new Error('Microphone permission denied');
+        }
+      } else {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+        ]);
+        if (
+          granted[PermissionsAndroid.PERMISSIONS.CAMERA] !== PermissionsAndroid.RESULTS.GRANTED ||
+          granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] !== PermissionsAndroid.RESULTS.GRANTED
+        ) {
+          throw new Error('Camera or microphone permission denied');
+        }
       }
+    } catch (err) {
+      setError(err.message);
+      throw err;
     }
   };
 
   useEffect(() => {
-    requestPermissions();
+    // Initial permission check
+    checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
 
-    socket.on('room-created', ({ roomId }) => {
+    // Socket event handlers
+    const handleRoomCreated = ({ roomId }) => {
       setJoined(true);
       setIsHost(true);
       setHostId(socket.id);
       setLoading(false);
-    });
+    };
 
-    socket.on('room-joined', ({ roomId, hostId, isHostStreaming, viewerCount }) => {
-      setIsStreaming(true);
+    const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
+      setIsStreaming(isHostStreaming);
       setJoined(true);
       setIsHost(false);
       setHostId(hostId);
       setViewerCount(viewerCount);
       setLoading(false);
-    });
+    };
 
-    socket.on('room-full', () => {
+    const handleRoomFull = () => {
       setError('Room is full. Cannot join.');
       setLoading(false);
-    });
+    };
 
-    socket.on('invalid-room', () => {
+    const handleInvalidRoom = () => {
       setError('Invalid room ID.');
       setLoading(false);
-    });
+    };
 
-    socket.on('room-exists', () => {
+    const handleRoomExists = () => {
       setError('Room already exists.');
       setLoading(false);
-    });
+    };
 
-    socket.on('room-info', ({ viewerCount }) => setViewerCount(viewerCount));
+    const handleRoomInfo = ({ viewerCount }) => setViewerCount(viewerCount);
 
-    socket.on('user-joined', async (viewerId) => {
+    const handleUserJoined = async (viewerId) => {
       if (!localStreamRef.current || localStreamRef.current.getTracks().length === 0) {
         console.warn('Viewer joined but local stream not ready');
         return;
       }
 
-      const peerConnection = new RTCPeerConnection(iceServers);
-
-      localStreamRef.current.getTracks().forEach(track => {
-        peerConnection.addTrack(track, localStreamRef.current);
-      });
-
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
-        }
-      };
-      peerConnections.current[viewerId] = peerConnection;
       try {
+        const peerConnection = new RTCPeerConnection(iceServers);
+        peerConnection.oniceconnectionstatechange = () => {
+          if (peerConnection.iceConnectionState === 'failed') {
+            setError('WebRTC connection failed. Please try again.');
+            peerConnection.close();
+            delete peerConnections.current[viewerId];
+          }
+        };
+        localStreamRef.current.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStreamRef.current);
+        });
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
+          }
+        };
+        peerConnections.current[viewerId] = peerConnection;
         const offer = await peerConnection.createOffer({
           offerToReceiveAudio: false,
           offerToReceiveVideo: false,
@@ -243,63 +319,87 @@ const MainScreen = () => {
         socket.emit('offer', { target: viewerId, sdp: offer });
       } catch (err) {
         console.error('Offer error:', err);
+        setError('Failed to connect to viewer.');
       }
-    });
+    };
 
-    socket.on('user-left', (viewerId) => {
+    const handleUserLeft = (viewerId) => {
       setViewers(prev => prev.filter(id => id !== viewerId));
       if (peerConnections.current[viewerId]) {
         peerConnections.current[viewerId].close();
         delete peerConnections.current[viewerId];
       }
-    });
+    };
 
-    socket.on('host-started-streaming', () => setIsStreaming(true));
+    const handleHostStartedStreaming = () => setIsStreaming(true);
 
-    socket.on('ice-candidate', ({ candidate, sender }) => {
-      const pc = peerConnections.current[sender] || peerConnectionRef.current;
-      if (pc && candidate) {
-        pc.addIceCandidate(new RTCIceCandidate(candidate));
-      }
-    });
-
-    socket.on('offer', async ({ sdp, sender }) => {
-      const peerConnection = new RTCPeerConnection(iceServers);
-      peerConnection.ontrack = (event) => {
-        setRemoteStream(event.streams[0]);
-      };
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+    const handleIceCandidate = async ({ candidate, sender }) => {
+      try {
+        const pc = peerConnections.current[sender] || peerConnectionRef.current;
+        if (pc && candidate) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
-      };
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit('answer', { target: sender, sdp: answer });
-      peerConnectionRef.current = peerConnection;
-    });
-
-    socket.on('answer', async ({ sdp, sender }) => {
-      const pc = peerConnections.current[sender];
-      if (pc) {
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+      } catch (err) {
+        console.error('ICE candidate error:', err);
       }
-    });
+    };
 
-    socket.on('host-left', () => {
+    const handleOffer = async ({ sdp, sender }) => {
+      try {
+        const peerConnection = new RTCPeerConnection(iceServers);
+        peerConnection.ontrack = event => {
+          setRemoteStream(event.streams[0]);
+        };
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+          }
+        };
+        peerConnection.oniceconnectionstatechange = () => {
+          if (peerConnection.iceConnectionState === 'failed') {
+            setError('WebRTC connection failed. Please try again.');
+            peerConnection.close();
+            peerConnectionRef.current = null;
+          }
+        };
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('answer', { target: sender, sdp: answer });
+        peerConnectionRef.current = peerConnection;
+      } catch (err) {
+        console.error('Offer handling error:', err);
+        setError('Failed to process stream offer.');
+      }
+    };
+
+    const handleAnswer = async ({ sdp, sender }) => {
+      try {
+        const pc = peerConnections.current[sender];
+        if (pc) {
+          await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        }
+      } catch (err) {
+        console.error('Answer error:', err);
+        setError('Failed to process stream answer.');
+      }
+    };
+
+    const handleHostLeft = () => {
       setError('Host has left the room.');
       setJoined(false);
       setIsStreaming(false);
-    });
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+    };
 
-    socket.on('room-closed', () => {
+    const handleRoomClosed = () => {
       setError('Room has been closed.');
       setJoined(false);
       setIsStreaming(false);
-    });
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+    };
 
-    socket.on('stream-request', ({ viewerId }) => {
+    const handleStreamRequest = ({ viewerId }) => {
       if (isHost) {
         setStreamRequest({ viewerId });
         Alert.alert(
@@ -320,12 +420,13 @@ const MainScreen = () => {
                 setStreamRequest(null);
               },
             },
-          ]
+          ],
+          { cancelable: false }
         );
       }
-    });
+    };
 
-    socket.on('stream-permission', ({ allowed }) => {
+    const handleStreamPermission = ({ allowed }) => {
       if (allowed) {
         startStreaming();
         setHasRequestedStream(false);
@@ -333,19 +434,62 @@ const MainScreen = () => {
         setError('Streaming permission denied by host.');
         setHasRequestedStream(false);
       }
-    });
+    };
 
-    return () => socket.removeAllListeners();
+    // Register socket listeners
+    socket.on('room-created', handleRoomCreated);
+    socket.on('room-joined', handleRoomJoined);
+    socket.on('room-full', handleRoomFull);
+    socket.on('invalid-room', handleInvalidRoom);
+    socket.on('room-exists', handleRoomExists);
+    socket.on('room-info', handleRoomInfo);
+    socket.on('user-joined', handleUserJoined);
+    socket.on('user-left', handleUserLeft);
+    socket.on('host-started-streaming', handleHostStartedStreaming);
+    socket.on('ice-candidate', handleIceCandidate);
+    socket.on('offer', handleOffer);
+    socket.on('answer', handleAnswer);
+    socket.on('host-left', handleHostLeft);
+    socket.on('room-closed', handleRoomClosed);
+    socket.on('stream-request', handleStreamRequest);
+    socket.on('stream-permission', handleStreamPermission);
+
+    // Cleanup on unmount
+    return () => {
+      socket.off('room-created', handleRoomCreated);
+      socket.off('room-joined', handleRoomJoined);
+      socket.off('room-full', handleRoomFull);
+      socket.off('invalid-room', handleInvalidRoom);
+      socket.off('room-exists', handleRoomExists);
+      socket.off('room-info', handleRoomInfo);
+      socket.off('user-joined', handleUserJoined);
+      socket.off('user-left', handleUserLeft);
+      socket.off('host-started-streaming', handleHostStartedStreaming);
+      socket.off('ice-candidate', handleIceCandidate);
+      socket.off('offer', handleOffer);
+      socket.off('answer', handleAnswer);
+      socket.off('host-left', handleHostLeft);
+      socket.off('room-closed', handleRoomClosed);
+      socket.off('stream-request', handleStreamRequest);
+      socket.off('stream-permission', handleStreamPermission);
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+    };
   }, []);
 
   const createRoom = () => {
-    if (roomId.trim() === '') return setError('Please enter a room ID.');
+    if (!roomId.trim()) {
+      setError('Please enter a room ID.');
+      return;
+    }
     setLoading(true);
     socket.emit('create-room', roomId);
   };
 
   const joinRoom = () => {
-    if (roomId.trim() === '') return setError('Please enter a room ID.');
+    if (!roomId.trim()) {
+      setError('Please enter a room ID.');
+      return;
+    }
     setLoading(true);
     socket.emit('join-room', roomId);
   };
@@ -357,39 +501,39 @@ const MainScreen = () => {
 
   const startStreaming = async () => {
     try {
-      await requestPermissions();
-      const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+      await checkAndRequestPermissions();
+      const stream = await mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720, facingMode: 'user' },
+        audio: true,
+      });
       setLocalStream(stream);
       localStreamRef.current = stream;
 
-      peerConnectionRef.current = new RTCPeerConnection(iceServers);
-      stream.getTracks().forEach(track => {
-        peerConnectionRef.current.addTrack(track, stream);
-      });
-
-      peerConnectionRef.current.onicecandidate = (event) => {
+      const peerConnection = new RTCPeerConnection(iceServers);
+      stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+      peerConnection.onicecandidate = event => {
         if (event.candidate) {
-          console.log('Host ICE candidate:', event.candidate);
+          socket.emit('ice-candidate', { target: hostId, candidate: event.candidate });
         }
       };
-
+      peerConnection.oniceconnectionstatechange = () => {
+        if (peerConnection.iceConnectionState === 'failed') {
+          setError('WebRTC connection failed. Please try again.');
+          peerConnection.close();
+          peerConnectionRef.current = null;
+        }
+      };
+      peerConnectionRef.current = peerConnection;
       socket.emit('host-streaming', roomId);
       setIsStreaming(true);
     } catch (err) {
       console.error('Streaming error:', err);
-      setError('Failed to start streaming.');
+      setError('Failed to start streaming: ' + err.message);
     }
   };
 
   const stopStreaming = () => {
-    if (peerConnectionRef.current) {
-      peerConnectionRef.current.close();
-      peerConnectionRef.current = null;
-    }
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      setLocalStream(null);
-    }
+    closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     setIsStreaming(false);
     socket.emit('stop-streaming', roomId);
   };
@@ -401,14 +545,8 @@ const MainScreen = () => {
     setViewers([]);
     setRoomId('');
     setHasRequestedStream(false);
-    setTimeout(() => {
-      setError('');
-    }, 4000);
-
-    localStream?.getTracks().forEach(track => track.stop());
-    remoteStream?.getTracks().forEach(track => track.stop());
-    Object.values(peerConnections.current).forEach(pc => pc.close());
-    peerConnections.current = {};
+    closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+    setTimeout(() => setError(''), 4000);
   };
 
   const toggleMute = () => {
@@ -422,46 +560,49 @@ const MainScreen = () => {
 
   const switchCamera = () => {
     if (localStreamRef.current) {
-      const videoTrack = localStreamRef.current
-        .getVideoTracks()
-        .find(track => typeof track._switchCamera === 'function');
-
-      if (videoTrack) {
+      const videoTrack = localStreamRef.current.getVideoTracks()[0];
+      if (videoTrack && typeof videoTrack._switchCamera === 'function') {
         videoTrack._switchCamera();
         setIsFrontCamera(prev => !prev);
+      } else {
+        setError('Camera switch not supported on this device.');
       }
     }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>🎥 Live Streaming App</Text>
+    <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
+      <Text style={[styles.title, themeStyles[theme].text]}>🎥 Live Streaming App</Text>
+      <TouchableOpacity style={[styles.themeButton, themeStyles[theme].button]} onPress={toggleTheme}>
+        <Text style={styles.buttonText}>Toggle {theme === 'light' ? 'Dark' : 'Light'} Theme</Text>
+      </TouchableOpacity>
       <View style={styles.mainBox}>
-        {joined ? <Text style={styles.roomText}>👁️ {viewerCount}</Text> : null}
-        {joined ? <Text style={styles.roomText}>Room ID: {roomId}</Text> : null}
-        {joined ? <Text style={styles.roomText}>You are the {isHost ? 'Host' : 'Viewer'}</Text> : null}
+        {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>👁️ {viewerCount}</Text> : null}
+        {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {roomId}</Text> : null}
+        {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>You are the {isHost ? 'Host' : 'Viewer'}</Text> : null}
       </View>
       {!joined ? (
-        <View style={styles.formContainer}>
+        <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
           <TextInput
             placeholder="Enter Room ID"
             value={roomId}
             onChangeText={setRoomId}
-            style={styles.input}
+            style={[styles.input, themeStyles[theme].input]}
+            placeholderTextColor={themeStyles[theme].placeholder.color}
           />
           {loading ? (
-            <ActivityIndicator size="large" color="#1a73e8" style={styles.loader} />
+            <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
           ) : (
             <>
-              <TouchableOpacity style={styles.button} onPress={createRoom}>
+              <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={createRoom}>
                 <Text style={styles.buttonText}>Create Room</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.button} onPress={joinRoom}>
+              <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={joinRoom}>
                 <Text style={styles.buttonText}>Join Room</Text>
               </TouchableOpacity>
             </>
           )}
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
         </View>
       ) : (
         <View style={styles.roomInfo}>
@@ -477,31 +618,30 @@ const MainScreen = () => {
               )}
               {isStreaming ? (
                 <View style={styles.controls}>
-                  <TouchableOpacity style={styles.controlButton} onPress={toggleMute}>
+                  <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={toggleMute}>
                     <Text style={styles.buttonText}>{isMuted ? 'Unmute' : 'Mute'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.controlButton} onPress={switchCamera}>
+                  <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={switchCamera}>
                     <Text style={styles.buttonText}>Switch Camera</Text>
                   </TouchableOpacity>
                 </View>
               ) : null}
               <View style={styles.streamControls}>
                 {!isStreaming ? (
-                  <TouchableOpacity style={styles.startStreamingButton} onPress={startStreaming}>
+                  <TouchableOpacity style={[styles.startStreamingButton, themeStyles[theme].startButton]} onPress={startStreaming}>
                     <Text style={styles.buttonText}>Start Streaming</Text>
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity style={styles.stopStreamingButton} onPress={stopStreaming}>
+                  <TouchableOpacity style={[styles.stopStreamingButton, themeStyles[theme].stopButton]} onPress={stopStreaming}>
                     <Text style={styles.buttonText}>Stop Streaming</Text>
                   </TouchableOpacity>
                 )}
               </View>
               {isStreaming && (
-                <Text style={styles.streamingText}>🔴 Streaming Live</Text>
+                <Text style={[styles.streamingText, themeStyles[theme].success]}>🔴 Streaming Live</Text>
               )}
             </View>
           )}
-
           {!isHost && (
             <View style={styles.streamBox}>
               {isStreaming && remoteStream ? (
@@ -512,7 +652,7 @@ const MainScreen = () => {
                     objectFit="cover"
                     mirror={true}
                   />
-                  <Text style={styles.viewingText}>📡 Watching stream...</Text>
+                  <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
                 </>
               ) : localStream ? (
                 <RTCView
@@ -524,7 +664,7 @@ const MainScreen = () => {
               ) : null}
               {!isStreaming && (
                 <TouchableOpacity
-                  style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton]}
+                  style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
                   onPress={requestStreamPermission}
                   disabled={hasRequestedStream}
                 >
@@ -535,8 +675,7 @@ const MainScreen = () => {
               )}
             </View>
           )}
-
-          <TouchableOpacity style={styles.leaveButton} onPress={leaveRoom}>
+          <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
             <Text style={styles.buttonText}>Leave Room</Text>
           </TouchableOpacity>
         </View>
@@ -553,13 +692,17 @@ const App = () => {
     setIsAuthenticated(true);
   };
 
-  return isAuthenticated ? <MainScreen /> : <AuthScreen onLogin={handleLogin} />;
+  return (
+    <ThemeProvider>
+      {isAuthenticated ? <MainScreen /> : <AuthScreen onLogin={handleLogin} />}
+    </ThemeProvider>
+  );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#f0f4f8',
     flexGrow: 1,
   },
   authContainer: {
@@ -571,40 +714,40 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a73e8',
     marginBottom: 20,
     textAlign: 'center',
   },
   formContainer: {
     width: '100%',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
   },
   formTitle: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#333',
     marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
     borderRadius: 8,
     padding: 12,
     width: '100%',
     marginVertical: 10,
-    backgroundColor: '#fff',
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#1a73e8',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -612,18 +755,23 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
   },
+  themeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginVertical: 10,
+    alignSelf: 'center',
+  },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
   toggleText: {
-    color: '#1a73e8',
     fontSize: 14,
     marginTop: 10,
   },
   error: {
-    color: 'red',
     marginTop: 10,
     fontSize: 14,
     textAlign: 'center',
@@ -638,7 +786,6 @@ const styles = StyleSheet.create({
   roomText: {
     fontSize: 18,
     marginVertical: 5,
-    color: '#333',
   },
   mainBox: {
     position: 'absolute',
@@ -672,13 +819,11 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   controlButton: {
-    backgroundColor: '#1a73e8',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
   },
   startStreamingButton: {
-    backgroundColor: '#34a853',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -687,7 +832,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   stopStreamingButton: {
-    backgroundColor: '#ea4335',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -697,19 +841,16 @@ const styles = StyleSheet.create({
   },
   streamingText: {
     fontSize: 16,
-    color: 'green',
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 20,
   },
   viewingText: {
     fontSize: 18,
-    color: '#555',
     marginTop: 10,
     textAlign: 'center',
   },
   leaveButton: {
-    backgroundColor: '#ea4335',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -721,5 +862,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#cccccc',
   },
 });
+
+// Theme Styles
+const themeStyles = {
+  light: {
+    container: { backgroundColor: '#f0f4f8' },
+    formContainer: { backgroundColor: '#fff' },
+    text: { color: '#333' },
+    input: { borderColor: '#ddd', backgroundColor: '#fff' },
+    button: { backgroundColor: '#1a73e8' },
+    startButton: { backgroundColor: '#34a853' },
+    stopButton: { backgroundColor: '#ea4335' },
+    linkText: { color: '#1a73e8' },
+    error: { color: 'red' },
+    success: { color: 'green' },
+    primary: { color: '#1a73e8' },
+    placeholder: { color: '#999' },
+  },
+  dark: {
+    container: { backgroundColor: '#121212' },
+    formContainer: { backgroundColor: '#1e1e1e' },
+    text: { color: '#fff' },
+    input: { borderColor: '#444', backgroundColor: '#2a2a2a' },
+    button: { backgroundColor: '#1a73e8' },
+    startButton: { backgroundColor: '#34a853' },
+    stopButton: { backgroundColor: '#ea4335' },
+    linkText: { color: '#1a73e8' },
+    error: { color: '#ff5555' },
+    success: { color: '#55ff55' },
+    primary: { color: '#1a73e8' },
+    placeholder: { color: '#aaa' },
+  },
+};
 
 export default App;
