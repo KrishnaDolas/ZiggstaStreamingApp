@@ -7,7 +7,7 @@ import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import { iceServers, socket } from '../utils/constant';
+import { closePeerConnections, iceServers, socket } from '../utils/constant';
 export const MainScreen = () => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
