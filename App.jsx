@@ -2,20 +2,8 @@ import React, {useState } from 'react';
 import { ThemeContext } from './src/context/ThemeContext';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
+import { ThemeProvider } from './src/context/ThemeProvider';
 
-const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light');
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
 
 // Main App Component
 const App = () => {
