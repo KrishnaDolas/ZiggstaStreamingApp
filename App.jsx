@@ -61,7 +61,9 @@ const closePeerConnections = (peerConnections, peerConnectionRef, localStream, s
       localStream.getTracks().forEach(track => track.stop());
       setLocalStream(null);
     }
+    if(setRemoteStream){
     setRemoteStream(null);
+    }
   } catch (err) {
     console.error('Error cleaning up WebRTC resources:', err);
   }
