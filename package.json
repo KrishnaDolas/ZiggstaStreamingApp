@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "axios": "^1.9.0",
+    "axios": "^1.5.1",
     "react": "19.0.0",
     "react-native": "0.79.1",
     "react-native-audio-recorder-player": "^3.6.12",
