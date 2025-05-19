@@ -10,11 +10,13 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  AsyncStorage,
 } from 'react-native';
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import io from 'socket.io-client';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 const ThemeContext = createContext();
 
 const ThemeProvider = ({ children }) => {
@@ -76,11 +78,19 @@ const LoginForm = ({ onLogin, onToggleForm, setError }) => {
   const { theme } = useContext(ThemeContext);
 
   const handleLogin = () => {
-    if (email === 'vikram' && password === 'Test@123') {
-      onLogin();
-    } else {
-      setError('Invalid email or password');
-    }
+    axios
+      .post('https://api.streamalong.live/login', {
+        username: email,
+        password: password,
+      })
+      .then((res) => {
+        onLogin();
+        AsyncStorage.setItem('token', res.data.token);
+        console.log(res.data); // This is your response body
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.error || 'Something went wrong');
+      });
   };
 
   return (
@@ -503,6 +513,7 @@ const MainScreen = () => {
       socket.off('stream-permission', handleStreamPermission);
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createRoom = () => {
