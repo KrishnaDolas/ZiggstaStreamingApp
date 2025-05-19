@@ -178,7 +178,7 @@ const AuthScreen = ({ onLogin }) => {
 
   return (
     <View style={[styles.authContainer, themeStyles[theme].container]}>
-      <Text style={[styles.title, themeStyles[theme].text]}>🎥 Live Streaming App</Text>
+      <Text style={[styles.title, themeStyles[theme].text]}>🎥 ZIGGSTA</Text>
       {showLogin ? (
         <LoginForm onLogin={onLogin} onToggleForm={toggleForm} setError={setError} />
       ) : (
@@ -206,12 +206,42 @@ const MainScreen = () => {
   const [loading, setLoading] = useState(false);
   const [streamRequest, setStreamRequest] = useState(null);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
+  const [rooms, setRooms] = useState([]);
+  const [lobbyLoading, setLobbyLoading] = useState(false);
+  const [lobbyError, setLobbyError] = useState('');
   const { theme, toggleTheme } = useContext(ThemeContext);
 
   const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnections = useRef({});
 
+  // Fetch room list from API
+  const fetchRooms = async () => {
+    setLobbyLoading(true);
+    setLobbyError('');
+    try {
+      const response = await fetch('https://streamalong.live/rooms', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await response.json();
+      if (data.status === 'ok') {
+        setRooms(data.rooms || []);
+      } else {
+        setLobbyError('Failed to fetch rooms');
+      }
+    } catch (err) {
+      setLobbyError('Error fetching rooms: ' + err.message);
+    } finally {
+      setLobbyLoading(false);
+    }
+  };
+  useEffect(()=>{
+      setInterval(()=>{
+          fetchRooms();
+          },3000)
+
+  },[])
   // Unified permission handling for iOS and Android
   const checkAndRequestPermissions = async () => {
     try {
@@ -249,12 +279,16 @@ const MainScreen = () => {
     // Initial permission check
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
 
+    // Fetch rooms on mount
+    fetchRooms();
+
     // Socket event handlers
     const handleRoomCreated = ({ roomId }) => {
       setJoined(true);
       setIsHost(true);
       setHostId(socket.id);
       setLoading(false);
+      fetchRooms(); // Refresh room list
     };
 
     const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
@@ -481,13 +515,15 @@ const MainScreen = () => {
     socket.emit('create-room', roomId);
   };
 
-  const joinRoom = () => {
-    if (!roomId.trim()) {
+  const joinRoom = (id) => {
+    const targetRoomId = id || roomId;
+    if (!targetRoomId.trim()) {
       setError('Please enter a room ID.');
       return;
     }
+    setRoomId(targetRoomId);
     setLoading(true);
-    socket.emit('join-room', roomId);
+    socket.emit('join-room', targetRoomId);
   };
 
   const requestStreamPermission = () => {
@@ -541,8 +577,9 @@ const MainScreen = () => {
     setViewers([]);
     setRoomId('');
     setHasRequestedStream(false);
-    closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+    closePeerConnections(peerConnections, peerConnectionRef, localStream,setRemoteStream);
     setTimeout(() => setError(''), 4000);
+    fetchRooms(); // Refresh room list
   };
 
   const toggleMute = () => {
@@ -568,9 +605,9 @@ const MainScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
-      <Text style={[styles.title, themeStyles[theme].text]}>🎥 Live Streaming App</Text>
+      <Text style={[styles.title, themeStyles[theme].text]}>🎥   const [theme, setTheme] = useState('light');</Text>
       <TouchableOpacity style={[styles.themeButton]} onPress={toggleTheme}>
-        <Text>{theme !== 'light' ?  <FontAwesome name="sun-o" size={25} color="#FFA500" /> :  <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
+        <Text>{theme !== 'light' ? <FontAwesome name="sun-o" size={25} color="#FFA500" /> : <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
       </TouchableOpacity>
       <View style={styles.mainBox}>
         {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>👁️ {viewerCount}</Text> : null}
@@ -579,6 +616,35 @@ const MainScreen = () => {
       </View>
       {!joined ? (
         <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
+          <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Available Rooms</Text>
+          {lobbyLoading ? (
+            <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
+          ) : lobbyError ? (
+            <Text style={[styles.error, themeStyles[theme].error]}>{lobbyError}</Text>
+          ) : rooms.length === 0 ? (
+            <Text style={[styles.roomText, themeStyles[theme].text]}>No rooms available</Text>
+          ) : (
+            <ScrollView style={styles.roomList}>
+              {rooms.map(room => (
+                <View key={room.roomId} style={[styles.roomItem, themeStyles[theme].roomItem]}>
+                  <View>
+                    <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {room.roomId}</Text>
+                    <Text style={[styles.roomText, themeStyles[theme].text]}>Viewers: {room.viewerCount}</Text>
+                    <Text style={[styles.roomText, themeStyles[theme].text]}>
+                      Status: {room.isStreaming ? 'Streaming' : 'Not Streaming'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.joinButton, themeStyles[theme].button]}
+                    onPress={() => joinRoom(room.roomId)}
+                  >
+                    <Text style={styles.buttonText}>Join</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+          <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
           <TextInput
             placeholder="Enter Room ID"
             value={roomId}
@@ -593,7 +659,7 @@ const MainScreen = () => {
               <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={createRoom}>
                 <Text style={styles.buttonText}>Create Room</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={joinRoom}>
+              <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={() => joinRoom()}>
                 <Text style={styles.buttonText}>Join Room</Text>
               </TouchableOpacity>
             </>
@@ -857,6 +923,30 @@ const styles = StyleSheet.create({
   disabledButton: {
     backgroundColor: '#cccccc',
   },
+  lobbyTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    marginVertical: 15,
+    textAlign: 'center',
+  },
+  roomList: {
+    maxHeight: 200,
+    width: '100%',
+    marginBottom: 20,
+  },
+  roomItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  joinButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
 });
 
 // Theme Styles
@@ -865,7 +955,7 @@ const themeStyles = {
     container: { backgroundColor: '#f0f4f8' },
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
-    input: { borderColor: '#ddd', backgroundColor: '#fff' },
+    input: { borderColor: '#ddd', backgroundColor: '#fff', color: 'black' },
     button: { backgroundColor: '#1a73e8' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -874,12 +964,13 @@ const themeStyles = {
     success: { color: 'green' },
     primary: { color: '#1a73e8' },
     placeholder: { color: '#999' },
+    roomItem: { backgroundColor: '#f5f5f5' },
   },
   dark: {
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
     text: { color: '#fff' },
-    input: { borderColor: '#444', backgroundColor: '#2a2a2a' },
+    input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
     button: { backgroundColor: '#1a73e8' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -888,6 +979,7 @@ const themeStyles = {
     success: { color: '#55ff55' },
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
+    roomItem: { backgroundColor: '#2a2a2a' },
   },
 };
 
