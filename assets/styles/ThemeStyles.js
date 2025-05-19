@@ -1,0 +1,222 @@
+import { StyleSheet, Platform } from 'react-native';
+// This file contains the styles for the application, including light and dark themes.
+export const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    flexGrow: 1,
+  },
+  authContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  formContainer: {
+    width: '100%',
+    alignItems: 'center',
+    borderRadius: 12,
+    padding: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  formTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    width: '100%',
+    marginVertical: 10,
+    fontSize: 16,
+  },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  themeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginVertical: 10,
+    alignSelf: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  toggleText: {
+    fontSize: 14,
+    marginTop: 10,
+  },
+  error: {
+    marginTop: 10,
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  roomInfo: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  roomText: {
+    fontSize: 18,
+    marginVertical: 5,
+  },
+  mainBox: {
+    position: 'absolute',
+    width: '100%',
+    top: 60,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  streamBox: {
+    width: '100%',
+    position: 'relative',
+  },
+  fullScreenVideo: {
+    width: '100%',
+    height: 600,
+    backgroundColor: '#000',
+    borderRadius: 12,
+    marginBottom: 15,
+  },
+  controls: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginVertical: 10,
+  },
+  streamControls: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+    marginVertical: 10,
+  },
+  controlButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  startStreamingButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  stopStreamingButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  streamingText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  viewingText: {
+    fontSize: 18,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  leaveButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 8,
+    marginTop: 20,
+    width: '80%',
+    alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
+  },
+  lobbyTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    marginVertical: 15,
+    textAlign: 'center',
+  },
+  roomList: {
+    maxHeight: 200,
+    width: '100%',
+    marginBottom: 20,
+  },
+  roomItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  joinButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+});
+
+// Theme Styles
+export const themeStyles = {
+  light: {
+    container: { backgroundColor: '#f0f4f8' },
+    formContainer: { backgroundColor: '#fff' },
+    text: { color: '#333' },
+    input: { borderColor: '#ddd', backgroundColor: '#fff', color: 'black' },
+    button: { backgroundColor: '#1a73e8' },
+    startButton: { backgroundColor: '#34a853' },
+    stopButton: { backgroundColor: '#ea4335' },
+    linkText: { color: '#1a73e8' },
+    error: { color: 'red' },
+    success: { color: 'green' },
+    primary: { color: '#1a73e8' },
+    placeholder: { color: '#999' },
+    roomItem: { backgroundColor: '#f5f5f5' },
+  },
+  dark: {
+    container: { backgroundColor: '#121212' },
+    formContainer: { backgroundColor: '#1e1e1e' },
+    text: { color: '#fff' },
+    input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
+    button: { backgroundColor: '#1a73e8' },
+    startButton: { backgroundColor: '#34a853' },
+    stopButton: { backgroundColor: '#ea4335' },
+    linkText: { color: '#1a73e8' },
+    error: { color: '#ff5555' },
+    success: { color: '#55ff55' },
+    primary: { color: '#1a73e8' },
+    placeholder: { color: '#aaa' },
+    roomItem: { backgroundColor: '#2a2a2a' },
+  },
+};
