@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity, AsyncStorage } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';

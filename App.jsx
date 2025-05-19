@@ -1,5 +1,4 @@
 import React, {useState } from 'react';
-import { ThemeContext } from './src/context/ThemeContext';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { ThemeProvider } from './src/context/ThemeProvider';
