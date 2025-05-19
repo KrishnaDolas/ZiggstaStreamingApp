@@ -237,10 +237,7 @@ const MainScreen = () => {
     }
   };
   useEffect(()=>{
-      setInterval(()=>{
-          fetchRooms();
-          },3000)
-
+      fetchRooms();
   },[])
   // Unified permission handling for iOS and Android
   const checkAndRequestPermissions = async () => {
@@ -605,7 +602,7 @@ const MainScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
-      <Text style={[styles.title, themeStyles[theme].text]}>🎥   const [theme, setTheme] = useState('light');</Text>
+      <Text style={[styles.title, themeStyles[theme].text]}>🎥   ZIGGSTA</Text>
       <TouchableOpacity style={[styles.themeButton]} onPress={toggleTheme}>
         <Text>{theme !== 'light' ? <FontAwesome name="sun-o" size={25} color="#FFA500" /> : <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
       </TouchableOpacity>
