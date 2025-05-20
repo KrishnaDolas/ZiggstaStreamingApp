@@ -1,29 +1,28 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity,Alert  } from 'react-native';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const { theme } = useContext(ThemeContext);
   
-    const handleLogin = () => {
-      axios
-        .post('https://api.streamalong.live/login', {
+    const handleLogin = async () => {
+      try {
+        const res = await axios.post('https://api.streamalong.live/login', {
           username: email,
           password: password,
-        })
-        .then((res) => {
-          onLogin();
-          // AsyncStorage.setItem('token', res.data.token);
-          console.log(res); // This is your response body
-        })
-        .catch((err) => {
-          console.log(err);
-          onLogin();
-          setError(err?.response?.data?.error || 'Something went wrong');
         });
+    
+        await AsyncStorage.setItem('token', res.data.token); // save token
+        onLogin(); // notify parent component
+        Alert.alert('Success', `${email} has successfully logged in!`, [{ text: 'OK' }]);
+      } catch (err) {
+        console.log(err);
+        setError(err?.response?.data?.error || 'Something went wrong');
+      }
     };
   
     return (

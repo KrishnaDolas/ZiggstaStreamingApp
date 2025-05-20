@@ -8,7 +8,8 @@ import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
-export const MainScreen = () => {
+import Ionicons from 'react-native-vector-icons/Ionicons';
+export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
     const [isHost, setIsHost] = useState(false);
@@ -418,10 +419,31 @@ export const MainScreen = () => {
         }
       }
     };
+    const confirmLogout = () => {
+      Alert.alert(
+        'Logout',
+        'Are you sure you want to logout?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'OK',
+            onPress: onLogout,
+          },
+        ],
+        { cancelable: false }
+      );
+    }
   
     return (
       <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
         <Text style={[styles.title, themeStyles[theme].text]}>🎥   ZIGGSTA</Text>
+        <TouchableOpacity onPress={confirmLogout} style={{ flexDirection: 'row', alignItems: 'right',position: 'absolute', top: 40, right: 20 }}>
+        <Ionicons name="log-out-outline" size={24} color="#ff3333" />
+        <Text style={{ marginLeft: 10, fontSize: 16, color: '#ff3333' }}>Logout</Text>
+      </TouchableOpacity>
         <TouchableOpacity style={[styles.themeButton]} onPress={toggleTheme}>
           <Text>{theme !== 'light' ? <FontAwesome name="sun-o" size={25} color="#FFA500" /> : <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
         </TouchableOpacity>

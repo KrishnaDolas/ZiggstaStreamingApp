@@ -3,6 +3,7 @@ import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { SplashScreen } from './src/screens/SplashScreen';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Main App Component
 const App = () => {
@@ -13,13 +14,25 @@ const App = () => {
     setIsAuthenticated(true);
   };
   useEffect(()=>{
-setTimeout(() => {
-  setIsLoading(false);
-}, 3000);
+  setTimeout(() => {
+    setIsLoading(false);
+  }, 3000);
+  const checkAuth = async () => {
+    const token = await AsyncStorage.getItem('token');
+    console.log(token);
+    console.log(!!token);
+    setIsAuthenticated(!!token);
+  };
+
+  checkAuth();
   },[])
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('token');
+    setIsAuthenticated(false);
+  };
   return (
     <ThemeProvider>
-      {isLoading?<SplashScreen/> :isAuthenticated ? <MainScreen /> : <AuthScreen onLogin={handleLogin} />}
+      {isLoading?<SplashScreen/> :isAuthenticated ? <MainScreen onLogout={handleLogout} /> : <AuthScreen onLogin={handleLogin} />}
     </ThemeProvider>
   );
 };
