@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity,Alert  } from 'react-native';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
@@ -11,20 +11,46 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
   
     const handleLogin = async () => {
       try {
-        const res = await axios.post('https://api.streamalong.live/login', {
+        if (!email || !password) {
+          setError('Please fill in all fields');
+          return;
+        }
+        const parameter={
           username: email,
           password: password,
-        });
-    
-        await AsyncStorage.setItem('token', res.data.token); // save token
-        onLogin(); // notify parent component
-        Alert.alert('Success', `${email} has successfully logged in!`, [{ text: 'OK' }]);
+        }
+        const res = await axios.post('https://api.streamalong.live/login',parameter );
+        if(res.data.message==='Login successful') {
+          await AsyncStorage.setItem('token', res.data.token);
+          onLogin();
+          Alert.alert('Success', `${email} has successfully logged in!`, [{ text: 'OK' }]);
+        }
       } catch (err) {
         console.log(err);
         setError(err?.response?.data?.error || 'Something went wrong');
       }
     };
-  
+    
+    useEffect(() => {
+      const fetchStoredCredentials = async () => {
+        try {
+          const username = await AsyncStorage.getItem('username');
+          const password = await AsyncStorage.getItem('password');
+          if (username !== null) {
+            setEmail(username);
+          }
+          if (password !== null) {
+            setPassword(password);
+          } 
+
+        } catch (err) {
+          console.warn('Error reading from AsyncStorage:', err);
+        }
+      };
+    
+      fetchStoredCredentials();
+    }, []); // No need to depend on email or password if just reading on mount
+    
     return (
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Login</Text>
