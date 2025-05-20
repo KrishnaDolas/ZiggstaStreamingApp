@@ -185,6 +185,19 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
+  SplashScreen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'pink',
+    height: '100%',
+    width: '100%',
+  },
+  splashText: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: 'white',
+  },
 });
 
 // Theme Styles
