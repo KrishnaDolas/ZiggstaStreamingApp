@@ -20,7 +20,7 @@ const Footer = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Live')}>
-        <Ionicons name="videocam-outline" size={25} color="grey" />
+        <Ionicons name="play-outline" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Live</Text>
       </TouchableOpacity>
 
