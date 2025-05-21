@@ -15,17 +15,17 @@ const Footer = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Profile')}>
-        <FontAwesome name="user" size={25} color="grey" />
+        <FontAwesome name="user-o" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Profile</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Live')}>
-        <Ionicons name="videocam" size={25} color="grey" />
+        <Ionicons name="videocam-outline" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Live</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Messages')}>
-        <Ionicons name="chatbubbles" size={25} color="grey" />
+        <Ionicons name="chatbubbles-outline" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Messages</Text>
       </TouchableOpacity>
 
