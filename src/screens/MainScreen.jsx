@@ -10,6 +10,7 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import Footer from './Footer';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -587,8 +588,12 @@ export const MainScreen = ({onLogout}) => {
             </TouchableOpacity>
           </View>
         )}
+        {/* Footer */}
+        <Footer/>
       </ScrollView>
       </LinearGradient>
 
     );
   };
+
+  

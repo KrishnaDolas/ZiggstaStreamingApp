@@ -198,6 +198,28 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+footer: {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: 'white',  // white background
+  paddingVertical: 10,
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+  borderTopWidth: 1,
+  borderTopColor: '#ddd', // optional: a light border color
+},
+
+  footerItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#fff',
+  },
 });
 
 // Theme Styles
