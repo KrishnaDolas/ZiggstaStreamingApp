@@ -1,8 +1,7 @@
 import {View,Text,
-TouchableOpacity,TextInput,ScrollView,ActivityIndicator,Alert,Platform} from 'react-native';
+TouchableOpacity,ScrollView,Alert,Platform} from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
@@ -10,6 +9,8 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import Topbar from '../components/Topbar';
+import StreamList from '../components/StreamList';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -439,78 +440,18 @@ export const MainScreen = ({onLogout}) => {
     }
   
     return (
-      <LinearGradient
-       colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']}
-       style={{height: '100%', width: '100%'}}
-        >
+      <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{height: '100%', width: '100%'}}>
       <ScrollView contentContainerStyle={[styles.container]}>
-        <Text style={[styles.title, themeStyles[theme].text]}>🎥   ZIGGSTA</Text>
+        <Topbar/>
         <TouchableOpacity 
           onPress={confirmLogout} 
-          style={{ position: 'absolute', top: 40, right: 20 }}
+          style={{ position: 'relative', top: 40, right: 20 }}
         >
           <Ionicons name="log-out-outline" size={28} color="#ff3333" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.themeButton]} onPress={toggleTheme}>
-          <Text>{theme !== 'light' ? <FontAwesome name="sun-o" size={25} color="#FFA500" /> : <FontAwesome name="moon-o" size={30} color="#000" />}</Text>
-        </TouchableOpacity>
-        <View style={styles.mainBox}>
-          {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>👁️ {viewerCount}</Text> : null}
-          {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {roomId}</Text> : null}
-          {joined ? <Text style={[styles.roomText, themeStyles[theme].text]}>You are the {isHost ? 'Host' : 'Viewer'}</Text> : null}
-        </View>
+
         {!joined ? (
-          <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-            <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Available Rooms</Text>
-            {lobbyLoading ? (
-              <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
-            ) : lobbyError ? (
-              <Text style={[styles.error, themeStyles[theme].error]}>{lobbyError}</Text>
-            ) : rooms.length === 0 ? (
-              <Text style={[styles.roomText, themeStyles[theme].text]}>No rooms available</Text>
-            ) : (
-              <ScrollView style={styles.roomList}>
-                {rooms.map(room => (
-                  <View key={room.roomId} style={[styles.roomItem, themeStyles[theme].roomItem]}>
-                    <View>
-                      <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {room.roomId}</Text>
-                      <Text style={[styles.roomText, themeStyles[theme].text]}>Viewers: {room.viewerCount}</Text>
-                      <Text style={[styles.roomText, themeStyles[theme].text]}>
-                        Status: {room.isStreaming ? 'Streaming' : 'Not Streaming'}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.joinButton, themeStyles[theme].button]}
-                      onPress={() => joinRoom(room.roomId)}
-                    >
-                      <Text style={styles.buttonText}>Join</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </ScrollView>
-            )}
-            <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
-            <TextInput
-              placeholder="Enter Room ID"
-              value={roomId}
-              onChangeText={setRoomId}
-              style={[styles.input, themeStyles[theme].input]}
-              placeholderTextColor={themeStyles[theme].placeholder.color}
-            />
-            {loading ? (
-              <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
-            ) : (
-              <>
-                <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={createRoom}>
-                  <Text style={styles.buttonText}>Create Room</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={() => joinRoom()}>
-                  <Text style={styles.buttonText}>Join Room</Text>
-                </TouchableOpacity>
-              </>
-            )}
-            {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
-          </View>
+        <StreamList theme={theme} lobbyLoading={lobbyLoading}lobbyError={lobbyError}rooms={rooms}joinRoom={joinRoom} createRoom={createRoom} roomId={roomId} setRoomId={setRoomId}loading={loading}error={error}/>
         ) : (
           <View style={styles.roomInfo}>
             {isHost && (
@@ -544,9 +485,6 @@ export const MainScreen = ({onLogout}) => {
                     </TouchableOpacity>
                   )}
                 </View>
-                {isStreaming && (
-                  <Text style={[styles.streamingText, themeStyles[theme].success]}>🔴 Streaming Live</Text>
-                )}
               </View>
             )}
             {!isHost && (
