@@ -9,6 +9,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -438,7 +439,11 @@ export const MainScreen = ({onLogout}) => {
     }
   
     return (
-      <ScrollView contentContainerStyle={[styles.container, themeStyles[theme].container]}>
+      <LinearGradient
+       colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']}
+       style={{height: '100%', width: '100%'}}
+        >
+      <ScrollView contentContainerStyle={[styles.container]}>
         <Text style={[styles.title, themeStyles[theme].text]}>🎥   ZIGGSTA</Text>
         <TouchableOpacity 
           onPress={confirmLogout} 
@@ -583,5 +588,7 @@ export const MainScreen = ({onLogout}) => {
           </View>
         )}
       </ScrollView>
+      </LinearGradient>
+
     );
   };
