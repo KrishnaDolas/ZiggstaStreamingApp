@@ -1,16 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { PermissionsAndroid, Platform } from 'react-native';
+import {
+  PermissionsAndroid,
+  Platform,
+  ActivityIndicator,
+  View,
+  Text,
+  StyleSheet,
+} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import NetInfo from '@react-native-community/netinfo';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 
+// ✅ Offline screen component
+const NetworkCheck = () => {
+  return (
+    <View style={styles.center}>
+      <ActivityIndicator size="large" color="#0000ff" />
+      <Text style={styles.text}>No Internet Connection</Text>
+    </View>
+  );
+};
+
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isConnected, setIsConnected] = useState(true);
   const [userAddress, setUserAddress] = useState('');
 
   const handleLogin = () => {
@@ -22,7 +40,6 @@ const App = () => {
     setIsAuthenticated(false);
   };
 
-  // Request location permission and get location/address
   const requestLocationPermission = async () => {
     try {
       if (Platform.OS === 'android') {
@@ -45,7 +62,6 @@ const App = () => {
       Geolocation.getCurrentPosition(
         position => {
           const { latitude, longitude } = position.coords;
-          console.log('Coordinates:', latitude, longitude);
           fetchAddress(latitude, longitude);
         },
         error => {
@@ -71,8 +87,6 @@ const App = () => {
       const data = await response.json();
 
       if (data.results && data.results.length > 0) {
-        const address = data.results[0].formatted;
-        console.log(data.results[0].components);
         setUserAddress(data.results[0].components);
       } else {
         console.log('No address found');
@@ -84,22 +98,35 @@ const App = () => {
 
   useEffect(() => {
     const init = async () => {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 3000);
-
       const token = await AsyncStorage.getItem('token');
       setIsAuthenticated(!!token);
 
-      await requestLocationPermission(); // trigger location/address fetch
+      // Trigger location only if connected
+      if (isConnected) {
+        await requestLocationPermission();
+      }
+
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 3000);
     };
 
     init();
+  }, [isConnected]);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isInternetReachable === true);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (
     <ThemeProvider>
-      {isLoading ? (
+      {!isConnected ? (
+        <NetworkCheck />
+      ) : isLoading ? (
         <SplashScreen />
       ) : isAuthenticated ? (
         <MainScreen onLogout={handleLogout} address={userAddress} />
@@ -109,5 +136,17 @@ const App = () => {
     </ThemeProvider>
   );
 };
+
+const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+});
 
 export default App;
