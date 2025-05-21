@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import Topbar from '../components/Topbar';
 import StreamList from '../components/StreamList';
+import Footer from './Footer';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
