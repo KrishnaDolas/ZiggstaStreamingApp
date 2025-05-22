@@ -16,14 +16,23 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
           return;
         }
         const parameter={
-          username: email,
+          email: email,
           password: password,
         }
-        const res = await axios.post('https://api.streamalong.live/login',parameter );
+        const res = await axios.post('https://api.streamalong.live/login',parameter, {
+          headers: {
+            'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+          },
+        }
+        );
         if(res.data.message==='Login successful') {
+          console.log(res.data.user);
           await AsyncStorage.setItem('token', res.data.token);
+
+      const userDataString = JSON.stringify(res.data.user);
+      await AsyncStorage.setItem('UserData', userDataString);
           onLogin();
-          Alert.alert('Success', `${email} has successfully logged in!`, [{ text: 'OK' }]);
+          Alert.alert('Success',  `LogIn Success.`, [{ text: 'OK' }]);
         }
       } catch (err) {
         console.log(err);

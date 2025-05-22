@@ -30,6 +30,7 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [userAddress, setUserAddress] = useState('');
+  const [userData, setUserData] = useState({});
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -99,8 +100,10 @@ const App = () => {
   useEffect(() => {
     const init = async () => {
       const token = await AsyncStorage.getItem('token');
+      const UserData= await AsyncStorage.getItem('UserData');
       setIsAuthenticated(!!token);
-
+      console.log('UserData:', JSON.parse(UserData));
+      setUserData(JSON.parse(UserData));
       // Trigger location only if connected
       if (isConnected) {
         await requestLocationPermission();
@@ -112,7 +115,7 @@ const App = () => {
     };
 
     init();
-  }, [isConnected]);
+  }, [isConnected,isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
