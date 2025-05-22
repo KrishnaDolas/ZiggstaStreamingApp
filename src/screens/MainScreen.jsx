@@ -1,4 +1,4 @@
-import {View,Text,
+import {View,Text,TextInput,ActivityIndicator,
 TouchableOpacity,ScrollView,Alert,Platform} from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
@@ -11,7 +11,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import Topbar from '../components/Topbar';
 import StreamList from '../components/StreamList';
-import Footer from './Footer';
+import Footer from '../components/Footer';
+import axios from 'axios';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -42,13 +43,14 @@ export const MainScreen = ({onLogout}) => {
       setLobbyLoading(true);
       setLobbyError('');
       try {
-        const response = await fetch('https://streamalong.live/rooms', {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const data = await response.json();
-        if (data.status === 'ok') {
-          setRooms(data.rooms || []);
+        const response =await axios.get('https://api.streamalong.live/rooms/getrooms',{
+          headers:{
+            "x-api-key": "6cca5d4e-719b-4c28-aabd-4aeb2618ee1d"
+          }
+        })
+        console.log(response.data.data);
+        if (response.status === 200) {
+          setRooms(response.data.data || []);
         } else {
           setLobbyError('Failed to fetch rooms');
         }
@@ -527,8 +529,8 @@ export const MainScreen = ({onLogout}) => {
           </View>
         )}
         {/* Footer */}
-        <Footer/>
       </ScrollView>
+        <Footer/>
       </LinearGradient>
 
     );

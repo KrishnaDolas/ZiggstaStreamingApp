@@ -16,8 +16,15 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                     {rooms.map(room => (
                         <View key={room.roomId} style={[styles.roomItem, themeStyles[theme].roomItem]}>
                             <View>
-                                <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {room.roomId}</Text>
+                                <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {room.roomID}</Text>
+                                <Text style={[styles.roomText, themeStyles[theme].text]}>Room Name: {room.RoomName}</Text>
                                 <Text style={[styles.roomText, themeStyles[theme].text]}>Viewers: {room.viewerCount}</Text>
+                                {room.participants.split(',').map((participant, index) => (
+                                    <Text key={index} style={[styles.roomText, themeStyles[theme].text]}>
+                                        Participant {index + 1}: {participant}
+                                    </Text>
+                                ))}
+                                <Text style={[styles.roomText, themeStyles[theme].text]}>participants: {room.host}</Text>
                                 <Text style={[styles.roomText, themeStyles[theme].text]}>
                                     Status: {room.isStreaming ? 'Streaming' : 'Not Streaming'}
                                 </Text>
@@ -32,7 +39,7 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                     ))}
                 </ScrollView>
             )}
-            <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
+            {/* <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
             <TextInput
                 placeholder="Enter Room ID"
                 value={roomId}
@@ -52,7 +59,7 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                     </TouchableOpacity>
                 </>
             )}
-            {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
+            {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null} */}
         </View>
     );
 }

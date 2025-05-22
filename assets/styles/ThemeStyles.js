@@ -168,7 +168,6 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   roomList: {
-    maxHeight: 200,
     width: '100%',
     marginBottom: 20,
   },
@@ -199,8 +198,8 @@ export const styles = StyleSheet.create({
     color: 'white',
   },
 footer: {
-  position: 'absolute',
-  bottom: 0,
+  position: 'fixed',
+  bottom: '0%',
   left: 0,
   right: 0,
   backgroundColor: 'white',  // white background
