@@ -11,11 +11,9 @@ import {
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 
-const { width, height } = Dimensions.get('window');
-
 const questions = [
-  { label: 'What is your Name?', field: 'name', placeholder: 'Enter your name' },
-  { label: 'What is your Email?', field: 'email', placeholder: 'Enter your email' },
+  { label: 'What is your Full Name?', field: 'name', placeholder: 'Enter your name' },
+  { label: 'What is your Username?', field: 'username', placeholder: 'Enter your username' },
   { label: 'What is your Location?', field: 'location', placeholder: 'Enter your location' },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
@@ -72,35 +70,52 @@ export const RegisterForm = ({ onRegister,userAddress, onToggleForm, setError })
                 formData.gender === gender && styles.btnGenderActive,
               ]}
             >
-              <Text style={formData.gender === gender}>{gender}</Text>
+              <Text style={{ color: 'white' }}>{gender}</Text>
             </TouchableOpacity>
           ))}
         </View>
       );
     }
 
-    if (question.field === 'interests') {
-      return (
-        <View style={styles.btnInterestsWrapper}>
-          {interestOptions.map((interest) => (
-            <TouchableOpacity
-              key={interest}
-              onPress={() => toggleInterest(interest)}
-              style={[
-                styles.btnInterest,
-                formData.interests.includes(interest) && styles.btnInterestActive,
-              ]}
-            >
-              <Text
-                style={formData.interests.includes(interest) && { color: 'black' }}
-              >
-                {interest}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      );
-    }
+if (question.field === 'interests') {
+  return (
+<View style={[styles.qAWrapper]}>
+  {step === 5 ? (
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'flex-start',
+          paddingBottom: 20,
+        }}
+        showsVerticalScrollIndicator={true}
+        showsHorizontalScrollIndicator={false}
+      >
+        {interestOptions.map((interest) => (
+          <TouchableOpacity
+            key={interest}
+            onPress={() => toggleInterest(interest)}
+            style={[
+              styles.btnInterest,
+              formData.interests.includes(interest) && styles.btnInterestActive,
+            ]}
+          >
+            <Text style={{ color: 'white' }}>{interest}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  ) : (
+    renderStepContent()
+  )}
+</View>
+
+
+  );
+}
+
 
     return (
       <TextInput

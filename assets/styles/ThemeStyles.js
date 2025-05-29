@@ -255,8 +255,8 @@ footer: {
   },
   qAWrapper: {
     width: '100%',
-    height: '50%',
-    padding: 20,
+    flex: 1,
+    paddingTop: 20,
   },
   question: {
     fontSize: 20,
@@ -328,10 +328,7 @@ footer: {
     backgroundColor: 'rgba(190, 0, 105, 0.4)',
   },
   btnInterestsWrapper: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 40,
-    gap: 20,
+     marginTop: 40,
   },
   btnInterest: {
     backgroundColor: '#be0069',
