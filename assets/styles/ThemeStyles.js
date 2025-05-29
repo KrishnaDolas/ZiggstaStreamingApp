@@ -188,14 +188,14 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'pink',
+    backgroundColor: 'white',
     height: '100%',
     width: '100%',
   },
-  splashText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: 'white',
+  splashImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
   },
 footer: {
   position: 'fixed',
