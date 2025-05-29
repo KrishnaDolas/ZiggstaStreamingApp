@@ -16,7 +16,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
           return;
         }
         const parameter={
-          email: email,
+          username: email,
           password: password,
         }
         const res = await axios.post('https://api.streamalong.live/login',parameter, {
