@@ -197,6 +197,23 @@ export const styles = StyleSheet.create({
     height: 200,
     resizeMode: 'contain',
   },
+  splashButton: {
+    position:'absolute',
+    bottom: '40',
+    flex:'1',
+    alignItems: 'center',
+    paddingVertical: 12, // Top & Bottom
+    paddingHorizontal: 30, // Left & Right
+    borderRadius: 30,
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+    fontFamily:'sans-serif',
+    fontSize: 22,
+    border: 'none',
+  },
+  splashButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
 footer: {
   position: 'fixed',
   bottom: '0%',
@@ -237,7 +254,10 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
+    splashButtonText: {
+      color: 'white',
   },
+},
   dark: {
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
@@ -252,5 +272,6 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
-  },
-};
+    splashButtonText: {color: 'black'},
+  }
+}
