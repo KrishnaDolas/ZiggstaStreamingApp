@@ -262,6 +262,7 @@ footer: {
     fontSize: 20,
     marginTop: 60,
     textAlign: 'center',
+    marginBottom: 30,
   },
   answer: {
     width: '100%',

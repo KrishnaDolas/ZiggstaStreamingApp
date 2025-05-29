@@ -10,6 +10,8 @@ import {
   Alert,
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { globalStyles } from '../../assets/styles/GlobalStyles';
+
 
 const questions = [
   { label: 'What is your Full Name?', field: 'name', placeholder: 'Enter your name' },
@@ -119,7 +121,7 @@ if (question.field === 'interests') {
 
     return (
       <TextInput
-        style={styles.answer}
+        style={globalStyles.input}
         placeholder={question.placeholder}
         value={formData[question.field]}
         onChangeText={(text) => handleChange(question.field, text)}
