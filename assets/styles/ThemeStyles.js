@@ -184,6 +184,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
   },
+
+  //Splash Screen Styles
   SplashScreen: {
     flex: 1,
     justifyContent: 'center',
@@ -214,6 +216,8 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+
+  //Footer Styles
 footer: {
   position: 'fixed',
   bottom: '0%',
@@ -236,6 +240,109 @@ footer: {
     fontSize: 12,
     color: '#fff',
   },
+
+//Registragon Form Styles
+  carousel: {
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+  },
+  slide: {
+    width: '100%',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  qAWrapper: {
+    width: '100%',
+    height: '50%',
+    padding: 20,
+  },
+  question: {
+    fontSize: 20,
+    marginTop: 60,
+    textAlign: 'center',
+  },
+  answer: {
+    width: '100%',
+    marginTop: 20,
+    padding: 10,
+    fontSize: 16,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  buttons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 30,
+  },
+  btnNav: {
+    width: 120,
+    height: 40,
+    fontSize: 16,
+    fontWeight: '300',
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#be0069',
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 160,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ccc',
+    marginHorizontal: 5,
+  },
+  dotActive: {
+    backgroundColor: '#be0069',
+    shadowColor: '#be0069',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  btnGenderWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+    marginTop: 40,
+  },
+  btnGender: {
+    backgroundColor: '#be0069',
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    margin: 5,
+    color: 'white',
+  },
+  btnGenderActive: {
+    backgroundColor: 'rgba(190, 0, 105, 0.4)',
+  },
+  btnInterestsWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 40,
+    gap: 20,
+  },
+  btnInterest: {
+    backgroundColor: '#be0069',
+    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    margin: 5,
+  },
+  btnInterestActive: {
+    backgroundColor: 'rgba(190, 0, 105, 0.4)',
+  },
 });
 
 // Theme Styles
@@ -254,9 +361,7 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
-    splashButtonText: {
-      color: 'white',
-  },
+    splashButtonText: { color: 'white' },
 },
   dark: {
     container: { backgroundColor: '#121212' },
