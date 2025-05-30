@@ -7,6 +7,8 @@ import {
   Text,
   StyleSheet,
 } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
@@ -15,26 +17,23 @@ import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 
-// ✅ Offline screen component
-const NetworkCheck = () => {
-  return (
-    <View style={styles.center}>
-      <ActivityIndicator size="large" color="#0000ff" />
-      <Text style={styles.text}>No Internet Connection</Text>
-    </View>
-  );
-};
+const Stack = createNativeStackNavigator();
+
+const NetworkCheck = () => (
+  <View style={styles.center}>
+    <ActivityIndicator size="large" color="#0000ff" />
+    <Text style={styles.text}>No Internet Connection</Text>
+  </View>
+);
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [userAddress, setUserAddress] = useState('');
   const [userData, setUserData] = useState({});
 
-  const handleLogin = () => {
-    setIsAuthenticated(true);
-  };
+  const handleLogin = () => setIsAuthenticated(true);
 
   const handleLogout = async () => {
     await AsyncStorage.clear();
@@ -99,43 +98,74 @@ const App = () => {
 
   useEffect(() => {
     const init = async () => {
-      const token = await AsyncStorage.getItem('token');
-      const UserData= await AsyncStorage.getItem('UserData');
-      setIsAuthenticated(!!token);
-      console.log('UserData:', JSON.parse(UserData));
-      setUserData(JSON.parse(UserData));
-      // Trigger location only if connected
-      if (isConnected) {
-        await requestLocationPermission();
-      }
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const userDataStored = await AsyncStorage.getItem('UserData');
 
-      setTimeout(() => {
+        if (token) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+
+        if (userDataStored) {
+          setUserData(JSON.parse(userDataStored));
+        }
+
+        if (isConnected) {
+          await requestLocationPermission();
+        }
+
+        // Simulate splash delay
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 3000);
+      } catch (e) {
+        console.error('Init error:', e);
         setIsLoading(false);
-      }, 3000);
+      }
     };
 
     init();
-  }, [isConnected,isAuthenticated]);
+  }, [isConnected]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
       setIsConnected(state.isInternetReachable === true);
     });
-
     return () => unsubscribe();
   }, []);
 
   return (
-    <ThemeProvider>
-      {!isConnected ? (
-        <NetworkCheck />
-      ) : isLoading ? (
-        <SplashScreen />
-      ) : isAuthenticated ? (
-        <MainScreen onLogout={handleLogout} address={userAddress} />
-      ) : (
-        <AuthScreen onLogin={handleLogin} userAddress={userAddress} />
-      )}
+    <ThemeProvider >
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
+          {!isAuthenticated  && <Stack.Screen name="Splash" component={SplashScreen} />}
+          {isAuthenticated ? (
+            <Stack.Screen name="Main">
+              {props => (
+                <MainScreen
+                  {...props}
+                  onLogout={handleLogout}
+                  address={userAddress}
+                  userData={userData}
+                />
+              )}
+            </Stack.Screen>
+          ) : (
+            <Stack.Screen name="Auth">
+              {props => (
+                <AuthScreen
+                  {...props}
+                  onLogin={handleLogin}
+                  userAddress={userAddress}
+                />
+              )}
+            </Stack.Screen>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
     </ThemeProvider>
   );
 };
