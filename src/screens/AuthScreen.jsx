@@ -6,7 +6,7 @@ import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 
 export const AuthScreen = ({ onLogin ,userAddress}) => {
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
   const [error, setError] = useState('');
   const { theme } = useContext(ThemeContext);
 
