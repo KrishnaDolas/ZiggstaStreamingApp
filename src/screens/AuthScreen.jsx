@@ -6,7 +6,7 @@ import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 
 export const AuthScreen = ({ onLogin ,userAddress}) => {
-  const [showLogin, setShowLogin] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const [error, setError] = useState('');
   const { theme } = useContext(ThemeContext);
 
@@ -14,7 +14,7 @@ export const AuthScreen = ({ onLogin ,userAddress}) => {
 
   return (
     <View style={[styles.authContainer, themeStyles[theme].container]}>
-      <Text style={[styles.title, themeStyles[theme].text]}>🎥 ZIGGSTA</Text>
+      {/* <Text style={[styles.title, themeStyles[theme].text]}>🎥 ZIGGSTA</Text> */}
       {showLogin ? (
         <LoginForm onLogin={onLogin} onToggleForm={toggleForm} setError={setError} />
       ) : (

@@ -1,110 +1,179 @@
-import React, { useState, useContext } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
-import { ThemeContext } from '../context/ThemeContext';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { globalStyles } from '../../assets/styles/GlobalStyles';
+
+
+const questions = [
+  { label: 'What is your Full Name?', field: 'name', placeholder: 'Enter your name' },
+  { label: 'What is your Username?', field: 'username', placeholder: 'Enter your username' },
+  { label: 'What is your Location?', field: 'location', placeholder: 'Enter your location' },
+  { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
+  { label: 'Gender', field: 'gender' },
+  { label: 'Choose your Interests (Any 5)', field: 'interests' },
+];
+
+const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
+
+const interestOptions = [
+  'Art & Music', 'Entertainment & Gaming', 'Family & Parenting', 'Fashion & Shopping',
+  'Food & Cooking', 'Health & Fitness', 'Hobbies & Activities', 'News & Politics',
+  'Religion & Spiritual', 'Sports & Adventure', 'Travel & Holidays',
+];
+
 export const RegisterForm = ({ onRegister,userAddress, onToggleForm, setError }) => {
-  const { theme } = useContext(ThemeContext);
+  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
     email: '',
-    password: '',
-    confirmPassword: '',
-    selectedInterests: [],
+    location: '',
+    dob: '',
+    gender: '',
+    interests: [],
   });
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
-  const handleRegister = async() => {
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
+
+  const toggleInterest = (interest) => {
+    setFormData(prev => {
+      const alreadySelected = prev.interests.includes(interest);
+      if (alreadySelected) {
+        return { ...prev, interests: prev.interests.filter(i => i !== interest) };
+      } else if (prev.interests.length < 5) {
+        return { ...prev, interests: [...prev.interests, interest] };
+      }
+      return prev; // Don't allow more than 5
+    });
+  };
+
+  const renderStepContent = () => {
+    const question = questions[step];
+
+    if (question.field === 'gender') {
+      return (
+        <View style={styles.btnGenderWrapper}>
+          {genderOptions.map((gender) => (
+            <TouchableOpacity
+              key={gender}
+              onPress={() => handleChange('gender', gender)}
+              style={[
+                styles.btnGender,
+                formData.gender === gender && styles.btnGenderActive,
+              ]}
+            >
+              <Text style={{ color: 'white' }}>{gender}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
     }
-    try {
-      const parameter={
-        username: formData.username,
-        password: formData.password,
-        email: formData.email,
-        screenName:'JUMBO',
-        city: userAddress.city,
-        country: userAddress.country,
-        state: userAddress.state,
-        zipcode: userAddress.postcode,
-        interests: 'Music, Chess',
-      }
-      const res = await axios.post('https://api.streamalong.live/register',parameter );
-      if(res.data.message === 'User registered successfully!') {
-        console.log(res.data);
-        console.log(formData.username);
-        console.log(formData.password);
-        await AsyncStorage.setItem('username', formData.username); // save token
-       await  AsyncStorage.setItem('password', formData.password); // save token
-        setError(''); // clear error
-        onToggleForm()
-        setFormData({
-          username: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
-          selectedInterests: [],
-        });
-      }else{
-        setError(res.data.message)
-      }
-    } catch (err) {
-      console.log(err);
-      setError(err?.response?.data?.error || 'Something went wrong');
+
+if (question.field === 'interests') {
+  return (
+<View style={[styles.qAWrapper]}>
+  {step === 5 ? (
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'flex-start',
+          paddingBottom: 20,
+        }}
+        showsVerticalScrollIndicator={true}
+        showsHorizontalScrollIndicator={false}
+      >
+        {interestOptions.map((interest) => (
+          <TouchableOpacity
+            key={interest}
+            onPress={() => toggleInterest(interest)}
+            style={[
+              styles.btnInterest,
+              formData.interests.includes(interest) && styles.btnInterestActive,
+            ]}
+          >
+            <Text style={{ color: 'white' }}>{interest}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
+  ) : (
+    renderStepContent()
+  )}
+</View>
+
+
+  );
+}
+
+
+    return (
+      <TextInput
+        style={globalStyles.input}
+        placeholder={question.placeholder}
+        value={formData[question.field]}
+        onChangeText={(text) => handleChange(question.field, text)}
+      />
+    );
+  };
+
+  const handleNext = () => {
+    if (step < questions.length - 1) {
+      setStep(step + 1);
+    } else {
+      Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
     }
   };
 
+  const handlePrevious = () => {
+    if (step > 0) setStep(step - 1);
+  };
+
   return (
-    <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-      <Text style={[styles.formTitle, themeStyles[theme].text]}>Register</Text>
-      <TextInput
-        placeholder="UserName"
-        value={formData.username}
-        onChangeText={(text) => handleChange('username', text)}
-        style={[styles.input, themeStyles[theme].input]}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        placeholderTextColor={themeStyles[theme].placeholder.color}
-      />
-      <TextInput
-        placeholder="Email"
-        value={formData.email}
-        onChangeText={(text) => handleChange('email', text)}
-        style={[styles.input, themeStyles[theme].input]}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        placeholderTextColor={themeStyles[theme].placeholder.color}
-      />
-      <TextInput
-        placeholder="Password"
-        value={formData.password}
-        onChangeText={(text) => handleChange('password', text)}
-        style={[styles.input, themeStyles[theme].input]}
-        secureTextEntry
-        placeholderTextColor={themeStyles[theme].placeholder.color}
-      />
-      <TextInput
-        placeholder="Confirm Password"
-        value={formData.confirmPassword}
-        onChangeText={(text) => handleChange('confirmPassword', text)}
-        style={[styles.input, themeStyles[theme].input]}
-        secureTextEntry
-        placeholderTextColor={themeStyles[theme].placeholder.color}
-      />
-      <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onToggleForm}>
-        <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Already have an account? Login</Text>
-      </TouchableOpacity>
+    <View style={styles.carousel}>
+      <View style={styles.slide}>
+        <View style={styles.qAWrapper}>
+          <Text style={styles.question}>{questions[step].label}</Text>
+          {renderStepContent()}
+        </View>
+
+        <View style={styles.buttons}>
+          {step > 0 && (
+            <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
+              <Text style={{ color: 'white' }}>Previous</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity onPress={handleNext} style={styles.btnNav}>
+            <Text style={{ color: 'white' }}>
+              {step === questions.length - 1 ? 'Finish' : 'Next'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.dotsContainer}>
+          {questions.map((_, idx) => (
+            <View
+              key={idx}
+              style={[styles.dot, step === idx && styles.dotActive]}
+            />
+          ))}
+        </View>
+      </View>
     </View>
   );
-};
+}
+
+
+
