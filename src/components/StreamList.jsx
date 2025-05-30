@@ -13,8 +13,9 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                 <Text style={[styles.roomText, themeStyles[theme].text]}>No rooms available</Text>
             ) : (
                 <ScrollView style={styles.roomList}>
-                    {rooms.map(room => (
-                        <View key={room.roomId} style={[styles.roomItem, themeStyles[theme].roomItem]}>
+                    {rooms.map((room,ind)=>{
+                        return(
+                            <View key={ind} style={[styles.roomItem, themeStyles[theme].roomItem]}>
                             <View>
                                 <Text style={[styles.roomText, themeStyles[theme].text]}>Room ID: {room.roomID}</Text>
                                 <Text style={[styles.roomText, themeStyles[theme].text]}>Room Name: {room.RoomName}</Text>
@@ -36,7 +37,8 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                                 <Text style={styles.buttonText}>Join</Text>
                             </TouchableOpacity>
                         </View>
-                    ))}
+                        )
+                    })}
                 </ScrollView>
             )}
             {/* <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
