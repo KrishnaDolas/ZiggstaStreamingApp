@@ -134,7 +134,7 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
   const onScrollEnd = (e) => {
     const offsetX = e.nativeEvent.contentOffset.x;
     const index = Math.round(offsetX / layoutWidth);
-    console.log('Scrolled to index:', index, 'offsetX:', offsetX);
+    // console.log('Scrolled to index:', index, 'offsetX:', offsetX);
     setStep(index);
   };
 
