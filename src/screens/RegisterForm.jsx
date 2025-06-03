@@ -31,7 +31,7 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
-
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -73,6 +73,10 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
               <Text style={{ color: 'white' }}>{gender}</Text>
             </TouchableOpacity>
           ))}
+          {errors[question.field] ? (
+          <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+        ) : null}
+
         </View>
       );
     }
@@ -99,21 +103,32 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
               <Text style={{ color: 'white' }}>{interest}</Text>
             </TouchableOpacity>
           ))}
+          {errors[question.field] ? (
+          <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+        ) : null}
         </ScrollView>
       );
     }
 
     return (
+      <>
       <TextInput
         style={globalStyles.input}
         placeholder={question.placeholder}
         value={formData[question.field]}
         onChangeText={(text) => handleChange(question.field, text)}
       />
+      {errors[question.field] ? (
+      <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+    ) : null}
+      </>
     );
   };
 
   const handleNext = () => {
+    if (!validateStep()) {
+    return;
+  }
     if (step < questions.length - 1) {
       const newStep = step + 1;
       setStep(newStep);
@@ -137,6 +152,63 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
     // console.log('Scrolled to index:', index, 'offsetX:', offsetX);
     setStep(index);
   };
+
+  const validateStep = () => {
+  const currentQuestion = questions[step];
+  const value = formData[currentQuestion.field];
+  let error = '';
+
+  switch (currentQuestion.field) {
+    case 'name':
+      if (!value || value.trim().length < 5) {
+        error = 'Full name must be at least 5 characters';
+      }
+      break;
+    case 'username':
+      if (!value || !/^[a-zA-Z0-9_]{5,15}$/.test(value)) {
+        error = 'Username must be 5–15 characters and alphanumeric';
+      }
+      break;
+    case 'location':
+      if (!value || value.trim() === '') {
+        error = 'Location is required';
+      }
+      break;
+    case 'dob':
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        error = 'Date must be in YYYY-MM-DD format';
+      } else {
+        const dob = new Date(value);
+        const age = new Date().getFullYear() - dob.getFullYear();
+        if (age < 13) {
+          error = 'You must be at least 18 years old';
+        }
+      }
+      break;
+    case 'gender':
+      if (!value) {
+        error = 'Please select a gender';
+      }
+      break;
+    case 'interests':
+      if (!value || value.length < 1) {
+        error = 'Select at least 1 interest';
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (error) {
+    setErrors((prev) => ({ ...prev, [currentQuestion.field]: error }));
+    return false;
+  }
+
+  // Clear previous error if validation passed
+  setErrors((prev) => ({ ...prev, [currentQuestion.field]: '' }));
+  return true;
+};
+
 
   return (
     <View
