@@ -4,6 +4,8 @@ import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+ const navigation = useNavigation();
 export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -32,6 +34,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
       const userDataString = JSON.stringify(res.data.user);
       await AsyncStorage.setItem('UserData', userDataString);
           onLogin();
+          navigation.navigate('Auth')
           Alert.alert('Success',  `LogIn Success.`, [{ text: 'OK' }]);
         }
       } catch (err) {
