@@ -13,7 +13,7 @@ export const globalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eaeaeb', // --light-medium-gray
     borderRadius: 21,
-    backgroundColor: '##f7f7f7', // --very-light-gray
+    backgroundColor: '#f7f7f7', // --very-light-gray
     color: '#414141',
     fontFamily: 'SFUIDisplay-Light', // Match the font PostScript name
     fontSize: 16,

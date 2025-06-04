@@ -1,14 +1,17 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity,Alert  } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView, Image  } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import LinearGradient from 'react-native-linear-gradient';
  const navigation = useNavigation();
-export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
+export const LoginForm = ({ onLogin, onToggleForm }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
     const { theme } = useContext(ThemeContext);
   
     const handleLogin = async () => {
@@ -64,10 +67,13 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
     }, []); // No need to depend on email or password if just reading on mount
     
     return (
+      <>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-        <Text style={[styles.formTitle, themeStyles[theme].text]}>Login</Text>
+        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
+        <View style={[{ width:'100%',padding:'7' }]}>
+        <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>User Name</Text>
         <TextInput
-          placeholder="Email"
           value={email}
           onChangeText={setEmail}
           style={[styles.input, themeStyles[theme].input]}
@@ -75,20 +81,48 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
           autoCapitalize="none"
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        </View>
+        <View style={[{ width:'100%',padding:'7' }]}>
+        <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Password</Text>
         <TextInput
-          placeholder="Password"
           value={password}
           onChangeText={setPassword}
           style={[styles.input, themeStyles[theme].input]}
           secureTextEntry
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
-        <TouchableOpacity style={[styles.button, themeStyles[theme].button]} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        </View>
+        <View style={styles.Loginerror}>
+        {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
+        </View>
+        <LinearGradient
+          colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.button}
+        >
+        <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleLogin}>
+          <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
+        </LinearGradient>
         <TouchableOpacity onPress={onToggleForm}>
           <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
         </TouchableOpacity>
+        <View style={styles.Othersinginoption}>
+        <View style={styles.Loginoption}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]}>
+        <Icon name="apple" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]}>
+        <Icon name="facebook" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]}>
+        <Icon name="google" size={24} color="#fff" />
+        </TouchableOpacity>
+        </View>
+        </View>
       </View>
+      </ScrollView>
+      </>
     );
   };

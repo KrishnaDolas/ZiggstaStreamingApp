@@ -19,6 +19,7 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
+    height:'100%',
     alignItems: 'center',
     borderRadius: 12,
     padding: 20,
@@ -34,14 +35,60 @@ export const styles = StyleSheet.create({
       },
     }),
   },
+  SingInlabel:{
+    fontSize: 16,
+    marginBottom: 10,
+    float: 'left',
+  },
+  Loginerror: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  Othersinginoption:{
+    flexDirection: 'row',
+    position: 'relative',
+    left: '25%',
+    width: '100%',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  Loginoptionbtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+  },
+  Loginoption:{
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '50%',
+    position: 'relative',
+  },
+  Applebtn:{
+    backgroundColor: '#000000',
+  },
+  Googlebtn:{
+    backgroundColor: '#fa1500',
+  },
+  Facebookbtn:{
+    backgroundColor: '#377aff',
+  },
   formTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 34,
+    fontWeight: '700',
     marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 20,
     padding: 12,
     width: '100%',
     marginVertical: 10,
@@ -50,7 +97,7 @@ export const styles = StyleSheet.create({
   button: {
     paddingVertical: 12,
     paddingHorizontal: 30,
-    borderRadius: 8,
+    borderRadius: 20,
     marginVertical: 10,
     width: '100%',
     alignItems: 'center',
@@ -508,8 +555,8 @@ export const themeStyles = {
     container: { backgroundColor: '#f0f4f8' },
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
-    input: { borderColor: '#ddd', backgroundColor: '#fff', color: 'black' },
-    button: { backgroundColor: '#1a73e8' },
+    input: { borderColor: '#eaeaeb', backgroundColor: '#f7f7f7', color: 'rgb(65, 65, 65)' },
+    button: {color:'white'},
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
@@ -519,26 +566,14 @@ export const themeStyles = {
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
-    profileHeader: {
-      backgroundColor: '#a8a8a8'
-    },
-    profileScrollContainer: {
-      backgroundColor: '#fff'
-    },
-    profileMainText: {
-      color: '#d93a63',
-    },
-    profileValueText: {
-      color: 'darkkhaki',
-    },
-
-  },
+    SingInlabel:{color:'#717580'}
+},
   dark: {
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
     text: { color: '#fff' },
     input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
-    button: { backgroundColor: '#1a73e8' },
+    button: {color:'black'},
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
@@ -547,18 +582,7 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
-    splashButtonText: { color: 'black' },
-    profileHeader: {
-      backgroundColor: '#2a2a2a'
-    },
-    profileScrollContainer: {
-      backgroundColor: '#2a2a2a'
-    },
-    profileMainText: {
-      color: '#fff',
-    },
-    profileValueText: {
-      color: '#fff',
-    },
+    splashButtonText: {color: 'black'},
+    SingInlabel:{color:'#717580'}
   }
 }
