@@ -69,7 +69,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
-        <Text style={[styles.SingInlabel]}>User Name</Text>
+        <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>User Name</Text>
         <TextInput
           value={email}
           onChangeText={setEmail}
@@ -80,7 +80,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
         />
         </View>
         <View style={[{ width:'100%',padding:'7' }]}>
-        <Text style={[styles.SingInlabel]}>Password</Text>
+        <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Password</Text>
         <TextInput
           value={password}
           onChangeText={setPassword}

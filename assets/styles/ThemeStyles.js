@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    height:'50%',
+    height:'70%',
     alignItems: 'center',
     borderRadius: 12,
     padding: 20,
@@ -355,7 +355,7 @@ export const themeStyles = {
     container: { backgroundColor: '#f0f4f8' },
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
-    input: { borderColor: '#ddd', backgroundColor: '#fff', color: 'black' },
+    input: { borderColor: '#eaeaeb', backgroundColor: '#f7f7f7', color: 'rgb(65, 65, 65)' },
     button: {color:'white'},
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -366,6 +366,7 @@ export const themeStyles = {
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
+    SingInlabel:{color:'#717580'}
 },
   dark: {
     container: { backgroundColor: '#121212' },
@@ -382,5 +383,6 @@ export const themeStyles = {
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
     splashButtonText: {color: 'black'},
+    SingInlabel:{color:'#717580'}
   }
 }
