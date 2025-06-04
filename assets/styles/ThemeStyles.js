@@ -391,10 +391,7 @@ export const styles = StyleSheet.create({
 
 
 
-  // ------------------------------
-  // PROFILE SCREEN STYLES START
-  // ------------------------------
-
+ // profile style start
 
   profileHeader: {
     flexDirection: 'row',
@@ -402,17 +399,13 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 30,
-    elevation: 4, // Android shadow
-    shadowColor: '#000', // iOS shadow
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
     zIndex: 10,
   },
 
   profileScrollContainer: {
-    paddingTop: 100,
-    paddingBottom: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    flex: 1,
   },
 
   profileContainer: {
@@ -482,7 +475,6 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.46,
     shadowRadius: 5,
     elevation: 5,
-    backgroundColor: '#fff',
   },
 
   profileStatLabel: {
@@ -497,35 +489,48 @@ export const styles = StyleSheet.create({
 
   profileTable: {
     borderRadius: 12,
-    padding: 12,
     marginBottom: 24,
+    borderColor: "#d9d9d9",
+    borderWidth: 0.3,
+    overflow: 'hidden'
   },
 
   profileTableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#d1d5db',
+    paddingVertical: 10,
   },
 
   profileTableHeaderText: {
     fontWeight: 'bold',
-    flex: 1,
     textAlign: 'center',
-    color: '#1f2937',
   },
 
   profileTableRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
   },
 
   profileTableCell: {
-    flex: 1,
     textAlign: 'center',
-    color: '#374151',
+  },
+
+  profileTableCellIndex: {
+    flex: 0.5,
+    paddingRight: 5
+  },
+  profileTableCellUsername: {
+    flex: 2,
+    textAlign: 'left', // Align username to left
+    paddingLeft: 8,
+  },
+  profileTableCellAmount: {
+    flex: 1,
+    textAlign: 'right', // Align amount to right
+    paddingRight: 15,
   },
 
   profileButtonGrid: {
@@ -533,18 +538,86 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 8,
+    marginBottom: 60
+  },
+
+  profileActionBtnBox: {
+    width: '48%'
   },
 
   profileActionButton: {
-    width: '48%',
-    padding: 14,
+    paddingHorizontal: 10,
+    height: 80,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  // ------------------------------
-  // PROFILE SCREEN STYLES END
-  // ------------------------------
+
+  profileActionButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center'
+  }
+  ,
+  // profile style end
+
+
+  // profile modal 
+
+  profileModalMain: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+
+  profileModalOverlay: {
+    backgroundColor: 'white',
+    padding: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
+  profileModalClose: {
+    alignSelf: 'flex-end',
+    marginBottom: 30
+  },
+
+  profileMSocialBox: {
+    marginTop: 10,
+    marginBottom: 80
+  },
+
+  profileMSocialBoxItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    borderRadius: 30,
+    paddingHorizontal: 15,
+    // marginBottom: 10,
+    paddingVertical: 10
+  },
+
+  profileMSocialBoxItemIcon: {
+    marginRight: 14
+  },
+
+  profileMSocialBoxItemInput: {
+    flex: 1,
+    height: 40,
+    borderColor: '#a5a5a5',
+    borderWidth: .4,
+    backgroundColor: '#f7f7f7',
+    borderRadius: 20,
+    color: '#414141',
+    paddingHorizontal: 13,
+    fontSize: 15
+  }
+
+  // profile modal 
+
 
 
 });
@@ -566,7 +639,47 @@ export const themeStyles = {
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
-    SingInlabel:{color:'#717580'}
+    SingInlabel:{color:'#717580'},
+     // profile css
+    profileHeader: {
+      backgroundColor: '#fafafa'
+    },
+    profileScrollContainer: {
+      backgroundColor: '#fff'
+    },
+    profileMainText: {
+      color: '#d93a63',
+    },
+    profileValueText: {
+      color: 'darkkhaki',
+    },
+    profileStatCard: {
+      backgroundColor: "#fff"
+    },
+    profileStatLabel: {
+      color: 'rgb(136, 136, 136)'
+    },
+    profileStatValue: {
+      color: 'rgb(255, 9, 214)'
+    },
+    profileTableHeader: {
+      backgroundColor: '#f0f0f0'
+    },
+    profileTable: {
+      backgroundColor: '#f9fafb'
+    },
+    profileTableHeaderText: {
+      color: '#1f2937',
+    },
+    profileTableCell: {
+      color: '#374151',
+    },
+    profileTableRow: {
+      backgroundColor: '#fff'
+    },
+    profileActionButtonText: {
+      color: "#000"
+    }
 },
   dark: {
     container: { backgroundColor: '#121212' },
@@ -583,6 +696,49 @@ export const themeStyles = {
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
     splashButtonText: {color: 'black'},
-    SingInlabel:{color:'white'}
+    SingInlabel:{color:'white'},
+     // profile css
+    profileHeader: {
+      backgroundColor: '#2a2a2a',
+      borderBottomColor: '#d9d9d9',
+      borderBottomWidth: 1
+    },
+    profileScrollContainer: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileMainText: {
+      color: '#fff',
+    },
+    profileValueText: {
+      color: '#fff',
+    },
+    profileStatLabel: {
+      color: '#fff'
+    },
+    profileStatValue: {
+      color: '#fff'
+    },
+    profileStatCard: {
+      backgroundColor: "#2a2a2a",
+      shadowColor: '#fff',
+    },
+    profileTable: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileTableHeader: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileTableHeaderText: {
+      color: '#fff',
+    },
+    profileTableCell: {
+      color: '#fff',
+    },
+    profileTableRow: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileActionButtonText: {
+      color: "#fff"
+    }
   }
 }
