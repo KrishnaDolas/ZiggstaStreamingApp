@@ -583,6 +583,6 @@ export const themeStyles = {
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
     splashButtonText: {color: 'black'},
-    SingInlabel:{color:'#717580'}
+    SingInlabel:{color:'white'}
   }
 }
