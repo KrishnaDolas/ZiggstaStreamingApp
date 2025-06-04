@@ -200,15 +200,15 @@ export const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   splashButton: {
-    position:'absolute',
+    position: 'absolute',
     bottom: '40',
-    flex:'1',
+    flex: '1',
     alignItems: 'center',
     paddingVertical: 12, // Top & Bottom
     paddingHorizontal: 30, // Left & Right
     borderRadius: 30,
     boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-    fontFamily:'sans-serif',
+    fontFamily: 'sans-serif',
     fontSize: 22,
     border: 'none',
   },
@@ -218,19 +218,19 @@ export const styles = StyleSheet.create({
   },
 
   //Footer Styles
-footer: {
-  position: 'fixed',
-  bottom: '0%',
-  left: 0,
-  right: 0,
-  backgroundColor: 'white',  // white background
-  paddingVertical: 10,
-  flexDirection: 'row',
-  justifyContent: 'space-around',
-  alignItems: 'center',
-  borderTopWidth: 1,
-  borderTopColor: '#ddd', // optional: a light border color
-},
+  footer: {
+    position: 'fixed',
+    bottom: '0%',
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',  // white background
+    paddingVertical: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd', // optional: a light border color
+  },
 
   footerItem: {
     alignItems: 'center',
@@ -241,7 +241,7 @@ footer: {
     color: '#fff',
   },
 
-//Registragon Form Styles
+  //Registragon Form Styles
   carousel: {
     width: '100%',
     height: '100%',
@@ -329,7 +329,7 @@ footer: {
     backgroundColor: 'rgba(190, 0, 105, 0.4)',
   },
   btnInterestsWrapper: {
-     marginTop: 40,
+    marginTop: 40,
   },
   btnInterest: {
     backgroundColor: '#be0069',
@@ -341,6 +341,165 @@ footer: {
   btnInterestActive: {
     backgroundColor: 'rgba(190, 0, 105, 0.4)',
   },
+
+
+
+  // ------------------------------
+  // PROFILE SCREEN STYLES START
+  // ------------------------------
+
+
+  profileHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    zIndex: 10,
+  },
+
+  profileScrollContainer: {
+    paddingTop: 100,
+    paddingBottom: 20,
+  },
+
+  profileContainer: {
+    paddingHorizontal: 18,
+  },
+  profileBlockLeftBox: {
+    flexDirection: 'row',
+    flex: 1.1,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  profileBlockRightBox: {
+    flexDirection: 'row',
+    flex: 2,
+    justifyContent: 'center',
+    gap: 10,
+    alignItems: 'center',
+    paddingLeft: 10
+  },
+  profileBlock: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  profileHeaderLogo: {
+    width: 50,
+    height: 50,
+  },
+
+  profileAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.46,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+  },
+
+  profileMainText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+
+  profileValueText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  profileStatCards: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+
+  profileStatCard: {
+    flex: 1,
+    marginHorizontal: 4,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.46,
+    shadowRadius: 5,
+    elevation: 5,
+    backgroundColor: '#fff',
+  },
+
+  profileStatLabel: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+
+  profileStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+
+  profileTable: {
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 24,
+  },
+
+  profileTableHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  profileTableHeaderText: {
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    color: '#1f2937',
+  },
+
+  profileTableRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+
+  profileTableCell: {
+    flex: 1,
+    textAlign: 'center',
+    color: '#374151',
+  },
+
+  profileButtonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+
+  profileActionButton: {
+    width: '48%',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+  },
+  // ------------------------------
+  // PROFILE SCREEN STYLES END
+  // ------------------------------
+
+
 });
 
 // Theme Styles
@@ -360,7 +519,20 @@ export const themeStyles = {
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
-},
+    profileHeader: {
+      backgroundColor: '#a8a8a8'
+    },
+    profileScrollContainer: {
+      backgroundColor: '#fff'
+    },
+    profileMainText: {
+      color: '#d93a63',
+    },
+    profileValueText: {
+      color: 'darkkhaki',
+    },
+
+  },
   dark: {
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
@@ -375,6 +547,18 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
-    splashButtonText: {color: 'black'},
+    splashButtonText: { color: 'black' },
+    profileHeader: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileScrollContainer: {
+      backgroundColor: '#2a2a2a'
+    },
+    profileMainText: {
+      color: '#fff',
+    },
+    profileValueText: {
+      color: '#fff',
+    },
   }
 }

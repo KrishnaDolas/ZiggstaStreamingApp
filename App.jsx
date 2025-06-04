@@ -16,6 +16,7 @@ import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
+import { ProfileScreen } from './src/screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -141,18 +142,21 @@ const App = () => {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
-          {!isAuthenticated  && <Stack.Screen name="Splash" component={SplashScreen} />}
+          {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
           {isAuthenticated ? (
-            <Stack.Screen name="Main">
-              {props => (
-                <MainScreen
-                  {...props}
-                  onLogout={handleLogout}
-                  address={userAddress}
-                  userData={userData}
-                />
-              )}
-            </Stack.Screen>
+            <>
+              <Stack.Screen name="Main">
+                {props => (
+                  <MainScreen
+                    {...props}
+                    onLogout={handleLogout}
+                    address={userAddress}
+                    userData={userData}
+                  />
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Profile" component={ProfileScreen} />
+            </>
           ) : (
             <Stack.Screen name="Auth">
               {props => (

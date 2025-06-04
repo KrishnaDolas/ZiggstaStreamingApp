@@ -4,9 +4,11 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native'; 
 
 const Footer = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
+  const navigation = useNavigation();
   return (
     <View style={[styles.footer, themeStyles[theme].footer]}>
       <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Home')}>
@@ -14,7 +16,7 @@ const Footer = () => {
         <Text style={[styles.footerText, themeStyles[theme].text]}>Home</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Profile')}>
+      <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('Profile')}>
         <FontAwesome name="user-o" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Profile</Text>
       </TouchableOpacity>
