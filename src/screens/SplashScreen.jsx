@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Image, Button, Text, TouchableOpacity } from 'react-native';
+import { View, Image, Text, TouchableOpacity } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import logo from "../../assets/images/logo.png";
 import LinearGradient from 'react-native-linear-gradient';

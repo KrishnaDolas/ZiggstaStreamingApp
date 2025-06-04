@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView  } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView, Image  } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -103,6 +104,19 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
         <TouchableOpacity onPress={onToggleForm}>
           <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
         </TouchableOpacity>
+        <View style={styles.Othersinginoption}>
+        <View style={styles.Loginoption}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]}>
+        <Icon name="apple" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]}>
+        <Icon name="facebook" size={24} color="#fff" />
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]}>
+        <Icon name="google" size={24} color="#fff" />
+        </TouchableOpacity>
+        </View>
+        </View>
       </View>
       </ScrollView>
       </>

@@ -40,6 +40,41 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
     float: 'left',
   },
+  Othersinginoption:{
+    flexDirection: 'row',
+    position: 'relative',
+    left: '25%',
+    width: '100%',
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  Loginoptionbtn: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4, // Android shadow
+    shadowColor: '#000', // iOS shadow
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+  },
+  Loginoption:{
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    width: '50%',
+    position: 'relative',
+  },
+  Applebtn:{
+    backgroundColor: '#000000',
+  },
+  Googlebtn:{
+    backgroundColor: '#fa1500',
+  },
+  Facebookbtn:{
+    backgroundColor: '#377aff',
+  },
   formTitle: {
     fontSize: 34,
     fontWeight: '700',
