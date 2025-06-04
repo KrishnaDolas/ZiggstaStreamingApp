@@ -115,6 +115,7 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
       <TextInput
         style={globalStyles.input}
         placeholder={question.placeholder}
+        placeholderTextColor="black"
         value={formData[question.field]}
         onChangeText={(text) => handleChange(question.field, text)}
       />
