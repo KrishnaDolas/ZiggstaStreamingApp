@@ -19,7 +19,7 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    height:'70%',
+    height:'50%',
     alignItems: 'center',
     borderRadius: 12,
     padding: 20,
