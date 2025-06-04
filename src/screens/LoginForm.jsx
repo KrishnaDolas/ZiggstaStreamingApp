@@ -8,9 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
  const navigation = useNavigation();
-export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
+export const LoginForm = ({ onLogin, onToggleForm }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
     const { theme } = useContext(ThemeContext);
   
     const handleLogin = async () => {
@@ -90,6 +91,9 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
           secureTextEntry
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        </View>
+        <View style={styles.Loginerror}>
+        {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
         </View>
         <LinearGradient
           colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}

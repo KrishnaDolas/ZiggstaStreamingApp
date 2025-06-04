@@ -40,6 +40,12 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
     float: 'left',
   },
+  Loginerror: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+  },
   Othersinginoption:{
     flexDirection: 'row',
     position: 'relative',
