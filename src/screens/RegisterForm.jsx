@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,10 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Dimensions,
   Alert,
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
-
 
 const questions = [
   { label: 'What is your Full Name?', field: 'name', placeholder: 'Enter your name' },
@@ -23,18 +21,20 @@ const questions = [
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
-
 const interestOptions = [
   'Art & Music', 'Entertainment & Gaming', 'Family & Parenting', 'Fashion & Shopping',
   'Food & Cooking', 'Health & Fitness', 'Hobbies & Activities', 'News & Politics',
   'Religion & Spiritual', 'Sports & Adventure', 'Travel & Holidays',
 ];
 
-export const RegisterForm = ({ onRegister,userAddress, onToggleForm, setError }) => {
+export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }) => {
   const [step, setStep] = useState(0);
+  const [layoutWidth, setLayoutWidth] = useState(0);
+  const scrollRef = useRef(null);
+  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    username: '',
     location: '',
     dob: '',
     gender: '',
@@ -53,13 +53,11 @@ export const RegisterForm = ({ onRegister,userAddress, onToggleForm, setError })
       } else if (prev.interests.length < 5) {
         return { ...prev, interests: [...prev.interests, interest] };
       }
-      return prev; // Don't allow more than 5
+      return prev;
     });
   };
 
-  const renderStepContent = () => {
-    const question = questions[step];
-
+  const renderStepContent = (question) => {
     if (question.field === 'gender') {
       return (
         <View style={styles.btnGenderWrapper}>
@@ -75,105 +73,199 @@ export const RegisterForm = ({ onRegister,userAddress, onToggleForm, setError })
               <Text style={{ color: 'white' }}>{gender}</Text>
             </TouchableOpacity>
           ))}
+          {errors[question.field] ? (
+          <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+        ) : null}
+
         </View>
       );
     }
 
-if (question.field === 'interests') {
-  return (
-<View style={[styles.qAWrapper]}>
-  {step === 5 ? (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'flex-start',
-          paddingBottom: 20,
-        }}
-        showsVerticalScrollIndicator={true}
-        showsHorizontalScrollIndicator={false}
-      >
-        {interestOptions.map((interest) => (
-          <TouchableOpacity
-            key={interest}
-            onPress={() => toggleInterest(interest)}
-            style={[
-              styles.btnInterest,
-              formData.interests.includes(interest) && styles.btnInterestActive,
-            ]}
-          >
-            <Text style={{ color: 'white' }}>{interest}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  ) : (
-    renderStepContent()
-  )}
-</View>
-
-
-  );
-}
-
+    if (question.field === 'interests') {
+      return (
+        <ScrollView
+          contentContainerStyle={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            paddingBottom: 20,
+          }}
+          showsVerticalScrollIndicator={true}
+        >
+          {interestOptions.map((interest) => (
+            <TouchableOpacity
+              key={interest}
+              onPress={() => toggleInterest(interest)}
+              style={[
+                styles.btnInterest,
+                formData.interests.includes(interest) && styles.btnInterestActive,
+              ]}
+            >
+              <Text style={{ color: 'white' }}>{interest}</Text>
+            </TouchableOpacity>
+          ))}
+          {errors[question.field] ? (
+          <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+        ) : null}
+        </ScrollView>
+      );
+    }
 
     return (
+      <>
       <TextInput
         style={globalStyles.input}
         placeholder={question.placeholder}
         value={formData[question.field]}
         onChangeText={(text) => handleChange(question.field, text)}
       />
+      {errors[question.field] ? (
+      <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+    ) : null}
+      </>
     );
   };
 
   const handleNext = () => {
+    if (!validateStep()) {
+    return;
+  }
     if (step < questions.length - 1) {
-      setStep(step + 1);
+      const newStep = step + 1;
+      setStep(newStep);
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
     } else {
       Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
     }
   };
 
   const handlePrevious = () => {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) {
+      const newStep = step - 1;
+      setStep(newStep);
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
+    }
   };
 
+  const onScrollEnd = (e) => {
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const index = Math.round(offsetX / layoutWidth);
+    // console.log('Scrolled to index:', index, 'offsetX:', offsetX);
+    setStep(index);
+  };
+
+  const validateStep = () => {
+  const currentQuestion = questions[step];
+  const value = formData[currentQuestion.field];
+  let error = '';
+
+  switch (currentQuestion.field) {
+    case 'name':
+      if (!value || value.trim().length < 5) {
+        error = 'Full name must be at least 5 characters';
+      }
+      break;
+    case 'username':
+      if (!value || !/^[a-zA-Z0-9_]{5,15}$/.test(value)) {
+        error = 'Username must be 5–15 characters and alphanumeric';
+      }
+      break;
+    case 'location':
+      if (!value || value.trim() === '') {
+        error = 'Location is required';
+      }
+      break;
+    case 'dob':
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        error = 'Date must be in YYYY-MM-DD format';
+      } else {
+        const dob = new Date(value);
+        const age = new Date().getFullYear() - dob.getFullYear();
+        if (age < 13) {
+          error = 'You must be at least 18 years old';
+        }
+      }
+      break;
+    case 'gender':
+      if (!value) {
+        error = 'Please select a gender';
+      }
+      break;
+    case 'interests':
+      if (!value || value.length < 1) {
+        error = 'Select at least 1 interest';
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (error) {
+    setErrors((prev) => ({ ...prev, [currentQuestion.field]: error }));
+    return false;
+  }
+
+  // Clear previous error if validation passed
+  setErrors((prev) => ({ ...prev, [currentQuestion.field]: '' }));
+  return true;
+};
+
+
   return (
-    <View style={styles.carousel}>
-      <View style={styles.slide}>
-        <View style={styles.qAWrapper}>
-          <Text style={styles.question}>{questions[step].label}</Text>
-          {renderStepContent()}
-        </View>
+    <View
+      style={{ flex: 1 }}
+      onLayout={(event) => {
+        const { width } = event.nativeEvent.layout;
+        setLayoutWidth(width);
+      }}
+    >
+      { (
+        <>
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            pagingEnabled
+            snapToInterval={layoutWidth}
+            decelerationRate="fast"
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={onScrollEnd}
+            scrollEventThrottle={16}
+            style={{ flex: 1 }}
+          >
+            {questions.map((questionItem, index) => (
+              <View key={index} style={{ width: layoutWidth }}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
+                  <Text style={styles.question}>{questionItem.label}</Text>
+                  {renderStepContent(questionItem)}
+                </View>
+              </View>
+            ))}
+          </ScrollView>
 
-        <View style={styles.buttons}>
-          {step > 0 && (
-            <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
-              <Text style={{ color: 'white' }}>Previous</Text>
+          {/* Navigation Buttons */}
+          <View style={styles.buttons}>
+            {step > 0 && (
+              <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
+                <Text style={{ color: 'white' }}>Previous</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleNext} style={styles.btnNav}>
+              <Text style={{ color: 'white' }}>
+                {step === questions.length - 1 ? 'Finish' : 'Next'}
+              </Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity onPress={handleNext} style={styles.btnNav}>
-            <Text style={{ color: 'white' }}>
-              {step === questions.length - 1 ? 'Finish' : 'Next'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+          </View>
 
-        <View style={styles.dotsContainer}>
-          {questions.map((_, idx) => (
-            <View
-              key={idx}
-              style={[styles.dot, step === idx && styles.dotActive]}
-            />
-          ))}
-        </View>
-      </View>
+          {/* Progress Dots */}
+          <View style={styles.dotsContainer}>
+            {questions.map((_, idx) => (
+              <View
+                key={idx}
+                style={[styles.dot, step === idx && styles.dotActive]}
+              />
+            ))}
+          </View>
+        </>
+      )}
     </View>
   );
-}
-
-
-
+};
