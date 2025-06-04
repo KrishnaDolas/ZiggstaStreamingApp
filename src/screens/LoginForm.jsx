@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity,Alert  } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView  } from 'react-native';
 import axios from 'axios';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -66,6 +66,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
     
     return (
       <>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
@@ -103,6 +104,7 @@ export const LoginForm = ({ onLogin, onToggleForm, setError }) => {
           <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
       </>
     );
   };
