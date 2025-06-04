@@ -5,7 +5,7 @@ import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 
-export const AuthScreen = ({ onLogin ,userAddress}) => {
+export const AuthScreen = ({ onLogin}) => {
   const [showLogin, setShowLogin] = useState(true);
   const { theme } = useContext(ThemeContext);
 
@@ -17,7 +17,7 @@ export const AuthScreen = ({ onLogin ,userAddress}) => {
       {showLogin ? (
         <LoginForm onLogin={onLogin} onToggleForm={toggleForm}/>
       ) : (
-        <RegisterForm onRegister={onLogin} userAddress={userAddress} onToggleForm={toggleForm}/>
+        <RegisterForm/>
       )}
     </View>
   );
