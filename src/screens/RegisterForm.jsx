@@ -60,6 +60,7 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
   const renderStepContent = (question) => {
     if (question.field === 'gender') {
       return (
+        <View>
         <View style={styles.btnGenderWrapper}>
           {genderOptions.map((gender) => (
             <TouchableOpacity
@@ -73,16 +74,18 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
               <Text style={{ color: 'white' }}>{gender}</Text>
             </TouchableOpacity>
           ))}
+
+        </View>
           {errors[question.field] ? (
           <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
         ) : null}
-
         </View>
       );
     }
 
     if (question.field === 'interests') {
       return (
+        <View>
         <ScrollView
           contentContainerStyle={{
             flexDirection: 'row',
@@ -103,10 +106,11 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
               <Text style={{ color: 'white' }}>{interest}</Text>
             </TouchableOpacity>
           ))}
+        </ScrollView>
           {errors[question.field] ? (
           <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
         ) : null}
-        </ScrollView>
+        </View>
       );
     }
 
@@ -115,6 +119,7 @@ export const RegisterForm = ({ onRegister, userAddress, onToggleForm, setError }
       <TextInput
         style={globalStyles.input}
         placeholder={question.placeholder}
+        placeholderTextColor="black"
         value={formData[question.field]}
         onChangeText={(text) => handleChange(question.field, text)}
       />
