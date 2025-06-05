@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
  const navigation = useNavigation();
-export const LoginForm = ({ onLogin, onToggleForm }) => {
+export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
       const [error, setError] = useState('');
@@ -110,13 +110,13 @@ export const LoginForm = ({ onLogin, onToggleForm }) => {
         </TouchableOpacity>
         <View style={styles.Othersinginoption}>
         <View style={styles.Loginoption}>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={SigninWithApple}>
         <Icon name="apple" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]} onPress={SigninWithFacebook}>
         <Icon name="facebook" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]} onPress={SigninWithGoogle}>
         <Icon name="google" size={24} color="#fff" />
         </TouchableOpacity>
         </View>
