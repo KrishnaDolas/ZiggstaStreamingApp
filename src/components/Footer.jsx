@@ -11,7 +11,7 @@ const Footer = () => {
   const navigation = useNavigation();
   return (
     <View style={[styles.footer, themeStyles[theme].footer]}>
-      <TouchableOpacity style={styles.footerItem} onPress={() => console.log('Home')}>
+      <TouchableOpacity style={styles.footerItem} onPress={() => navigation.navigate('Main')}>
         <FontAwesome name="home" size={25} color="grey" />
         <Text style={[styles.footerText, themeStyles[theme].text]}>Home</Text>
       </TouchableOpacity>
