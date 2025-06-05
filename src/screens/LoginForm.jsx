@@ -105,18 +105,15 @@ export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFace
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
         </LinearGradient>
-        <TouchableOpacity onPress={onToggleForm}>
-          <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
-        </TouchableOpacity>
         <View style={styles.Othersinginoption}>
         <View style={styles.Loginoption}>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={SigninWithApple}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={()=> SigninWithApple()}>
         <Icon name="apple" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]} onPress={SigninWithFacebook}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]} onPress={()=>SigninWithFacebook()}>
         <Icon name="facebook" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]} onPress={SigninWithGoogle}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]} onPress={()=>SigninWithGoogle()}>
         <Icon name="google" size={24} color="#fff" />
         </TouchableOpacity>
         </View>
