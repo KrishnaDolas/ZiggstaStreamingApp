@@ -70,7 +70,7 @@ export const LoginForm = ({ onLogin, onToggleForm }) => {
       <>
       <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
+        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>User Name</Text>
         <TextInput
@@ -102,7 +102,7 @@ export const LoginForm = ({ onLogin, onToggleForm }) => {
           style={styles.button}
         >
         <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
         </LinearGradient>
         <TouchableOpacity onPress={onToggleForm}>
