@@ -1,8 +1,10 @@
 import { StyleSheet, Platform } from 'react-native';
+
+const width = d
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 0,
     flexGrow: 1,
   },
   authContainer: {
@@ -19,10 +21,10 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    height:'100%',
-    alignItems: 'center',
+    height: '100%',
+    position: 'relative',
+    // alignItems: 'center',
     borderRadius: 12,
-    padding: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -35,7 +37,7 @@ export const styles = StyleSheet.create({
       },
     }),
   },
-  SingInlabel:{
+  SingInlabel: {
     fontSize: 16,
     marginBottom: 10,
     float: 'left',
@@ -46,7 +48,7 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 10,
   },
-  Othersinginoption:{
+  Othersinginoption: {
     flexDirection: 'row',
     position: 'relative',
     left: '25%',
@@ -66,19 +68,19 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 3,
   },
-  Loginoption:{
+  Loginoption: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     width: '50%',
     position: 'relative',
   },
-  Applebtn:{
+  Applebtn: {
     backgroundColor: '#000000',
   },
-  Googlebtn:{
+  Googlebtn: {
     backgroundColor: '#fa1500',
   },
-  Facebookbtn:{
+  Facebookbtn: {
     backgroundColor: '#377aff',
   },
   formTitle: {
@@ -266,8 +268,8 @@ export const styles = StyleSheet.create({
 
   //Footer Styles
   footer: {
-    position: 'fixed',
-    bottom: '0%',
+    position: "absolute",
+    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: 'white',  // white background
@@ -391,7 +393,7 @@ export const styles = StyleSheet.create({
 
 
 
- // profile style start
+  // profile style start
 
   profileHeader: {
     flexDirection: 'row',
@@ -577,6 +579,11 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    // elevation: 4, // Android shadow
+    // shadowColor: '#000', // iOS shadow
+    // shadowOpacity: 0.3,
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowRadius: 3,
   },
 
   profileModalClose: {
@@ -614,11 +621,201 @@ export const styles = StyleSheet.create({
     color: '#414141',
     paddingHorizontal: 13,
     fontSize: 15
-  }
+  },
+
+  profileSettingModalBody: {
+    marginHorizontal: 15,
+  },
+
+  profileSettingMDarkLightSetting: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 13,
+  },
+
+  pSettingMDarkLightSTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#232323'
+  },
+
+  pSettingMDarkLightSIconBoxWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  },
+
+  pSettingMDarkLightSIconBox: {
+    height: 38,
+    width: 38,
+    borderRadius: 30,
+    marginRight: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
+  profileSettingMDivider: {
+    height: 1,
+    backgroundColor: '#eee',
+    marginBottom: 2
+  },
+
+  profileSettingMMenuList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "space-between",
+    paddingVertical: 17,
+    borderColor: '#eee',
+  },
+
+  profileSettingMMenuListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  shopManagerDetailsModalMain: {
+    marginHorizontal: 15,
+  },
+  modalDarkTitle: {
+    fontSize: 18,
+    color: '#000',
+    fontWeight: '600'
+  },
 
   // profile modal 
 
 
+  // stream list header
+
+  streamListHeader: {
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+    zIndex: 10,
+    width: '100%'
+  },
+
+  streamListHeaderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  streamHeaderLeftImg: {
+    width: 140,
+    height: 40
+  },
+
+  streamHeaderRightBox: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  streamHeaderCountBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+    backgroundColor: '#37373733',
+    borderRadius: 30,
+    padding: 5
+  },
+
+  streamHeaderCountTitle: {
+    color: "#fff",
+    fontWeight: '600',
+    fontSize: 14,
+    marginLeft: 10
+  },
+
+  streamListHeaderBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // paddingHorizontal: 10,
+    // paddingVertical: 6,
+  },
+
+  strHeaderFixedIcon: {
+    paddingHorizontal: 8,
+  },
+
+  strHeaderScrollCategoryContainer: {
+    paddingHorizontal: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  strHeaderCategoryButton: {
+    backgroundColor: '#ffffff33',
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 6,
+    marginHorizontal: 5,
+  },
+
+  strHeaderCategoryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  streamListMainTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    paddingTop: 10,
+    paddingHorizontal: 10
+  },
+  streamListGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 20
+  },
+  streamListCard: {
+    width: '48%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 15,
+    backgroundColor: '#ddd',
+    position: 'relative',
+  },
+  streamListImage: {
+    width: '100%',
+    height: 190,
+  },
+  streamListEyeCountContainer: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#575757b3',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 30,
+    borderColor: "#fff",
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  streamListEyeCount: {
+    color: '#fff',
+    fontSize: 12,
+    marginEnd: 10
+  },
+  streamListOverlay: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+  },
+  streamListName: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    maxWidth: '98%'
+
+  },
+  streamListStatus: {
+    color: '#fff',
+    fontSize: 14,
+    maxWidth: '90%'
+  },
 
 });
 
@@ -629,7 +826,7 @@ export const themeStyles = {
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
     input: { borderColor: '#eaeaeb', backgroundColor: '#f7f7f7', color: 'rgb(65, 65, 65)' },
-    button: {color:'white'},
+    button: { color: 'white' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
@@ -639,8 +836,8 @@ export const themeStyles = {
     placeholder: { color: '#999' },
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
-    SingInlabel:{color:'#717580'},
-     // profile css
+    SingInlabel: { color: '#717580' },
+    // profile css
     profileHeader: {
       backgroundColor: '#fafafa'
     },
@@ -679,14 +876,20 @@ export const themeStyles = {
     },
     profileActionButtonText: {
       color: "#000"
+    },
+
+    // stream list 
+    streamListMainTitle: {
+      color: '#262628'
     }
-},
+
+  },
   dark: {
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
     text: { color: '#fff' },
     input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
-    button: {color:'black'},
+    button: { color: 'black' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
@@ -695,9 +898,9 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
-    splashButtonText: {color: 'black'},
-    SingInlabel:{color:'white'},
-     // profile css
+    splashButtonText: { color: 'black' },
+    SingInlabel: { color: 'white' },
+    // profile css
     profileHeader: {
       backgroundColor: '#2a2a2a',
       borderBottomColor: '#d9d9d9',
@@ -739,6 +942,11 @@ export const themeStyles = {
     },
     profileActionButtonText: {
       color: "#fff"
+    },
+    // stream list 
+    streamListMainTitle: {
+      color: '#fff'
     }
+
   }
 }

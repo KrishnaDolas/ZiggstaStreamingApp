@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Footer from '../components/Footer';
 import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
+import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
 
 const tableData = [
     {
@@ -110,7 +111,7 @@ export const ProfileScreen = () => {
                 </View>
                 {/* Action Buttons */}
                 <View style={styles.profileButtonGrid}>
-                    <TouchableOpacity onPress={toggleTheme} style={[styles.profileActionBtnBox]}>
+                    <TouchableOpacity style={[styles.profileActionBtnBox]}>
                         <LinearGradient
                             colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
                             start={{ x: 0.5, y: 1 }}
@@ -120,7 +121,7 @@ export const ProfileScreen = () => {
                             <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
                         </LinearGradient>
                     </TouchableOpacity>
-                    <TouchableOpacity style={[styles.profileActionBtnBox]}>
+                    <TouchableOpacity onPress={() => setVisibleModal('shop-manager')} style={[styles.profileActionBtnBox]}>
                         <LinearGradient
                             colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
                             start={{ x: 0.5, y: 1 }}
@@ -153,6 +154,9 @@ export const ProfileScreen = () => {
                 </View>
             </ScrollView>
             {/* Modals */}
+            {visibleModal === 'shop-manager' && (
+                <ShopManagerDetailsModal visible='true' onClose={() => setVisibleModal(null)} />
+            )}
             {visibleModal === 'social' && (
                 <ProfileSocialsModal visible='true' onClose={() => setVisibleModal(null)} />
             )}

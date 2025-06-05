@@ -1,10 +1,79 @@
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View,TextInput } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, TextInput, Image } from "react-native";
 import { styles, themeStyles } from "../../assets/styles/ThemeStyles";
+import { StreamListHeader } from "./StreamListHeader";
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Footer from "./Footer";
 
-const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,roomId,setRoomId,loading,error}) => {
+const streamData = [
+    {
+        id: 1,
+        name: 'Stella Malone',
+        description: 'Just Chilling Just Chilling',
+        image: require('../../assets/images/LS-1.jpg'),
+        viewerCount: '11k'
+    },
+    {
+        id: 2,
+        name: 'Mathew Hyden',
+        description: 'On Vacations',
+        image: require('../../assets/images/LS-2.jpg'),
+        viewerCount: '5.3k'
+    },
+    {
+        id: 3,
+        name: 'Kitty Hazelwood',
+        description: 'On Duty',
+        image: require('../../assets/images/LS-3.jpg'),
+        viewerCount: '2k'
+    },
+    {
+        id: 4,
+        name: 'Mitchel Santner',
+        description: "Let's engage",
+        image: require('../../assets/images/LS-4.jpg'),
+        viewerCount: '100k'
+    },
+    {
+        id: 5,
+        name: 'Tom Curren',
+        description: 'Come on Guys',
+        image: require('../../assets/images/LS-5.jpg'),
+        viewerCount: '100'
+    },
+    {
+        id: 6,
+        name: 'Sofia Jonson',
+        description: "Talk About Beauty",
+        image: require('../../assets/images/LS-6.jpg'),
+        viewerCount: '10k'
+    },
+    {
+        id: 7,
+        name: 'Stella Malone',
+        description: 'Just Chilling',
+        image: require('../../assets/images/LS-1.jpg'),
+        viewerCount: '5k'
+    },
+    {
+        id: 8,
+        name: 'Mathew Hyden',
+        description: 'On Vacations',
+        image: require('../../assets/images/LS-2.jpg'),
+        viewerCount: '1.1k'
+    },
+];
+
+const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRoom, roomId, setRoomId, loading, error }) => {
+
+    const handleCardPress = (item) => {
+        // You can navigate or do something on click
+        console.log('Clicked:', item.name);
+    };
+
+
     return (
         <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-            <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Available Rooms</Text>
+            {/* <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Available Rooms</Text>
             {lobbyLoading ? (
                 <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
             ) : lobbyError ? (
@@ -40,7 +109,9 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                         )
                     })}
                 </ScrollView>
-            )}
+            )} */}
+
+
             {/* <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Create or Join Room</Text>
             <TextInput
                 placeholder="Enter Room ID"
@@ -62,6 +133,32 @@ const StreamList = ({ theme,lobbyLoading,lobbyError,rooms,joinRoom,createRoom ,r
                 </>
             )}
             {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null} */}
+
+            {/* rohit code  */}
+
+            <StreamListHeader />
+            <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={{ paddingBottom: 100, paddingHorizontal: 10 }}
+            >
+                <View style={styles.streamListGrid}>
+                    {streamData.map((item) => (
+                        <TouchableOpacity key={item.id} style={styles.streamListCard} onPress={() => handleCardPress(item)}>
+                            <Image source={item.image} style={styles.streamListImage} />
+                            <View style={styles.streamListEyeCountContainer}>
+                                <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
+                                <Ionicons name='eye-outline' size={14} color="#fff" />
+                            </View>
+                            <View style={styles.streamListOverlay}>
+                                <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
+                                <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </ScrollView>
+            <Footer />
         </View>
     );
 }
