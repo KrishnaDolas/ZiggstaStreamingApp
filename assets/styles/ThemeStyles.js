@@ -1,6 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
 
-const width = d
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
   container: {
