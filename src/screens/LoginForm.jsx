@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
  const navigation = useNavigation();
-export const LoginForm = ({ onLogin, onToggleForm }) => {
+export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
       const [error, setError] = useState('');
@@ -70,7 +70,7 @@ export const LoginForm = ({ onLogin, onToggleForm }) => {
       <>
       <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
+        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>User Name</Text>
         <TextInput
@@ -102,21 +102,18 @@ export const LoginForm = ({ onLogin, onToggleForm }) => {
           style={styles.button}
         >
         <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign In</Text>
+          <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
         </LinearGradient>
-        <TouchableOpacity onPress={onToggleForm}>
-          <Text style={[styles.toggleText, themeStyles[theme].linkText]}>Don't have an account? Register</Text>
-        </TouchableOpacity>
         <View style={styles.Othersinginoption}>
         <View style={styles.Loginoption}>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={()=> SigninWithApple()}>
         <Icon name="apple" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Facebookbtn]} onPress={()=>SigninWithFacebook()}>
         <Icon name="facebook" size={24} color="#fff" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]}>
+        <TouchableOpacity style={[styles.Loginoptionbtn,styles.Googlebtn]} onPress={()=>SigninWithGoogle()}>
         <Icon name="google" size={24} color="#fff" />
         </TouchableOpacity>
         </View>
