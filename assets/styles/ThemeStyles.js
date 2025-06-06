@@ -132,7 +132,6 @@ export const styles = StyleSheet.create({
     marginVertical: 20,
   },
   roomInfo: {
-    marginTop: 30,
     alignItems: 'center',
   },
   roomText: {
@@ -149,16 +148,19 @@ export const styles = StyleSheet.create({
   },
   streamBox: {
     width: '100%',
-    position: 'relative',
+    // position: 'relative',
   },
   fullScreenVideo: {
+    position: 'fixed',
+    top: 0,
     width: '100%',
-    height: 600,
-    backgroundColor: '#000',
+    height: '100%',
     borderRadius: 12,
     marginBottom: 15,
   },
   controls: {
+    position: 'absolute',
+    height:'100%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
@@ -558,7 +560,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
   },
 
   profileActionButtonText: {
