@@ -444,14 +444,14 @@ export const MainScreen = ({onLogout}) => {
   
     return (
       <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{height: '100%', width: '100%'}}>
-      <ScrollView contentContainerStyle={[styles.container]}>
-        <Topbar/>
+      <View style={[styles.container]}>
+        {/* <Topbar/>
         <TouchableOpacity 
           onPress={confirmLogout} 
           style={{ position: 'relative', top: 40, right: 20 }}
         >
           <Ionicons name="log-out-outline" size={28} color="#ff3333" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {!joined ? (
         <StreamList theme={theme} lobbyLoading={lobbyLoading}lobbyError={lobbyError}rooms={rooms}joinRoom={joinRoom} createRoom={createRoom} roomId={roomId} setRoomId={setRoomId}loading={loading}error={error}/>
@@ -529,8 +529,8 @@ export const MainScreen = ({onLogout}) => {
           </View>
         )}
         {/* Footer */}
-      </ScrollView>
-        <Footer/>
+      </View>
+        {/* <Footer/> */}
       </LinearGradient>
 
     );
