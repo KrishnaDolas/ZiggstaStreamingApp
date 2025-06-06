@@ -28,12 +28,12 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
         }
         );
         if(res.data.message==='Login successful') {
+          onLogin();
           console.log(res.data.user);
           await AsyncStorage.setItem('token', res.data.token);
 
       const userDataString = JSON.stringify(res.data.user);
       await AsyncStorage.setItem('UserData', userDataString);
-          onLogin();
           Alert.alert('Success',  `LogIn Success.`, [{ text: 'OK' }]);
         }
       } catch (err) {
