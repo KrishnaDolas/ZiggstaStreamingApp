@@ -260,7 +260,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
         interests: interestIndexes.join(','),
       };
 
-      console.log('✅ Final Payload to POST:', finalData);
+      // console.log('✅ Final Payload to POST:', finalData);
 
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
@@ -271,7 +271,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
         body: JSON.stringify(finalData)
       })
       .then(res => res.json())
-      .then(data => console.log('API Response:', data))
+      // .then(data => console.log('API Response:', data))
       .catch(err => console.error('API Error:', err));
     }
   };
