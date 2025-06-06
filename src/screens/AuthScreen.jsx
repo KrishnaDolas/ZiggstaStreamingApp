@@ -51,7 +51,7 @@ export const AuthScreen = ({ onLogin}) => {
     <View style={[styles.authContainer, themeStyles[theme].container]}>
       {showLogin? 
        ( 
-       <LoginForm ShowloginForm={ShowloginForm}/>
+       <LoginForm ShowloginForm={ShowloginForm} onLogin={onLogin} />
       ) :showsingup ? (
         <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
       ) : (
