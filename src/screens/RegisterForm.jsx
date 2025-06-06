@@ -51,8 +51,8 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
 
 
 useEffect(() => {
-  console.log('userData:', userData);
-  console.log('address:', userAddress);
+  // console.log('userData:', userData);
+  // console.log('address:', userAddress);
 
   if (userData || userAddress) {
     const updatedForm = {
@@ -66,14 +66,14 @@ useEffect(() => {
       zipcode: userAddress?.postcode || ''
     };
 
-    console.log('Merged Form Data:', updatedForm);
+    // console.log('Merged Form Data:', updatedForm);
 
     setFormData(prev => ({
       ...prev,
       ...updatedForm
     }));
 
-    console.log('Form Data:', formData);
+    // console.log('Form Data:', formData);
   }
 }, [userData, userAddress]);
 
