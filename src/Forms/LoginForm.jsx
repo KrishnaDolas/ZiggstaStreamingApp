@@ -1,19 +1,15 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
-import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
- const navigation = useNavigation();
-export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
+export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle, theme}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const { theme } = useContext(ThemeContext);
   
     const handleLogin = async () => {
       try {
@@ -38,7 +34,6 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
       const userDataString = JSON.stringify(res.data.user);
       await AsyncStorage.setItem('UserData', userDataString);
           onLogin();
-          navigation.navigate('Auth')
           Alert.alert('Success',  `LogIn Success.`, [{ text: 'OK' }]);
         }
       } catch (err) {
@@ -123,7 +118,7 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
           Don't have an account? Sign Up
         </Text>
         </TouchableOpacity>
-        <View style={styles.Othersinginoption}>
+        <View style={[styles.Othersinginoption,{marginBottom:80}]}>
         <View style={styles.Loginoption}>
         <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={()=> SigninWithApple()}>
         <Icon name="apple" size={24} color="#fff" />

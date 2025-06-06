@@ -1,20 +1,14 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView, Image  } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity ,ScrollView  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios';
-import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
- const navigation = useNavigation();
-export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
+export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle,theme }) => {
     const [username, setUsername] = useState(userData.username || '');
     const [password, setPassword] = useState(userData.password || '');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
       const [error, setError] = useState('');
-    const { theme } = useContext(ThemeContext);
   
     const handleSignUp = async () => {
       try {
