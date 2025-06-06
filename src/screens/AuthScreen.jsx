@@ -6,7 +6,7 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Signup } from '../Forms/Signup';
 import { LoginForm } from '../Forms/LoginForm';
 
-export const AuthScreen = ({ onLogin}) => {
+export const AuthScreen = ({ onLogin, userAddress}) => {
   const [showsingup, setshowsingup] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
@@ -55,7 +55,7 @@ export const AuthScreen = ({ onLogin}) => {
       ) :showsingup ? (
         <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} theme={theme} />
       ) : (
-        <RegisterForm userData={userData} theme={theme} />
+        <RegisterForm userData={userData} theme={theme} userAddress={userAddress}/>
       )}
     </View>
   );
