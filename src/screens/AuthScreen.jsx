@@ -4,7 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Signup } from '../Forms/Signup';
-import { LoginForm } from './LoginForm';
+import { LoginForm } from '../Forms/LoginForm';
 
 export const AuthScreen = ({ onLogin}) => {
   const [showsingup, setshowsingup] = useState(true);
@@ -51,11 +51,11 @@ export const AuthScreen = ({ onLogin}) => {
     <View style={[styles.authContainer, themeStyles[theme].container]}>
       {showLogin? 
        ( 
-       <LoginForm ShowloginForm={ShowloginForm}/>
+       <LoginForm ShowloginForm={ShowloginForm} onLogin={onLogin} theme={theme} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
       ) :showsingup ? (
-        <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
+        <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} theme={theme} />
       ) : (
-        <RegisterForm userData={userData}/>
+        <RegisterForm userData={userData} theme={theme} />
       )}
     </View>
   );
