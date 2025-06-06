@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { View, FlatList, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
@@ -39,10 +39,8 @@ const tableData = [
     },
 ]
 
-
 export const ProfileScreen = () => {
-    const ROWS_TO_DISPLAY = 5;
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
 
     return (
@@ -74,7 +72,7 @@ export const ProfileScreen = () => {
 
             </View>
             {/* Scrollable Content */}
-            <ScrollView style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
+            <ScrollView showsVerticalScrollIndicator={false} style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
                 {/* Stat Cards */}
                 <View style={styles.profileStatCards}>
                     <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
@@ -94,20 +92,17 @@ export const ProfileScreen = () => {
                         <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
                         <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
                     </View>
-                    <FlatList
-                        data={tableData}
-                        initialNumToRender={ROWS_TO_DISPLAY}
-                        keyExtractor={(item, index) => index.toString()}
-                        contentContainerStyle={{ paddingBottom: 8 }}
-                        style={{ maxHeight: 205 }} // Scrollable table height
-                        renderItem={({ item, index }) => (
-                            <View style={styles.profileTableRow}>
-                                <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.userName}</Text>
-                                <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.amount}</Text>
-                            </View>
-                        )}
-                    />
+                    <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ maxHeight: 205 }}>
+                        {tableData.map((item, index) => {
+                            return (
+                                <View key={index} style={styles.profileTableRow}>
+                                    <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
+                                    <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.userName}</Text>
+                                    <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.amount}</Text>
+                                </View>
+                            )
+                        })}
+                    </ScrollView>
                 </View>
                 {/* Action Buttons */}
                 <View style={styles.profileButtonGrid}>

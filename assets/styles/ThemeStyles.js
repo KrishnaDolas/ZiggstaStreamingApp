@@ -1,4 +1,6 @@
 import { StyleSheet, Platform } from 'react-native';
+import { Dimensions } from 'react-native';
+const screenWidth = Dimensions.get('window').width;
 
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
@@ -689,9 +691,11 @@ export const styles = StyleSheet.create({
 
   streamListHeader: {
     paddingHorizontal: 5,
-    paddingVertical: 10,
+    paddingTop: 5,
+    paddingBottom: 15,
     zIndex: 10,
-    width: '100%'
+    width: '100%',
+    backgroundColor: 'transparent'
   },
 
   streamListHeaderTop: {
@@ -759,14 +763,22 @@ export const styles = StyleSheet.create({
   streamListMainTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    paddingTop: 10,
+    paddingVertical: 10,
     paddingHorizontal: 10
   },
+
+  streamListScrollContainer: {
+    paddingTop: 10,
+    paddingBottom: 80,
+    paddingHorizontal: 10,
+  },
+
   streamListGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 20
+    // marginTop: 10,
+    // marginBottom: 80
   },
   streamListCard: {
     width: '48%',
@@ -815,7 +827,109 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     maxWidth: '90%'
   },
+  streamListFiltersBtnGroup: {
+    position: 'absolute',
+    bottom: '9%',
+    left: '50%',
+    transform: [{ translateX: -0.475 * screenWidth }],
+    flexDirection: "row",
+    width: '95%',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 10
+  },
+  streamListFiltersWhiteBtn: {
+    backgroundColor: '#fff',
+    width: 60,
+    height: 60,
+    borderRadius: 100,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
 
+    // Android shadow
+    elevation: 5,
+  },
+
+  streamListFiltersColorBtn: {
+    backgroundColor: '#be0069',
+    borderRadius: 30,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  streamListFiltersColorBtnText: {
+    color: '#fff',
+    fontSize: 15
+  },
+
+  strHedSearchModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.09)',
+    justifyContent: 'start',
+    alignItems: 'center',
+  },
+  strHedSearchModalCard: {
+    width: '90%',
+    top: '20%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    // flexDirection: 'row',
+    // alignItems: 'center',
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 10
+  },
+  strHedSearchModalCloseBtn: {
+    backgroundColor: '#cc0461',
+    borderRadius: 20,
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  strHedSearchModalForm: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 40
+  },
+  strHedSearchModalInput: {
+    flex: 1,
+    backgroundColor: '#f7f7f7',
+    height: 50,
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    borderColor: '#eaeaeb',
+    borderWidth: 1,
+    color: '#414141',
+    fontWeight: '300',
+    fontSize: 15
+  },
+  strHedSearchModalSearchBtn: {
+    height: 50,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8
+  }
 });
 
 // Theme Styles
@@ -879,8 +993,12 @@ export const themeStyles = {
 
     // stream list 
     streamListMainTitle: {
-      color: '#262628'
-    }
+      color: '#262628',
+      backgroundColor: "#fff"
+    },
+    streamListScrollContainer: {
+      backgroundColor: "#fff"
+    },
 
   },
   dark: {
@@ -944,8 +1062,11 @@ export const themeStyles = {
     },
     // stream list 
     streamListMainTitle: {
-      color: '#fff'
-    }
-
+      color: '#fff',
+      backgroundColor: '#2a2a2a'
+    },
+    streamListScrollContainer: {
+      backgroundColor: '#2a2a2a'
+    },
   }
 }
