@@ -47,8 +47,8 @@ export const StreamListHeader = () => {
                     resizeMode="contain"
                 />
                 <View style={styles.streamHeaderRightBox}>
-                    <TouchableOpacity style={{ marginRight: 12 }} onPress={toggleFullscreen}>
-                        <SimpleLineIcons name='size-fullscreen' size={14} color="#fff" />
+                    <TouchableOpacity style={{ marginRight: 16 }} onPress={toggleFullscreen}>
+                        <SimpleLineIcons name='size-fullscreen' size={18} color="#fff" />
                     </TouchableOpacity>
                     <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='aperture' solid size={16} color="#fff" />

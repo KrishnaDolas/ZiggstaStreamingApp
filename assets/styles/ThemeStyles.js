@@ -942,7 +942,61 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8
+  },
+
+
+  // center modal  start
+
+  centerModalOverlay: {
+    flex: 1,
+    backgroundColor: '#00000033',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerModalCard: {
+    width: '97%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    position: 'relative',
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 5,
+    // elevation: 10
+  },
+
+  modalCloseBtn: {
+    zIndex: 10,
+  },
+  modalSmallTitle: {
+    fontSize: 18,
+    color: "#000",
+    marginBottom: 20
+  },
+
+  modalButtonGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10
+  },
+
+  modalCommonButton: {
+    width: "48.5%",
+    paddingVertical: 13,
+    borderRadius: 6,
+    backgroundColor: '#be0069',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
+  modalCommonButtonText: {
+    color: '#fff',
+    fontSize: 15
   }
+
+  // center modal end
 });
 
 // Theme Styles
