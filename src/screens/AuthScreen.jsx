@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, Alert } from 'react-native';
+import { View, Alert } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { RegisterForm } from '../Forms/RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -7,7 +7,7 @@ import { Signup } from '../Forms/Signup';
 import { LoginForm } from '../Forms/LoginForm';
 
 export const AuthScreen = ({ onLogin, userAddress}) => {
-  const [showsingup, setshowsingup] = useState(false);
+  const [showsingup, setshowsingup] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
   const [userData, setUserData] = useState({username: '', password: ''});
@@ -16,7 +16,6 @@ export const AuthScreen = ({ onLogin, userAddress}) => {
   const ShowloginForm=()=>{
     setShowLogin(!showLogin);
   }
-//x-api-key: 6cca5d4e-719b-4c28-aabd-4aeb2618ee1d
   const SigninWithApple=()=>{
     Alert.alert(
       "Coming Soon",
