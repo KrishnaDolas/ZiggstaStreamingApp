@@ -1,13 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
-import { RegisterForm } from './RegisterForm';
+import { RegisterForm } from '../Forms/RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Signup } from '../Forms/Signup';
 import { LoginForm } from '../Forms/LoginForm';
 
 export const AuthScreen = ({ onLogin, userAddress}) => {
-  const [showsingup, setshowsingup] = useState(true);
+  const [showsingup, setshowsingup] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
   const [userData, setUserData] = useState({username: '', password: ''});
