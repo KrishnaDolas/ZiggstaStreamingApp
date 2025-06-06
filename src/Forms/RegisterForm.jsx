@@ -247,16 +247,16 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
       );
       // Build final payload object
       const finalData = {
-        username: formData?.username || 'JohnMan5',
-        password: userData?.password || 'testpass',
-        email: formData.email || 'JohnMan5@example.com',
-        screenName: formData.screenname || 'JohnMan5',
+        username: formData?.username,
+        password: userData?.password,
+        email: formData.email,
+        screenName: formData.screenname,
         dob: formData.dob, // Convert from YYYY-MM-DD to DD-MM-YYYY
         gender: formData.gender,
-        city: formData.city || formData.location || '',
-        state: formData.state || '',
-        country: formData.country || '',
-        zipcode: formData.zipcode || '',
+        city: formData.city || formData.location,
+        state: formData.state,
+        country: formData.country,
+        zipcode: formData.zipcode,
         interests: interestIndexes.join(','),
       };
 
