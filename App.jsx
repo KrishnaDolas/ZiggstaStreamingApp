@@ -6,6 +6,7 @@ import {
   View,
   Text,
   StyleSheet,
+  AppState 
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -17,6 +18,7 @@ import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 const Stack = createNativeStackNavigator();
 
@@ -138,7 +140,22 @@ const App = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+  const subscription = AppState.addEventListener('change', nextAppState => {
+    if (nextAppState === 'background') {
+      // console.log('App is in background');
+      // You can pause stream, release resources, etc.
+    }
+    if (nextAppState === 'active') {
+      // console.log('App is in foreground');
+    }
+  });
+
+  return () => subscription.remove();
+}, []);
+
   return (
+    <ErrorBoundary>
     <ThemeProvider >
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -172,6 +189,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 
