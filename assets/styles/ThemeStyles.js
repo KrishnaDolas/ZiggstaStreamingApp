@@ -103,7 +103,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 20,
     marginVertical: 10,
-    width: screenWidth * 0.9,
+    width: '95%',
     marginHorizontal: 20,
     alignItems: 'center',
   },
