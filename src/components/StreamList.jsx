@@ -71,7 +71,23 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
     const handleCardPress = (item) => {
         // You can navigate or do something on click
         console.log('Clicked:', item.name);
+
     };
+    const renderItem = (item) => {
+        return (
+            <TouchableOpacity style={styles.streamListCard} onPress={()=>joinRoom()}>
+                <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
+                <View style={styles.streamListEyeCountContainer}>
+                    <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
+                    <Ionicons name='eye-outline' size={14} color="#fff" />
+                </View>
+                <View style={styles.streamListOverlay}>
+                    <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
+                </View>
+            </TouchableOpacity>
+        )
+    }
 
     return (
         <LinearGradient style={{ height: '100%', width: '100%', position: "relative" }} colors={['#a000df', '#fc4692']} start={{ x: 0.5, y: 0 }}
@@ -151,19 +167,7 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                     // windowSize={5}
                     numColumns={2} // Adjust based on your grid layout
                     columnWrapperStyle={styles.streamListGrid}
-                    renderItem={({ item }) => (
-                        <TouchableOpacity style={styles.streamListCard} onPress={() => handleCardPress(item)}>
-                            <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
-                            <View style={styles.streamListEyeCountContainer}>
-                                <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
-                                <Ionicons name='eye-outline' size={14} color="#fff" />
-                            </View>
-                            <View style={styles.streamListOverlay}>
-                                <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
-                                <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
-                            </View>
-                        </TouchableOpacity>
-                    )}
+                    renderItem={(item)=>renderItem(item.item)}
                 />
             </View>
 
@@ -171,7 +175,7 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
                     <FontAwesome6 name='wrench' size={24} color="#262628" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.streamListFiltersColorBtn]}>
+                <TouchableOpacity style={[styles.streamListFiltersColorBtn]} onPress={()=>createRoom()}>
                     <Text style={[styles.streamListFiltersColorBtnText]}>Start Stream</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>

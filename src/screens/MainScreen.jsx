@@ -1,5 +1,5 @@
-import {View,Text,TextInput,ActivityIndicator,
-TouchableOpacity,ScrollView,Alert,Platform} from 'react-native';
+import {View,Text,
+TouchableOpacity,Alert,Platform} from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -7,11 +7,8 @@ import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
-import Topbar from '../components/Topbar';
 import StreamList from '../components/StreamList';
-import Footer from '../components/Footer';
 import axios from 'axios';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
@@ -32,7 +29,7 @@ export const MainScreen = ({onLogout}) => {
     const [rooms, setRooms] = useState([]);
     const [lobbyLoading, setLobbyLoading] = useState(false);
     const [lobbyError, setLobbyError] = useState('');
-    const { theme, toggleTheme } = useContext(ThemeContext);
+    const { theme } = useContext(ThemeContext);
   
     const peerConnectionRef = useRef(null);
     const localStreamRef = useRef(null);
@@ -329,16 +326,16 @@ export const MainScreen = ({onLogout}) => {
     }, []);
   
     const createRoom = () => {
-      if (!roomId.trim()) {
-        setError('Please enter a room ID.');
-        return;
-      }
+      //generate 7 digit random room ID
+      // const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const roomId = '34567'; // For testing, use a fixed room ID
       setLoading(true);
+      console.log(roomId);
       socket.emit('create-room', roomId);
     };
   
     const joinRoom = (id) => {
-      const targetRoomId = id || roomId;
+      const targetRoomId = '34567'
       if (!targetRoomId.trim()) {
         setError('Please enter a room ID.');
         return;
