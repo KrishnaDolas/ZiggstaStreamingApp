@@ -30,7 +30,7 @@ const interestOptions = [
   'Religion & Spiritual', 'Sports & Adventure', 'Travel & Holidays',
 ];
 
-export const RegisterForm = ({userData, userAddress}) => {
+export const RegisterForm = ({userData, theme, userAddress}) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
