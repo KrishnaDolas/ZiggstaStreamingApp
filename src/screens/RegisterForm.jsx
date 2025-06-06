@@ -7,13 +7,16 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  Platform,
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native-vector-icons is installed
 
 const questions = [
-  { label: 'What is your Full Name?', field: 'name', placeholder: 'Enter your name' },
-  { label: 'What is your Username?', field: 'username', placeholder: 'Enter your username' },
+  { label: 'What is your Screen name?', field: 'screenname', placeholder: 'Enter your screen name' },
+  { label: 'What is your Email?', field: 'email', placeholder: 'Enter your email' },
   { label: 'What is your Location?', field: 'location', placeholder: 'Enter your location' },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
@@ -32,9 +35,10 @@ export const RegisterForm = () => {
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
   const [errors, setErrors] = useState({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
+    screenname: '',
+    email: '',
     location: '',
     dob: '',
     gender: '',
@@ -114,6 +118,45 @@ export const RegisterForm = () => {
       );
     }
 
+    if (question.field === 'dob') {
+  return (
+    <View>
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        style={[globalStyles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+      >
+        <Text style={{ color: formData.dob ? 'black' : '#999' }}>
+          {formData.dob || 'YYYY-MM-DD'}
+        </Text>
+        <Icon name="calendar-outline" size={20} color="#555" />
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={formData.dob ? new Date(formData.dob) : new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          maximumDate={new Date()}
+          accentColor="#d93a63"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (selectedDate) {
+              const year = selectedDate.getFullYear();
+              const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const day = String(selectedDate.getDate()).padStart(2, '0');
+              handleChange('dob', `${year}-${month}-${day}`);
+            }
+          }}
+        />
+      )}
+      {errors[question.field] ? (
+        <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+
     return (
       <>
       <TextInput
@@ -164,14 +207,14 @@ export const RegisterForm = () => {
   let error = '';
 
   switch (currentQuestion.field) {
-    case 'name':
+    case 'screenname':
       if (!value || value.trim().length < 5) {
-        error = 'Full name must be at least 5 characters';
+        error = 'Screen name must be at least 5 characters';
       }
       break;
-    case 'username':
-      if (!value || !/^[a-zA-Z0-9_]{5,15}$/.test(value)) {
-        error = 'Username must be 5–15 characters and alphanumeric';
+    case 'email':
+      if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        error = 'Please enter a valid email address';
       }
       break;
     case 'location':

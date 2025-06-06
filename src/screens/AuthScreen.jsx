@@ -6,7 +6,7 @@ import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 
 export const AuthScreen = ({ onLogin}) => {
-  const [showLogin, setShowLogin] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
 
   const toggleForm = () => setShowLogin(!showLogin);
