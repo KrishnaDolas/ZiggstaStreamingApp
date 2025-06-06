@@ -68,14 +68,10 @@ const streamData = [
 
 const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRoom, roomId, setRoomId, loading, error }) => {
     const screenHeight = Dimensions.get('window').height;
-    const handleCardPress = (item) => {
-        // You can navigate or do something on click
-        console.log('Clicked:', item.name);
 
-    };
     const renderItem = (item) => {
         return (
-            <TouchableOpacity style={styles.streamListCard} onPress={()=>joinRoom()}>
+            <TouchableOpacity style={styles.streamListCard} onPress={()=>joinRoom(item.id)}>
                 <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
                 <View style={styles.streamListEyeCountContainer}>
                     <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
