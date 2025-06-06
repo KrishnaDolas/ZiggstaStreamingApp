@@ -17,6 +17,7 @@ import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 
 const Stack = createNativeStackNavigator();
 
@@ -139,6 +140,7 @@ const App = () => {
   }, []);
 
   return (
+    <ErrorBoundary>
     <ThemeProvider >
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -172,6 +174,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 };
 
