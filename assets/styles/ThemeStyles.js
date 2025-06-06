@@ -24,7 +24,6 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'relative',
-    // alignItems: 'center',
     borderRadius: 12,
     ...Platform.select({
       ios: {
@@ -54,8 +53,8 @@ export const styles = StyleSheet.create({
     position: 'relative',
     left: '25%',
     width: '100%',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 80,
+    marginBottom: 50,
   },
   Loginoptionbtn: {
     width: 50,
@@ -85,15 +84,17 @@ export const styles = StyleSheet.create({
     backgroundColor: '#377aff',
   },
   formTitle: {
+    textAlign:'center',
     fontSize: 34,
     fontWeight: '700',
     marginBottom: 20,
+    marginTop: 20,
   },
   input: {
     borderWidth: 1,
     borderRadius: 20,
     padding: 12,
-    width: '100%',
+    width: '98%',
     marginVertical: 10,
     fontSize: 16,
   },
@@ -102,7 +103,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 20,
     marginVertical: 10,
-    width: '100%',
+    width: '95%',
+    marginHorizontal:20,
     alignItems: 'center',
   },
   themeButton: {

@@ -1,18 +1,15 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView, Image  } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
-import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
- const navigation = useNavigation();
-export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
+export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle, theme}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-      const [error, setError] = useState('');
-    const { theme } = useContext(ThemeContext);
+    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
   
     const handleLogin = async () => {
       try {
@@ -31,13 +28,12 @@ export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFace
         }
         );
         if(res.data.message==='Login successful') {
+          onLogin();
           console.log(res.data.user);
           await AsyncStorage.setItem('token', res.data.token);
 
       const userDataString = JSON.stringify(res.data.user);
       await AsyncStorage.setItem('UserData', userDataString);
-          onLogin();
-          navigation.navigate('Auth')
           Alert.alert('Success',  `LogIn Success.`, [{ text: 'OK' }]);
         }
       } catch (err) {
@@ -65,12 +61,15 @@ export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFace
     
       fetchStoredCredentials();
     }, []); // No need to depend on email or password if just reading on mount
-    
+
+    const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+  };
     return (
       <>
-      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'20%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
-        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
+        <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>User Name</Text>
         <TextInput
@@ -84,13 +83,22 @@ export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFace
         </View>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Password</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInput
           value={password}
           onChangeText={setPassword}
           style={[styles.input, themeStyles[theme].input]}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10,position: 'absolute', right: 15, top: 10}}>
+        <Icon
+          name={showPassword ? 'eye' : 'eye-slash'}
+          size={20}
+          color={theme === 'light' ? 'black' : 'white'}
+        />
+        </TouchableOpacity>
+        </View>
         </View>
         <View style={styles.Loginerror}>
         {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
@@ -102,10 +110,15 @@ export const LoginForm = ({ onLogin, onToggleForm,SigninWithApple,SigninWithFace
           style={styles.button}
         >
         <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+          <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
         </LinearGradient>
-        <View style={styles.Othersinginoption}>
+        <TouchableOpacity onPress={()=>ShowloginForm()} style={{ alignItems: 'center', marginTop: 20 }}>
+        <Text style={{ color: 'blue', textDecorationLine: 'underline',fontSize:16 }}>
+          Don't have an account? Sign Up
+        </Text>
+        </TouchableOpacity>
+        <View style={[styles.Othersinginoption,{marginBottom:80}]}>
         <View style={styles.Loginoption}>
         <TouchableOpacity style={[styles.Loginoptionbtn,styles.Applebtn]} onPress={()=> SigninWithApple()}>
         <Icon name="apple" size={24} color="#fff" />
