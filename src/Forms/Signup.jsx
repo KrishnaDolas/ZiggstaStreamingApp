@@ -11,6 +11,8 @@ import LinearGradient from 'react-native-linear-gradient';
 export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
     const [username, setUsername] = useState(userData.username || '');
     const [password, setPassword] = useState(userData.password || '');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
       const [error, setError] = useState('');
     const { theme } = useContext(ThemeContext);
   
@@ -28,8 +30,11 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
         }else if (password.length < 6 ) {
             setError('Password cannot contain spaces');
             return;
+        }else if(password!==confirmPassword){
+            setError('Password Does not match');
+            return;
         }
-        setUserData({username: username, password: password});
+        setUserData({username: username, password: confirmPassword});
         onToggleForm();
         console.log(`Username: ${username}, Password: ${password}`);
         
@@ -39,9 +44,13 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
       }
     };
     
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
       <>
-      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'20%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
@@ -61,9 +70,28 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
           value={password}
           onChangeText={setPassword}
           style={[styles.input, themeStyles[theme].input]}
-          secureTextEntry
+          secureTextEntry={!showPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        </View>
+        <View style={[{ width:'100%',padding:'7' }]}>
+        <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Confirm Password</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TextInput
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          style={[styles.input, themeStyles[theme].input,{flex:1}]}
+          secureTextEntry={!showPassword}
+          placeholderTextColor={themeStyles[theme].placeholder.color}
+        />
+        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10 }}>
+        <Icon
+          name={showPassword ? 'eye' : 'eye-slash'}
+          size={20}
+          color={theme === 'light' ? 'black' : 'white'}
+        />
+        </TouchableOpacity>
+        </View>
         </View>
         <View style={styles.Loginerror}>
         {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
