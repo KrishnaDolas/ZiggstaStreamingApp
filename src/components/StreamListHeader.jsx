@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     Text,
@@ -9,13 +9,13 @@ import {
     TextInput,
     Modal
 } from 'react-native';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
+import ImmersiveMode from 'react-native-immersive';
 import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import Orientation from 'react-native-orientation-locker';
 const categoryData = ['Art & Music', 'Food & Drink', 'Health & Fitness', 'News & Politics']
 
 export const StreamListHeader = () => {
@@ -26,16 +26,15 @@ export const StreamListHeader = () => {
 
     const toggleFullscreen = () => {
         if (isFullScreen) {
-            // Orientation.lockToPortrait();
             StatusBar.setHidden(false, 'fade');
+            ImmersiveMode.off(); // Exit immersive mode
         } else {
-            // Orientation.lockToLandscape();
             StatusBar.setHidden(true, 'fade');
+            ImmersiveMode.on(); // Enter immersive mode (hides bottom nav too)
         }
 
         setIsFullScreen(!isFullScreen);
     };
-
 
 
     return (
