@@ -54,7 +54,7 @@ export const AuthScreen = ({ onLogin, userAddress}) => {
       ) :showsingup ? (
         <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} theme={theme} />
       ) : (
-        <RegisterForm userData={userData} theme={theme} userAddress={userAddress}/>
+        <RegisterForm userData={userData} theme={theme} userAddress={userAddress} onLogin={onLogin}/>
       )}
     </View>
   );
