@@ -247,7 +247,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
       );
       // Build final payload object
       const finalData = {
-        username: formData?.username,
+        username: userData?.username,
         password: userData?.password,
         email: formData.email,
         screenName: formData.screenname,
