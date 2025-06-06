@@ -17,6 +17,7 @@ import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
+import { LoginForm } from './src/screens/LoginForm';
 
 const Stack = createNativeStackNavigator();
 

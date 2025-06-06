@@ -52,8 +52,8 @@ export const styles = StyleSheet.create({
     position: 'relative',
     left: '25%',
     width: '100%',
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 80,
+    marginBottom: 50,
   },
   Loginoptionbtn: {
     width: 50,
@@ -83,9 +83,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#377aff',
   },
   formTitle: {
+    textAlign:'center',
     fontSize: 34,
     fontWeight: '700',
     marginBottom: 20,
+    marginTop: 20,
   },
   input: {
     borderWidth: 1,
