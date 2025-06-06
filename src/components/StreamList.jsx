@@ -139,33 +139,33 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
             {/* rohit code  */}
 
             <StreamListHeader />
-            <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
-            <FlatList
-                data={streamData}
-                keyExtractor={(item) => item.id.toString()}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={[
-                    styles.streamListScrollContainer,
-                    themeStyles[theme].streamListScrollContainer
-                ]}
-                initialNumToRender={8}
-                // windowSize={5}
-                numColumns={2} // Adjust based on your grid layout
-                columnWrapperStyle={styles.streamListGrid}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.streamListCard} onPress={() => handleCardPress(item)}>
-                        <Image source={item.image} style={styles.streamListImage} />
-                        <View style={styles.streamListEyeCountContainer}>
-                            <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
-                            <Ionicons name='eye-outline' size={14} color="#fff" />
-                        </View>
-                        <View style={styles.streamListOverlay}>
-                            <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
-                            <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
-            />
+            <View style={[styles.streamListMainCardLayout, themeStyles[theme].streamListMainCardLayout]}>
+                <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
+                <FlatList
+                    data={streamData}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.streamListScrollContainer}
+                    initialNumToRender={8}
+                    // windowSize={5}
+                    numColumns={2} // Adjust based on your grid layout
+                    columnWrapperStyle={styles.streamListGrid}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity style={styles.streamListCard} onPress={() => handleCardPress(item)}>
+                            <Image source={item.image} style={styles.streamListImage} />
+                            <View style={styles.streamListEyeCountContainer}>
+                                <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
+                                <Ionicons name='eye-outline' size={14} color="#fff" />
+                            </View>
+                            <View style={styles.streamListOverlay}>
+                                <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
+                                <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                />
+            </View>
+
             <View style={[styles.streamListFiltersBtnGroup]}>
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
                     <FontAwesome6 name='wrench' size={24} color="#262628" />

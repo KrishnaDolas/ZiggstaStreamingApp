@@ -84,7 +84,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#377aff',
   },
   formTitle: {
-    textAlign:'center',
+    textAlign: 'center',
     fontSize: 34,
     fontWeight: '700',
     marginBottom: 20,
@@ -104,7 +104,7 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
     marginVertical: 10,
     width: '95%',
-    marginHorizontal:20,
+    marginHorizontal: 20,
     alignItems: 'center',
   },
   themeButton: {
@@ -762,6 +762,15 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
+  streamListMainCardLayout: {
+    flex: 1,
+    paddingBottom: 10
+  },
+
+  streamListMainTitle: {
+    flex: 1,
+    paddingBottom: 140
+  },
   streamListMainTitle: {
     fontSize: 16,
     fontWeight: 'bold',
@@ -773,6 +782,8 @@ export const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 80,
     paddingHorizontal: 10,
+    borderTopColor: "#1e1e1e",
+    borderTopWidth: .6
   },
 
   streamListGrid: {
@@ -994,11 +1005,12 @@ export const themeStyles = {
     },
 
     // stream list 
+
     streamListMainTitle: {
       color: '#262628',
-      backgroundColor: "#fff"
+      // backgroundColor: "#fff"
     },
-    streamListScrollContainer: {
+    streamListMainCardLayout: {
       backgroundColor: "#fff"
     },
 
@@ -1063,11 +1075,13 @@ export const themeStyles = {
       color: "#fff"
     },
     // stream list 
+
+
     streamListMainTitle: {
       color: '#fff',
-      backgroundColor: '#2a2a2a'
+      // backgroundColor: '#2a2a2a'
     },
-    streamListScrollContainer: {
+    streamListMainCardLayout: {
       backgroundColor: '#2a2a2a'
     },
   }
