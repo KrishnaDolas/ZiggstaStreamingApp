@@ -14,6 +14,11 @@ const ShopManagerDetailsModal = ({ visible, onClose }) => {
         <Modal
             isVisible={visible}
             onBackdropPress={onClose}
+            animationIn="fadeInUp"
+            animationOut="fadeOutDown"
+            animationInTiming={500}
+            animationOutTiming={300}
+            backdropOpacity={0.4}
             style={[styles.profileModalMain]}
         // backdropOpacity={0}
         >

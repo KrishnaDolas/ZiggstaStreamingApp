@@ -1,8 +1,10 @@
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, TextInput, Image } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, TextInput, Image, FlatList } from "react-native";
 import { styles, themeStyles } from "../../assets/styles/ThemeStyles";
 import { StreamListHeader } from "./StreamListHeader";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from "./Footer";
+import LinearGradient from "react-native-linear-gradient";
 
 const streamData = [
     {
@@ -70,9 +72,9 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
         console.log('Clicked:', item.name);
     };
 
-
     return (
-        <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
+        <LinearGradient style={{ height: '100%', width: '100%', position: "relative" }} colors={['#a000df', '#fc4692']} start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }} >
             {/* <Text style={[styles.lobbyTitle, themeStyles[theme].text]}>Available Rooms</Text>
             {lobbyLoading ? (
                 <ActivityIndicator size="large" color={themeStyles[theme].primary} style={styles.loader} />
@@ -137,14 +139,19 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
             {/* rohit code  */}
 
             <StreamListHeader />
-            <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                style={{ paddingBottom: 100, paddingHorizontal: 10 }}
-            >
-                <View style={styles.streamListGrid}>
-                    {streamData.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.streamListCard} onPress={() => handleCardPress(item)}>
+            <View style={[styles.streamListMainCardLayout, themeStyles[theme].streamListMainCardLayout]}>
+                <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
+                <FlatList
+                    data={streamData}
+                    keyExtractor={(item) => item.id.toString()}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.streamListScrollContainer}
+                    initialNumToRender={8}
+                    // windowSize={5}
+                    numColumns={2} // Adjust based on your grid layout
+                    columnWrapperStyle={styles.streamListGrid}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity style={styles.streamListCard} onPress={() => handleCardPress(item)}>
                             <Image source={item.image} style={styles.streamListImage} />
                             <View style={styles.streamListEyeCountContainer}>
                                 <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
@@ -155,11 +162,24 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                                 <Text style={styles.streamListStatus} numberOfLines={1}>{item.description}</Text>
                             </View>
                         </TouchableOpacity>
-                    ))}
-                </View>
-            </ScrollView>
+                    )}
+                />
+            </View>
+
+            <View style={[styles.streamListFiltersBtnGroup]}>
+                <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
+                    <FontAwesome6 name='wrench' size={24} color="#262628" />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.streamListFiltersColorBtn]}>
+                    <Text style={[styles.streamListFiltersColorBtnText]}>Start Stream</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
+                    <FontAwesome6 name='filter' size={24} color="#262628" />
+                </TouchableOpacity>
+            </View>
             <Footer />
-        </View>
+        </LinearGradient>
+
     );
 }
 export default StreamList;
