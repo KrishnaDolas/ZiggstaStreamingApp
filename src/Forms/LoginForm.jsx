@@ -87,11 +87,11 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
         <TextInput
           value={password}
           onChangeText={setPassword}
-          style={[styles.input, themeStyles[theme].input,{flex:1}]}
+          style={[styles.input, themeStyles[theme].input]}
           secureTextEntry={!showPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
-        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10 }}>
+        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10,position: 'absolute', right: 15, top: 10}}>
         <Icon
           name={showPassword ? 'eye' : 'eye-slash'}
           size={20}
