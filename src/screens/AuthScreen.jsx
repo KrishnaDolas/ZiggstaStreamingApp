@@ -1,15 +1,21 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
-import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { Signup } from '../Forms/Signup';
+import { LoginForm } from './LoginForm';
 
 export const AuthScreen = ({ onLogin}) => {
-  const [showLogin, setShowLogin] = useState(true);
+  const [showsingup, setshowsingup] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
+  const [userData, setUserData] = useState({username: '', password: ''});
 
-  const toggleForm = () => setShowLogin(!showLogin);
+  const toggleForm = () => setshowsingup(!showsingup);
+  const ShowloginForm=()=>{
+    setShowLogin(!showLogin);
+  }
 //x-api-key: 6cca5d4e-719b-4c28-aabd-4aeb2618ee1d
   const SigninWithApple=()=>{
     Alert.alert(
@@ -43,11 +49,13 @@ export const AuthScreen = ({ onLogin}) => {
 
   return (
     <View style={[styles.authContainer, themeStyles[theme].container]}>
-      {/* <Text style={[styles.title, themeStyles[theme].text]}>🎥 ZIGGSTA</Text> */}
-      {showLogin ? (
-        <LoginForm onLogin={onLogin} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
+      {showLogin? 
+       ( 
+       <LoginForm ShowloginForm={ShowloginForm}/>
+      ) :showsingup ? (
+        <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
       ) : (
-        <RegisterForm/>
+        <RegisterForm userData={userData}/>
       )}
     </View>
   );
