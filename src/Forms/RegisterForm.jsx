@@ -71,7 +71,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
 
   useEffect(() => {
     // console.log('userData:', userData);
-    // console.log('address:', userAddress);
+    console.log('address:', userAddress);
 
     if (userData || userAddress) {
       const updatedForm = {
@@ -79,7 +79,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
         email: '', // email is not available in userData
         // location: userAddress?.city || '',
         city: userAddress?.city || '',
-        state: userAddress?.state || '',
+        state: userAddress?.state_code || '',
         // stateCode: userAddress?.state_code || '',
         country: userAddress?.country || '',
         zipcode: userAddress?.postcode || '',
@@ -247,32 +247,32 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
       );
       // Build final payload object
       const finalData = {
-        username: formData?.username || '',
-        password: userData?.password || '',
+        username: userData?.username,
+        password: userData?.password,
         email: formData.email,
         screenName: formData.screenname,
-        dob: formData.dob.split('-').reverse().join('-'), // Convert from YYYY-MM-DD to DD-MM-YYYY
-        gender: formData.gender.toLowerCase(),
-        city: formData.city || formData.location || '',
-        state: formData.state || '',
-        country: formData.country || '',
-        zipcode: formData.zipcode || '',
-        interests: interestIndexes,
+        dob: formData.dob, // Convert from YYYY-MM-DD to DD-MM-YYYY
+        gender: formData.gender,
+        city: formData.city || formData.location,
+        state: formData.state,
+        country: formData.country,
+        zipcode: formData.zipcode,
+        interests: interestIndexes.join(','),
       };
 
-      console.log('✅ Final Payload to POST:', finalData);
-      
+      // console.log('✅ Final Payload to POST:', finalData);
+
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
       //  send to API here using fetch()
-      // fetch('https://api.streamalong.live/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(finalData)
-      // })
-      // .then(res => res.json())
+      fetch('https://api.streamalong.live/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d' },
+        body: JSON.stringify(finalData)
+      })
+      .then(res => res.json())
       // .then(data => console.log('API Response:', data))
-      // .catch(err => console.error('API Error:', err));
+      .catch(err => console.error('API Error:', err));
     }
   };
 
