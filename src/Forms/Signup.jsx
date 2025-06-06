@@ -24,10 +24,10 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
         }else if (username.length < 6) {
             setError('Please enter a valid email address');
             return;
-        }else if(password.includes(' ')){
+        }else if(password.length < 6){
             setError('Password must be at least 6 characters long');
             return;
-        }else if (password.length < 6 ) {
+        }else if (password.includes(' ') ) {
             setError('Password cannot contain spaces');
             return;
         }else if(password!==confirmPassword){
