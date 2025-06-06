@@ -13,6 +13,8 @@ import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
 import {globalStyles} from '../../assets/styles/GlobalStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native-vector-icons is installed
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const questions = [
   {
@@ -50,7 +52,7 @@ const interestOptions = [
   'Travel & Holidays',
 ];
 
-export const RegisterForm = ({userData, theme, userAddress}) => {
+export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
@@ -71,7 +73,7 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
 
   useEffect(() => {
     // console.log('userData:', userData);
-    console.log('address:', userAddress);
+    // console.log('address:', userAddress);
 
     if (userData || userAddress) {
       const updatedForm = {
@@ -267,12 +269,48 @@ export const RegisterForm = ({userData, theme, userAddress}) => {
       //  send to API here using fetch()
       fetch('https://api.streamalong.live/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d' },
-        body: JSON.stringify(finalData)
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+        },
+        body: JSON.stringify(finalData),
       })
-      .then(res => res.json())
-      // .then(data => console.log('API Response:', data))
-      .catch(err => console.error('API Error:', err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.message === 'User registered successfully') {
+            userLogedIn();
+            // Alert.alert('RUser registered successfully', data.message);
+          } else {
+            setErrors(data.message || 'Registration failed');
+            Alert.alert('Registration failed', data.message);
+          }
+        })
+        .catch(err => console.error('API Error:', err));
+    }
+  };
+
+  const userLogedIn = async () => {
+    const parameter = {
+      username: userData?.username,
+      password: userData?.password,
+    };
+    const res = await axios.post(
+      'https://api.streamalong.live/login',
+      parameter,
+      {
+        headers: {
+          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+        },
+      },
+    );
+    if (res.data.message === 'Login successful') {
+      Alert.alert('Success', `LogIn Success.`, [{text: 'OK'}]);
+      onLogin();
+      console.log(res.data.user);
+      await AsyncStorage.setItem('token', res.data.token);
+
+      const userDataString = JSON.stringify(res.data.user);
+      await AsyncStorage.setItem('UserData', userDataString);
     }
   };
 
