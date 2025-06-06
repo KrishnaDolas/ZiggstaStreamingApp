@@ -48,7 +48,7 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
 
     return (
       <>
-      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'20%'}}>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'10%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
