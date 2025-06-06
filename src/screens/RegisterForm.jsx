@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -30,7 +30,7 @@ const interestOptions = [
   'Religion & Spiritual', 'Sports & Adventure', 'Travel & Holidays',
 ];
 
-export const RegisterForm = ({userData}) => {
+export const RegisterForm = ({userData, userAddress}) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
@@ -48,6 +48,36 @@ export const RegisterForm = ({userData}) => {
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+
+useEffect(() => {
+  console.log('userData:', userData);
+  console.log('address:', userAddress);
+
+  if (userData || userAddress) {
+    const updatedForm = {
+      screenname: userData?.username || '',
+      email: '', // email is not available in userData
+      // location: userAddress?.city || '',
+      city: userAddress?.city || '',
+      state: userAddress?.state || '',
+      // stateCode: userAddress?.state_code || '',
+      country: userAddress?.country || '',
+      zipcode: userAddress?.postcode || ''
+    };
+
+    console.log('Merged Form Data:', updatedForm);
+
+    setFormData(prev => ({
+      ...prev,
+      ...updatedForm
+    }));
+
+    console.log('Form Data:', formData);
+  }
+}, [userData, userAddress]);
+
+  
 
   const toggleInterest = (interest) => {
     setFormData(prev => {
@@ -182,7 +212,27 @@ export const RegisterForm = ({userData}) => {
       setStep(newStep);
       scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
     } else {
-      Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
+
+      const interestIndexes = formData.interests.map(interest =>
+      interestOptions.indexOf(interest)
+    );
+      // Build final payload object
+    const finalData = {
+      username: formData?.username || '',
+      password: userData?.password || '',
+      email: formData.email,
+      screenName: formData.screenname,
+      dob: formData.dob.split('-').reverse().join('-'), // Convert from YYYY-MM-DD to DD-MM-YYYY
+      gender: formData.gender.toLowerCase(),
+      city: formData.city || formData.location || '',
+      state: formData.state || '',
+      country: formData.country || '',
+      zipcode: formData.zipcode || '',
+      interests: interestIndexes
+    };
+
+    console.log('✅ Final Payload to POST:', finalData);
+      // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
     }
   };
 
