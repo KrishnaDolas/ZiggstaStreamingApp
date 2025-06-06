@@ -11,7 +11,8 @@ import LinearGradient from 'react-native-linear-gradient';
 export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-      const [error, setError] = useState('');
+    const [error, setError] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const { theme } = useContext(ThemeContext);
   
     const handleLogin = async () => {
@@ -65,10 +66,13 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
     
       fetchStoredCredentials();
     }, []); // No need to depend on email or password if just reading on mount
-    
+
+    const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+  };
     return (
       <>
-      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'30%'}}>
+      <ScrollView style={{position:'absolute', flex:1, width:'100%', height:'100%',top:'20%'}}>
       <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
         <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign In</Text>
         <View style={[{ width:'100%',padding:'7' }]}>
@@ -84,13 +88,22 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
         </View>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Password</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInput
           value={password}
           onChangeText={setPassword}
-          style={[styles.input, themeStyles[theme].input]}
-          secureTextEntry
+          style={[styles.input, themeStyles[theme].input,{flex:1}]}
+          secureTextEntry={!showPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10 }}>
+        <Icon
+          name={showPassword ? 'eye' : 'eye-slash'}
+          size={20}
+          color={theme === 'light' ? 'black' : 'white'}
+        />
+        </TouchableOpacity>
+        </View>
         </View>
         <View style={styles.Loginerror}>
         {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
