@@ -1,5 +1,5 @@
-import { StyleSheet, Platform } from 'react-native';
-import { Dimensions } from 'react-native';
+import {StyleSheet, Platform} from 'react-native';
+import {Dimensions} from 'react-native';
 const screenWidth = Dimensions.get('window').width;
 
 // This file contains the styles for the application, including light and dark themes.
@@ -28,7 +28,7 @@ export const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 8,
       },
@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     elevation: 4, // Android shadow
     shadowColor: '#000', // iOS shadow
     shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowRadius: 3,
   },
   Loginoption: {
@@ -271,11 +271,11 @@ export const styles = StyleSheet.create({
 
   //Footer Styles
   footer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'white',  // white background
+    backgroundColor: 'white', // white background
     paddingVertical: 10,
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -358,7 +358,7 @@ export const styles = StyleSheet.create({
   dotActive: {
     backgroundColor: '#be0069',
     shadowColor: '#be0069',
-    shadowOffset: { width: 0, height: 0 },
+    shadowOffset: {width: 0, height: 0},
     shadowOpacity: 1,
     shadowRadius: 5,
     elevation: 3,
@@ -394,8 +394,6 @@ export const styles = StyleSheet.create({
     backgroundColor: 'rgba(190, 0, 105, 0.4)',
   },
 
-
-
   // profile style start
 
   profileHeader: {
@@ -428,7 +426,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     alignItems: 'center',
-    paddingLeft: 10
+    paddingLeft: 10,
   },
   profileBlock: {
     flex: 1,
@@ -445,7 +443,7 @@ export const styles = StyleSheet.create({
     height: 50,
     borderRadius: 30,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
+    shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.46,
     shadowRadius: 5,
     elevation: 5,
@@ -476,7 +474,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
+    shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.46,
     shadowRadius: 5,
     elevation: 5,
@@ -495,9 +493,9 @@ export const styles = StyleSheet.create({
   profileTable: {
     borderRadius: 12,
     marginBottom: 24,
-    borderColor: "#d9d9d9",
+    borderColor: '#d9d9d9',
     borderWidth: 0.3,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
 
   profileTableHeader: {
@@ -525,7 +523,7 @@ export const styles = StyleSheet.create({
 
   profileTableCellIndex: {
     flex: 0.5,
-    paddingRight: 5
+    paddingRight: 5,
   },
   profileTableCellUsername: {
     flex: 2,
@@ -543,11 +541,11 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: 8,
-    marginBottom: 60
+    marginBottom: 60,
   },
 
   profileActionBtnBox: {
-    width: '48%'
+    width: '48%',
   },
 
   profileActionButton: {
@@ -558,19 +556,16 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
   },
 
   profileActionButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    textAlign: 'center'
-  }
-  ,
+    textAlign: 'center',
+  },
   // profile style end
 
-
-  // profile modal 
+  // profile modal
 
   profileModalMain: {
     justifyContent: 'flex-end',
@@ -591,12 +586,12 @@ export const styles = StyleSheet.create({
 
   profileModalClose: {
     alignSelf: 'flex-end',
-    marginBottom: 30
+    marginBottom: 30,
   },
 
   profileMSocialBox: {
     marginTop: 10,
-    marginBottom: 80
+    marginBottom: 80,
   },
 
   profileMSocialBoxItem: {
@@ -607,23 +602,23 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     paddingHorizontal: 15,
     // marginBottom: 10,
-    paddingVertical: 10
+    paddingVertical: 10,
   },
 
   profileMSocialBoxItemIcon: {
-    marginRight: 14
+    marginRight: 14,
   },
 
   profileMSocialBoxItemInput: {
     flex: 1,
     height: 40,
     borderColor: '#a5a5a5',
-    borderWidth: .4,
+    borderWidth: 0.4,
     backgroundColor: '#f7f7f7',
     borderRadius: 20,
     color: '#414141',
     paddingHorizontal: 13,
-    fontSize: 15
+    fontSize: 15,
   },
 
   profileSettingModalBody: {
@@ -640,13 +635,13 @@ export const styles = StyleSheet.create({
   pSettingMDarkLightSTitle: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#232323'
+    color: '#232323',
   },
 
   pSettingMDarkLightSIconBoxWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5
+    gap: 5,
   },
 
   pSettingMDarkLightSIconBox: {
@@ -656,19 +651,19 @@ export const styles = StyleSheet.create({
     marginRight: 10,
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
 
   profileSettingMDivider: {
     height: 1,
     backgroundColor: '#eee',
-    marginBottom: 2
+    marginBottom: 2,
   },
 
   profileSettingMMenuList: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
     paddingVertical: 17,
     borderColor: '#eee',
   },
@@ -683,11 +678,10 @@ export const styles = StyleSheet.create({
   modalDarkTitle: {
     fontSize: 18,
     color: '#000',
-    fontWeight: '600'
+    fontWeight: '600',
   },
 
-  // profile modal 
-
+  // profile modal
 
   // stream list header
 
@@ -697,23 +691,23 @@ export const styles = StyleSheet.create({
     paddingBottom: 15,
     zIndex: 10,
     width: '100%',
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
 
   streamListHeaderTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 20,
   },
   streamHeaderLeftImg: {
     width: 140,
-    height: 40
+    height: 40,
   },
 
   streamHeaderRightBox: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   streamHeaderCountBox: {
     flexDirection: 'row',
@@ -721,14 +715,14 @@ export const styles = StyleSheet.create({
     marginRight: 12,
     backgroundColor: '#37373733',
     borderRadius: 30,
-    padding: 5
+    padding: 5,
   },
 
   streamHeaderCountTitle: {
-    color: "#fff",
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
-    marginLeft: 10
+    marginLeft: 10,
   },
 
   streamListHeaderBottom: {
@@ -764,26 +758,24 @@ export const styles = StyleSheet.create({
 
   streamListMainCardLayout: {
     flex: 1,
-    paddingBottom: 10
+    paddingBottom: 10,
   },
 
   streamListMainTitle: {
     flex: 1,
-    paddingBottom: 140
-  },
-  streamListMainTitle: {
+    paddingBottom: 140,
     fontSize: 16,
     fontWeight: 'bold',
     paddingVertical: 10,
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
   },
 
   streamListScrollContainer: {
     paddingTop: 10,
     paddingBottom: 80,
     paddingHorizontal: 10,
-    borderTopColor: "#1e1e1e",
-    borderTopWidth: .6
+    borderTopColor: '#1e1e1e',
+    borderTopWidth: 0.6,
   },
 
   streamListGrid: {
@@ -813,15 +805,15 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 30,
-    borderColor: "#fff",
+    borderColor: '#fff',
     borderWidth: 1,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   streamListEyeCount: {
     color: '#fff',
     fontSize: 12,
-    marginEnd: 10
+    marginEnd: 10,
   },
   streamListOverlay: {
     position: 'absolute',
@@ -832,24 +824,23 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-    maxWidth: '98%'
-
+    maxWidth: '98%',
   },
   streamListStatus: {
     color: '#fff',
     fontSize: 14,
-    maxWidth: '90%'
+    maxWidth: '90%',
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
     bottom: '9%',
     left: '50%',
-    transform: [{ translateX: -0.475 * screenWidth }],
-    flexDirection: "row",
+    transform: [{translateX: -0.475 * screenWidth}],
+    flexDirection: 'row',
     width: '95%',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 10
+    paddingHorizontal: 10,
   },
   streamListFiltersWhiteBtn: {
     backgroundColor: '#fff',
@@ -884,7 +875,7 @@ export const styles = StyleSheet.create({
 
   streamListFiltersColorBtnText: {
     color: '#fff',
-    fontSize: 15
+    fontSize: 15,
   },
 
   strHedSearchModalOverlay: {
@@ -903,10 +894,10 @@ export const styles = StyleSheet.create({
     // alignItems: 'center',
     position: 'relative',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    elevation: 10
+    elevation: 10,
   },
   strHedSearchModalCloseBtn: {
     backgroundColor: '#cc0461',
@@ -920,7 +911,7 @@ export const styles = StyleSheet.create({
   strHedSearchModalForm: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 40
+    paddingBottom: 40,
   },
   strHedSearchModalInput: {
     flex: 1,
@@ -933,7 +924,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     color: '#414141',
     fontWeight: '300',
-    fontSize: 15
   },
   strHedSearchModalSearchBtn: {
     height: 50,
@@ -941,34 +931,38 @@ export const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8
-  }
+    marginLeft: 8,
+  },
 });
 
 // Theme Styles
 export const themeStyles = {
   light: {
-    container: { backgroundColor: '#f0f4f8' },
-    formContainer: { backgroundColor: '#fff' },
-    text: { color: '#333' },
-    input: { borderColor: '#eaeaeb', backgroundColor: '#f7f7f7', color: 'rgb(65, 65, 65)' },
-    button: { color: 'white' },
-    startButton: { backgroundColor: '#34a853' },
-    stopButton: { backgroundColor: '#ea4335' },
-    linkText: { color: '#1a73e8' },
-    error: { color: 'red' },
-    success: { color: 'green' },
-    primary: { color: '#1a73e8' },
-    placeholder: { color: '#999' },
-    roomItem: { backgroundColor: '#f5f5f5' },
-    splashButtonText: { color: 'white' },
-    SingInlabel: { color: '#717580' },
+    container: {backgroundColor: '#f0f4f8'},
+    formContainer: {backgroundColor: '#fff'},
+    text: {color: '#333'},
+    input: {
+      borderColor: '#eaeaeb',
+      backgroundColor: '#f7f7f7',
+      color: 'rgb(65, 65, 65)',
+    },
+    button: {color: 'white'},
+    startButton: {backgroundColor: '#34a853'},
+    stopButton: {backgroundColor: '#ea4335'},
+    linkText: {color: '#1a73e8'},
+    error: {color: 'red'},
+    success: {color: 'green'},
+    primary: {color: '#1a73e8'},
+    placeholder: {color: '#999'},
+    roomItem: {backgroundColor: '#f5f5f5'},
+    splashButtonText: {color: 'white'},
+    SingInlabel: {color: '#717580'},
     // profile css
     profileHeader: {
-      backgroundColor: '#fafafa'
+      backgroundColor: '#fafafa',
     },
     profileScrollContainer: {
-      backgroundColor: '#fff'
+      backgroundColor: '#fff',
     },
     profileMainText: {
       color: '#d93a63',
@@ -977,19 +971,19 @@ export const themeStyles = {
       color: 'darkkhaki',
     },
     profileStatCard: {
-      backgroundColor: "#fff"
+      backgroundColor: '#fff',
     },
     profileStatLabel: {
-      color: 'rgb(136, 136, 136)'
+      color: 'rgb(136, 136, 136)',
     },
     profileStatValue: {
-      color: 'rgb(255, 9, 214)'
+      color: 'rgb(255, 9, 214)',
     },
     profileTableHeader: {
-      backgroundColor: '#f0f0f0'
+      backgroundColor: '#f0f0f0',
     },
     profileTable: {
-      backgroundColor: '#f9fafb'
+      backgroundColor: '#f9fafb',
     },
     profileTableHeaderText: {
       color: '#1f2937',
@@ -998,47 +992,46 @@ export const themeStyles = {
       color: '#374151',
     },
     profileTableRow: {
-      backgroundColor: '#fff'
+      backgroundColor: '#fff',
     },
     profileActionButtonText: {
-      color: "#000"
+      color: '#000',
     },
 
-    // stream list 
+    // stream list
 
     streamListMainTitle: {
       color: '#262628',
       // backgroundColor: "#fff"
     },
     streamListMainCardLayout: {
-      backgroundColor: "#fff"
+      backgroundColor: '#fff',
     },
-
   },
   dark: {
-    container: { backgroundColor: '#121212' },
-    formContainer: { backgroundColor: '#1e1e1e' },
-    text: { color: '#fff' },
-    input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
-    button: { color: 'black' },
-    startButton: { backgroundColor: '#34a853' },
-    stopButton: { backgroundColor: '#ea4335' },
-    linkText: { color: '#1a73e8' },
-    error: { color: '#ff5555' },
-    success: { color: '#55ff55' },
-    primary: { color: '#1a73e8' },
-    placeholder: { color: '#aaa' },
-    roomItem: { backgroundColor: '#2a2a2a' },
-    splashButtonText: { color: 'black' },
-    SingInlabel: { color: 'white' },
+    container: {backgroundColor: '#121212'},
+    formContainer: {backgroundColor: '#1e1e1e'},
+    text: {color: '#fff'},
+    input: {borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white'},
+    button: {color: 'black'},
+    startButton: {backgroundColor: '#34a853'},
+    stopButton: {backgroundColor: '#ea4335'},
+    linkText: {color: '#1a73e8'},
+    error: {color: '#ff5555'},
+    success: {color: '#55ff55'},
+    primary: {color: '#1a73e8'},
+    placeholder: {color: '#aaa'},
+    roomItem: {backgroundColor: '#2a2a2a'},
+    splashButtonText: {color: 'black'},
+    SingInlabel: {color: 'white'},
     // profile css
     profileHeader: {
       backgroundColor: '#2a2a2a',
       borderBottomColor: '#d9d9d9',
-      borderBottomWidth: 1
+      borderBottomWidth: 1,
     },
     profileScrollContainer: {
-      backgroundColor: '#2a2a2a'
+      backgroundColor: '#2a2a2a',
     },
     profileMainText: {
       color: '#fff',
@@ -1047,20 +1040,20 @@ export const themeStyles = {
       color: '#fff',
     },
     profileStatLabel: {
-      color: '#fff'
+      color: '#fff',
     },
     profileStatValue: {
-      color: '#fff'
+      color: '#fff',
     },
     profileStatCard: {
-      backgroundColor: "#2a2a2a",
+      backgroundColor: '#2a2a2a',
       shadowColor: '#fff',
     },
     profileTable: {
-      backgroundColor: '#2a2a2a'
+      backgroundColor: '#2a2a2a',
     },
     profileTableHeader: {
-      backgroundColor: '#2a2a2a'
+      backgroundColor: '#2a2a2a',
     },
     profileTableHeaderText: {
       color: '#fff',
@@ -1069,20 +1062,19 @@ export const themeStyles = {
       color: '#fff',
     },
     profileTableRow: {
-      backgroundColor: '#2a2a2a'
+      backgroundColor: '#2a2a2a',
     },
     profileActionButtonText: {
-      color: "#fff"
+      color: '#fff',
     },
-    // stream list 
-
+    // stream list
 
     streamListMainTitle: {
       color: '#fff',
       // backgroundColor: '#2a2a2a'
     },
     streamListMainCardLayout: {
-      backgroundColor: '#2a2a2a'
+      backgroundColor: '#2a2a2a',
     },
-  }
-}
+  },
+};
