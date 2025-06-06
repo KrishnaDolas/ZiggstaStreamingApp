@@ -803,7 +803,7 @@ export const styles = StyleSheet.create({
   },
   streamListImage: {
     width: '100%',
-    height: 190,
+    // height: 190,
   },
   streamListEyeCountContainer: {
     position: 'absolute',

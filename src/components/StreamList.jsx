@@ -5,6 +5,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from "./Footer";
 import LinearGradient from "react-native-linear-gradient";
+import { Dimensions } from 'react-native';
 
 const streamData = [
     {
@@ -66,7 +67,7 @@ const streamData = [
 ];
 
 const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRoom, roomId, setRoomId, loading, error }) => {
-
+    const screenHeight = Dimensions.get('window').height;
     const handleCardPress = (item) => {
         // You can navigate or do something on click
         console.log('Clicked:', item.name);
@@ -152,7 +153,7 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                     columnWrapperStyle={styles.streamListGrid}
                     renderItem={({ item }) => (
                         <TouchableOpacity style={styles.streamListCard} onPress={() => handleCardPress(item)}>
-                            <Image source={item.image} style={styles.streamListImage} />
+                            <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
                             <View style={styles.streamListEyeCountContainer}>
                                 <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
                                 <Ionicons name='eye-outline' size={14} color="#fff" />
