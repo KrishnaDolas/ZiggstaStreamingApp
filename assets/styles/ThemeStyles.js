@@ -100,11 +100,11 @@ export const styles = StyleSheet.create({
   },
   button: {
     paddingVertical: 12,
-    paddingHorizontal: 30,
+    // paddingHorizontal: 30,
     borderRadius: 20,
     marginVertical: 10,
     width: '95%',
-    marginHorizontal: 20,
+    marginHorizontal: 10,
     alignItems: 'center',
   },
   themeButton: {
