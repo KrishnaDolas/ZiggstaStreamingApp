@@ -327,15 +327,14 @@ export const MainScreen = ({onLogout}) => {
   
     const createRoom = () => {
       //generate 7 digit random room ID
-      // const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-      const roomId = '34567'; // For testing, use a fixed room ID
+      const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
       setLoading(true);
       console.log(roomId);
       socket.emit('create-room', roomId);
     };
   
     const joinRoom = (id) => {
-      const targetRoomId = '34567'
+      const targetRoomId = id
       if (!targetRoomId.trim()) {
         setError('Please enter a room ID.');
         return;
