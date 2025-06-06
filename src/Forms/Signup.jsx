@@ -8,6 +8,7 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
     const [password, setPassword] = useState(userData.password || '');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
       const [error, setError] = useState('');
   
     const handleSignUp = async () => {
@@ -41,6 +42,9 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
 
     return (
       <>
@@ -60,13 +64,22 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
         </View>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Password</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInput
           value={password}
           onChangeText={setPassword}
           style={[styles.input, themeStyles[theme].input]}
-          secureTextEntry={!showPassword}
+          secureTextEntry={!showConfirmPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
+        <TouchableOpacity onPress={toggleConfirmPasswordVisibility} style={{ padding: 10,position: 'absolute', right: 15, top: 10}}>
+        <Icon
+          name={showConfirmPassword ? 'eye' : 'eye-slash'}
+          size={20}
+          color={theme === 'light' ? 'black' : 'white'}
+        />
+        </TouchableOpacity>
+        </View>
         </View>
         <View style={[{ width:'100%',padding:'7' }]}>
         <Text style={[styles.SingInlabel,themeStyles[theme].SingInlabel]}>Confirm Password</Text>
@@ -74,11 +87,11 @@ export const Signup = ({userData,setUserData,ShowloginForm, onToggleForm,SigninW
         <TextInput
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          style={[styles.input, themeStyles[theme].input,{flex:1}]}
+          style={[styles.input, themeStyles[theme].input]}
           secureTextEntry={!showPassword}
           placeholderTextColor={themeStyles[theme].placeholder.color}
         />
-        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10 }}>
+        <TouchableOpacity onPress={togglePasswordVisibility} style={{ padding: 10,position: 'absolute', right: 15, top: 10}}>
         <Icon
           name={showPassword ? 'eye' : 'eye-slash'}
           size={20}
