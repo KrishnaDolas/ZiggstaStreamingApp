@@ -6,6 +6,7 @@ import {
   View,
   Text,
   StyleSheet,
+  AppState 
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -138,6 +139,20 @@ const App = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+  const subscription = AppState.addEventListener('change', nextAppState => {
+    if (nextAppState === 'background') {
+      // console.log('App is in background');
+      // You can pause stream, release resources, etc.
+    }
+    if (nextAppState === 'active') {
+      // console.log('App is in foreground');
+    }
+  });
+
+  return () => subscription.remove();
+}, []);
 
   return (
     <ErrorBoundary>
