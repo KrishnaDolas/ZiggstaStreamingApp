@@ -57,7 +57,7 @@ export const ProfileScreen = ({ userData }) => {
                 const formData = {
                     'userid': userData.userid,
                 };
-                const response = await Apiclient.post('https://api.streamalong.live/getUserDetails', formData);
+                const response = await Apiclient.post('/getUserDetails', formData);
                 console.log('profile data', response.data.user);
                 if (response.status === 200) {
                     setProfileData(response.data.user || {});
