@@ -1,4 +1,9 @@
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, TextInput, Image, FlatList } from "react-native";
+import {
+    ActivityIndicator, ScrollView, Text, TouchableOpacity, TextInput, Image, FlatList, View,
+    Modal,
+    Alert
+} from "react-native";
+
 import { styles, themeStyles } from "../../assets/styles/ThemeStyles";
 import { StreamListHeader } from "./StreamListHeader";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -6,6 +11,7 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from "./Footer";
 import LinearGradient from "react-native-linear-gradient";
 import { Dimensions } from 'react-native';
+import { useState } from "react";
 
 const streamData = [
     {
@@ -68,10 +74,21 @@ const streamData = [
 
 const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRoom, roomId, setRoomId, loading, error }) => {
     const screenHeight = Dimensions.get('window').height;
+    const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
+    const [roomIdInput, setRoomIdInput] = useState('');
 
+    const submitroomnameandcreateroom=()=>{
+        if (roomIdInput.trim() === '') {
+            Alert.alert('Error', 'Please enter a room name before creating a room.');
+            return;
+        }
+        createRoom();
+        setOpenStreamInputModal(false);
+        setRoomIdInput('');
+    }
     const renderItem = (item) => {
         return (
-            <TouchableOpacity style={styles.streamListCard} onPress={()=>joinRoom(item.id)}>
+            <TouchableOpacity style={styles.streamListCard} onPress={() => joinRoom(item.id)}>
                 <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
                 <View style={styles.streamListEyeCountContainer}>
                     <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
@@ -163,7 +180,7 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                     // windowSize={5}
                     numColumns={2} // Adjust based on your grid layout
                     columnWrapperStyle={styles.streamListGrid}
-                    renderItem={(item)=>renderItem(item.item)}
+                    renderItem={(item) => renderItem(item.item)}
                 />
             </View>
 
@@ -171,13 +188,53 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
                     <FontAwesome6 name="wrench" size={24} color="#262628" />
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.streamListFiltersColorBtn]} onPress={()=>createRoom()}>
+                {/* <TouchableOpacity style={[styles.streamListFiltersColorBtn]} onPress={() => createRoom()}>
+                    <Text style={[styles.streamListFiltersColorBtnText]}>Start Stream</Text>
+                </TouchableOpacity> */}
+                <TouchableOpacity style={[styles.streamListFiltersColorBtn]} onPress={() => setOpenStreamInputModal(true)}>
                     <Text style={[styles.streamListFiltersColorBtnText]}>Start Stream</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
                 </TouchableOpacity>
             </View>
+            {/* stream input Modal */}
+            {openStreamInputModal && (
+                <Modal visible={openStreamInputModal} transparent animationType="fade">
+                    <View style={[styles.roomInputModalOverlay]}>
+                        <View style={[styles.roomInputModalCard]}>
+                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 14 }}>
+                                <TouchableOpacity
+                                    onPress={() => setOpenStreamInputModal(false)}
+                                    style={[styles.strHedSearchModalCloseBtn]}
+                                >
+                                    <Ionicons name="close" size={14} color="#fff" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={[styles.strHedSearchModalForm]}>
+                                <TextInput
+                                    placeholder="Enter Room Name"
+                                    placeholderTextColor="#888"
+                                    value={roomIdInput}
+                                    onChangeText={setRoomIdInput}
+                                    style={[styles.strHedSearchModalInput]}
+                                />
+                                <TouchableOpacity onPress={submitroomnameandcreateroom}>
+                                    <LinearGradient
+                                        colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                        start={{ x: 0.15, y: 1 }}
+                                        end={{ x: 1, y: 0 }}
+                                        style={styles.strHedSearchModalSearchBtn}
+                                    >
+                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>Create Room</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            )}
+
             <Footer />
         </LinearGradient>
 
