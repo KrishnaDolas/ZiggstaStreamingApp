@@ -41,12 +41,12 @@ export const MainScreen = ({onLogout}) => {
       setLobbyLoading(true);
       setLobbyError('');
       try {
-        const response =await axios.get('https://api.streamalong.live/rooms/getrooms',{
+        const response = await axios.get('https://api.streamalong.live/rooms/getrooms',{
           headers:{
             "x-api-key": "6cca5d4e-719b-4c28-aabd-4aeb2618ee1d"
-          }
+          },
         })
-        console.log(response.data.data);
+        // console.log(response.data.data);
         if (response.status === 200) {
           setRooms(response.data.data || []);
         } else {
