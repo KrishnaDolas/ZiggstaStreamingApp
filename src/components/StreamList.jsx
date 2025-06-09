@@ -59,7 +59,10 @@ const StreamList = ({theme, joinRoom, createRoom}) => {
     return (
       <TouchableOpacity
         style={styles.streamListCard}
-        onPress={() => joinRoom(item.roomID)}>
+        onPress={() => console.log('Clicked item:', item)
+        // joinRoom(item.roomID)
+        }
+        >
         <Image
           source={image}
           style={[styles.streamListImage, {height: screenHeight * 0.3 - 40}]}
