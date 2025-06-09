@@ -75,7 +75,7 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                 <Image source={item.image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
                 <View style={styles.streamListEyeCountContainer}>
                     <Text style={styles.streamListEyeCount}>{item.viewerCount}</Text>
-                    <Ionicons name='eye-outline' size={14} color="#fff" />
+                    <Ionicons name="eye-outline" size={14} color="#fff" />
                 </View>
                 <View style={styles.streamListOverlay}>
                     <Text style={styles.streamListName} numberOfLines={1}>{item.name}</Text>
@@ -169,13 +169,13 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
 
             <View style={[styles.streamListFiltersBtnGroup]}>
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
-                    <FontAwesome6 name='wrench' size={24} color="#262628" />
+                    <FontAwesome6 name="wrench" size={24} color="#262628" />
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.streamListFiltersColorBtn]} onPress={()=>createRoom()}>
                     <Text style={[styles.streamListFiltersColorBtnText]}>Start Stream</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.streamListFiltersWhiteBtn]}>
-                    <FontAwesome6 name='filter' size={24} color="#262628" />
+                    <FontAwesome6 name="filter" size={24} color="#262628" />
                 </TouchableOpacity>
             </View>
             <Footer />
