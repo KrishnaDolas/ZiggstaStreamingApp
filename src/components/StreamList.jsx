@@ -1,148 +1,184 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from 'react';
 import {
-    Text, TouchableOpacity, TextInput, Image, FlatList, View,
-    Modal, Alert, Dimensions
-} from "react-native";
-import { styles, themeStyles } from "../../assets/styles/ThemeStyles";
-import { StreamListHeader } from "./StreamListHeader";
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Image,
+  FlatList,
+  View,
+  Modal,
+  Alert,
+  Dimensions,
+} from 'react-native';
+import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
+import {StreamListHeader} from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import Footer from "./Footer";
-import LinearGradient from "react-native-linear-gradient";
+import Footer from './Footer';
+import LinearGradient from 'react-native-linear-gradient';
 import axios from 'axios';
 
 const hardcodedImages = [
-    require('../../assets/images/LS-1.jpg'),
-    require('../../assets/images/LS-2.jpg'),
-    require('../../assets/images/LS-3.jpg'),
-    require('../../assets/images/LS-4.jpg'),
-    require('../../assets/images/LS-5.jpg'),
-    require('../../assets/images/LS-6.jpg'),
+  require('../../assets/images/LS-1.jpg'),
+  require('../../assets/images/LS-2.jpg'),
+  require('../../assets/images/LS-3.jpg'),
+  require('../../assets/images/LS-4.jpg'),
+  require('../../assets/images/LS-5.jpg'),
+  require('../../assets/images/LS-6.jpg'),
 ];
 
-const StreamList = ({ theme, joinRoom, createRoom }) => {
-    const screenHeight = Dimensions.get('window').height;
-    const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
-    const [roomIdInput, setRoomIdInput] = useState('');
-    const [apiRooms, setApiRooms] = useState([]);
+const StreamList = ({theme, joinRoom, createRoom}) => {
+  const screenHeight = Dimensions.get('window').height;
+  const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
+  const [roomIdInput, setRoomIdInput] = useState('');
+  const [apiRooms, setApiRooms] = useState([]);
 
-    // Fetch rooms from the API when the component mounts
-    useEffect(() => {
-        const getRooms = async () => {
-            try {
-                const response = await axios.get('https://api.streamalong.live/rooms/getrooms', {
-                    headers: { 'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d' },
-                });
-                setApiRooms(response.data.data || []);
-            } catch (error) {
-                console.error('Error fetching rooms:', error);
-            }
-        };
-
-        getRooms();
-    }, []);
-
-
-    // Function to create a room
-    const submitroomnameandcreateroom = () => {
-        if (roomIdInput.trim() === '') {
-            Alert.alert('Error', 'Please enter a room name before creating a room.');
-            return;
-        }
-        createRoom();
-        setOpenStreamInputModal(false);
-        setRoomIdInput('');
-    };
-
-    const renderItem = ({ item, index }) => {
-        const image = hardcodedImages[index % hardcodedImages.length];
-
-        return (
-            <TouchableOpacity style={styles.streamListCard} onPress={() => joinRoom(item.roomID)}>
-                <Image source={image} style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]} />
-                <View style={styles.streamListEyeCountContainer}>
-                    <Text style={styles.streamListEyeCount}>{item.viewerCount || 0}</Text>
-                    <Ionicons name="eye-outline" size={14} color="#fff" />
-                </View>
-                <View style={styles.streamListOverlay}>
-                    <Text style={styles.streamListName} numberOfLines={1}>{item.RoomName}</Text>
-                    {/* <Text style={styles.streamListStatus} numberOfLines={1}>Hosted by ID: {item.hostID}</Text> */}
-                </View>
-            </TouchableOpacity>
+  // Fetch rooms from the API when the component mounts
+  useEffect(() => {
+    const getRooms = async () => {
+      try {
+        const response = await axios.get(
+          'https://api.streamalong.live/rooms/getrooms',
+          {
+            headers: {'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d'},
+          },
         );
+        setApiRooms(response.data.data || []);
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      }
     };
+
+    getRooms();
+  }, []);
+
+  // Function to create a room
+  const submitroomnameandcreateroom = () => {
+    if (roomIdInput.trim() === '') {
+      Alert.alert('Error', 'Please enter a room name before creating a room.');
+      return;
+    }
+    createRoom();
+    setOpenStreamInputModal(false);
+    setRoomIdInput('');
+  };
+
+  const renderItem = ({item, index}) => {
+    const image = hardcodedImages[index % hardcodedImages.length];
 
     return (
-        <LinearGradient
-            style={{ height: '100%', width: '100%', position: "relative" }}
-            colors={['#a000df', '#fc4692']}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
-        >
-            <StreamListHeader />
-
-            <View style={[styles.streamListMainCardLayout, themeStyles[theme].streamListMainCardLayout]}>
-                <Text style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}>For You</Text>
-                <FlatList
-                    data={apiRooms}
-                    keyExtractor={(item) => item.roomID.toString()}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.streamListScrollContainer}
-                    initialNumToRender={8}
-                    numColumns={2}
-                    columnWrapperStyle={styles.streamListGrid}
-                    renderItem={renderItem}
-                />
-            </View>
-
-            <View style={styles.streamListFiltersBtnGroup}>
-                <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
-                    <FontAwesome6 name="wrench" size={24} color="#262628" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.streamListFiltersColorBtn} onPress={() => setOpenStreamInputModal(true)}>
-                    <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
-                    <FontAwesome6 name="filter" size={24} color="#262628" />
-                </TouchableOpacity>
-            </View>
-
-            {openStreamInputModal && (
-                <Modal visible={openStreamInputModal} transparent animationType="fade">
-                    <View style={styles.roomInputModalOverlay}>
-                        <View style={styles.roomInputModalCard}>
-                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 14 }}>
-                                <TouchableOpacity onPress={() => setOpenStreamInputModal(false)} style={styles.strHedSearchModalCloseBtn}>
-                                    <Ionicons name="close" size={14} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.strHedSearchModalForm}>
-                                <TextInput
-                                    placeholder="Enter Room Name"
-                                    placeholderTextColor="#888"
-                                    value={roomIdInput}
-                                    onChangeText={setRoomIdInput}
-                                    style={styles.strHedSearchModalInput}
-                                />
-                                <TouchableOpacity onPress={submitroomnameandcreateroom}>
-                                    <LinearGradient
-                                        colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
-                                        start={{ x: 0.15, y: 1 }}
-                                        end={{ x: 1, y: 0 }}
-                                        style={styles.strHedSearchModalSearchBtn}
-                                    >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>Create Room</Text>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
-            )}
-
-            <Footer />
-        </LinearGradient>
+      <TouchableOpacity
+        style={styles.streamListCard}
+        onPress={() => joinRoom(item.roomID)}>
+        <Image
+          source={image}
+          style={[styles.streamListImage, {height: screenHeight * 0.3 - 40}]}
+        />
+        <View style={styles.streamListEyeCountContainer}>
+          <Text style={styles.streamListEyeCount}>{item.viewerCount || 0}</Text>
+          <Ionicons name="eye-outline" size={14} color="#fff" />
+        </View>
+        <View style={styles.streamListOverlay}>
+          <Text style={styles.streamListName} numberOfLines={1}>
+            {item.RoomName}
+          </Text>
+          {/* <Text style={styles.streamListStatus} numberOfLines={1}>Hosted by ID: {item.hostID}</Text> */}
+        </View>
+      </TouchableOpacity>
     );
+  };
+
+  return (
+    <LinearGradient
+      style={{height: '100%', width: '100%', position: 'relative'}}
+      colors={['#a000df', '#fc4692']}
+      start={{x: 0.5, y: 0}}
+      end={{x: 0.5, y: 1}}>
+      <StreamListHeader />
+
+      <View
+        style={[
+          styles.streamListMainCardLayout,
+          themeStyles[theme].streamListMainCardLayout,
+        ]}>
+        <Text
+          style={[
+            styles.streamListMainTitle,
+            themeStyles[theme].streamListMainTitle,
+          ]}>
+          For You
+        </Text>
+        <FlatList
+          data={apiRooms}
+          keyExtractor={item => item.roomID.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.streamListScrollContainer}
+          initialNumToRender={8}
+          numColumns={2}
+          columnWrapperStyle={styles.streamListGrid}
+          renderItem={renderItem}
+        />
+      </View>
+
+      <View style={styles.streamListFiltersBtnGroup}>
+        <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+          <FontAwesome6 name="wrench" size={24} color="#262628" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.streamListFiltersColorBtn}
+          onPress={() => setOpenStreamInputModal(true)}>
+          <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+          <FontAwesome6 name="filter" size={24} color="#262628" />
+        </TouchableOpacity>
+      </View>
+
+      {openStreamInputModal && (
+        <Modal visible={openStreamInputModal} transparent animationType="fade">
+          <View style={styles.roomInputModalOverlay}>
+            <View style={styles.roomInputModalCard}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end',
+                  marginBottom: 14,
+                }}>
+                <TouchableOpacity
+                  onPress={() => setOpenStreamInputModal(false)}
+                  style={styles.strHedSearchModalCloseBtn}>
+                  <Ionicons name="close" size={14} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.strHedSearchModalForm}>
+                <TextInput
+                  placeholder="Enter Room Name"
+                  placeholderTextColor="#888"
+                  value={roomIdInput}
+                  onChangeText={setRoomIdInput}
+                  style={styles.strHedSearchModalInput}
+                />
+                <TouchableOpacity onPress={submitroomnameandcreateroom}>
+                  <LinearGradient
+                    colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                    start={{x: 0.15, y: 1}}
+                    end={{x: 1, y: 0}}
+                    style={styles.strHedSearchModalSearchBtn}>
+                    <Text
+                      style={{color: '#fff', fontSize: 16, fontWeight: '400'}}>
+                      Create Room
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      <Footer />
+    </LinearGradient>
+  );
 };
 
 export default StreamList;
