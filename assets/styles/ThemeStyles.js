@@ -738,7 +738,7 @@ export const styles = StyleSheet.create({
   },
 
   streamHeaderCountTitle: {
-    color: 'space-between',
+    color: 'white',
     fontWeight: '600',
     fontSize: 14,
     marginLeft: 10,
