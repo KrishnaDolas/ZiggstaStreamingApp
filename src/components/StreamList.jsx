@@ -26,13 +26,12 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
 
-
-    
+    // Fetch rooms from the API when the component mounts
     useEffect(() => {
         const getRooms = async () => {
             try {
                 const response = await axios.get('https://api.streamalong.live/rooms/getrooms', {
-                    headers: { 'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d' }
+                    headers: { 'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d' },
                 });
                 setApiRooms(response.data.data || []);
             } catch (error) {
@@ -43,6 +42,8 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
         getRooms();
     }, []);
 
+
+    // Function to create a room
     const submitroomnameandcreateroom = () => {
         if (roomIdInput.trim() === '') {
             Alert.alert('Error', 'Please enter a room name before creating a room.');
