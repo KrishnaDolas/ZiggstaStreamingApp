@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity,Alert, ScrollView  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
+import Apiclient from '../utils/Apiclient';
 export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFacebook,SigninWithGoogle, theme}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -21,12 +21,8 @@ export const LoginForm = ({ onLogin,ShowloginForm,SigninWithApple,SigninWithFace
           username: email,
           password: password,
         }
-        const res = await axios.post('https://api.streamalong.live/login',parameter, {
-          headers: {
-            'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-          },
-        }
-        );
+        
+        const res = await Apiclient.post('/login', parameter)
         if(res.data.message==='Login successful') {
           onLogin();
           console.log(res.data.user);

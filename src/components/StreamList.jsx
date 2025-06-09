@@ -6,7 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
-import axios from 'axios';
+import Apiclient from '../utils/Apiclient';
 
 const hardcodedImages = [
   require('../../assets/images/LS-1.jpg'),
@@ -27,12 +27,7 @@ const StreamList = ({theme, joinRoom, createRoom}) => {
   useEffect(() => {
     const getRooms = async () => {
       try {
-        const response = await axios.get(
-          'https://api.streamalong.live/rooms/getrooms',
-          {
-            headers: {'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d'},
-          },
-        );
+        const response=await Apiclient.get('/rooms/getrooms')
         setApiRooms(response.data.data || []);
       } catch (error) {
         console.error('Error fetching rooms:', error);
