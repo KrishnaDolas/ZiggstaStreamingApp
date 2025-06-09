@@ -326,11 +326,10 @@ export const MainScreen = ({onLogout}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
   
-    const createRoom = () => {
-      //generate 7 digit random room ID
-      const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const createRoom = (roomId) => {
       setLoading(true);
       console.log(roomId);
+      console.log('Creating room with ID:', roomId);
       socket.emit('create-room', roomId);
       startStreaming()
     };

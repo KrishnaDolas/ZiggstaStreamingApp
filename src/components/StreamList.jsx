@@ -48,7 +48,9 @@ const StreamList = ({theme, joinRoom, createRoom}) => {
       Alert.alert('Error', 'Please enter a room name before creating a room.');
       return;
     }
-    createRoom();
+    //generate 7 digit random room ID
+    const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    createRoom(roomId);
     setOpenStreamInputModal(false);
     setRoomIdInput('');
   };
