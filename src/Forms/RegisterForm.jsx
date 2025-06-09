@@ -1,14 +1,5 @@
 import React, {useState, useRef, useEffect} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  Platform,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
 import {globalStyles} from '../../assets/styles/GlobalStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
