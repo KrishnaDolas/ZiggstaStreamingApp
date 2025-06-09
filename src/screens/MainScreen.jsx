@@ -10,6 +10,7 @@ import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import axios from 'axios';
+import StreamRoom from '../components/StreamRoom';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -325,11 +326,10 @@ export const MainScreen = ({onLogout}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
   
-    const createRoom = () => {
-      //generate 7 digit random room ID
-      const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const createRoom = (roomId) => {
       setLoading(true);
       console.log(roomId);
+      console.log('Creating room with ID:', roomId);
       socket.emit('create-room', roomId);
       startStreaming()
     };
@@ -442,88 +442,38 @@ export const MainScreen = ({onLogout}) => {
     return (
       <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{height: '100%', width: '100%'}}>
       <View style={[styles.container]}>
-        {/* <Topbar/>
-        <TouchableOpacity 
-          onPress={confirmLogout} 
-          style={{ position: 'relative', top: 40, right: 20 }}
-        >
-          <Ionicons name="log-out-outline" size={28} color="#ff3333" />
-        </TouchableOpacity> */}
 
         {!joined ? (
         <StreamList theme={theme} lobbyLoading={lobbyLoading}lobbyError={lobbyError}rooms={rooms}joinRoom={joinRoom} createRoom={createRoom} roomId={roomId} setRoomId={setRoomId}loading={loading}error={error}/>
         ) : (
-          <View style={styles.roomInfo}>
-            {isHost && (
-              <View style={styles.streamBox}>
-                {localStream && (
-                  <RTCView
-                    streamURL={localStream.toURL()}
-                    style={styles.fullScreenVideo}
-                    objectFit="cover"
-                    mirror={isFrontCamera}
-                  />
-                )}
-                {isStreaming ? (
-                  <View style={styles.controls}>
-                    <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={toggleMute}>
-                      <Text style={styles.buttonText}>{isMuted ? 'Unmute' : 'Mute'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={switchCamera}>
-                      <Text style={styles.buttonText}>Switch Camera</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : null}
-                <View style={styles.streamControls}>
-                  {!isStreaming ? (
-                    <TouchableOpacity style={[styles.startStreamingButton, themeStyles[theme].startButton]} onPress={startStreaming}>
-                      <Text style={styles.buttonText}>Start Streaming</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity style={[styles.stopStreamingButton, themeStyles[theme].stopButton]} onPress={stopStreaming}>
-                      <Text style={styles.buttonText}>Stop Streaming</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            )}
-            {!isHost && (
-              <View style={styles.streamBox}>
-                {isStreaming && remoteStream ? (
-                  <>
-                    <RTCView
-                      streamURL={remoteStream.toURL()}
-                      style={styles.fullScreenVideo}
-                      objectFit="cover"
-                      mirror={true}
-                    />
-                    <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
-                  </>
-                ) : localStream ? (
-                  <RTCView
-                    streamURL={localStream.toURL()}
-                    style={styles.fullScreenVideo}
-                    objectFit="cover"
-                    mirror={isFrontCamera}
-                  />
-                ) : null}
-                {!isStreaming && (
-                  <TouchableOpacity
-                    style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
-                    onPress={requestStreamPermission}
-                    disabled={hasRequestedStream}
-                  >
-                    <Text style={styles.buttonText}>
-                      {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-            <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
-              <Text style={styles.buttonText}>Leave Room</Text>
-            </TouchableOpacity>
-          </View>
+          <StreamRoom
+          isHost={isHost}
+          localStream={localStream}
+          remoteStream={remoteStream}
+          isStreaming={isStreaming}
+          isMuted={isMuted}
+          isFrontCamera={isFrontCamera}
+          theme={theme}
+          toggleMute={toggleMute}
+          switchCamera={switchCamera}
+          startStreaming={startStreaming}
+          stopStreaming={stopStreaming}
+          leaveRoom={leaveRoom}
+          viewers={viewers}
+          roomId={roomId}
+          setRoomId={setRoomId}
+          requestStreamPermission={requestStreamPermission}
+          hasRequestedStream={hasRequestedStream}
+          streamRequest={streamRequest}
+          setStreamRequest={setStreamRequest}
+          confirmLogout={confirmLogout}
+          onLogout={onLogout} 
+          setError={setError}
+          error={error}
+          viewerCount={viewerCount}
+          setViewerCount={setViewerCount}
+          setRooms={setRooms}          
+          />
         )}
         {/* Footer */}
       </View>

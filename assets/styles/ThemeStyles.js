@@ -162,7 +162,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     height: '100%',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
     marginVertical: 10,
   },
@@ -737,7 +737,7 @@ export const styles = StyleSheet.create({
   },
 
   streamHeaderCountTitle: {
-    color: '#fff',
+    color: 'white',
     fontWeight: '600',
     fontSize: 14,
     marginLeft: 10,

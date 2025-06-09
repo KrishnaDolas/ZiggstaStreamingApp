@@ -3,16 +3,15 @@ import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'r
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
-import axios from 'axios';
 import { ActivityIndicator } from 'react-native';
 import Footer from '../components/Footer';
 import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
+import Apiclient from '../utils/Apiclient';
 import { CenterModal } from '../components/CenterModal';
 import FullScreenModal from '../components/FullScreenModal';
 import HalfScreenModal from '../components/HalfScreenModal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const tableData = [
     {
@@ -61,11 +60,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                 const formData = {
                     'userid': userData.userid,
                 };
-                const response = await axios.post('https://api.streamalong.live/getUserDetails', formData, {
-                    headers: {
-                        'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-                    },
-                });
+                const response = await Apiclient.post('/getUserDetails', formData);
                 console.log('profile data', response.data.user);
                 if (response.status === 200) {
                     setProfileData(response.data.user || {});

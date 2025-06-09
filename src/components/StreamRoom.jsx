@@ -1,12 +1,30 @@
-import { View, Text, TouchableOpacity } from "react-native"
+import { View, Text, TouchableOpacity, Alert } from "react-native"
 import { styles, themeStyles } from "../../assets/styles/ThemeStyles"
 import { RTCView } from "react-native-webrtc"
-import { socket } from "../utils/constant"
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMute,
     isMuted, switchCamera, startStreaming, stopStreaming, remoteStream,
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
+    
+    const confirmleaveRoom = () => {
+        Alert.alert(
+            "Leave Room",
+            "Are you sure you want to leave the room?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Leave",
+                    onPress: () => leaveRoom(),
+                    style: "destructive"
+                }
+            ]
+        );
+    }
 
     return (
         <View style={styles.roomInfo}>
@@ -21,26 +39,14 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                         />
                     )}
                     {isStreaming ? (
+                        <>
                         <View style={styles.controls}>
-                            <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={toggleMute}>
-                                <Text style={styles.buttonText}>{isMuted ? 'Unmute' : 'Mute'}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.controlButton, themeStyles[theme].button]} onPress={switchCamera}>
-                                <Text style={styles.buttonText}>Switch Camera</Text>
-                            </TouchableOpacity>
+                            <Text style={{backgroundColor:'transparent',color:'white',fontSize:16,padding:10}}>
+                                <Ionicons name="star" size={17} /> Art & Music</Text>
+                            <Ionicons name="close" size={30} color="yellow" style={{ position: 'absolute', top: 10, right: 10 }} onPress={confirmleaveRoom} />
                         </View>
+                        </>
                     ) : null}
-                    <View style={styles.streamControls}>
-                        {!isStreaming ? (
-                            <TouchableOpacity style={[styles.startStreamingButton, themeStyles[theme].startButton]} onPress={startStreaming}>
-                                <Text style={styles.buttonText}>Start Streaming</Text>
-                            </TouchableOpacity>
-                        ) : (
-                            <TouchableOpacity style={[styles.stopStreamingButton, themeStyles[theme].stopButton]} onPress={stopStreaming}>
-                                <Text style={styles.buttonText}>Stop Streaming</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
                 </View>
             )}
             {!isHost && (
