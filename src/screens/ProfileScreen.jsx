@@ -7,8 +7,8 @@ import Footer from '../components/Footer';
 import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
-import axios from 'axios';
 import { ActivityIndicator } from 'react-native';
+import Apiclient from '../utils/Apiclient';
 
 const tableData = [
     {
@@ -57,11 +57,7 @@ export const ProfileScreen = ({ userData }) => {
                 const formData = {
                     'userid': userData.userid,
                 };
-                const response = await axios.post('https://api.streamalong.live/getUserDetails', formData, {
-                    headers: {
-                        'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-                    },
-                });
+                const response = await Apiclient.post('https://api.streamalong.live/getUserDetails', formData);
                 console.log('profile data', response.data.user);
                 if (response.status === 200) {
                     setProfileData(response.data.user || {});
