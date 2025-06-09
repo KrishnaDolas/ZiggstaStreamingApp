@@ -1,15 +1,5 @@
 import {useEffect, useState} from 'react';
-import {
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  FlatList,
-  View,
-  Modal,
-  Alert,
-  Dimensions,
-} from 'react-native';
+import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Modal, Alert, Dimensions } from 'react-native';
 import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
 import {StreamListHeader} from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
