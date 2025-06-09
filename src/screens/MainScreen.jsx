@@ -331,6 +331,7 @@ export const MainScreen = ({onLogout}) => {
       setLoading(true);
       console.log(roomId);
       socket.emit('create-room', roomId);
+      startStreaming()
     };
   
     const joinRoom = (id) => {

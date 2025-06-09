@@ -1,6 +1,7 @@
 import {
     ActivityIndicator, ScrollView, Text, TouchableOpacity, TextInput, Image, FlatList, View,
-    Modal
+    Modal,
+    Alert
 } from "react-native";
 
 import { styles, themeStyles } from "../../assets/styles/ThemeStyles";
@@ -76,6 +77,15 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
 
+    const submitroomnameandcreateroom=()=>{
+        if (roomIdInput.trim() === '') {
+            Alert.alert('Error', 'Please enter a room name before creating a room.');
+            return;
+        }
+        createRoom();
+        setOpenStreamInputModal(false);
+        setRoomIdInput('');
+    }
     const renderItem = (item) => {
         return (
             <TouchableOpacity style={styles.streamListCard} onPress={() => joinRoom(item.id)}>
@@ -209,14 +219,14 @@ const StreamList = ({ theme, lobbyLoading, lobbyError, rooms, joinRoom, createRo
                                     onChangeText={setRoomIdInput}
                                     style={[styles.strHedSearchModalInput]}
                                 />
-                                <TouchableOpacity>
+                                <TouchableOpacity onPress={submitroomnameandcreateroom}>
                                     <LinearGradient
                                         colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
                                         start={{ x: 0.15, y: 1 }}
                                         end={{ x: 1, y: 0 }}
                                         style={styles.strHedSearchModalSearchBtn}
                                     >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>Join Room</Text>
+                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>Create Room</Text>
                                     </LinearGradient>
                                 </TouchableOpacity>
                             </View>
