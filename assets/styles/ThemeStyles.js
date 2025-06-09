@@ -160,7 +160,7 @@ export const styles = StyleSheet.create({
   },
   controls: {
     position: 'absolute',
-    height:'100%',
+    height: '100%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
@@ -995,9 +995,30 @@ export const styles = StyleSheet.create({
   modalCommonButtonText: {
     color: '#fff',
     fontSize: 15
-  }
+  },
 
   // center modal end
+
+  // room input modal 
+
+  roomInputModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.09)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  roomInputModalCard: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 10
+  },
 });
 
 // Theme Styles
