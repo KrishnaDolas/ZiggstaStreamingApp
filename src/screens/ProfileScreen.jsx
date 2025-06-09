@@ -3,12 +3,16 @@ import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'r
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
+import axios from 'axios';
+import { ActivityIndicator } from 'react-native';
 import Footer from '../components/Footer';
 import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
-import axios from 'axios';
-import { ActivityIndicator } from 'react-native';
+import { CenterModal } from '../components/CenterModal';
+import FullScreenModal from '../components/FullScreenModal';
+import HalfScreenModal from '../components/HalfScreenModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const tableData = [
     {
@@ -41,10 +45,10 @@ const tableData = [
     },
 ];
 
-export const ProfileScreen = ({ userData }) => {
+export const ProfileScreen = ({ userData, onLogout }) => {
     const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
-    const [profileData, setProfileData] = useState({})
+    const [profileData, setProfileData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
 
@@ -108,7 +112,7 @@ export const ProfileScreen = ({ userData }) => {
                         <View style={styles.profileBlockRightBox}>
                             <View style={styles.profileBlock}>
                                 <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Username</Text>
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>{profileData?.screenName}</Text>
+                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>{profileData.screenName}</Text>
                             </View>
 
                             <View style={styles.profileBlock}>
@@ -154,7 +158,7 @@ export const ProfileScreen = ({ userData }) => {
                         </View>
                         {/* Action Buttons */}
                         <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity onPress={() => setVisibleModal('full-screen-modal')} style={[styles.profileActionBtnBox]}>
                                 <LinearGradient
                                     colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
                                     start={{ x: 0.5, y: 1 }}
@@ -206,8 +210,21 @@ export const ProfileScreen = ({ userData }) => {
                     {visibleModal === 'setting' && (
                         <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
-                    < Footer />
+
+                    {/* center modal */}
+                    {visibleModal === 'center-modal' && (
+                        <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    {/* full screen modal */}
+                    {visibleModal === 'full-screen-modal' && (
+                        <FullScreenModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    {/* full screen modal */}
+                    {visibleModal === 'half-screen-modal' && (
+                        <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    <Footer />
                 </>)}
-        </SafeAreaView >
+        </SafeAreaView>
     );
 };

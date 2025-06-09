@@ -601,7 +601,6 @@ export const styles = StyleSheet.create({
     // shadowOffset: { width: 0, height: 2 },
     // shadowRadius: 3,
   },
-
   profileModalClose: {
     alignSelf: 'flex-end',
     marginBottom: 30,
@@ -738,7 +737,7 @@ export const styles = StyleSheet.create({
   },
 
   streamHeaderCountTitle: {
-    color: 'space-between',
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
     marginLeft: 10,
@@ -955,7 +954,7 @@ export const styles = StyleSheet.create({
   },
 
 
-  // center modal  start
+  // modal css start
 
   centerModalOverlay: {
     flex: 1,
@@ -984,6 +983,11 @@ export const styles = StyleSheet.create({
     color: '#000',
     marginBottom: 20,
   },
+  modalLargeTitle: {
+    fontSize: 28,
+    color: '#000',
+    marginBottom: 20,
+  },
 
   modalButtonGroup: {
     flexDirection: 'row',
@@ -1006,7 +1010,29 @@ export const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  // center modal end
+  fullScreenModalOverlay: {
+    backgroundColor: 'white',
+    padding: 10,
+  },
+
+  fullScreenModalMain: {
+    justifyContent: 'start',
+    margin: 0,
+  },
+
+  halfScreenModalOverlay: {
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+    backgroundColor: 'white',
+    padding: 10,
+  },
+
+  halfScreenModalMain: {
+    justifyContent: 'flex-end',
+    margin: 0,
+  },
+
+  // modal css end
 
   // room input modal
 
@@ -1037,6 +1063,55 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  // message list
+  messageListGradientBox: {
+    height: '100%',
+    width: '100%',
+    position: 'relative',
+  },
+  messageListSafeView: {
+    flex: 1,
+    position: 'relative',
+  },
+  messageListMainCardLayout: {
+    flex: 1,
+    paddingBottom: 10,
+  },
+  messageListLayout: {
+    paddingHorizontal: 10,
+    paddingBottom: 60,
+  },
+  messageListContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomColor: '#dbdbdb',
+    borderBottomWidth: 1,
+  },
+  messageListAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 24,
+    marginRight: 15,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  messageListContent: {
+    flex: 1,
+  },
+  messageListName: {
+    fontWeight: '500',
+    fontSize: 15,
+    marginBottom: 2,
+    maxWidth: '90%',
+  },
+  meListMessage: {
+    fontSize: 13,
+    maxWidth: '92%',
+  },
+  messageListTime: {
+    fontSize: 12,
+  },
 });
 
 // Theme Styles
@@ -1108,6 +1183,23 @@ export const themeStyles = {
       backgroundColor: '#fff',
     },
 
+    // message list
+
+    messageListMainCardLayout: {
+      backgroundColor: '#fff',
+    },
+    messageListContainer: {
+      backgroundColor: '#fcfcfc',
+    },
+    messageListName: {
+      color: '#000',
+    },
+    meListMessage: {
+      color: '#646464',
+    },
+    messageListTime: {
+      color: '#74858a',
+    },
   },
   dark: {
     container: { backgroundColor: '#121212' },
@@ -1177,6 +1269,24 @@ export const themeStyles = {
     },
     streamListMainCardLayout: {
       backgroundColor: '#2a2a2a',
+    },
+
+    // message list
+
+    messageListMainCardLayout: {
+      backgroundColor: '#2a2a2a',
+    },
+    messageListContainer: {
+      backgroundColor: '#2a2a2a',
+    },
+    messageListName: {
+      color: '#fff',
+    },
+    meListMessage: {
+      color: '#fff',
+    },
+    messageListTime: {
+      color: '#fff',
     },
   },
 };

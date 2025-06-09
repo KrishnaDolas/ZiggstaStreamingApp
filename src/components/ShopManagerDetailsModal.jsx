@@ -20,6 +20,7 @@ const ShopManagerDetailsModal = ({ visible, onClose }) => {
             animationOutTiming={300}
             backdropOpacity={0.4}
             style={[styles.profileModalMain]}
+            useNativeDriver={true}
         // backdropOpacity={0}
         >
             <View style={[styles.profileModalOverlay]}>

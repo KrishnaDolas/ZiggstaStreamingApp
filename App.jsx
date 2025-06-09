@@ -19,6 +19,7 @@ import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { MessageListScreen } from './src/screens/MessageListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -178,6 +179,14 @@ const App = () => {
                     <ProfileScreen
                       {...props}
                       onLogout={handleLogout}
+                      userData={userData}
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="Messages">
+                  {props => (
+                    <MessageListScreen
+                      {...props}
                       userData={userData}
                     />
                   )}

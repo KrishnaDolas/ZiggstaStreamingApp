@@ -4,7 +4,7 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native'; 
+import { useNavigation } from '@react-navigation/native';
 
 const Footer = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -53,7 +53,7 @@ const Footer = () => {
         style={styles.footerItem}
         onPress={() => {
           setActiveTab('Messages');
-          console.log('Messages');
+          navigation.navigate('Messages');
         }}
       >
         <Ionicons name="chatbubbles-outline" size={25} color={iconColor('Messages')} />

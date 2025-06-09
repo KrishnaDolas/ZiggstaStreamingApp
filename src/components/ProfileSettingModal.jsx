@@ -1,10 +1,10 @@
 // components/ProfileSettingModal.js
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
 
@@ -24,7 +24,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: false,
         }).start();
-    }, [isDark]);
+    }, [isDark, animation]);
 
     const toggle = () => {
         toggleTheme(); // this should toggle between 'dark' and 'light'
@@ -55,6 +55,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
             animationOut="fadeOutDown"
             animationInTiming={500}
             animationOutTiming={300}
+            useNativeDriver={true}
             backdropOpacity={0.4}
             style={[styles.profileModalMain]}
         // backdropOpacity={0}
@@ -78,7 +79,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
                                     <Animated.View style={[styles.pSettingMDarkLightSIconBox, {
                                         backgroundColor: sunBgColor,
                                     }]}>
-                                        <FontAwesome5 name="sun" size={20} solid color={theme === 'light' ? "#fff" : "#888"} />
+                                        <FontAwesome5 name="sun" size={20} solid color={theme === 'light' ? '#fff' : '#888'} />
                                     </Animated.View>
                                 </TouchableOpacity>
 
@@ -86,7 +87,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
                                     <Animated.View style={[styles.pSettingMDarkLightSIconBox, {
                                         backgroundColor: moonBgColor,
                                     }]}>
-                                        <FontAwesome5 name="moon" size={18} solid color={theme === 'dark' ? "#fff" : "#888"} />
+                                        <FontAwesome5 name="moon" size={18} solid color={theme === 'dark' ? '#fff' : '#888'} />
                                     </Animated.View>
                                 </TouchableOpacity>
                             </View>
@@ -102,7 +103,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
                                     <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
                                     <Text style={{ fontSize: 15, color: '#000' }}>{item.label}</Text>
                                 </View>
-                                <FontAwesome5 name='chevron-right' size={14} regular color="#888" style={{ width: 30 }} />
+                                <FontAwesome5 name="chevron-right" size={14} regular color="#888" style={{ width: 30 }} />
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
@@ -110,7 +111,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
                 </View>
 
             </View>
-        </Modal >
+        </Modal>
 
     );
 };
