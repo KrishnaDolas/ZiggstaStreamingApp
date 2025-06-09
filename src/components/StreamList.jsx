@@ -7,7 +7,6 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
-import axios from 'axios';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
