@@ -16,7 +16,19 @@ import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-const categoryData = ['Art & Music', 'Food & Drink', 'Health & Fitness', 'News & Politics']
+const categoryData = [
+    'Art & Music',
+    'Entertainment & Gaming',
+    'Family & Parenting',
+    'Fashion & Shopping',
+    'Food & Cooking',
+    'Health & Fitness',
+    'Hobbies & Activities',
+    'News & Politics',
+    'Religion & Spiritual',
+    'Sports & Adventure',
+    'Travel & Holidays',
+  ];
 
 export const StreamListHeader = () => {
     const { theme } = useContext(ThemeContext);
