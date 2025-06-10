@@ -18,7 +18,19 @@ const hardcodedImages = [
     require('../../assets/images/LS-6.jpg'),
 ];
 
-const categoryData = ['Art & Music', 'Food & Drink', 'Health & Fitness', 'News & Politics']
+const categoryData = [
+    'Art & Music',
+    'Entertainment & Gaming',
+    'Family & Parenting',
+    'Fashion & Shopping',
+    'Food & Cooking',
+    'Health & Fitness',
+    'Hobbies & Activities',
+    'News & Politics',
+    'Religion & Spiritual',
+    'Sports & Adventure',
+    'Travel & Holidays',
+];
 
 
 const StreamList = ({ theme, joinRoom, createRoom }) => {
@@ -26,7 +38,28 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
-    const [getselectcategory, setGetselectcategory] = useState(); // State to track selected category
+    const [selectedCategoryIndices, setSelectedCategoryIndices] = useState([]); // store selected indices
+
+
+    // Function to toggle category selection
+    const toggleCategory = (index) => {
+        setSelectedCategoryIndices(prev => {
+            if (prev.includes(index)) {
+                return prev.filter(i => i !== index); // unselect
+            } else {
+                return [...prev, index]; // select
+            }
+        });
+    };
+
+    useEffect(() => {
+        if (selectedCategoryIndices.length > 0) {
+            console.log('Selected category indices:', selectedCategoryIndices.join(','));
+        } else {
+            console.log('No categories selected');
+        }
+    }, [selectedCategoryIndices]);
+
     // Fetch rooms from the API when the component mounts
     useEffect(() => {
         const getRooms = async () => {
@@ -40,9 +73,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
 
         getRooms();
     }, []);
-    useEffect(()=>{
-        console.log('Selected categories:', getselectcategory?.join(','));
-    },[getselectcategory])
+
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
@@ -112,13 +143,14 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
         );
     };
 
+
     return (
         <LinearGradient
             style={{ height: '100%', width: '100%', position: 'relative' }}
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setGetselectcategory} />
+            <StreamListHeader setGetselectcategory={setSelectedCategoryIndices} />
 
             <View
                 style={[
@@ -171,7 +203,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
                 >
                     <View style={[styles.halfScreenModalOverlay]}>
 
-                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.5 }]}>
+                        <View style={[styles.profileSettingModalBody, { maxHeight: screenHeight * 0.5 }]}>
                             <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
                                     onPress={() => setOpenStreamInputModal(false)}
@@ -206,11 +238,17 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
                                 showsVerticalScrollIndicator={false}
                             >
                                 <View style={styles.modalCategoryContainer}>
-                                    {categoryData.map((category, index) => (
-                                        <TouchableOpacity key={index} style={styles.modalCategoryButton}>
-                                            <Text style={styles.modalCategoryText}>{category}</Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                    {categoryData.map((category, index) => {
+                                        const isSelected = selectedCategoryIndices.includes(index);
+                                        return (
+                                            <TouchableOpacity key={index} onPress={() => toggleCategory(index)} style={[
+                                                styles.modalCategoryButton,
+                                                isSelected && styles.modalCategoryButtonActive,
+                                            ]}>
+                                                <Text style={styles.modalCategoryText}>{category}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
                                 </View>
                             </ScrollView>
                         </View>

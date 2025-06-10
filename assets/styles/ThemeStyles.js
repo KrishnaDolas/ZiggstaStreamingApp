@@ -1046,7 +1046,9 @@ export const styles = StyleSheet.create({
     paddingVertical: 10,
     margin: 5,
   },
-
+  modalCategoryButtonActive: {
+    backgroundColor: '#6a0dad',
+  },
   modalCategoryText: {
     color: '#fff',
     fontSize: 14,
