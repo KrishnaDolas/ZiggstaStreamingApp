@@ -1,15 +1,13 @@
-import {View,Text,
-TouchableOpacity,Alert,Platform} from 'react-native';
+import {View,Alert,Platform} from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { RTCView, mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
+import {  mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
-import axios from 'axios';
 import StreamRoom from '../components/StreamRoom';
 export const MainScreen = ({onLogout}) => {
     const [roomId, setRoomId] = useState('');
@@ -24,43 +22,14 @@ export const MainScreen = ({onLogout}) => {
     const [remoteStream, setRemoteStream] = useState(null);
     const [isMuted, setIsMuted] = useState(false);
     const [isFrontCamera, setIsFrontCamera] = useState(true);
-    const [loading, setLoading] = useState(false);
     const [streamRequest, setStreamRequest] = useState(null);
     const [hasRequestedStream, setHasRequestedStream] = useState(false);
-    const [rooms, setRooms] = useState([]);
-    const [lobbyLoading, setLobbyLoading] = useState(false);
-    const [lobbyError, setLobbyError] = useState('');
     const { theme } = useContext(ThemeContext);
   
     const peerConnectionRef = useRef(null);
     const localStreamRef = useRef(null);
     const peerConnections = useRef({});
   
-    // Fetch room list from API
-    const fetchRooms = async () => {
-      setLobbyLoading(true);
-      setLobbyError('');
-      try {
-        const response = await axios.get('https://api.streamalong.live/rooms/getrooms',{
-          headers:{
-            "x-api-key": "6cca5d4e-719b-4c28-aabd-4aeb2618ee1d"
-          },
-        })
-        // console.log(response.data.data);
-        if (response.status === 200) {
-          setRooms(response.data.data || []);
-        } else {
-          setLobbyError('Failed to fetch rooms');
-        }
-      } catch (err) {
-        setLobbyError('Error fetching rooms: ' + err.message);
-      } finally {
-        setLobbyLoading(false);
-      }
-    };
-    useEffect(()=>{
-        fetchRooms();
-    },[])
     // Unified permission handling for iOS and Android
     const checkAndRequestPermissions = async () => {
       try {
@@ -98,16 +67,11 @@ export const MainScreen = ({onLogout}) => {
       // Initial permission check
       checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
   
-      // Fetch rooms on mount
-      fetchRooms();
-  
       // Socket event handlers
       const handleRoomCreated = ({ roomId }) => {
         setJoined(true);
         setIsHost(true);
         setHostId(socket.id);
-        setLoading(false);
-        fetchRooms(); // Refresh room list
       };
   
       const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
@@ -116,22 +80,18 @@ export const MainScreen = ({onLogout}) => {
         setIsHost(false);
         setHostId(hostId);
         setViewerCount(viewerCount);
-        setLoading(false);
       };
   
       const handleRoomFull = () => {
         setError('Room is full. Cannot join.');
-        setLoading(false);
       };
   
       const handleInvalidRoom = () => {
         setError('Invalid room ID.');
-        setLoading(false);
       };
   
       const handleRoomExists = () => {
         setError('Room already exists.');
-        setLoading(false);
       };
   
       const handleRoomInfo = ({ viewerCount }) => setViewerCount(viewerCount);
@@ -327,8 +287,6 @@ export const MainScreen = ({onLogout}) => {
     }, []);
   
     const createRoom = (roomId) => {
-      setLoading(true);
-      console.log(roomId);
       console.log('Creating room with ID:', roomId);
       socket.emit('create-room', roomId);
       startStreaming()
@@ -341,7 +299,6 @@ export const MainScreen = ({onLogout}) => {
         return;
       }
       setRoomId(targetRoomId);
-      setLoading(true);
       socket.emit('join-room', targetRoomId);
     };
   
@@ -398,7 +355,6 @@ export const MainScreen = ({onLogout}) => {
       setHasRequestedStream(false);
       closePeerConnections(peerConnections, peerConnectionRef, localStream,setRemoteStream);
       setTimeout(() => setError(''), 4000);
-      fetchRooms(); // Refresh room list
     };
   
     const toggleMute = () => {
@@ -444,7 +400,7 @@ export const MainScreen = ({onLogout}) => {
       <View style={[styles.container]}>
 
         {!joined ? (
-        <StreamList theme={theme} lobbyLoading={lobbyLoading}lobbyError={lobbyError}rooms={rooms}joinRoom={joinRoom} createRoom={createRoom} roomId={roomId} setRoomId={setRoomId}loading={loading}error={error}/>
+        <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom}/>
         ) : (
           <StreamRoom
           isHost={isHost}
@@ -469,10 +425,8 @@ export const MainScreen = ({onLogout}) => {
           confirmLogout={confirmLogout}
           onLogout={onLogout} 
           setError={setError}
-          error={error}
           viewerCount={viewerCount}
           setViewerCount={setViewerCount}
-          setRooms={setRooms}          
           />
         )}
         {/* Footer */}

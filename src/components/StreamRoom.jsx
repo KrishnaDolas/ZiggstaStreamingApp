@@ -4,7 +4,7 @@ import { RTCView } from "react-native-webrtc"
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMute,
-    isMuted, switchCamera, startStreaming, stopStreaming, remoteStream,
+    isMuted, switchCamera, remoteStream,
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
     
