@@ -22,7 +22,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
-
+    const [getselectcategory, setGetselectcategory] = useState(); // State to track selected category
     // Fetch rooms from the API when the component mounts
     useEffect(() => {
         const getRooms = async () => {
@@ -36,6 +36,9 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
 
         getRooms();
     }, []);
+    useEffect(()=>{
+        console.log('Selected categories:', getselectcategory?.join(','));
+    },[getselectcategory])
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
@@ -109,7 +112,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader />
+            <StreamListHeader setGetselectcategory={setGetselectcategory} />
 
             <View
                 style={[
