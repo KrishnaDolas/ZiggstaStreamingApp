@@ -39,7 +39,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
     const [selectedCategoryIndices, setSelectedCategoryIndices] = useState([]); // store selected indices
-
+    const [filteredRooms, setFilteredRooms] = useState([]); // store filtered rooms
 
     // Function to toggle category selection
     const toggleCategory = (index) => {
@@ -51,6 +51,26 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             }
         });
     };
+    const getRooms = async () => {
+        try {
+            const response = await Apiclient.get('/rooms/getrooms')
+            if(response){
+                setApiRooms(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+        }
+    };
+    const filterroomdata=async(selecteddata)=>{
+        try {
+            const response=await Apiclient.get(`/rooms/getrooms?categories=${selecteddata}`)
+            if(response){
+            setApiRooms(response.data.data || []);
+        }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
         if (selectedCategoryIndices.length > 0) {
@@ -60,19 +80,15 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
         }
     }, [selectedCategoryIndices]);
 
-    // Fetch rooms from the API when the component mounts
-    useEffect(() => {
-        const getRooms = async () => {
-            try {
-                const response = await Apiclient.get('/rooms/getrooms')
-                setApiRooms(response.data.data || []);
-            } catch (error) {
-                console.error('Error fetching rooms:', error);
-            }
-        };
+    useEffect(()=>{
+        if(filteredRooms.length>0){
+            const selectedCategories = filteredRooms.join(',')
+            filterroomdata(selectedCategories);
+        }else{
+            getRooms();
+        }
+    },[filteredRooms])
 
-        getRooms();
-    }, []);
 
 
     // Function to create a room
@@ -150,7 +166,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setSelectedCategoryIndices} />
+            <StreamListHeader setGetselectcategory={setFilteredRooms} />
 
             <View
                 style={[
