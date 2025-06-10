@@ -33,16 +33,21 @@ const categoryData = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom }) => {
+const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
     const [selectedCategoryIndices, setSelectedCategoryIndices] = useState([]); // store selected indices
-
+    const [filteredRooms, setFilteredRooms] = useState([]); // store filtered rooms
 
     // Function to toggle category selection
     const toggleCategory = (index) => {
+        // selct the only 5 categories at a time
+        if (selectedCategoryIndices.length >= 5 && !selectedCategoryIndices.includes(index)) {
+            Alert.alert('Limit Reached', 'You can select up to 5 categories only.');
+            return;
+        }
         setSelectedCategoryIndices(prev => {
             if (prev.includes(index)) {
                 return prev.filter(i => i !== index); // unselect
@@ -51,6 +56,27 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             }
         });
     };
+    const getRooms = async () => {
+        try {
+            const response = await Apiclient.get('/rooms/getrooms')
+            if(response){
+                setApiRooms(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+        }
+    };
+    const filterroomdata=async(selecteddata)=>{
+        try {
+            console.log(selecteddata);
+            const response=await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
+            if(response){
+            setApiRooms(response.data.data || []);
+        }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     useEffect(() => {
         if (selectedCategoryIndices.length > 0) {
@@ -60,19 +86,16 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
         }
     }, [selectedCategoryIndices]);
 
-    // Fetch rooms from the API when the component mounts
-    useEffect(() => {
-        const getRooms = async () => {
-            try {
-                const response = await Apiclient.get('/rooms/getrooms')
-                setApiRooms(response.data.data || []);
-            } catch (error) {
-                console.error('Error fetching rooms:', error);
-            }
-        };
+    useEffect(()=>{
+        if(filteredRooms.length>0){
+            const sorteddata= filteredRooms.sort((a, b) => a - b).join(',');
+            filterroomdata(sorteddata);
+        }else{
+            getRooms();
+        }
+        console.log(userData);
+    },[filteredRooms])
 
-        getRooms();
-    }, []);
 
 
     // Function to create a room
@@ -87,28 +110,26 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
 
     const callapiforcreateroom = async () => {
         try {
-            // generate 7 digit random room ID
+            const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
             const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-            const hostid = Math.random().toString(36).substring(2, 10).toUpperCase(); // Replace with actual host ID
-
-            //   const roomData = {
-            //     RoomName: roomIdInput,
-            //     hostID: hostid,
-            //     roomID: roomId,
-            //     startDate: new Date().toISOString(),
-            //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
-            //     participants: '',
-            //     thumbNail: 'dummyimg.jpg',
-            //     physicalLocation: 'pune',
-            //     Categories: 'Health',
-            //   };
-            //   const response = await Apiclient.post('/rooms', roomData);
-            //   console.log(response);
-            //   if (response) {
+              const roomData = {
+                RoomName: roomIdInput,
+                hostID: userData.userid,
+                startDate: new Date().toISOString(),
+                endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
+                participants: '',
+                thumbNail: 'dummyimg.jpg',
+                physicalLocation: 'pune',
+                Categories: sortcategories.join(',')
+              };
+              console.log(roomData);
+              const response = await Apiclient.post('/rooms', roomData);
+              console.log(response);
+              if (response) {
             createRoom(roomId);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
-            //   }
+              }
         } catch (error) {
             console.log(error);
         }
@@ -150,7 +171,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setSelectedCategoryIndices} />
+            <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} />
 
             <View
                 style={[

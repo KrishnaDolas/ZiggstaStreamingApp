@@ -9,7 +9,7 @@ import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
-export const MainScreen = ({onLogout}) => {
+export const MainScreen = ({onLogout,userData}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
     const [isHost, setIsHost] = useState(false);
@@ -400,7 +400,7 @@ export const MainScreen = ({onLogout}) => {
       <View style={[styles.container]}>
 
         {!joined ? (
-        <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom}/>
+        <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
         ) : (
           <StreamRoom
           isHost={isHost}

@@ -112,7 +112,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
 
                             <View style={styles.profileBlock}>
                                 <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>#1234.00</Text>
+                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>#{profileData?.CreditBalance}.00</Text>
                             </View>
                         </View>
 
