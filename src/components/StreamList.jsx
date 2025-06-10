@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Modal, Alert, Dimensions } from 'react-native';
+import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import Modal from 'react-native-modal';
 import { StreamListHeader } from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -16,6 +17,9 @@ const hardcodedImages = [
     require('../../assets/images/LS-5.jpg'),
     require('../../assets/images/LS-6.jpg'),
 ];
+
+const categoryData = ['Art & Music', 'Food & Drink', 'Health & Fitness', 'News & Politics']
+
 
 const StreamList = ({ theme, joinRoom, createRoom }) => {
     const screenHeight = Dimensions.get('window').height;
@@ -45,35 +49,37 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
         }
         callapiforcreateroom();
     };
+
+
     const callapiforcreateroom = async () => {
         try {
-          // generate 7 digit random room ID
-          const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-          const hostid = Math.random().toString(36).substring(2, 10).toUpperCase(); // Replace with actual host ID
-      
-        //   const roomData = {
-        //     RoomName: roomIdInput,
-        //     hostID: hostid,
-        //     roomID: roomId,
-        //     startDate: new Date().toISOString(),
-        //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
-        //     participants: '',
-        //     thumbNail: 'dummyimg.jpg',
-        //     physicalLocation: 'pune',
-        //     Categories: 'Health',
-        //   };
-        //   const response = await Apiclient.post('/rooms', roomData);
-        //   console.log(response);
-        //   if (response) {
+            // generate 7 digit random room ID
+            const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+            const hostid = Math.random().toString(36).substring(2, 10).toUpperCase(); // Replace with actual host ID
+
+            //   const roomData = {
+            //     RoomName: roomIdInput,
+            //     hostID: hostid,
+            //     roomID: roomId,
+            //     startDate: new Date().toISOString(),
+            //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
+            //     participants: '',
+            //     thumbNail: 'dummyimg.jpg',
+            //     physicalLocation: 'pune',
+            //     Categories: 'Health',
+            //   };
+            //   const response = await Apiclient.post('/rooms', roomData);
+            //   console.log(response);
+            //   if (response) {
             createRoom(roomId);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
-        //   }
+            //   }
         } catch (error) {
             console.log(error);
         }
-      };
-      
+    };
+
 
     const renderItem = ({ item, index }) => {
         const image = hardcodedImages[index % hardcodedImages.length];
@@ -150,24 +156,30 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
             </View>
 
             {openStreamInputModal && (
-                <Modal visible={openStreamInputModal} transparent animationType="fade">
-                    <View style={styles.roomInputModalOverlay}>
-                        <View style={styles.roomInputModalCard}>
-                            <View
-                                style={{
-                                    flexDirection: 'row',
-                                    justifyContent: 'flex-end',
-                                    marginBottom: 14,
-                                }}>
+                <Modal isVisible={openStreamInputModal}
+                    // onBackdropPress={onClose}
+                    animationIn="slideInUp"
+                    animationOut="slideOutDown"
+                    animationInTiming={400}
+                    animationOutTiming={300}
+                    backdropOpacity={0.4}
+                    style={[styles.halfScreenModalMain]}
+                    useNativeDriver={true}
+                >
+                    <View style={[styles.halfScreenModalOverlay]}>
+
+                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.5 }]}>
+                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
                                     onPress={() => setOpenStreamInputModal(false)}
-                                    style={styles.strHedSearchModalCloseBtn}>
-                                    <Ionicons name="close" size={14} color="#fff" />
+                                    style={[styles.modalCloseBtn]}
+                                >
+                                    <Ionicons name="close" size={22} color="#333" />
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.strHedSearchModalForm}>
                                 <TextInput
-                                    placeholder="Enter Room Name"
+                                    placeholder="Enter Room Name/Topic"
                                     placeholderTextColor="#888"
                                     value={roomIdInput}
                                     onChangeText={setRoomIdInput}
@@ -186,7 +198,20 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
                                     </LinearGradient>
                                 </TouchableOpacity>
                             </View>
+                            <Text style={[styles.modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
+                            <ScrollView
+                                showsVerticalScrollIndicator={false}
+                            >
+                                <View style={styles.modalCategoryContainer}>
+                                    {categoryData.map((category, index) => (
+                                        <TouchableOpacity key={index} style={styles.modalCategoryButton}>
+                                            <Text style={styles.modalCategoryText}>{category}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </ScrollView>
                         </View>
+
                     </View>
                 </Modal>
             )}

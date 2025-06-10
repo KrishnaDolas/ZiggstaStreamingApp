@@ -54,7 +54,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
     // get profile details from API
     useEffect(() => {
         const fetchProfileDetails = async () => {
-            setIsUserLoading(true);
+            setIsUserLoading(false);
             setIsUserError('');
             try {
                 const formData = {
@@ -96,11 +96,11 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                     <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                         <View style={[styles.profileBlockLeftBox]}>
                             <Image
-                                source={{ uri: 'https://test.streamalong.live/images/logo-icon.png' }}
+                                source={require('../../assets/images/favicon.png')}
                                 style={styles.profileHeaderLogo}
                             />
                             <Image
-                                source={{ uri: 'https://test.streamalong.live/images/LS-3.jpg' }}
+                                source={require('../../assets/images/LS-3.jpg')}
                                 style={styles.profileAvatar}
                             />
                         </View>
@@ -153,7 +153,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         </View>
                         {/* Action Buttons */}
                         <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity onPress={() => setVisibleModal('full-screen-modal')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity onPress={() => setVisibleModal('half-screen-modal')} style={[styles.profileActionBtnBox]}>
                                 <LinearGradient
                                     colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
                                     start={{ x: 0.5, y: 1 }}

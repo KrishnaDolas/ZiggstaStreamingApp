@@ -438,8 +438,8 @@ export const styles = StyleSheet.create({
   },
 
   profileHeaderLogo: {
-    width: 50,
-    height: 50,
+    width: 45,
+    height: 45,
   },
 
   profileAvatar: {
@@ -930,7 +930,7 @@ export const styles = StyleSheet.create({
   strHedSearchModalForm: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 40,
+    paddingBottom: 20,
   },
   strHedSearchModalInput: {
     flex: 1,
@@ -1030,6 +1030,27 @@ export const styles = StyleSheet.create({
   halfScreenModalMain: {
     justifyContent: 'flex-end',
     margin: 0,
+  },
+
+  modalCategoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+  },
+
+
+  modalCategoryButton: {
+    backgroundColor: 'rgba(184, 58, 243, 1)',
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    margin: 5,
+  },
+
+  modalCategoryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 
   // modal css end
