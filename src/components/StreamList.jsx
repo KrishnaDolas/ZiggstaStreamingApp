@@ -171,7 +171,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setFilteredRooms} />
+            <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} />
 
             <View
                 style={[

@@ -741,6 +741,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
     marginLeft: 10,
+    paddingEnd:10,
   },
 
   streamListHeaderBottom: {

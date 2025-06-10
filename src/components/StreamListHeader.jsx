@@ -30,7 +30,7 @@ const categoryData = [
     'Travel & Holidays',
   ];
 
-export const StreamListHeader = ({setGetselectcategory}) => {
+export const StreamListHeader = ({setGetselectcategory,userData}) => {
     const { theme } = useContext(ThemeContext);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
@@ -84,7 +84,7 @@ export const StreamListHeader = ({setGetselectcategory}) => {
                     </TouchableOpacity>
                     <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='aperture' solid size={16} color="#fff" />
-                        <Text style={styles.streamHeaderCountTitle}>2125</Text>
+                        <Text style={styles.streamHeaderCountTitle}>{userData?.CreditBalance}</Text>
                     </View>
                     <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='star' solid size={16} color="#fff" />
