@@ -1,6 +1,7 @@
 import { StyleSheet, Platform } from 'react-native';
 import { Dimensions } from 'react-native';
 const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
@@ -131,9 +132,9 @@ export const styles = StyleSheet.create({
   loader: {
     marginVertical: 20,
   },
-  roomInfo: {
-    alignItems: 'center',
-  },
+  // roomInfo: {
+  //   alignItems: 'center',
+  // },
   roomText: {
     fontSize: 18,
     marginVertical: 5,
@@ -148,7 +149,7 @@ export const styles = StyleSheet.create({
   },
   streamBox: {
     width: '100%',
-    // position: 'relative',
+    position: 'relative',
   },
   fullScreenVideo: {
     position: 'fixed',
@@ -160,11 +161,13 @@ export const styles = StyleSheet.create({
   },
   controls: {
     position: 'absolute',
-    height: '100%',
-    flexDirection: 'row',
+    height: screenHeight * 1,
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: 10,
+    width: screenWidth * 1,
+    paddingVertical: 10,
+    // backgroundColor: 'transparent',
+    zIndex: 10,
   },
   streamControls: {
     flexDirection: 'row',
@@ -1134,6 +1137,159 @@ export const styles = StyleSheet.create({
   },
   messageListTime: {
     fontSize: 12,
+  },
+
+  // stream room
+
+  strRoomHeader: {
+    // flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  strRoomHeaderLeft: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(36, 32, 32, 0.75)',
+    padding: 4,
+    borderRadius: 30,
+    borderColor: '#242020',
+    borderWidth: 1,
+  },
+
+  strRoomHeaderLeftProfileImg: {
+    width: 37,
+    height: 37,
+    borderRadius: 24,
+    marginRight: 8,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  strRoomHeaderLeftProfileName: {
+    color: '#fff',
+    marginRight: 10,
+  },
+  strRoomHeaderLeftProfileSubInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  strRoomHeaderLeftProfileSubText: {
+    color: '#fff',
+    marginLeft: 4,
+    fontSize: 12,
+  },
+
+  strRoomHeaderRight: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  strRoomHeaderRWalletInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(36, 32, 32, 0.75)',
+    paddingVertical: 4,
+    paddingHorizontal: 7,
+    borderRadius: 30,
+    borderColor: '#242020',
+    borderWidth: 1,
+  },
+  strRoomHeaderRWalletInfoText: {
+    color: '#ffea23',
+    marginLeft: 5,
+  },
+  strRoomHeaderRIconBox: {
+    marginLeft: 18,
+  },
+  strLiveStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+  },
+  strTitle: {
+    fontSize: 18,
+    color: '#ffd700',
+    fontWeight: '600',
+  },
+  streamViewerCount: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ff0000',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+  },
+  streamViewerCountTitle: {
+    color: '#fff',
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  strRoomFooterChatOrActionsBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    marginTop: 18,
+  },
+  streamChatContainer: {
+    flex: 1,
+  },
+  streamChatItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  streamChatItemProfileImg: {
+    width: 37,
+    height: 37,
+    borderRadius: 24,
+    marginRight: 8,
+    borderColor: '#ddd',
+    borderWidth: 1,
+  },
+  streamChatMessageBox: {
+    marginLeft: 6,
+  },
+  streamChatUserName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#FFFF33',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
+  },
+  streamChatMessage: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#fff',
+    textShadowColor: '#000',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
+  },
+  strRoomFooterSocialActionsBtn: {
+    marginBottom: 24,
+  },
+  strRoomBottomBox: {
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  strRoomBottomBoxInput: {
+    flex: 1,
+    backgroundColor: '#f7f7f7',
+    height: 50,
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    borderColor: '#eaeaeb',
+    borderWidth: 1,
+    color: '#414141',
+    fontWeight: '300',
+    fontSize: 15,
+  },
+  strRoomBottomBoxIconBox: {
+    marginLeft: 20,
   },
 });
 

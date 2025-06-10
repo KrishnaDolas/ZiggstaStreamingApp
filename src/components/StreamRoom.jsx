@@ -1,13 +1,55 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native"
-import { styles, themeStyles } from "../../assets/styles/ThemeStyles"
-import { RTCView } from "react-native-webrtc"
+import { View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput } from 'react-native';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useState } from 'react';
+
+const chats = [
+    {
+        id: 1,
+        userProfile: require('../../assets/images/LS-3.jpg'),
+        userName: 'Kevin Spacey Kevin Spacey Kevin Spacey Kevin Spacey',
+        message: 'This is looking good now This is looking good now This is looking good now',
+    },
+    {
+        id: 2,
+        userProfile: require('../../assets/images/LS-2.jpg'),
+        userName: 'Mary Pollard',
+        message: 'Yes we need that',
+    },
+    {
+        id: 3,
+        userProfile: require('../../assets/images/LS-1.jpg'),
+        userName: 'Harry Styles',
+        message: 'Absolutely love this stream',
+    },
+    {
+        id: 4,
+        userProfile: require('../../assets/images/LS-3.jpg'),
+        userName: 'Kevin Spacey',
+        message: 'This is looking good now',
+    },
+    {
+        id: 5,
+        userProfile: require('../../assets/images/LS-3.jpg'),
+        userName: 'Kevin Spacey Kevin Spacey Kevin Spacey Kevin Spacey',
+        message: 'This is looking good now This is looking good now This is looking good now',
+    },
+    {
+        id: 6,
+        userProfile: require('../../assets/images/LS-2.jpg'),
+        userName: 'Mary Pollard',
+        message: 'Yes we need that',
+    },
+];
 
 const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMute,
     isMuted, switchCamera, remoteStream,
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
-    
+
+    const [userChatInput, setUserChatInput] = useState('');
+    const screenHeight = Dimensions.get('window').height;
     const confirmleaveRoom = () => {
         Alert.alert(
             "Leave Room",
@@ -24,7 +66,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                 }
             ]
         );
-    }
+    };
 
     return (
         <View style={styles.roomInfo}>
@@ -40,52 +82,141 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                     )}
                     {isStreaming ? (
                         <>
-                        <View style={styles.controls}>
-                            <Text style={{backgroundColor:'transparent',color:'white',fontSize:16,padding:10}}>
-                                <Ionicons name="star" size={17} /> Art & Music</Text>
-                            <Ionicons name="close" size={30} color="yellow" style={{ position: 'absolute', top: 10, right: 10 }} onPress={confirmleaveRoom} />
-                        </View>
+                            <View style={styles.controls}>
+                                <View style={styles.strRoomHeader}>
+                                    <View style={styles.strRoomHeaderLeft}>
+                                        <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                        <View style={styles.strRoomHeaderLeftProfileInfo}>
+                                            <Text style={[styles.strRoomHeaderLeftProfileName]}>
+                                                Angenlico Marias
+                                            </Text>
+                                            <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
+                                                <Ionicons name="heart" solid size={16} color="#fff" />
+                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>12345</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                    <View style={styles.strRoomHeaderRight}>
+                                        <View style={styles.strRoomHeaderRWalletInfo}>
+                                            <Ionicons name="diamond" solid size={14} color="#ffea23" />
+                                            <Text style={styles.strRoomHeaderRWalletInfoText}>1023.250</Text>
+                                        </View>
+                                        <TouchableOpacity style={styles.strRoomHeaderRIconBox}>
+                                            <Ionicons name="flag" size={28} color="#dc3131" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
+                                            <Ionicons name="close" size={30} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View style={styles.strRoomFooter}>
+                                    <View style={styles.strLiveStats}>
+                                        <Text style={styles.strTitle}>The world is a happy place</Text>
+                                        <View style={styles.streamViewerCount}>
+                                            <Ionicons name="eye-outline" size={18} color="#ffea23" />
+                                            <Text style={styles.streamViewerCountTitle}>1.4k</Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.strRoomFooterChatOrActionsBox}>
+                                        <View style={[styles.streamChatContainer, { height: screenHeight * 0.2 - 10 }]}>
+                                            <ScrollView
+                                                // contentContainerStyle={{ paddingBottom: 20 }}
+                                                showsVerticalScrollIndicator={false}
+                                            >
+                                                {chats.map((chat) => {
+                                                    return (
+                                                        <View key={chat.id} style={styles.streamChatItem}>
+                                                            <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
+                                                            <View numberOfLines={1} style={styles.streamChatMessageBox}>
+                                                                <Text numberOfLines={1} style={styles.streamChatUserName}>
+                                                                    {chat.userName.length > 25 ? chat.userName.slice(0, 25) + '...' : chat.userName}
+                                                                </Text>
+                                                                <Text numberOfLines={1} style={styles.streamChatMessage}>
+                                                                    {chat.message.length > 35 ? chat.message.slice(0, 35) + '...' : chat.message}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                    );
+                                                })}
+                                            </ScrollView>
+                                        </View>
+                                        <View style={styles.strRoomFooterSocialActions}>
+                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <Ionicons name="person-add" size={30} color="#fff" />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <Ionicons name="heart" size={30} color="#fff" />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <Ionicons name="share-social-sharp" size={30} color="#fff" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                    <View style={styles.strRoomBottomBox}>
+                                        <TextInput
+                                            placeholder=""
+                                            placeholderTextColor="#414141"
+                                            value={userChatInput}
+                                            onChangeText={setUserChatInput}
+                                            style={styles.strRoomBottomBoxInput}
+                                        />
+                                        <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
+                                            <Ionicons name="add-outline" size={30} color="#fff" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={[styles.strRoomBottomBoxIconBox]}>
+                                            <Ionicons name="gift" size={30} color="#FF00FF" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
+                                            <Ionicons name="cart" size={30} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
                         </>
-                    ) : null}
+                    ) : null
+                    }
                 </View>
             )}
-            {!isHost && (
-                <View style={styles.streamBox}>
-                    {isStreaming && remoteStream ? (
-                        <>
+            {
+                !isHost && (
+                    <View style={styles.streamBox}>
+                        {isStreaming && remoteStream ? (
+                            <>
+                                <RTCView
+                                    streamURL={remoteStream.toURL()}
+                                    style={styles.fullScreenVideo}
+                                    objectFit="cover"
+                                    mirror={true}
+                                />
+                                <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
+                            </>
+                        ) : localStream ? (
                             <RTCView
-                                streamURL={remoteStream.toURL()}
+                                streamURL={localStream.toURL()}
                                 style={styles.fullScreenVideo}
                                 objectFit="cover"
-                                mirror={true}
+                                mirror={isFrontCamera}
                             />
-                            <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
-                        </>
-                    ) : localStream ? (
-                        <RTCView
-                            streamURL={localStream.toURL()}
-                            style={styles.fullScreenVideo}
-                            objectFit="cover"
-                            mirror={isFrontCamera}
-                        />
-                    ) : null}
-                    {!isStreaming && (
-                        <TouchableOpacity
-                            style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
-                            onPress={requestStreamPermission}
-                            disabled={hasRequestedStream}
-                        >
-                            <Text style={styles.buttonText}>
-                                {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                </View>
-            )}
-            <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
+                        ) : null}
+                        {!isStreaming && (
+                            <TouchableOpacity
+                                style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
+                                onPress={requestStreamPermission}
+                                disabled={hasRequestedStream}
+                            >
+                                <Text style={styles.buttonText}>
+                                    {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )
+            }
+            {/* <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
                 <Text style={styles.buttonText}>Leave Room</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
-    )
-}
+    );
+};
 export default StreamRoom
