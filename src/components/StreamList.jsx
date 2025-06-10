@@ -33,7 +33,7 @@ const categoryData = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom }) => {
+const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -63,6 +63,7 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
     };
     const filterroomdata=async(selecteddata)=>{
         try {
+            console.log(selecteddata);
             const response=await Apiclient.get(`/rooms/getrooms?categories=${selecteddata}`)
             if(response){
             setApiRooms(response.data.data || []);
@@ -82,11 +83,12 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
 
     useEffect(()=>{
         if(filteredRooms.length>0){
-            const selectedCategories = filteredRooms.join(',')
-            filterroomdata(selectedCategories);
+            const sorteddata= filteredRooms.sort((a, b) => a - b).join(',');
+            filterroomdata(sorteddata);
         }else{
             getRooms();
         }
+        console.log(userData);
     },[filteredRooms])
 
 
@@ -103,28 +105,26 @@ const StreamList = ({ theme, joinRoom, createRoom }) => {
 
     const callapiforcreateroom = async () => {
         try {
-            // generate 7 digit random room ID
+            const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
             const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-            const hostid = Math.random().toString(36).substring(2, 10).toUpperCase(); // Replace with actual host ID
-
-            //   const roomData = {
-            //     RoomName: roomIdInput,
-            //     hostID: hostid,
-            //     roomID: roomId,
-            //     startDate: new Date().toISOString(),
-            //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
-            //     participants: '',
-            //     thumbNail: 'dummyimg.jpg',
-            //     physicalLocation: 'pune',
-            //     Categories: 'Health',
-            //   };
-            //   const response = await Apiclient.post('/rooms', roomData);
-            //   console.log(response);
-            //   if (response) {
+              const roomData = {
+                RoomName: roomIdInput,
+                hostID: userData.userid,
+                startDate: new Date().toISOString(),
+                endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
+                participants: '',
+                thumbNail: 'dummyimg.jpg',
+                physicalLocation: 'pune',
+                Categories: sortcategories.join(',')
+              };
+              console.log(roomData);
+              const response = await Apiclient.post('/rooms', roomData);
+              console.log(response);
+              if (response) {
             createRoom(roomId);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
-            //   }
+              }
         } catch (error) {
             console.log(error);
         }
