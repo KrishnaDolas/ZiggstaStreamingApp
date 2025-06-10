@@ -64,7 +64,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
     const filterroomdata=async(selecteddata)=>{
         try {
             console.log(selecteddata);
-            const response=await Apiclient.get(`/rooms/getrooms?categories=${selecteddata}`)
+            const response=await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
             if(response){
             setApiRooms(response.data.data || []);
         }
