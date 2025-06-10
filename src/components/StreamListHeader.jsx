@@ -16,14 +16,27 @@ import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-const categoryData = ['Art & Music', 'Food & Drink', 'Health & Fitness', 'News & Politics']
+const categoryData = [
+    'Art & Music',
+    'Entertainment & Gaming',
+    'Family & Parenting',
+    'Fashion & Shopping',
+    'Food & Cooking',
+    'Health & Fitness',
+    'Hobbies & Activities',
+    'News & Politics',
+    'Religion & Spiritual',
+    'Sports & Adventure',
+    'Travel & Holidays',
+  ];
 
-export const StreamListHeader = () => {
+export const StreamListHeader = ({setGetselectcategory}) => {
     const { theme } = useContext(ThemeContext);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
-
+    const [selectedset, setSelectedset] = useState([]); // State to track selected category
+    const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
     const toggleFullscreen = () => {
         if (isFullScreen) {
             StatusBar.setHidden(false, 'fade');
@@ -34,6 +47,25 @@ export const StreamListHeader = () => {
         }
 
         setIsFullScreen(!isFullScreen);
+    };
+    const selectedcategory = (category) => {
+        if (selectedset.includes(category)) {
+            const newSelectedSet = selectedset.filter(item => item !== category);
+            setGetselectcategory(newSelectedSet); 
+            setSelectedset(newSelectedSet); // Update the selectedset state
+        } else {
+            const newSelectedSet = [...selectedset, category];
+            setSelectedset(newSelectedSet); // Update the selectedset state
+            setGetselectcategory(newSelectedSet);
+        }
+        // Log the index and selected category
+        const value= categoryData[category] || 'Unknown Category';
+        if(!selectedinterest.includes(value)) { // Check if the value is already selected
+        setSelectedinterest((values)=>[...values,value]); // Update the selected interest state
+        }else{
+            const newSelectedInterest = selectedinterest.filter(item => item !== value);
+            setSelectedinterest(newSelectedInterest); // Update the selected interest state
+        }
     };
 
 
@@ -76,8 +108,11 @@ export const StreamListHeader = () => {
                     contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                 >
                     {categoryData.map((category, index) => (
-                        <TouchableOpacity key={index} style={styles.strHeaderCategoryButton}>
-                            <Text style={styles.strHeaderCategoryText}>{category}</Text>
+                        <TouchableOpacity key={index} style={[styles.strHeaderCategoryButton,
+                        selectedinterest.includes(category) &&
+                        styles.btnInterestActive,]}
+                        onPress={() => selectedcategory(index)}>
+                        <Text style={styles.strHeaderCategoryText}>{category}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
