@@ -43,6 +43,11 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
 
     // Function to toggle category selection
     const toggleCategory = (index) => {
+        // selct the only 5 categories at a time
+        if (selectedCategoryIndices.length >= 5 && !selectedCategoryIndices.includes(index)) {
+            Alert.alert('Limit Reached', 'You can select up to 5 categories only.');
+            return;
+        }
         setSelectedCategoryIndices(prev => {
             if (prev.includes(index)) {
                 return prev.filter(i => i !== index); // unselect
