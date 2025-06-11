@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Modal from 'react-native-modal';
+import { format } from 'date-fns';
 import { StreamListHeader } from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -71,6 +72,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             console.log(selecteddata);
             const response=await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
             if(response){
+                console.log('Filtered Rooms:', response.data.data);
             setApiRooms(response.data.data || []);
         }
         } catch (error) {
@@ -103,6 +105,9 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         if (roomIdInput.trim() === '') {
             Alert.alert('Error', 'Please enter a room name before creating a room.');
             return;
+        }else if (selectedCategoryIndices.length === 0) {
+            Alert.alert('Error', 'Please select at least one category before creating a room.');
+            return;
         }
         callapiforcreateroom();
     };
@@ -110,26 +115,29 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
 
     const callapiforcreateroom = async () => {
         try {
+            //7 character room ID
+            const roomId = Math.random().toString(36).substring(2, 4);
             const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
-            const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-            //   const roomData = {
-            //     RoomName: roomIdInput,
-            //     hostID: userData.userid,
-            //     startDate: new Date().toISOString(),
-            //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
-            //     participants: '',
-            //     thumbNail: 'dummyimg.jpg',
-            //     physicalLocation: 'pune',
-            //     Categories: sortcategories.join(',')
-            //   };
-            //   console.log(roomData);
-            //   const response = await Apiclient.post('/rooms', roomData);
-            //   console.log(response);
-            //   if (response) {
-                //   }
-            createRoom(roomId);
-            setOpenStreamInputModal(false);
-            setRoomIdInput('');
+              const roomData = {
+                RoomName: roomIdInput,
+                hostID: userData.userid,
+                startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
+                endDate: format(new Date(Date.now() + 60 * 60 * 1000),"yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
+                participants: '',
+                thumbNail: 'dummyimg.jpg',
+                physicalLocation: 'pune',
+                Categories: sortcategories.join(',')
+              };
+              console.log(roomData);
+
+              const response = await Apiclient.post('/rooms', roomData);
+              console.log(response);
+              if (response.data.roomID) {
+                console.log('Room created successfully:', response);
+                createRoom(response.data.roomID.toString());
+                setOpenStreamInputModal(false);
+                setRoomIdInput('');
+                  }
         } catch (error) {
             console.log(error);
         }
@@ -142,7 +150,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => console.log('Clicked item:', item)
+                onPress={() => joinRoom(item.roomID.toString())
                     // joinRoom(item.roomID)
                 }
             >
