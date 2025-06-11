@@ -414,6 +414,7 @@ export const MainScreen = ({onLogout,userData}) => {
           switchCamera={switchCamera}
           toggleMute={toggleMute}
           leaveRoom={leaveRoom}
+          isMuted={isMuted}
           requestStreamPermission={requestStreamPermission}
           hasRequestedStream={hasRequestedStream}
         />
