@@ -110,26 +110,25 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
 
     const callapiforcreateroom = async () => {
         try {
-            const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
-            const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-              const roomData = {
-                RoomName: roomIdInput,
-                hostID: userData.userid,
-                startDate: new Date().toISOString(),
-                endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
-                participants: '',
-                thumbNail: 'dummyimg.jpg',
-                physicalLocation: 'pune',
-                Categories: sortcategories.join(',')
-              };
-              console.log(roomData);
-              const response = await Apiclient.post('/rooms', roomData);
-              console.log(response);
-              if (response) {
-            createRoom(roomId);
+            // const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
+            //   const roomData = {
+            //     RoomName: roomIdInput,
+            //     hostID: userData.userid,
+            //     startDate: new Date().toISOString(),
+            //     endDate: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour later
+            //     participants: '',
+            //     thumbNail: 'dummyimg.jpg',
+            //     physicalLocation: 'pune',
+            //     Categories: sortcategories.join(',')
+            //   };
+            //   console.log(roomData);
+            //   const response = await Apiclient.post('/rooms', roomData);
+            //   console.log(response);
+            //   if (response) {
+            createRoom(1234);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
-              }
+            //   }
         } catch (error) {
             console.log(error);
         }
@@ -142,7 +141,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => console.log('Clicked item:', item)
+                onPress={() => joinRoom(1234)
                     // joinRoom(item.roomID)
                 }
             >
