@@ -65,8 +65,7 @@ const giftItems = [
     { price: '$5', image: 'https://test.streamalong.live/images/Animated-icons/420.gif' },
 ];
 
-const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMute,
-    isMuted, switchCamera, remoteStream,
+const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStream,
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
     const screenHeight = Dimensions.get('window').height;

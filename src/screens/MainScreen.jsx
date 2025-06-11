@@ -74,7 +74,7 @@ export const MainScreen = ({onLogout,userData}) => {
       const handleRoomCreated = ({ roomId }) => {
         setJoined(true);
         setIsHost(true);
-        setHostId(socket.id);
+        setHostId(userData.userid);
       };
   
       const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
@@ -307,7 +307,7 @@ export const MainScreen = ({onLogout,userData}) => {
     };
   
     const requestStreamPermission = () => {
-      socket.emit('stream-request', { roomId, viewerId: socket.id });
+      socket.emit('stream-request', { roomId, viewerId: userData.userid });
       setHasRequestedStream(true);
     };
   
@@ -410,13 +410,10 @@ export const MainScreen = ({onLogout,userData}) => {
           localStream={localStream}
           isFrontCamera={isFrontCamera}
           isStreaming={isStreaming}
-          theme={theme}
-          switchCamera={switchCamera}
-          toggleMute={toggleMute}
-          leaveRoom={leaveRoom}
-          isMuted={isMuted}
           requestStreamPermission={requestStreamPermission}
           hasRequestedStream={hasRequestedStream}
+          leaveRoom={leaveRoom}
+          theme={theme}
         />
         )}
         {/* {isviewer && (
