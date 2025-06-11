@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import LinearGradient from 'react-native-linear-gradient';
 
 const chats = [
     {
@@ -48,8 +49,11 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
 
+    const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [userChatInput, setUserChatInput] = useState('');
     const screenHeight = Dimensions.get('window').height;
+
+
     const confirmleaveRoom = () => {
         Alert.alert(
             "Leave Room",
@@ -67,6 +71,22 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
             ]
         );
     };
+
+    // Handle keyboard events to adjust the input box position
+
+    useEffect(() => {
+        const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+            setKeyboardOffset(e.endCoordinates.height);
+        });
+        const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+            setKeyboardOffset(0);
+        });
+
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
 
     return (
         <View style={styles.roomInfo}>
@@ -109,8 +129,12 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                         </TouchableOpacity>
                                     </View>
                                 </View>
-
-                                <View style={styles.strRoomFooter}>
+                                <LinearGradient
+                                    colors={['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)']}
+                                    start={{ x: 0.5, y: 1 }}
+                                    end={{ x: 0.5, y: 0 }}
+                                    style={styles.strRoomFooter}
+                                >
                                     <View style={styles.strLiveStats}>
                                         <Text style={styles.strTitle}>The world is a happy place</Text>
                                         <View style={styles.streamViewerCount}>
@@ -130,10 +154,10 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
                                                                 <Text numberOfLines={1} style={styles.streamChatUserName}>
-                                                                    {chat.userName.length > 25 ? chat.userName.slice(0, 25) + '...' : chat.userName}
+                                                                    {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
                                                                 </Text>
                                                                 <Text numberOfLines={1} style={styles.streamChatMessage}>
-                                                                    {chat.message.length > 35 ? chat.message.slice(0, 35) + '...' : chat.message}
+                                                                    {chat.message.length > 40 ? chat.message.slice(0, 40) + '...' : chat.message}
                                                                 </Text>
                                                             </View>
                                                         </View>
@@ -153,7 +177,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                             </TouchableOpacity>
                                         </View>
                                     </View>
-                                    <View style={styles.strRoomBottomBox}>
+                                    <View style={[styles.strRoomBottomBox, { marginBottom: keyboardOffset }]}>
                                         <TextInput
                                             placeholder=""
                                             placeholderTextColor="#414141"
@@ -171,7 +195,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                             <Ionicons name="cart" size={30} color="#fff" />
                                         </TouchableOpacity>
                                     </View>
-                                </View>
+                                </LinearGradient>
                             </View>
                         </>
                     ) : null
@@ -217,6 +241,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                 <Text style={styles.buttonText}>Leave Room</Text>
             </TouchableOpacity> */}
         </View>
+
     );
 };
-export default StreamRoom
+export default StreamRoom;

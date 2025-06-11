@@ -165,7 +165,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-between',
     width: screenWidth * 1,
-    paddingVertical: 10,
+    // paddingVertical: 10,
     // backgroundColor: 'transparent',
     zIndex: 10,
   },
@@ -744,7 +744,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
     marginLeft: 10,
-    paddingEnd:10,
+    paddingEnd: 10,
   },
 
   streamListHeaderBottom: {
@@ -1148,6 +1148,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     alignItems: 'center',
+    paddingTop: 10,
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',
@@ -1226,6 +1227,11 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '500',
     marginLeft: 8,
+  },
+  strRoomFooter: {
+    width: '100%',
+    position: 'relative',
+    paddingBottom: 20,
   },
   strRoomFooterChatOrActionsBox: {
     flexDirection: 'row',
