@@ -143,7 +143,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                         </View>
                                     </View>
                                     <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer, { height: screenHeight * 0.2 - 10 }]}>
+                                        <View style={[styles.streamChatContainer, { height: 150 }]}>
                                             <ScrollView
                                                 // contentContainerStyle={{ paddingBottom: 20 }}
                                                 showsVerticalScrollIndicator={false}
