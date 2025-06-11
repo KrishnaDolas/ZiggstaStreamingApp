@@ -110,7 +110,8 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
 
     const callapiforcreateroom = async () => {
         try {
-            // const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
+            const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
+            const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
             //   const roomData = {
             //     RoomName: roomIdInput,
             //     hostID: userData.userid,
@@ -125,10 +126,10 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             //   const response = await Apiclient.post('/rooms', roomData);
             //   console.log(response);
             //   if (response) {
-            createRoom(1234);
+                //   }
+            createRoom(roomId);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
-            //   }
         } catch (error) {
             console.log(error);
         }
@@ -141,7 +142,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => joinRoom(1234)
+                onPress={() => console.log('Clicked item:', item)
                     // joinRoom(item.roomID)
                 }
             >
