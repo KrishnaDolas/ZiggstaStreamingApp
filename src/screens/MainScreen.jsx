@@ -287,14 +287,13 @@ export const MainScreen = ({onLogout,userData}) => {
     }, []);
   
     const createRoom = (roomId) => {
-      setRoomId(roomId);
       console.log('Creating room with ID:', roomId);
       socket.emit('create-room', roomId);
       startStreaming()
     };
   
     const joinRoom = (id) => {
-      const targetRoomId = roomId
+      const targetRoomId = 565658
       if (!targetRoomId.trim()) {
         setError('Please enter a room ID.');
         return;
