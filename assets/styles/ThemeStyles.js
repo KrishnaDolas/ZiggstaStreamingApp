@@ -1279,6 +1279,7 @@ export const styles = StyleSheet.create({
   },
   strRoomBottomBox: {
     paddingHorizontal: 14,
+    paddingVertical:10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
