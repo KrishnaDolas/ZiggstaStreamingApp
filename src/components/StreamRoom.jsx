@@ -1,10 +1,14 @@
-import { View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard } from 'react-native';
+import {
+    View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
+    Easing,
+} from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
-
+import Modal from 'react-native-modal';
+import FastImage from 'react-native-fast-image';
 const chats = [
     {
         id: 1,
@@ -44,15 +48,36 @@ const chats = [
     },
 ];
 
+const giftCategories = ['$2', '$5', '$10', '$20', '$50', '$100', '$200', '$500', '$1000', '$2000', '$5000'];
+
+const giftItems = [
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunrise.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunset.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/popcorn.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/420.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunrise.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunset.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/popcorn.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/420.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunrise.gif' },
+    { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunset.gif' },
+    { price: '$5', image: 'https://test.streamalong.live/images/Animated-icons/ticket.gif' },
+    { price: '$5', image: 'https://test.streamalong.live/images/Animated-icons/420.gif' },
+];
+
 const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMute,
     isMuted, switchCamera, remoteStream,
     requestStreamPermission, hasRequestedStream, leaveRoom, theme
 }) => {
-
+    const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [userChatInput, setUserChatInput] = useState('');
-    const screenHeight = Dimensions.get('window').height;
-
+    const [giftModalVisible, setGiftModalVisible] = useState(false);
+    const [selectedGiftCategory, setSelectedCategory] = useState('');
+    const [selectedGiftItems, setSelectedGiftItems] = useState([]);
+    const scrollRef = useRef(null);
+    const [showArrow, setShowArrow] = useState(true);
+    const arrowAnim = useRef(new Animated.Value(0)).current;
 
     const confirmleaveRoom = () => {
         Alert.alert(
@@ -87,6 +112,40 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
             hideSub.remove();
         };
     }, []);
+
+
+    const filteredGiftItems = selectedGiftCategory === '' ? giftItems : giftItems.filter(item => item.price === selectedGiftCategory);
+
+
+    const handleScroll = (event) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+
+        // If scrolled to the end, hide the arrow
+        const isAtEnd = contentOffset.x + layoutMeasurement.width >= contentSize.width - 20;
+        setShowArrow(!isAtEnd);
+    };
+
+    // Arrow bounce animation
+    useEffect(() => {
+        if (showArrow) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(arrowAnim, {
+                        toValue: 10,
+                        duration: 500,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(arrowAnim, {
+                        toValue: 0,
+                        duration: 500,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+        }
+    }, [showArrow, arrowAnim, giftModalVisible]);
 
     return (
         <View style={styles.roomInfo}>
@@ -188,7 +247,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                         <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
                                             <Ionicons name="add-outline" size={30} color="#fff" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={[styles.strRoomBottomBoxIconBox]}>
+                                        <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
                                             <Ionicons name="gift" size={30} color="#FF00FF" />
                                         </TouchableOpacity>
                                         <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
@@ -237,6 +296,103 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                     </View>
                 )
             }
+
+            {/* gift modal  */}
+
+
+            {giftModalVisible && (
+                <Modal isVisible={giftModalVisible}
+                    // onBackdropPress={onClose}
+                    animationIn="slideInUp"
+                    animationOut="slideOutDown"
+                    animationInTiming={700}
+                    animationOutTiming={500}
+                    backdropOpacity={0.4}
+                    style={[styles.halfScreenModalMain]}
+                    useNativeDriver={true}
+                >
+                    <View style={[styles.halfScreenModalOverlay]}>
+
+                        <View style={[{ maxHeight: screenHeight * 0.5 }]}>
+                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                                <TouchableOpacity
+                                    onPress={() => setGiftModalVisible(false)}
+                                    style={[styles.modalCloseBtn]}
+                                >
+                                    <Ionicons name="close" size={22} color="#333" />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.giftModalCategoryMainLayout}>
+                                <ScrollView
+                                    ref={scrollRef}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    onScroll={handleScroll}
+                                    scrollEventThrottle={16}
+                                >
+                                    <View style={styles.giftModalCategoryContainer}>
+                                        {giftCategories.map((category, index) => {
+                                            const isSelected = selectedGiftCategory === category;
+                                            return (
+                                                <TouchableOpacity key={index}
+                                                    onPress={() => setSelectedCategory(category)}
+                                                    style={[
+                                                        styles.giftModalCatTab,
+                                                        isSelected && styles.giftModalCatTabActive,
+                                                    ]}
+                                                >
+                                                    <Text style={styles.giftModalCatTabText}>{category}</Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </ScrollView>
+                                {showArrow && (
+                                    <Animated.View
+                                        style={[
+                                            styles.giftModalCatRightArrow,
+                                            { transform: [{ translateX: arrowAnim }] },
+                                        ]}
+                                        pointerEvents="none"
+                                    >
+                                        <Ionicons name="chevron-forward" size={16} color="#fff" />
+                                    </Animated.View>
+                                )}
+                            </View>
+                            <View style={[styles.giftModalItemsMainLayout]}>
+                                {filteredGiftItems.length > 0 ? <>
+                                    <ScrollView
+                                        showsVerticalScrollIndicator={true}
+                                        indicatorStyle="white"
+                                    >
+                                        <View style={styles.giftModalCategoryItemsContainer}>
+                                            {filteredGiftItems.map((item, index) => {
+                                                return (
+                                                    <TouchableOpacity key={index}
+                                                        // onPress={() => setSelectedCategory(category)}
+                                                        style={styles.giftModalCatItem}
+                                                    >
+                                                        <FastImage
+                                                            style={[styles.giftModalCatItemImage]}
+                                                            source={{ uri: item.image, priority: FastImage.priority.high }}
+                                                            resizeMode={FastImage.resizeMode.contain}
+                                                        />
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </View>
+                                    </ScrollView>
+                                </> :
+                                    <View style={styles.noGiftsTextContainer}>
+                                        <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>
+                                    </View>}
+                            </View>
+                        </View>
+
+                    </View>
+                </Modal>
+            )}
+
             {/* <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
                 <Text style={styles.buttonText}>Leave Room</Text>
             </TouchableOpacity> */}

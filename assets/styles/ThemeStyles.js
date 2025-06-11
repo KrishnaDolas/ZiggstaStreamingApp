@@ -1279,7 +1279,7 @@ export const styles = StyleSheet.create({
   },
   strRoomBottomBox: {
     paddingHorizontal: 14,
-    paddingBottom:6,
+    paddingBottom: 6,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -1298,6 +1298,82 @@ export const styles = StyleSheet.create({
   },
   strRoomBottomBoxIconBox: {
     marginLeft: 20,
+  },
+
+  // gift modal
+  giftModalCategoryMainLayout: {
+    backgroundColor: '#1e1e1e',
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+    overflow: 'hidden',
+    borderRadius: 8,
+    marginTop: 10,
+    position: 'relative',
+  },
+  giftModalCatRightArrow: {
+    position: 'absolute',
+    right: 4,
+    top: '50%',
+    transform: [{ translateY: -12 }],
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 15,
+    padding: 4,
+    zIndex: 10,
+  },
+  giftModalCategoryContainer: {
+    flexDirection: 'row',
+  },
+  giftModalCatTab: {
+    backgroundColor: '#333',
+    paddingVertical: 5,
+    paddingHorizontal: 25,
+    borderRadius: 7,
+    marginRight: 20,
+  },
+  giftModalCatTabActive: {
+    backgroundColor: '#007bff',
+  },
+  giftModalCatTabText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  giftModalItemsMainLayout: {
+    backgroundColor: '#222',
+    marginTop: 2,
+    borderRadius: 8,
+    height: 200,
+    marginHorizontal: 7
+  },
+  giftModalCategoryItemsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    // justifyContent: 'space-between',
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+  },
+  giftModalCatItem: {
+    width: '19.2%', // 4 items in a row with some spacing
+    aspectRatio: 1, // keeps it square (optional)
+    alignItems: 'center',
+    marginBottom: 20,
+    marginRight: 20,
+  },
+  giftModalCatItemImage: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 6,
+    backgroundColor: 'white',
+    zIndex: 1,
+  },
+  noGiftsTextContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noGiftsTextContent: {
+    color: '#fff',
+    fontSize: 15,
   },
 });
 
