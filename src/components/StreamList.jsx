@@ -142,6 +142,9 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             console.log(error);
         }
     };
+    const viewerjoinedroom = (roomId) => {
+        joinRoom(roomId);
+    }
 
 
     const renderItem = ({ item, index }) => {
@@ -150,7 +153,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => joinRoom(item.roomID.toString())
+                onPress={()=>viewerjoinedroom(item.roomID.toString())
                     // joinRoom(item.roomID)
                 }
             >
