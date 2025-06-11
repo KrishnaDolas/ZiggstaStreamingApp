@@ -142,7 +142,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => console.log('Clicked item:', item)
+                onPress={() => joinRoom()
                     // joinRoom(item.roomID)
                 }
             >
