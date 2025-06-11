@@ -97,6 +97,12 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
         );
     };
 
+
+    const handleGiftModalOpen = () => {
+        console.log('showing gift modal');
+        setGiftModalVisible(true);
+    };
+
     // Handle keyboard events to adjust the input box position
 
     useEffect(() => {
@@ -112,7 +118,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
             hideSub.remove();
         };
     }, []);
-
 
     const filteredGiftItems = selectedGiftCategory === '' ? giftItems : giftItems.filter(item => item.price === selectedGiftCategory);
 
@@ -247,7 +252,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                                         <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
                                             <Ionicons name="add-outline" size={30} color="#fff" />
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
+                                        <TouchableOpacity onPress={handleGiftModalOpen} style={[styles.strRoomBottomBoxIconBox]}>
                                             <Ionicons name="gift" size={30} color="#FF00FF" />
                                         </TouchableOpacity>
                                         <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
@@ -301,7 +306,8 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
 
 
             {giftModalVisible && (
-                <Modal isVisible={giftModalVisible}
+                <Modal
+                    isVisible={giftModalVisible}
                     // onBackdropPress={onClose}
                     animationIn="slideInUp"
                     animationOut="slideOutDown"
@@ -312,7 +318,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
                     useNativeDriver={true}
                 >
                     <View style={[styles.halfScreenModalOverlay]}>
-
                         <View style={[{ maxHeight: screenHeight * 0.5 }]}>
                             <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
@@ -391,7 +396,8 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, toggleMut
 
                     </View>
                 </Modal>
-            )}
+            )
+            }
 
             {/* <TouchableOpacity style={[styles.leaveButton, themeStyles[theme].stopButton]} onPress={leaveRoom}>
                 <Text style={styles.buttonText}>Leave Room</Text>
