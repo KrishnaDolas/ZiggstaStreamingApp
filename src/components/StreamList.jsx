@@ -127,7 +127,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             //   console.log(response);
             //   if (response) {
                 //   }
-            createRoom(565658);
+            createRoom(roomId);
             setOpenStreamInputModal(false);
             setRoomIdInput('');
         } catch (error) {
@@ -142,7 +142,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={() => joinRoom()
+                onPress={() => console.log('Clicked item:', item)
                     // joinRoom(item.roomID)
                 }
             >

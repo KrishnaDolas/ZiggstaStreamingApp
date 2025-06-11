@@ -293,7 +293,7 @@ export const MainScreen = ({onLogout,userData}) => {
     };
   
     const joinRoom = (id) => {
-      const targetRoomId = 565658
+      const targetRoomId = id
       if (!targetRoomId.trim()) {
         setError('Please enter a room ID.');
         return;
