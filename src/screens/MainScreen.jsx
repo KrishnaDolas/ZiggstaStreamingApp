@@ -9,6 +9,8 @@ import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
+import Hostscreen from '../streamscreen/Hostscreen';
+import Viewerscreen from '../streamscreen/Viewerscreen';
 export const MainScreen = ({onLogout,userData}) => {
     const [roomId, setRoomId] = useState('');
     const [joined, setJoined] = useState(false);
@@ -24,6 +26,7 @@ export const MainScreen = ({onLogout,userData}) => {
     const [isFrontCamera, setIsFrontCamera] = useState(true);
     const [streamRequest, setStreamRequest] = useState(null);
     const [hasRequestedStream, setHasRequestedStream] = useState(false);
+    const [isviewer, setIsViewer] = useState(false);
     const { theme } = useContext(ThemeContext);
   
     const peerConnectionRef = useRef(null);
@@ -75,6 +78,7 @@ export const MainScreen = ({onLogout,userData}) => {
       };
   
       const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
+        setIsViewer(true)
         setIsStreaming(isHostStreaming);
         setJoined(true);
         setIsHost(false);
@@ -401,32 +405,29 @@ export const MainScreen = ({onLogout,userData}) => {
 
         {!joined ? (
         <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
-        ) : (
-          <StreamRoom
-          isHost={isHost}
+        ) : (<Hostscreen
           localStream={localStream}
-          remoteStream={remoteStream}
           isStreaming={isStreaming}
-          isMuted={isMuted}
           isFrontCamera={isFrontCamera}
-          theme={theme}
-          toggleMute={toggleMute}
+          isHost={isHost}
           switchCamera={switchCamera}
-          startStreaming={startStreaming}
-          stopStreaming={stopStreaming}
+          toggleMute={toggleMute}
           leaveRoom={leaveRoom}
-          viewers={viewers}
-          roomId={roomId}
-          setRoomId={setRoomId}
+        />
+        )}
+        {isviewer && (
+          <Viewerscreen
+          remoteStream={remoteStream}
+          localStream={localStream}
+          isStreaming={isStreaming}
           requestStreamPermission={requestStreamPermission}
           hasRequestedStream={hasRequestedStream}
-          streamRequest={streamRequest}
-          setStreamRequest={setStreamRequest}
-          confirmLogout={confirmLogout}
-          onLogout={onLogout} 
-          setError={setError}
+          isFrontCamera={isFrontCamera}
+          theme={theme}
           viewerCount={viewerCount}
-          setViewerCount={setViewerCount}
+          toggleMute={toggleMute}
+          switchCamera={switchCamera}
+          leaveRoom={leaveRoom}
           />
         )}
         {/* Footer */}
