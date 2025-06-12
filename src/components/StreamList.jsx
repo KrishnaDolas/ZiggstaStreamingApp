@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView } from 'react-native';
+import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Modal from 'react-native-modal';
 import { format } from 'date-fns';
@@ -9,6 +9,7 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
+import StreamListSkeleton from './StreamListSkeleton';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -34,13 +35,15 @@ const categoryData = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
+const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
     const [selectedCategoryIndices, setSelectedCategoryIndices] = useState([]); // store selected indices
     const [filteredRooms, setFilteredRooms] = useState([]); // store filtered rooms
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [isFiltering, setIsFiltering] = useState(false);
 
     // Function to toggle category selection
     const toggleCategory = (index) => {
@@ -57,28 +60,37 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
             }
         });
     };
+
+    // Function to fetch rooms from the API
     const getRooms = async () => {
         try {
+            setIsInitialLoading(true);
             const response = await Apiclient.get('/rooms/getrooms')
-            if(response){
+            if (response) {
                 setApiRooms(response.data.data || []);
             }
         } catch (error) {
             console.error('Error fetching rooms:', error);
+        } finally {
+            setIsInitialLoading(false);
         }
     };
-    const filterroomdata=async(selecteddata)=>{
+
+    const filterroomdata = async (selecteddata) => {
         try {
             console.log(selecteddata);
-            const response=await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
-            if(response){
+            setIsFiltering(true);
+            const response = await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
+            if (response) {
                 console.log('Filtered Rooms:', response.data.data);
-            setApiRooms(response.data.data || []);
-        }
+                setApiRooms(response.data.data || []);
+            }
         } catch (error) {
             console.log(error);
+        } finally {
+            setIsFiltering(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (selectedCategoryIndices.length > 0) {
@@ -88,24 +100,22 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         }
     }, [selectedCategoryIndices]);
 
-    useEffect(()=>{
-        if(filteredRooms.length>0){
-            const sorteddata= filteredRooms.sort((a, b) => a - b).join(',');
+    useEffect(() => {
+        if (filteredRooms.length > 0) {
+            const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
             filterroomdata(sorteddata);
-        }else{
+        } else {
             getRooms();
         }
         console.log(userData);
-    },[filteredRooms])
-
-
+    }, [filteredRooms]);
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
         if (roomIdInput.trim() === '') {
             Alert.alert('Error', 'Please enter a room name before creating a room.');
             return;
-        }else if (selectedCategoryIndices.length === 0) {
+        } else if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a room.');
             return;
         }
@@ -117,27 +127,27 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         try {
             //7 character room ID
             const roomId = Math.random().toString(36).substring(2, 4);
-            const sortcategories= selectedCategoryIndices.sort((a, b) => a - b);
-              const roomData = {
+            const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
+            const roomData = {
                 RoomName: roomIdInput,
                 hostID: userData.userid,
                 startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
-                endDate: format(new Date(Date.now() + 60 * 60 * 1000),"yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
+                endDate: format(new Date(Date.now() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
                 participants: '',
                 thumbNail: 'dummyimg.jpg',
                 physicalLocation: 'pune',
                 Categories: sortcategories.join(',')
-              };
-              console.log(roomData);
+            };
+            console.log(roomData);
 
-              const response = await Apiclient.post('/rooms', roomData);
-              console.log(response);
-              if (response.data.roomID) {
+            const response = await Apiclient.post('/rooms', roomData);
+            console.log(response);
+            if (response.data.roomID) {
                 console.log('Room created successfully:', response);
                 createRoom(response.data.roomID.toString());
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
-                  }
+            }
         } catch (error) {
             console.log(error);
         }
@@ -153,7 +163,7 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
         return (
             <TouchableOpacity
                 style={styles.streamListCard}
-                onPress={()=>viewerjoinedroom(item.roomID.toString())
+                onPress={() => viewerjoinedroom(item.roomID.toString())
                     // joinRoom(item.roomID)
                 }
             >
@@ -196,16 +206,20 @@ const StreamList = ({ theme, joinRoom, createRoom,userData }) => {
                     ]}>
                     For You
                 </Text>
-                <FlatList
-                    data={apiRooms}
-                    keyExtractor={item => item.roomID.toString()}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.streamListScrollContainer}
-                    initialNumToRender={8}
-                    numColumns={2}
-                    columnWrapperStyle={styles.streamListGrid}
-                    renderItem={renderItem}
-                />
+                {isFiltering && <ActivityIndicator size="large" color="#a000df" style={{ marginVertical: 10 }} />}
+                {isInitialLoading ? (
+                    <StreamListSkeleton count={6} columns={2} />
+                ) : (
+                    <FlatList
+                        data={apiRooms}
+                        keyExtractor={item => item.roomID.toString()}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.streamListScrollContainer}
+                        initialNumToRender={8}
+                        numColumns={2}
+                        columnWrapperStyle={styles.streamListGrid}
+                        renderItem={renderItem}
+                    />)}
             </View>
 
             <View style={styles.streamListFiltersBtnGroup}>
