@@ -849,7 +849,7 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
-    maxWidth: '98%',
+    maxWidth: 'auto',
 
   },
   streamListStatus: {

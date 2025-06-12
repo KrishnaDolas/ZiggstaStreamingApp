@@ -405,18 +405,17 @@ export const MainScreen = ({onLogout,userData}) => {
 
         {!joined ? (
         <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
-        ) : (<StreamRoom
-          isHost={isHost}
+        ) : (<Hostscreen
           localStream={localStream}
-          isFrontCamera={isFrontCamera}
           isStreaming={isStreaming}
-          requestStreamPermission={requestStreamPermission}
-          hasRequestedStream={hasRequestedStream}
+          isFrontCamera={isFrontCamera}
+          isHost={isHost}
+          switchCamera={switchCamera}
+          toggleMute={toggleMute}
           leaveRoom={leaveRoom}
-          theme={theme}
         />
         )}
-        {/* {isviewer && (
+        {isviewer && (
           <Viewerscreen
           remoteStream={remoteStream}
           localStream={localStream}
@@ -430,7 +429,7 @@ export const MainScreen = ({onLogout,userData}) => {
           switchCamera={switchCamera}
           leaveRoom={leaveRoom}
           />
-        )} */}
+        )}
         {/* Footer */}
       </View>
         {/* <Footer/> */}
