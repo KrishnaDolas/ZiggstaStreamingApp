@@ -21,6 +21,9 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 
+
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
 const Stack = createNativeStackNavigator();
 
 const NetworkCheck = () => (
@@ -157,56 +160,59 @@ const App = () => {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider >
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
-            {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
-            {isAuthenticated ? (
-              <>
-                <Stack.Screen name="Main">
+      <SafeAreaProvider>
+        <ThemeProvider >
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
+              {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
+              {isAuthenticated ? (
+                <>
+                  <Stack.Screen name="Main">
+                    {props => (
+                      <MainScreen
+                        {...props}
+                        onLogout={handleLogout}
+                        address={userAddress}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="Profile">
+                    {props => (
+                      <ProfileScreen
+                        {...props}
+                        onLogout={handleLogout}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="Messages">
+                    {props => (
+                      <MessageListScreen
+                        {...props}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
+                </>
+              ) : (
+                <Stack.Screen name="Auth">
                   {props => (
-                    <MainScreen
+                    <AuthScreen
                       {...props}
-                      onLogout={handleLogout}
-                      address={userAddress}
-                      userData={userData}
+                      onLogin={handleLogin}
+                      userAddress={userAddress}
                     />
                   )}
                 </Stack.Screen>
-                <Stack.Screen name="Profile">
-                  {props => (
-                    <ProfileScreen
-                      {...props}
-                      onLogout={handleLogout}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="Messages">
-                  {props => (
-                    <MessageListScreen
-                      {...props}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen>
-                {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
-              </>
-            ) : (
-              <Stack.Screen name="Auth">
-                {props => (
-                  <AuthScreen
-                    {...props}
-                    onLogin={handleLogin}
-                    userAddress={userAddress}
-                  />
-                )}
-              </Stack.Screen>
-            )}
-          </Stack.Navigator>
-        </NavigationContainer>
-      </ThemeProvider>
+              )}
+            </Stack.Navigator>
+          </NavigationContainer>
+        </ThemeProvider>
+      </SafeAreaProvider>
+
     </ErrorBoundary>
   );
 };

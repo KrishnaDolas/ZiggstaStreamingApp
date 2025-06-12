@@ -77,7 +77,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
     }, [userData.userid]);
 
     return (
-        <SafeAreaView style={{ flex: 1, position: 'relative', }}>
+        <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80 }}>
             {isUserLoading ? (
                 <View style={styles.activityIndicatorMain}>
                     <ActivityIndicator size="large" color={theme === 'light' ? '#000' : '#fff'} />

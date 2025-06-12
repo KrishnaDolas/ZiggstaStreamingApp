@@ -5,8 +5,10 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Footer = () => {
+  const insets = useSafeAreaInsets();
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
   const route = useRoute();
@@ -35,8 +37,7 @@ const Footer = () => {
   const iconColor = (tabName) => (activeTab === tabName ? '#d93a63' : 'grey');
 
   return (
-    <View style={[styles.footer, themeStyles[theme].footer]}>
-
+    <View style={[styles.footer, themeStyles[theme].footer, { paddingBottom: insets.bottom }]}>
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {

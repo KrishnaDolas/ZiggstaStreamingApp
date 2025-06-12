@@ -10,6 +10,7 @@ import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -36,6 +37,7 @@ const categoryData = [
 
 
 const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
+    const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -155,7 +157,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const viewerjoinedroom = (item) => {
         const roomId = item.roomID.toString();
         const hostID = item.hostID.toString();
-        joinRoom(roomId,hostID);
+        joinRoom(roomId, hostID);
     }
 
 
@@ -227,7 +229,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                     />)}
             </View>
 
-            <View style={styles.streamListFiltersBtnGroup}>
+            <View style={[
+                styles.streamListFiltersBtnGroup,
+                insets.bottom > 0 && { paddingBottom: insets.bottom },
+            ]}>
                 <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="wrench" size={24} color="#262628" />
                 </TouchableOpacity>
