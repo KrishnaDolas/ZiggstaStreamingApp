@@ -1,15 +1,36 @@
 import { Text, TouchableOpacity, View } from 'react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const Footer = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('Home');
+  const route = useRoute();
+
+  // Automatically determine the active tab based on current route name
+  const getActiveTab = () => {
+    switch (route.name) {
+      case 'Main':
+        return 'Home';
+      case 'Profile':
+        return 'Profile';
+      case 'Messages':
+        return 'Messages';
+      case 'Live':
+        return 'Live';
+      case 'Settings':
+        return 'Settings';
+      default:
+        return '';
+    }
+  };
+
+  // Get the active tab based on the current route
+  const activeTab = getActiveTab();
 
   const iconColor = (tabName) => (activeTab === tabName ? '#d93a63' : 'grey');
 
@@ -19,8 +40,9 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          setActiveTab('Home');
-          navigation.navigate('Main');
+          if (route.name !== 'Main') {
+            navigation.navigate('Main');
+          }
         }}
       >
         <Ionicons name="home-outline" size={25} color={iconColor('Home')} />
@@ -30,8 +52,9 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          setActiveTab('Profile');
-          navigation.navigate('Profile');
+          if (route.name !== 'Profile') {
+            navigation.navigate('Profile');
+          }
         }}
       >
         <FontAwesome name="user-o" size={25} color={iconColor('Profile')} />
@@ -41,8 +64,9 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          setActiveTab('Live');
-          console.log('Live');
+          if (route.name !== 'Live') {
+            navigation.navigate('Live');
+          }
         }}
       >
         <Ionicons name="play-outline" size={25} color={iconColor('Live')} />
@@ -52,8 +76,9 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          setActiveTab('Messages');
-          navigation.navigate('Messages');
+          if (route.name !== 'Messages') {
+            navigation.navigate('Messages');
+          }
         }}
       >
         <Ionicons name="chatbubbles-outline" size={25} color={iconColor('Messages')} />
@@ -63,14 +88,14 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          setActiveTab('Settings');
-          console.log('Settings');
+          if (route.name !== 'Settings') {
+            navigation.navigate('Settings');
+          }
         }}
       >
         <Ionicons name="settings-outline" size={25} color={iconColor('Settings')} />
         <Text style={[styles.footerText, { color: iconColor('Settings') }]}>Settings</Text>
       </TouchableOpacity>
-
     </View>
   );
 };
