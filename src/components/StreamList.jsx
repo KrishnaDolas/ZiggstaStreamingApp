@@ -172,12 +172,12 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                     source={image}
                     style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]}
                 />
-                <View style={styles.streamListEyeCountContainer}>
-                    <Text style={styles.streamListEyeCount}>{item.viewerCount || 0}</Text>
-                    <Ionicons name="eye-outline" size={14} color="#fff" />
+                <View style={[styles.streamListEyeCountContainer, themeStyles[theme].streamListEyeCountContainer]}>
+                    <Text style={[styles.streamListEyeCount, themeStyles[theme].streamListEyeCount]}>{item.viewerCount || 0}</Text>
+                    <Ionicons name="eye-outline" size={14} color={theme === 'light' ? '#fff' : '#fff'} />
                 </View>
                 <View style={styles.streamListOverlay}>
-                    <Text style={styles.streamListName} numberOfLines={1}>
+                    <Text style={[styles.streamListName, themeStyles[theme].streamListName]} numberOfLines={1}>
                         {item.RoomName}
                     </Text>
                     {/* <Text style={styles.streamListStatus} numberOfLines={1}>Hosted by ID: {item.hostID}</Text> */}
@@ -194,7 +194,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
             <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} />
-
             <View
                 style={[
                     styles.streamListMainCardLayout,
@@ -207,7 +206,12 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                     ]}>
                     For You
                 </Text>
-                {isFiltering && <ActivityIndicator size="large" color="#a000df" style={{ marginVertical: 10 }} />}
+                {isFiltering && (
+                    <View style={styles.isFilteringOverlay}>
+                        <View style={[styles.isFilteringBlurBackground, themeStyles[theme].isFilteringBlurBackground]} />
+                        <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} />
+                    </View>
+                )}
                 {isInitialLoading ? (
                     <StreamListSkeleton count={6} columns={2} />
                 ) : (
