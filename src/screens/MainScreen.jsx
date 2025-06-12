@@ -77,7 +77,7 @@ export const MainScreen = ({onLogout,userData}) => {
         setHostId(userData.userid);
       };
   
-      const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount }) => {
+      const handleRoomJoined = ({isHostStreaming, viewerCount }) => {
         setIsViewer(true)
         setIsStreaming(isHostStreaming);
         setJoined(true);
@@ -296,13 +296,13 @@ export const MainScreen = ({onLogout,userData}) => {
       startStreaming()
     };
   
-    const joinRoom = (id) => {
-      const targetRoomId = id
+    const joinRoom = (targetRoomId,hostID) => {
       if (!targetRoomId.trim()) {
         setError('Please enter a room ID.');
         return;
       }
       setRoomId(targetRoomId);
+      setHostId(hostID);
       socket.emit('join-room', targetRoomId);
     };
   
