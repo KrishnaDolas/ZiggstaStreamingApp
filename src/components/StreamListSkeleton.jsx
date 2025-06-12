@@ -1,26 +1,41 @@
 // components/Skeleton.js
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, FlatList, StyleSheet, Dimensions } from 'react-native';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import LinearGradient from 'react-native-linear-gradient';
+import { ThemeContext } from '../context/ThemeContext';
 const screenHeight = Dimensions.get('window').height;
 
-const SkeletonCard = () => (
-    <View style={styles.card}>
-        <ShimmerPlaceHolder
-            shimmerStyle={styles.image}
-            LinearGradient={LinearGradient}
-        />
-        <ShimmerPlaceHolder
-            shimmerStyle={[styles.line, { width: '100%' }]}
-            LinearGradient={LinearGradient}
-        />
-        <ShimmerPlaceHolder
-            shimmerStyle={[styles.line, { width: '60%' }]}
-            LinearGradient={LinearGradient}
-        />
-    </View>
-);
+const SkeletonCard = () => {
+
+    const { theme } = useContext(ThemeContext);
+
+    const isLight = theme === 'light';
+    const cardBackground = isLight ? '#fff' : '#1e1e1e';
+    const shimmerBaseColor = isLight ? '#e0e0e0' : '#444';
+    const shimmerHighlightColor = isLight ? '#f5f5f5' : '#666';
+
+
+    return (
+        <View style={[styles.card, { backgroundColor: cardBackground }]}>
+            <ShimmerPlaceHolder
+                shimmerStyle={styles.image}
+                LinearGradient={LinearGradient}
+                shimmerColors={[shimmerBaseColor, shimmerHighlightColor, shimmerBaseColor]}
+            />
+            <ShimmerPlaceHolder
+                shimmerStyle={[styles.line, { width: '100%' }]}
+                LinearGradient={LinearGradient}
+                shimmerColors={[shimmerBaseColor, shimmerHighlightColor, shimmerBaseColor]}
+            />
+            <ShimmerPlaceHolder
+                shimmerStyle={[styles.line, { width: '60%' }]}
+                LinearGradient={LinearGradient}
+                shimmerColors={[shimmerBaseColor, shimmerHighlightColor, shimmerBaseColor]}
+            />
+        </View>
+    )
+};
 
 const StreamListSkeleton = ({ count = 6, columns = 2 }) => {
     return (
@@ -48,7 +63,6 @@ const styles = StyleSheet.create({
     },
     card: {
         width: '48%',
-        backgroundColor: '#fff',
         borderRadius: 10,
         padding: 10,
         elevation: 2,

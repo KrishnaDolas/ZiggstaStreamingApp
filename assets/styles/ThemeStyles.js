@@ -826,17 +826,14 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     left: 8,
-    backgroundColor: '#575757b3',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 30,
-    borderColor: '#fff',
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   streamListEyeCount: {
-    color: '#fff',
     fontSize: 12,
     marginEnd: 10,
   },
@@ -846,11 +843,9 @@ export const styles = StyleSheet.create({
     left: 10,
   },
   streamListName: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
     maxWidth: 'auto',
-
   },
   streamListStatus: {
     color: '#fff',
@@ -959,7 +954,22 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 8,
   },
+  isFilteringOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
+  isFilteringBlurBackground: {
+    ...StyleSheet.absoluteFillObject,
+    // backgroundColor: 'rgba(0, 0, 0, 0.23)', // subtle blur feel using transparency
+    zIndex: -1,
+  },
 
   // modal css start
 
@@ -1448,7 +1458,20 @@ export const themeStyles = {
     streamListMainCardLayout: {
       backgroundColor: '#fff',
     },
+    isFilteringBlurBackground: {
+      backgroundColor: 'rgba(0, 0, 0, 0.23)', // subtle blur feel using transparency
+    },
 
+    streamListEyeCountContainer: {
+      backgroundColor: '#575757b3',
+      borderColor: '#fff',
+    },
+    streamListEyeCount: {
+      color: '#fff',
+    },
+    streamListName: {
+      color: '#fff',
+    },
     // message list
 
     messageListMainCardLayout: {
@@ -1536,7 +1559,20 @@ export const themeStyles = {
     streamListMainCardLayout: {
       backgroundColor: '#2a2a2a',
     },
+    isFilteringBlurBackground: {
+      backgroundColor: 'rgba(19, 19, 19, 0.3)', // subtle blur feel using transparency
+    },
 
+    streamListEyeCountContainer: {
+      backgroundColor: '#a000df',
+      borderColor: '#fff',
+    },
+    streamListEyeCount: {
+      color: '#fff',
+    },
+    streamListName: {
+      color: '#fff',
+    },
     // message list
 
     messageListMainCardLayout: {
