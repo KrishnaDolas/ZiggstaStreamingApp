@@ -3,6 +3,9 @@ import { Dimensions } from 'react-native';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
+// Calculate item width
+const giftCardItemWidth = (screenWidth - (31 * (4 + 1))) / 4;
+
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
   container: {
@@ -1343,17 +1346,17 @@ export const styles = StyleSheet.create({
     marginTop: 2,
     borderRadius: 8,
     height: 200,
-    marginHorizontal: 7
+    marginHorizontal: 7,
   },
   giftModalCategoryItemsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     // justifyContent: 'space-between',
     paddingVertical: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
   },
   giftModalCatItem: {
-    width: '19.2%', // 4 items in a row with some spacing
+    width: giftCardItemWidth, // 4 items in a row with some spacing
     aspectRatio: 1, // keeps it square (optional)
     alignItems: 'center',
     marginBottom: 20,

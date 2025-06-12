@@ -373,7 +373,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                             {filteredGiftItems.map((item, index) => {
                                                 return (
                                                     <TouchableOpacity key={index}
-                                                        // onPress={() => setSelectedCategory(category)}
                                                         style={styles.giftModalCatItem}
                                                     >
                                                         <FastImage
