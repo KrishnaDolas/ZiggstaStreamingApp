@@ -5,6 +5,7 @@ import { RTCView } from 'react-native-webrtc';
 const Viewerscreen = (props) => {
     const { remoteStream, localStream, isStreaming, requestStreamPermission,
          hasRequestedStream, isFrontCamera, theme,switchCamera,toggleMute,leaveRoom } = props;
+         console.log('Viewerscreen props:', props);
     return (
         <View>
             <View style={styles.streamBox}>

@@ -45,7 +45,7 @@ const chats = [
 ];
 const Hostscreen=(props)=>{
     const { localStream, isStreaming, isFrontCamera, isHost,switchCamera,toggleMute,leaveRoom } = props;
-
+console.log('Hostscreen props:', props);
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [userChatInput, setUserChatInput] = useState('');
 

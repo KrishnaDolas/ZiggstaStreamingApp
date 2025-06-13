@@ -155,7 +155,11 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const viewerjoinedroom = (item) => {
         const roomId = item.roomID.toString();
         const hostID = item.hostID.toString();
-        joinRoom(roomId,hostID);
+        if(item.hostID === userData.userid){
+            createRoom(roomId,hostID);
+        }else{
+            joinRoom(roomId,hostID);
+        }
     }
 
 
