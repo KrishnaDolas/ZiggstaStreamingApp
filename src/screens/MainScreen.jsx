@@ -1,4 +1,4 @@
-import { View, Alert, Platform } from 'react-native';
+import { View, Alert, Platform, SafeAreaView, StatusBar } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -11,7 +11,9 @@ import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import Hostscreen from '../streamscreen/Hostscreen';
 import Viewerscreen from '../streamscreen/Viewerscreen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export const MainScreen = ({ onLogout, userData }) => {
+  const insetsTop = useSafeAreaInsets();
   const [roomId, setRoomId] = useState('');
   const [joined, setJoined] = useState(false);
   const [isHost, setIsHost] = useState(false);
@@ -382,7 +384,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       }
     }
   };
-  
+
   const confirmLogout = () => {
     Alert.alert(
       'Logout',
@@ -402,7 +404,11 @@ export const MainScreen = ({ onLogout, userData }) => {
   }
 
   return (
-    <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{ height: '100%', width: '100%' }}>
+    <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
+      <StatusBar
+        hidden={false} // Show the status bar
+        barStyle="light-content"
+      />
       <View style={[styles.container]}>
 
         {!joined ? (
@@ -437,6 +443,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       </View>
       {/* <Footer/> */}
     </LinearGradient>
+
 
   );
 };

@@ -5,6 +5,7 @@ import {
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
@@ -70,9 +71,11 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     requestStreamPermission, hasRequestedStream, leaveRoom, theme,
 }) => {
     const insets = useSafeAreaInsets();
+    const insetsTop = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [userChatInput, setUserChatInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
     const [giftModalVisible, setGiftModalVisible] = useState(false);
     const [selectedGiftCategory, setSelectedCategory] = useState('$2');
     const [selectedGiftItems, setSelectedGiftItems] = useState([]);
@@ -246,7 +249,8 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                 {
                                     bottom: 34, // always pin to bottom
                                     paddingBottom: insets.bottom > 0 ? insets.bottom : 0,
-                                }
+                                    paddingTop: insetsTop.top > 0 ? insetsTop.top : 0,
+                                },
                             ]}>
                                 <View style={styles.strRoomHeader}>
                                     <View style={styles.strRoomHeaderLeft}>
@@ -356,22 +360,39 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                             placeholderTextColor="#414141"
                                             value={userChatInput}
                                             onChangeText={setUserChatInput}
+                                            onFocus={() => setIsTyping(true)}
+                                            onBlur={() => setIsTyping(false)}
                                             style={styles.strRoomBottomBoxInput}
                                         />
-                                        <TouchableOpacity onPress={() => {
-                                            animateIcon();
-                                            setOpenMoreSettingList(!openMoreSettingList);
-                                        }} style={styles.strRoomBottomBoxIconBox}>
-                                            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                                                {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Ionicons name="add-outline" size={30} color="#fff" />}
-                                            </Animated.View>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
-                                            <Ionicons name="gift" size={30} color="#FF00FF" />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
-                                            <Ionicons name="cart" size={30} color="#fff" />
-                                        </TouchableOpacity>
+                                        {keyboardOffset && isTyping ? (
+                                            <TouchableOpacity onPress={() => {
+                                                // handle submit here
+                                                console.log("Submitted: ", userChatInput);
+                                                setUserChatInput('');
+                                                setIsTyping(false);
+                                            }} style={styles.strRoomBottomBoxIconBox}>
+                                                <FontAwesome name="send" size={24} color="#00FF00" />
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <>
+                                                <TouchableOpacity onPress={() => {
+                                                    animateIcon();
+                                                    setOpenMoreSettingList(!openMoreSettingList);
+                                                }} style={styles.strRoomBottomBoxIconBox}>
+                                                    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                                                        {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Ionicons name="add-outline" size={30} color="#fff" />}
+                                                    </Animated.View>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
+                                                    <Ionicons name="gift" size={30} color="#FF00FF" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
+                                                    <Ionicons name="cart" size={30} color="#fff" />
+                                                </TouchableOpacity>
+                                            </>
+
+                                        )}
+
                                     </View>
                                 </LinearGradient>
                             </View>

@@ -1171,7 +1171,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     alignItems: 'center',
-    paddingTop: 10,
+    // paddingTop: 10,
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',

@@ -6,7 +6,7 @@ import {
   View,
   Text,
   StyleSheet,
-  AppState
+  AppState,
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -41,6 +41,8 @@ const App = () => {
   const [userData, setUserData] = useState({});
 
   const handleLogin = () => setIsAuthenticated(true);
+
+
 
   const handleLogout = async () => {
     await AsyncStorage.clear();

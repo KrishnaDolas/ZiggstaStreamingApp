@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
-import { View, Text, Image, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, Image, SafeAreaView, FlatList, StatusBar } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const messages = [
     {
@@ -73,6 +74,7 @@ const messages = [
 ];
 
 export const MessageListScreen = ({ userData }) => {
+    const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
 
     const renderItem = ({ item }) => (
@@ -87,11 +89,15 @@ export const MessageListScreen = ({ userData }) => {
     );
     return (
         <LinearGradient
-            style={styles.messageListGradientBox}
+            style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
             colors={['#a000df', '#fc4692']}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
             <SafeAreaView style={styles.messageListSafeView}>
+                <StatusBar
+                    hidden={false} // Show the status bar
+                    barStyle="light-content"
+                />
                 <StreamListHeader />
                 <View
                     style={[

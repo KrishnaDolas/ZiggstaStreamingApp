@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
@@ -12,6 +12,7 @@ import Apiclient from '../utils/Apiclient';
 import { CenterModal } from '../components/CenterModal';
 import FullScreenModal from '../components/FullScreenModal';
 import HalfScreenModal from '../components/HalfScreenModal';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const tableData = [
     {
@@ -46,6 +47,7 @@ const tableData = [
 
 export const ProfileScreen = ({ userData, onLogout }) => {
     const { theme } = useContext(ThemeContext);
+    const insetsTop = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
     const [profileData, setProfileData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -77,7 +79,11 @@ export const ProfileScreen = ({ userData, onLogout }) => {
     }, [userData.userid]);
 
     return (
-        <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80 }}>
+        <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80, paddingTop: insetsTop.top }}>
+            <StatusBar
+                hidden={false} // Show the status bar
+                barStyle="dark-content"
+            />
             {isUserLoading ? (
                 <View style={styles.activityIndicatorMain}>
                     <ActivityIndicator size="large" color={theme === 'light' ? '#000' : '#fff'} />
