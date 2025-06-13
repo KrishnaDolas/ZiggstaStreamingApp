@@ -153,7 +153,10 @@ export const styles = StyleSheet.create({
   streamBox: {
     width: '100%',
     position: 'relative',
+    height: '100%',
+    backgroundColor: '#1d1d1d',
   },
+
   fullScreenVideo: {
     position: 'fixed',
     top: 0,
@@ -161,6 +164,102 @@ export const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 12,
     marginBottom: 15,
+  },
+  streamVideosContainer: {
+    width: '100%',
+    height: screenHeight * 0.5 + 40,
+    overflow: 'hidden',
+  },
+  streamVideosInnerGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center', // optional: space-around, space-evenly
+  },
+  streamVideo: {
+    backgroundColor: 'gray',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 10,
+  },
+
+  // stream third row 
+  threeUserRow: {
+    flexDirection: 'row',
+    width: '100%',
+    height: '100%',
+  },
+
+  threeUserColumnLeft: {
+    width: '50%',
+    height: '100%',
+  },
+
+  threeUserColumnRight: {
+    width: '50%',
+    height: '100%',
+    flexDirection: 'column',
+  },
+
+  streamVideoFull: {
+    flex: 1,
+    backgroundColor: 'gray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#000',
+  },
+
+  streamVideoHalf: {
+    flex: 1,
+    backgroundColor: 'gray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#000',
+  },
+  videoText: {
+    color: '#fff',
+    fontSize: 22,
+  },
+
+  // stream 5 th row
+
+  fiveUserWrapper: {
+    flexDirection: 'column',
+    width: '100%',
+    height: '100%',
+  },
+
+  fiveUserRow: {
+    flexDirection: 'row',
+    width: '100%',
+    height: '50%', // two rows, so 50% each
+  },
+
+  fiveUserCol50: {
+    width: '50%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+
+  fiveUserCol33: {
+    width: '33.33%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  streamFiveUserVideo: {
+    flex: 1,
+    backgroundColor: 'gray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#000',
   },
   strMuteOffIconBoxOverlay: {
     position: 'absolute',
@@ -1171,7 +1270,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 10,
     alignItems: 'center',
-    // paddingTop: 10,
+    paddingTop: 8,
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',
@@ -1255,7 +1354,8 @@ export const styles = StyleSheet.create({
   strRoomFooter: {
     width: '100%',
     position: 'relative',
-    paddingBottom: 20,
+    // paddingBottom: 20,
+    paddingVertical: 20,
   },
   strRoomFooterChatOrActionsBox: {
     flexDirection: 'row',
