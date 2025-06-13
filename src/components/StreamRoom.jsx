@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const chats = [
     {
         id: 1,
@@ -48,7 +49,7 @@ const chats = [
     },
 ];
 
-const giftCategories = ['$2', '$5', '$10', '$20', '$50', '$100', '$200', '$500', '$1000', '$2000', '$5000'];
+const giftCategories = ['$2', '$5', '$10', '$20', '$50'];
 
 const giftItems = [
     { price: '$2', image: 'https://test.streamalong.live/images/Animated-icons/sunrise.gif' },
@@ -65,19 +66,25 @@ const giftItems = [
     { price: '$5', image: 'https://test.streamalong.live/images/Animated-icons/420.gif' },
 ];
 
-const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStream,
-    requestStreamPermission, hasRequestedStream, leaveRoom, theme
+const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStream, switchCamera, toggleMute, isMuted,
+    requestStreamPermission, hasRequestedStream, leaveRoom, theme,
 }) => {
+    const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [userChatInput, setUserChatInput] = useState('');
     const [giftModalVisible, setGiftModalVisible] = useState(false);
-    const [selectedGiftCategory, setSelectedCategory] = useState('');
+    const [selectedGiftCategory, setSelectedCategory] = useState('$2');
     const [selectedGiftItems, setSelectedGiftItems] = useState([]);
+    const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
     const scrollRef = useRef(null);
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
-
+    // Animated values
+    const animatedOpacity = useRef(new Animated.Value(0)).current;
+    const animatedTranslateY = useRef(new Animated.Value(20)).current;
+    const scaleAnim = useRef(new Animated.Value(1)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
     const confirmleaveRoom = () => {
         Alert.alert(
             "Leave Room",
@@ -97,11 +104,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     };
 
 
-    const handleGiftModalOpen = () => {
-        console.log('showing gift modal');
-        setGiftModalVisible(true);
-    };
-
     // Handle keyboard events to adjust the input box position
 
     useEffect(() => {
@@ -117,6 +119,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
             hideSub.remove();
         };
     }, []);
+
 
     const filteredGiftItems = selectedGiftCategory === '' ? giftItems : giftItems.filter(item => item.price === selectedGiftCategory);
 
@@ -151,8 +154,68 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
         }
     }, [showArrow, arrowAnim, giftModalVisible]);
 
+    // Handle opening and closing of the more settings list with animation
+
+    useEffect(() => {
+        if (openMoreSettingList) {
+            // Open animation
+            Animated.parallel([
+                Animated.timing(animatedOpacity, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(animatedTranslateY, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        } else {
+            // Close animation
+            Animated.parallel([
+                Animated.timing(animatedOpacity, {
+                    toValue: 0,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(animatedTranslateY, {
+                    toValue: 20,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        }
+    }, [openMoreSettingList, animatedOpacity, animatedTranslateY]);
+
+
+    // Animate the icon when the user interacts with it
+    const animateIcon = () => {
+        Animated.sequence([
+            Animated.timing(scaleAnim, {
+                toValue: 1.2,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
+
+
+    useEffect(() => {
+        Animated.timing(fadeAnim, {
+            toValue: !isMuted ? 1 : 0, // Fade in if unmuted (icon shown), fade out otherwise
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    }, [isMuted, fadeAnim]);
+
     return (
-        <View style={styles.roomInfo}>
+        <View style={[styles.roomInfo]}>
             {isHost && (
                 <View style={styles.streamBox}>
                     {localStream && (
@@ -165,7 +228,26 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                     )}
                     {isStreaming ? (
                         <>
-                            <View style={styles.controls}>
+                            {!isMuted && (
+                                <Animated.View
+                                    pointerEvents="none"
+                                    style={[
+                                        styles.strMuteOffIconBoxOverlay,
+                                        {
+                                            opacity: fadeAnim,
+                                        },
+                                    ]}
+                                >
+                                    <Ionicons name="mic-off" size={180} color="#ccc" />
+                                </Animated.View>
+                            )}
+                            <View style={[
+                                styles.controls,
+                                {
+                                    bottom: 34, // always pin to bottom
+                                    paddingBottom: insets.bottom > 0 ? insets.bottom : 0,
+                                }
+                            ]}>
                                 <View style={styles.strRoomHeader}>
                                     <View style={styles.strRoomHeaderLeft}>
                                         <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
@@ -174,7 +256,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                                 Angenlico Marias
                                             </Text>
                                             <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                                <Ionicons name="heart" solid size={16} color="#fff" />
+                                                <Ionicons name="heart" solid size={14} color="#fff" />
                                                 <Text style={[styles.strRoomHeaderLeftProfileSubText]}>12345</Text>
                                             </View>
                                         </View>
@@ -198,48 +280,76 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                     end={{ x: 0.5, y: 0 }}
                                     style={styles.strRoomFooter}
                                 >
-                                    <View style={styles.strLiveStats}>
-                                        <Text style={styles.strTitle}>The world is a happy place</Text>
-                                        <View style={styles.streamViewerCount}>
-                                            <Ionicons name="eye-outline" size={18} color="#ffea23" />
-                                            <Text style={styles.streamViewerCountTitle}>1.4k</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer, { height: 150 }]}>
-                                            <ScrollView
-                                                // contentContainerStyle={{ paddingBottom: 20 }}
-                                                showsVerticalScrollIndicator={false}
-                                            >
-                                                {chats.map((chat) => {
-                                                    return (
-                                                        <View key={chat.id} style={styles.streamChatItem}>
-                                                            <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
-                                                            <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                                <Text numberOfLines={1} style={styles.streamChatUserName}>
-                                                                    {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
-                                                                </Text>
-                                                                <Text numberOfLines={1} style={styles.streamChatMessage}>
-                                                                    {chat.message.length > 40 ? chat.message.slice(0, 40) + '...' : chat.message}
-                                                                </Text>
-                                                            </View>
-                                                        </View>
-                                                    );
-                                                })}
-                                            </ScrollView>
-                                        </View>
-                                        <View style={styles.strRoomFooterSocialActions}>
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
-                                                <Ionicons name="person-add" size={30} color="#fff" />
+                                    {!openMoreSettingList && (
+                                        <>
+                                            <View style={styles.strLiveStats}>
+                                                <Text style={styles.strTitle}>The world is a happy place</Text>
+                                                <View style={styles.streamViewerCount}>
+                                                    <Ionicons name="eye-outline" size={18} color="#ffea23" />
+                                                    <Text style={styles.streamViewerCountTitle}>1.4k</Text>
+                                                </View>
+                                            </View>
+                                            <View style={styles.strRoomFooterChatOrActionsBox}>
+                                                <View style={[styles.streamChatContainer]}>
+                                                    <ScrollView
+                                                        // contentContainerStyle={{ paddingBottom: 20 }}
+                                                        showsVerticalScrollIndicator={false}
+                                                    >
+                                                        {chats.map((chat) => {
+                                                            return (
+                                                                <View key={chat.id} style={styles.streamChatItem}>
+                                                                    <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
+                                                                    <View numberOfLines={1} style={styles.streamChatMessageBox}>
+                                                                        <Text numberOfLines={1} style={styles.streamChatUserName}>
+                                                                            {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
+                                                                        </Text>
+                                                                        <Text numberOfLines={1} style={styles.streamChatMessage}>
+                                                                            {chat.message.length > 40 ? chat.message.slice(0, 40) + '...' : chat.message}
+                                                                        </Text>
+                                                                    </View>
+                                                                </View>
+                                                            );
+                                                        })}
+                                                    </ScrollView>
+                                                </View>
+                                                <View style={styles.strRoomFooterSocialActions}>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                        <Ionicons name="person-add" size={30} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                        <Ionicons name="heart" size={30} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                        <Ionicons name="share-social-sharp" size={30} color="#fff" />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                        </>
+                                    )}
+
+                                    {/* more setting options setting*/}
+                                    {openMoreSettingList && (
+                                        <Animated.View
+                                            style={[
+                                                styles.strMoreSettingListContainer,
+                                                {
+                                                    opacity: animatedOpacity,
+                                                    transform: [{ translateY: animatedTranslateY }],
+                                                },
+                                            ]}
+                                        >
+                                            <TouchableOpacity onPress={() => {
+                                                switchCamera();
+                                            }} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
+                                                <Ionicons name="camera-reverse" size={20} color="#fff" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
-                                                <Ionicons name="heart" size={30} color="#fff" />
+                                            <TouchableOpacity onPress={() => toggleMute()} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Mute {isMuted ? 'OFF' : 'ON'}</Text>
+                                                {isMuted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                             </TouchableOpacity>
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
-                                                <Ionicons name="share-social-sharp" size={30} color="#fff" />
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
+                                        </Animated.View>
+                                    )}
                                     <View style={[styles.strRoomBottomBox, { marginBottom: keyboardOffset }]}>
                                         <TextInput
                                             placeholder=""
@@ -248,10 +358,15 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                             onChangeText={setUserChatInput}
                                             style={styles.strRoomBottomBoxInput}
                                         />
-                                        <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
-                                            <Ionicons name="add-outline" size={30} color="#fff" />
+                                        <TouchableOpacity onPress={() => {
+                                            animateIcon();
+                                            setOpenMoreSettingList(!openMoreSettingList);
+                                        }} style={styles.strRoomBottomBoxIconBox}>
+                                            <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                                                {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Ionicons name="add-outline" size={30} color="#fff" />}
+                                            </Animated.View>
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={handleGiftModalOpen} style={[styles.strRoomBottomBoxIconBox]}>
+                                        <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
                                             <Ionicons name="gift" size={30} color="#FF00FF" />
                                         </TouchableOpacity>
                                         <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
@@ -351,7 +466,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                         })}
                                     </View>
                                 </ScrollView>
-                                {showArrow && (
+                                {giftModalVisible && showArrow && (
                                     <Animated.View
                                         style={[
                                             styles.giftModalCatRightArrow,

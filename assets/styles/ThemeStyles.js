@@ -162,6 +162,15 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 15,
   },
+  strMuteOffIconBoxOverlay: {
+    position: 'absolute',
+    height: screenHeight * 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: screenWidth * 1,
+    zIndex: 1000,
+  },
   controls: {
     position: 'absolute',
     height: screenHeight * 1,
@@ -170,7 +179,7 @@ export const styles = StyleSheet.create({
     width: screenWidth * 1,
     // paddingVertical: 10,
     // backgroundColor: 'transparent',
-    zIndex: 10,
+    zIndex: 1000,
   },
   streamControls: {
     flexDirection: 'row',
@@ -854,7 +863,7 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '9%',
+    bottom: '7%',
     left: '50%',
     transform: [{ translateX: -0.475 * screenWidth }],
     flexDirection: 'row',
@@ -1112,6 +1121,7 @@ export const styles = StyleSheet.create({
   messageListSafeView: {
     flex: 1,
     position: 'relative',
+    paddingBottom: 60,
   },
   messageListMainCardLayout: {
     flex: 1,
@@ -1173,8 +1183,8 @@ export const styles = StyleSheet.create({
   },
 
   strRoomHeaderLeftProfileImg: {
-    width: 37,
-    height: 37,
+    width: 35,
+    height: 35,
     borderRadius: 24,
     marginRight: 8,
     borderColor: '#ddd',
@@ -1183,6 +1193,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderLeftProfileName: {
     color: '#fff',
     marginRight: 10,
+    fontSize: 13,
   },
   strRoomHeaderLeftProfileSubInfo: {
     flexDirection: 'row',
@@ -1254,6 +1265,7 @@ export const styles = StyleSheet.create({
   },
   streamChatContainer: {
     flex: 1,
+    height: 150,
   },
   streamChatItem: {
     flexDirection: 'row',
@@ -1387,6 +1399,26 @@ export const styles = StyleSheet.create({
   noGiftsTextContent: {
     color: '#fff',
     fontSize: 15,
+  },
+
+
+  // stream more setting options
+  strMoreSettingListContainer: {
+    position: 'absolute',
+    bottom: 80,
+    right: '10%',
+  },
+  strMoreSettingListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+  },
+  strMoreSettingListItemText: {
+    color: '#fff',
+    fontSize: 14,
+    marginRight: 14,
+    fontWeight: '600',
   },
 });
 
