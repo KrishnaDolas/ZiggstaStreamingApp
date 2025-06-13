@@ -71,7 +71,9 @@ export const MainScreen = ({ onLogout, userData }) => {
   useEffect(() => {
     // Initial permission check
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
-
+    const handlescoketconnect = () => {
+      socket.emit('identify', userData.userid);
+    };
     // Socket event handlers
     const handleRoomCreated = ({ roomId }) => {
       setJoined(true);
@@ -252,6 +254,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     };
 
     // Register socket listeners
+    socket.on('connect', handlescoketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
     socket.on('room-full', handleRoomFull);
