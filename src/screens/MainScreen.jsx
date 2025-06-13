@@ -75,10 +75,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.emit('identify', userData.userid);
     };
     // Socket event handlers
-    const handleRoomCreated = ({ roomId }) => {
+    const handleRoomCreated = ({ roomId ,socketid}) => {
       setJoined(true);
       setIsHost(true);
-      setHostId(userData.userid);
+      setHostId(socketid);
     };
 
     const handleRoomJoined = ({ isHostStreaming, viewerCount }) => {
@@ -298,7 +298,9 @@ export const MainScreen = ({ onLogout, userData }) => {
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
     socket.emit('create-room', roomId);
-    startStreaming()
+   setTimeout(() => {
+    startStreaming(roomId)
+   }, 3000);
   };
 
   const joinRoom = (targetRoomId, hostID) => {
@@ -316,7 +318,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     setHasRequestedStream(true);
   };
 
-  const startStreaming = async () => {
+  const startStreaming = async (roomid) => {
     try {
       await checkAndRequestPermissions();
       const stream = await mediaDevices.getUserMedia({
@@ -341,7 +343,7 @@ export const MainScreen = ({ onLogout, userData }) => {
         }
       };
       peerConnectionRef.current = peerConnection;
-      socket.emit('host-streaming', roomId);
+      socket.emit('host-streaming', roomid);
       setIsStreaming(true);
     } catch (err) {
       console.error('Streaming error:', err);
