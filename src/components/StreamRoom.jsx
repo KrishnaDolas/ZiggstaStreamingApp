@@ -113,6 +113,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [showMicIcon, setShowMicIcon] = useState(false);
 
 
     // Function to fetch rooms from the API
@@ -270,11 +271,28 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
 
 
     useEffect(() => {
-        Animated.timing(fadeAnim, {
-            toValue: !isMuted ? 1 : 0, // Fade in if unmuted (icon shown), fade out otherwise
-            duration: 300,
-            useNativeDriver: true,
-        }).start();
+        if (!isMuted) {
+            setShowMicIcon(true); // Show the icon component
+            // Fade in
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            }).start();
+
+            // Wait 2 seconds then fade out
+            const timeout = setTimeout(() => {
+                Animated.timing(fadeAnim, {
+                    toValue: 0,
+                    duration: 300,
+                    useNativeDriver: true,
+                }).start(() => {
+                    setShowMicIcon(false); // Hide the component completely after fade out
+                });
+            }, 4000);
+
+            return () => clearTimeout(timeout);
+        }
     }, [isMuted, fadeAnim]);
 
     return (
@@ -284,12 +302,14 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                     <>
                         {totalStreams.length === 1 ? (
                             <>
-                                <RTCView
-                                    streamURL={localStream.toURL()}
-                                    style={styles.fullScreenVideo}
-                                    objectFit="cover"
-                                    mirror={isFrontCamera}
-                                />
+                                {localStream && (
+                                    <RTCView
+                                        streamURL={localStream.toURL()}
+                                        style={styles.fullScreenVideo}
+                                        objectFit="cover"
+                                        mirror={isFrontCamera}
+                                    />
+                                )}
                             </>
                         ) : <View style={[styles.streamVideosContainer]}>
                             <>
@@ -357,7 +377,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                     {isStreaming ? (
                         <>
                             {/* mic off icon */}
-                            {!isMuted && (
+                            {showMicIcon && (
                                 <Animated.View
                                     pointerEvents="none"
                                     style={[

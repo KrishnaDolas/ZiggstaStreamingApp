@@ -418,7 +418,7 @@ export const MainScreen = ({ onLogout, userData }) => {
 
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
-        ) : (<Hostscreen
+        ) : (<StreamRoom
           localStream={localStream}
           isStreaming={isStreaming}
           isFrontCamera={isFrontCamera}
