@@ -1531,7 +1531,7 @@ export const styles = StyleSheet.create({
 
   wdTabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#222',
+    backgroundColor: '#f0f0f0',
     borderRadius: 10,
     marginBottom: 10,
     overflow: 'hidden',
@@ -1542,19 +1542,21 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 9,
     paddingHorizontal: 12,
-    backgroundColor: '#333',
+    backgroundColor: '#e0e0e0',
     alignItems: 'center',
     borderRadius: 7,
   },
   wdActiveTab: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#ffffff',
+    borderWidth: 2,
+    borderColor: '#007bff',
   },
   wdTabText: {
-    color: '#ccc',
+    color: '#333',
     fontWeight: '600',
   },
   wdActiveTabText: {
-    color: '#fff',
+    color: '#000',
   },
   wdAmountContainer: {
     flexDirection: 'row',
@@ -1568,16 +1570,18 @@ export const styles = StyleSheet.create({
     // padding: 10,
     paddingHorizontal: 22,
     paddingVertical: 10,
-    backgroundColor: '#1a2a40',
+    backgroundColor: '#e6f0ff',
     margin: 5,
     borderRadius: 5,
     alignItems: 'center',
   },
   wdAmountSelected: {
-    backgroundColor: '#3399ff',
+    backgroundColor: '#004080',
+    borderWidth: 2,
+    borderColor: '#007bff',
   },
   wdAmountText: {
-    color: '#99ccff',
+    color: '#004080',
     fontWeight: '500',
 
   },
@@ -1586,23 +1590,26 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   wDFormContainer: {
-    backgroundColor: '#222',
+    backgroundColor: '#fff',
     paddingVertical: 40,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginHorizontal: 10,
   },
   wdPickerWrapper: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f7f7',
     borderRadius: 5,
     overflow: 'hidden',
     marginBottom: 5,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    paddingLeft: 4,
   },
   wdPicker: {
-    height: 50,
+    height: 52,
     width: '100%',
-    color: '#000', // text color (selected item)
-    backgroundColor: Platform.OS === 'android' ? '#fff' : 'transparent',
+    color: '#414141', // text color (selected item)
+    backgroundColor: Platform.OS === 'android' ? '#f7f7f7' : 'transparent',
   },
   wdFormError: {
     color: '#dc3131',
@@ -1626,10 +1633,20 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   wdFormInfoText: {
-    color: '#eee',
+    color: '#000',
     fontSize: 12,
     marginTop: 5,
     fontWeight: '500',
+  },
+  wdInput: {
+    borderRadius: 24,
+    padding: 12,
+    width: '100%',
+    marginVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#f7f7f7',
+    borderColor: '#eaeaeb',
+    borderWidth: 1,
   },
 });
 

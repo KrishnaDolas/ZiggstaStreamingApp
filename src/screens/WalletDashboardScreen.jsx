@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import Footer from '../components/Footer';
@@ -7,12 +7,6 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
-import { Appearance } from 'react-native';
-
-const colorScheme = Appearance.getColorScheme(); // 'dark' or 'light'
-
-const isDark = colorScheme === 'dark';
-
 
 export const WalletDashboardScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
@@ -20,8 +14,9 @@ export const WalletDashboardScreen = ({ userData }) => {
 
     const [activeTab, setActiveTab] = useState('Deposit');
     const [selectedAmount, setSelectedAmount] = useState(5);
-    const [paymentMethod, setPaymentMethod] = useState('Bank to Bank');
-    const [selectBankName, setSelectBankName] = useState('Bank 1');
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [selectBankName, setSelectBankName] = useState('');
+    const [userName, setUserName] = useState('')
     const [errorMessage, setErrorMessage] = useState('');
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
@@ -76,111 +71,125 @@ export const WalletDashboardScreen = ({ userData }) => {
                     >
                         Wallet Dashboard
                     </Text>
-                    {/* Tab Buttons */}
-                    <View style={styles.wdTabContainer}>
-                        {['Deposit', 'Withdraw', 'Transfer'].map((tab, index) => (
-                            <TouchableOpacity
-                                key={tab}
-                                style={[styles.wdTabButton, activeTab === tab && styles.wdActiveTab, { marginLeft: index === 0 ? 0 : 8 }]}
-                                onPress={() => handleTabChange(tab)}
-                            >
-                                <Text style={[styles.wdTabText, activeTab === tab && styles.wdActiveTabText]}>
-                                    {tab}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    {/* selected amount */}
-                    <Text
-                        style={[
-                            styles.streamListMainTitle,
-                            themeStyles[theme].streamListMainTitle,
-                            ,
-                            { fontWeight: '400' }
-                        ]}
-                    >
-                        Select Amount
-                    </Text>
-                    <View style={styles.wdAmountContainer}>
-                        {amounts.map((amount) => (
-                            <TouchableOpacity
-                                key={amount}
-                                style={[
-                                    styles.wdAmountButton,
-                                    selectedAmount === amount && styles.wdAmountSelected,
-                                ]}
-                                onPress={() => setSelectedAmount(amount)}
-                            >
-                                <Text
-                                    style={[
-                                        styles.wdAmountText,
-                                        selectedAmount === amount && styles.wdAmountTextSelected,
-                                    ]}
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}>
+                        {/* wallet tabs button */}
+                        <View style={styles.wdTabContainer}>
+                            {['Deposit', 'Withdraw', 'Transfer'].map((tab, index) => (
+                                <TouchableOpacity
+                                    key={tab}
+                                    style={[styles.wdTabButton, activeTab === tab && styles.wdActiveTab, { marginLeft: index === 0 ? 0 : 8 }]}
+                                    onPress={() => handleTabChange(tab)}
                                 >
-                                    {amount}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    {/* forms */}
-                    {/* Picker */}
-                    <View style={styles.wDFormContainer}>
-                        <View style={styles.wdPickerWrapper}>
-                            {activeTab === 'Deposit' ? (
-                                <Picker
-                                    selectedValue={paymentMethod}
-                                    onValueChange={(itemValue) => setPaymentMethod(itemValue)}
-                                    style={styles.wdPicker}
-                                    dropdownIconColor="#414141" // For Android
-                                    mode="dropdown"
-                                >
-                                    {methods.map((method, index) => (
-                                        <Picker.Item key={index} label={method} value={method} color="#41414" />
-                                    ))}
-                                </Picker>
-                            ) : activeTab === 'Withdraw' ? <Picker
-                                selectedValue={selectBankName}
-                                onValueChange={(itemValue) => setSelectBankName(itemValue)}
-                                style={styles.wdPicker}
-                                dropdownIconColor="#414141" // For Android
-                                mode="dropdown"
-                            >
-                                {bankName.map((method, index) => (
-                                    <Picker.Item key={index} label={method} value={method} color="#41414" />
-                                ))}
-                            </Picker> : <Picker
-                                selectedValue={paymentMethod}
-                                onValueChange={(itemValue) => setPaymentMethod(itemValue)}
-                                style={styles.wdPicker}
-                                dropdownIconColor="#414141" // For Android
-                                mode="dropdown"
-                            >
-                                {methods.map((method, index) => (
-                                    <Picker.Item key={index} label={method} value={method} color="#41414" />
-                                ))}
-                            </Picker>}
-
+                                    <Text style={[styles.wdTabText, activeTab === tab && styles.wdActiveTabText]}>
+                                        {tab}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
-                        {/* {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>} */}
-                        <Text style={styles.wdFormError}>This is an error message</Text>
-
-                        {/* Submit Button */}
-                        <LinearGradient
-                            colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.wdFormGradientButton}
+                        {/* select amount */}
+                        <Text
+                            style={[
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                                { fontWeight: '400' }
+                            ]}
                         >
-                            <TouchableOpacity onPress={handleSubmit} style={styles.wdFormButtonOverlay}>
-                                <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Place Withdraw request' : 'Transfer'} </Text>
-                            </TouchableOpacity>
-                        </LinearGradient>
-
-                        {/* Info Text */}
-                        <Text style={styles.wdFormInfoText}>
-                            Add funds to your account securely using any supported payment method.
+                            Select Amount
                         </Text>
-                    </View>
+                        <View style={styles.wdAmountContainer}>
+                            {amounts.map((amount) => (
+                                <TouchableOpacity
+                                    key={amount}
+                                    style={[
+                                        styles.wdAmountButton,
+                                        selectedAmount === amount && styles.wdAmountSelected,
+                                    ]}
+                                    onPress={() => setSelectedAmount(amount)}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.wdAmountText,
+                                            selectedAmount === amount && styles.wdAmountTextSelected,
+                                        ]}
+                                    >
+                                        {amount}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                        {/* forms inputs based on wallet tabs  */}
+                        <View style={styles.wDFormContainer}>
+
+                            {/* if tab is deposit */}
+                            {activeTab === 'Deposit' ? (
+                                <View style={styles.wdPickerWrapper}>
+                                    <Picker
+                                        selectedValue={paymentMethod}
+                                        onValueChange={(itemValue) => setPaymentMethod(itemValue)}
+                                        style={styles.wdPicker}
+                                        dropdownIconColor="#414141" // For Android
+                                        mode="dropdown"
+                                    >
+                                        <Picker.Item label="Select Deposit method" value="" color="#999999" />
+                                        {methods.map((method, index) => (
+                                            <Picker.Item key={index} label={method} value={method} color="#41414" />
+                                        ))}
+                                    </Picker>
+                                </View>
+
+                            ) : activeTab === 'Withdraw' ? (
+                                <>
+                                    {/* if tab is withdraw */}
+                                    <View style={styles.wdPickerWrapper}>
+                                        <Picker
+                                            selectedValue={selectBankName}
+                                            onValueChange={(itemValue) => setSelectBankName(itemValue)}
+                                            style={styles.wdPicker}
+                                            dropdownIconColor="#414141" // For Android
+                                            mode="dropdown"
+                                        >
+                                            {bankName.map((method, index) => (
+                                                <Picker.Item key={index} label={method} value={method} color="#41414" />
+                                            ))}
+                                        </Picker>
+                                    </View>
+                                </>
+                            ) : <>
+                                {/* if tab is transfer */}
+                                <TextInput
+                                    value={userName}
+                                    onChangeText={setUserName}
+                                    style={styles.wdInput}
+                                    autoCapitalize="none"
+                                    placeholder="Enter recipient username"
+                                    placeholderTextColor="#858585"
+                                />
+                            </>}
+
+                            {/* {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>} */}
+                            <Text style={styles.wdFormError}>This is an error message</Text>
+                            {/* actions bases on active tab */}
+                            <LinearGradient
+                                colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.wdFormGradientButton}
+                            >
+                                <TouchableOpacity onPress={handleSubmit} style={styles.wdFormButtonOverlay}>
+                                    <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Place Withdraw request' : 'Transfer'} </Text>
+                                </TouchableOpacity>
+                            </LinearGradient>
+
+                            {/* Info Text */}
+                            <Text style={styles.wdFormInfoText}>
+                                {activeTab === 'Deposit' ?
+                                    'Add funds to your account securely using any supported payment method.' : activeTab === 'Withdraw' ? 'Transfer your balance to your bank or preferred payout option.' : 'Transfer credits to another Ziggster.'}
+                            </Text>
+                        </View>
+
+                        {/* referal stats */}
+
+                    </ScrollView>
 
                 </View>
                 <Footer />
