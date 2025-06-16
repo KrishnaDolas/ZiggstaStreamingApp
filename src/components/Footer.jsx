@@ -24,8 +24,8 @@ const Footer = () => {
         return 'Messages';
       case 'Live':
         return 'Live';
-      case 'Settings':
-        return 'Settings';
+      case 'WalletDashboard':
+        return 'WalletDashboard';
       default:
         return '';
     }
@@ -82,20 +82,20 @@ const Footer = () => {
           }
         }}
       >
-        <Ionicons name="chatbubbles-outline" size={25} color={iconColor('Messages')} />
+        <Ionicons name="chatbox-ellipses-outline" size={25} color={iconColor('Messages')} />
         <Text style={[styles.footerText, { color: iconColor('Messages') }]}>Messages</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Settings') {
-            navigation.navigate('Settings');
+          if (route.name !== 'WalletDashboard') {
+            navigation.navigate('WalletDashboard');
           }
         }}
       >
-        <Ionicons name="settings-outline" size={25} color={iconColor('Settings')} />
-        <Text style={[styles.footerText, { color: iconColor('Settings') }]}>Settings</Text>
+        <Ionicons name="wallet-outline" size={25} color={iconColor('WalletDashboard')} />
+        <Text style={[styles.footerText, { color: iconColor('WalletDashboard') }]}>Settings</Text>
       </TouchableOpacity>
     </View>
   );

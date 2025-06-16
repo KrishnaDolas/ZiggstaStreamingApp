@@ -12,6 +12,9 @@ import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
+// import WebView from 'react-native-webview';
+// import { Image as RNImage } from 'react-native';
+
 const chats = [
     {
         id: 1,
@@ -102,7 +105,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     const [userChatInput, setUserChatInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [giftModalVisible, setGiftModalVisible] = useState(false);
-    const [selectedGiftCategory, setSelectedCategory] = useState('');
+    const [selectedGiftCategory, setSelectedGiftCategory] = useState('');
     const [selectedGiftItems, setSelectedGiftItems] = useState([]);
     const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
     const scrollRef = useRef(null);
@@ -116,11 +119,11 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     const [showMicIcon, setShowMicIcon] = useState(false);
 
 
-    // Function to fetch rooms from the API
+    // Function to fetch gifts from the API
     const getGifts = async () => {
         try {
             const response = await Apiclient.get('/getgifts');
-            console.log('gifts data', response.data.data);
+            // console.log('gifts data', response.data.data);
             if (response) {
                 setGiftItems(response.data.data || []);
             }
@@ -131,7 +134,31 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
 
     useEffect(() => {
         getGifts();
-    }, []);
+    }, [giftModalVisible]);
+
+
+    // filter gifts by category
+
+    const filteredGiftItems = selectedGiftCategory === '' ? giftsData : giftsData.filter(item => item.giftValue === selectedGiftCategory);
+
+
+    // sort gifts by price and store in state
+
+    useEffect(() => {
+        if (giftsData && giftsData?.length > 0) {
+            // Step 1: Sort the gifts by giftValue
+            const sortedByValue = [...giftsData].sort((a, b) => a.giftValue - b.giftValue);
+
+            // Step 2: Extract unique gift values
+            const uniqueGiftValues = [...new Set(sortedByValue.map(item => item.giftValue))];
+
+            // Step 3: Set the first giftValue as default selected category
+            if (uniqueGiftValues.length > 0) {
+                setSelectedGiftCategory(uniqueGiftValues[0]);
+            }
+        }
+    }, [giftsData]);
+
 
     const confirmleaveRoom = () => {
         Alert.alert(
@@ -152,10 +179,11 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     };
 
 
-    // const userJoinedCount = streams.length;
-    const userJoinedCount = 1;
+    // managed screen layout for new user and existing user
 
-    const totalStreams = [1];
+    const userJoinedCount = 3;
+
+    const totalStreams = [1, 2, 3];
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
@@ -184,9 +212,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
             hideSub.remove();
         };
     }, []);
-
-
-    const filteredGiftItems = selectedGiftCategory === '' ? giftsData : giftsData.filter(item => item.giftValue === selectedGiftCategory);
 
     const handleScroll = (event) => {
         const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -289,7 +314,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                 }).start(() => {
                     setShowMicIcon(false); // Hide the component completely after fade out
                 });
-            }, 4000);
+            }, 3000);
 
             return () => clearTimeout(timeout);
         }
@@ -630,7 +655,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                                 const isSelected = selectedGiftCategory === category.giftValue;
                                                 return (
                                                     <TouchableOpacity key={index}
-                                                        onPress={() => setSelectedCategory(category.giftValue)}
+                                                        onPress={() => setSelectedGiftCategory(category.giftValue)}
                                                         style={[
                                                             styles.giftModalCatTab,
                                                             isSelected && styles.giftModalCatTabActive,
@@ -662,8 +687,12 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                         >
                                             <View style={styles.giftModalCategoryItemsContainer}>
                                                 {filteredGiftItems.map((item, index) => {
-                                                    const localImage = giftImages[item.giftIcon]; // Match icon name from API
-                                                    if (!localImage) return null; // Skip if local image not available
+                                                    const localImage = giftImages[item.giftIcon];
+                                                    if (!localImage) return null;
+
+                                                    // Resolve local image to a URI that WebView can use
+                                                    {/* const resolvedAsset = RNImage.resolveAssetSource(localImage);
+                                                    console.log('resolvedAsset', resolvedAsset) */}
                                                     return (
                                                         <TouchableOpacity key={index}
                                                             style={styles.giftModalCatItem}

@@ -268,7 +268,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: screenWidth * 1,
-    zIndex: 1000,
+    zIndex: 1100,
   },
   controls: {
     position: 'absolute',
@@ -403,6 +403,7 @@ export const styles = StyleSheet.create({
   footerItem: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: 10,
   },
   footerText: {
     fontSize: 12,
@@ -962,7 +963,7 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '7%',
+    bottom: '8.5%',
     left: '50%',
     transform: [{ translateX: -0.475 * screenWidth }],
     flexDirection: 'row',
@@ -1399,6 +1400,11 @@ export const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 3,
   },
+  strRoomFooterSocialActions: {
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    alignItems: 'baseline',
+  },
   strRoomFooterSocialActionsBtn: {
     marginBottom: 24,
   },
@@ -1519,6 +1525,111 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 14,
     fontWeight: '600',
+  },
+
+  // wallet dashboard screen
+
+  wdTabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#222',
+    borderRadius: 10,
+    marginBottom: 10,
+    overflow: 'hidden',
+    marginHorizontal: 10,
+    padding: 7,
+  },
+  wdTabButton: {
+    flex: 1,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    borderRadius: 7,
+  },
+  wdActiveTab: {
+    backgroundColor: '#007bff',
+  },
+  wdTabText: {
+    color: '#ccc',
+    fontWeight: '600',
+  },
+  wdActiveTabText: {
+    color: '#fff',
+  },
+  wdAmountContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginHorizontal: 10,
+  },
+  wdAmountButton: {
+    // width: 60,
+    // padding: 10,
+    paddingHorizontal: 22,
+    paddingVertical: 10,
+    backgroundColor: '#1a2a40',
+    margin: 5,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  wdAmountSelected: {
+    backgroundColor: '#3399ff',
+  },
+  wdAmountText: {
+    color: '#99ccff',
+    fontWeight: '500',
+
+  },
+  wdAmountTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  wDFormContainer: {
+    backgroundColor: '#222',
+    paddingVertical: 40,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 10,
+  },
+  wdPickerWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: 5,
+  },
+  wdPicker: {
+    height: 50,
+    width: '100%',
+    color: '#000', // text color (selected item)
+    backgroundColor: Platform.OS === 'android' ? '#fff' : 'transparent',
+  },
+  wdFormError: {
+    color: '#dc3131',
+    paddingTop: 5,
+    paddingLeft: 4,
+  },
+  wdFormGradientButton: {
+    borderRadius: 30,
+    overflow: 'hidden',
+    marginVertical: 12,
+  },
+
+  wdFormButtonOverlay: {
+    padding: 14,
+    borderRadius: 30,
+    alignItems: 'center',
+  },
+  wdFormSubmitText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  wdFormInfoText: {
+    color: '#eee',
+    fontSize: 12,
+    marginTop: 5,
+    fontWeight: '500',
   },
 });
 

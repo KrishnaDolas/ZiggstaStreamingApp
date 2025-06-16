@@ -8,6 +8,7 @@ import {
   StyleSheet,
   AppState,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Geolocation from 'react-native-geolocation-service';
@@ -20,9 +21,7 @@ import { SplashScreen } from './src/screens/SplashScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
-
-
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -192,6 +191,14 @@ const App = () => {
                   <Stack.Screen name="Messages">
                     {props => (
                       <MessageListScreen
+                        {...props}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="WalletDashboard">
+                    {props => (
+                      <WalletDashboardScreen
                         {...props}
                         userData={userData}
                       />
