@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import Footer from '../components/Footer';
@@ -7,6 +7,9 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+const screenWidth = Dimensions.get('window').width;
+const cardWidth = screenWidth / 3 - 20; // 3 columns with margin
+
 
 export const WalletDashboardScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
@@ -17,7 +20,7 @@ export const WalletDashboardScreen = ({ userData }) => {
     const [paymentMethod, setPaymentMethod] = useState('');
     const [selectBankName, setSelectBankName] = useState('');
     const [userName, setUserName] = useState('')
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('This is an error message');
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
@@ -148,6 +151,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                                             dropdownIconColor="#414141" // For Android
                                             mode="dropdown"
                                         >
+                                            <Picker.Item label="Select Bank" value="" color="#999999" />
                                             {bankName.map((method, index) => (
                                                 <Picker.Item key={index} label={method} value={method} color="#41414" />
                                             ))}
@@ -166,8 +170,8 @@ export const WalletDashboardScreen = ({ userData }) => {
                                 />
                             </>}
 
-                            {/* {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>} */}
-                            <Text style={styles.wdFormError}>This is an error message</Text>
+                            {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>}
+                            {/* <Text style={styles.wdFormError}>This is an error message</Text> */}
                             {/* actions bases on active tab */}
                             <LinearGradient
                                 colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
@@ -188,7 +192,46 @@ export const WalletDashboardScreen = ({ userData }) => {
                         </View>
 
                         {/* referal stats */}
+                        {/* select amount */}
+                        <Text
+                            style={[
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                                { fontWeight: '400' }
+                            ]}
+                        >
+                            Referal Stats
+                        </Text>
+                        <View style={styles.row}>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Balance</Text>
+                                <Text style={styles.value}>200</Text>
+                            </View>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Today's Signups</Text>
+                                <Text style={styles.value}>20</Text>
+                            </View>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Monthly Signup</Text>
+                                <Text style={styles.value}>180</Text>
+                            </View>
+                        </View>
 
+                        {/* Row 2 */}
+                        {/* <View style={styles.row}>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Total Signup</Text>
+                                <Text style={styles.value}>500</Text>
+                            </View>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Analytics</Text>
+                                <Text style={styles.value}>30</Text>
+                            </View>
+                            <View style={[styles.card, { width: cardWidth }]}>
+                                <Text style={styles.title}>Coming Soon</Text>
+                                <Text style={styles.value}>?</Text>
+                            </View>
+                        </View> */}
                     </ScrollView>
 
                 </View>
