@@ -235,9 +235,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       );
     }
 
-    const handleStreamRequestResponse = ({ accepted, hostId }) => {
+    const handleStreamRequestResponse = ({ accepted, roomId }) => {
       if (accepted) {
-        startStreaming();
+        console.log(`Stream request accepted for room ${roomId}`);
+        startStreaming(roomId);
         setHasRequestedStream(false);
         // Proceed with peer connection setup
       } else {
