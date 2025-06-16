@@ -72,7 +72,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     // Initial permission check
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
     const handlesocketconnect = () => {
-      socket.emit('identify', userData.userid);
+      socket.emit('identify', userData.userid,userData.screenName);
     };
     // Socket event handlers
     const handleRoomCreated = ({ roomId ,socketid}) => {
@@ -235,9 +235,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       );
     }
 
-    const handleStreamRequestResponse = ({ accepted, hostId }) => {
+    const handleStreamRequestResponse = ({ accepted, roomId }) => {
       if (accepted) {
-        startStreaming();
+        console.log(`Stream request accepted for room ${roomId}`);
+        startStreaming(roomId);
         setHasRequestedStream(false);
         // Proceed with peer connection setup
       } else {
