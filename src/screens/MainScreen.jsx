@@ -216,11 +216,11 @@ export const MainScreen = ({ onLogout, userData }) => {
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
 
-    const handlestreamingrequest =({ viewerId, customId }) => {
+    const handlestreamingrequest =({ viewerId, name }) => {
       // Prompt the host to accept/reject the request
       Alert.alert(
         "Stream Request",
-        `${customId} wants to start streaming.`,
+        `${name} wants to start streaming.`,
         [
           {
             text: "Reject",
