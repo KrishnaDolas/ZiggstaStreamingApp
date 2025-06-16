@@ -165,6 +165,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       try {
         const peerConnection = new RTCPeerConnection(iceServers);
         peerConnection.ontrack = event => {
+          console.log('Remote stream received:', event.streams[0]);
           setRemoteStream(event.streams[0]);
         };
         peerConnection.onicecandidate = event => {
@@ -265,6 +266,12 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('room-closed', handleRoomClosed);
     socket.on("incoming-stream-request",handlestreamingrequest );
     socket.on("stream-request-response",handleStreamRequestResponse);
+    socket.on('socket-id-in-use', ()=>{
+      Alert.alert("User Already Login In Other Device", "Please Logout From Other Device", [  
+        { text: "OK", onPress: () => onLogout()}
+      ]
+      );
+    });
     
     // Cleanup on unmount
     return () => {
@@ -285,6 +292,12 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off("incoming-stream-request",handlestreamingrequest );
       socket.off("stream-request-response",handleStreamRequestResponse );
       socket.off('connect', handlesocketconnect);
+      socket.off('socket-id-in-use', ()=>{
+        Alert.alert("You Are Already Login In", "Please Logout From Other Device", [  
+          { text: "OK", onPress: () => onLogout() }
+        ]
+        );
+      });
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -415,6 +428,7 @@ export const MainScreen = ({ onLogout, userData }) => {
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
         ) : (<Hostscreen
           localStream={localStream}
+          remoteStream={remoteStream}
           isStreaming={isStreaming}
           isFrontCamera={isFrontCamera}
           isHost={isHost}
