@@ -17,7 +17,18 @@ const Viewerscreen = (props) => {
                             objectFit="cover"
                             mirror={true}
                         />
+                         <View style={styles.controls}>
+                         <TouchableOpacity
+                        style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
+                        onPress={requestStreamPermission}
+                        disabled={hasRequestedStream}
+                    >
+                        <Text style={styles.buttonText}>
+                            {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
+                        </Text>
+                    </TouchableOpacity>
                         <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
+                         </View>
                     </>
                 ) : localStream ? (
                     <RTCView

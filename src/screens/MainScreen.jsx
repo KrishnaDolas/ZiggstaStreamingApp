@@ -216,42 +216,35 @@ export const MainScreen = ({ onLogout, userData }) => {
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
 
-    const handleStreamRequest = ({ viewerId }) => {
-      if (isHost) {
-        setStreamRequest({ viewerId });
-        Alert.alert(
-          'Stream Request',
-          `Viewer ${viewerId} wants to stream. Allow?`,
-          [
-            {
-              text: 'Allow',
-              onPress: () => {
-                socket.emit('stream-permission', { viewerId, allowed: true });
-                setStreamRequest(null);
-              },
-            },
-            {
-              text: 'Deny',
-              onPress: () => {
-                socket.emit('stream-permission', { viewerId, allowed: false });
-                setStreamRequest(null);
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      }
-    };
+    const handlestreamingrequest =({ viewerId, customId }) => {
+      // Prompt the host to accept/reject the request
+      Alert.alert(
+        "Stream Request",
+        `${customId} wants to start streaming.`,
+        [
+          {
+            text: "Reject",
+            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: false }),
+            style: "cancel"
+          },
+          {
+            text: "Accept",
+            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: true })
+          }
+        ]
+      );
+    }
 
-    const handleStreamPermission = ({ allowed }) => {
-      if (allowed) {
+    const handleStreamRequestResponse = ({ accepted, hostId }) => {
+      if (accepted) {
         startStreaming();
         setHasRequestedStream(false);
+        // Proceed with peer connection setup
       } else {
-        setError('Streaming permission denied by host.');
         setHasRequestedStream(false);
+        Alert.alert("Request Rejected", "Host declined your stream request.");
       }
-    };
+    }
 
     // Register socket listeners
     socket.on('connect', handlesocketconnect);
@@ -269,9 +262,9 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('answer', handleAnswer);
     socket.on('host-left', handleHostLeft);
     socket.on('room-closed', handleRoomClosed);
-    socket.on('stream-request', handleStreamRequest);
-    socket.on('stream-permission', handleStreamPermission);
-
+    socket.on("incoming-stream-request",handlestreamingrequest );
+    socket.on("stream-request-response",handleStreamRequestResponse);
+    
     // Cleanup on unmount
     return () => {
       socket.off('room-created', handleRoomCreated);
@@ -288,8 +281,9 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('answer', handleAnswer);
       socket.off('host-left', handleHostLeft);
       socket.off('room-closed', handleRoomClosed);
-      socket.off('stream-request', handleStreamRequest);
-      socket.off('stream-permission', handleStreamPermission);
+      socket.off("incoming-stream-request",handlestreamingrequest );
+      socket.off("stream-request-response",handleStreamRequestResponse );
+      socket.off('connect', handlesocketconnect);
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -314,7 +308,7 @@ export const MainScreen = ({ onLogout, userData }) => {
   };
 
   const requestStreamPermission = () => {
-    socket.emit('stream-request', { roomId, viewerId: userData.userid });
+    socket.emit("request-stream"), { roomId, viewerId: userData.userid };
     setHasRequestedStream(true);
   };
 
@@ -418,7 +412,7 @@ export const MainScreen = ({ onLogout, userData }) => {
 
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
-        ) : (<StreamRoom
+        ) : (<Hostscreen
           localStream={localStream}
           isStreaming={isStreaming}
           isFrontCamera={isFrontCamera}
