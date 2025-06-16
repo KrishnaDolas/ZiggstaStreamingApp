@@ -1648,6 +1648,43 @@ export const styles = StyleSheet.create({
     borderColor: '#eaeaeb',
     borderWidth: 1,
   },
+  wDReferralStatsContainer: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  wDReferralStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 13,
+  },
+  wdRefStateCard: {
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    paddingVertical: 5,
+    height: 70,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    // Box shadow equivalent
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2, // Required for Android
+  },
+  wdRefStateTitle: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  wdRefStateValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 5,
+    color: '#222',
+    textAlign: 'center',
+  },
 });
 
 // Theme Styles

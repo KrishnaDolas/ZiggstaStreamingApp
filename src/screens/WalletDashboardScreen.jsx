@@ -8,7 +8,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth / 3 - 20; // 3 columns with margin
+const cardWidth = screenWidth / 3 - 22; // 3 columns with margin
 
 
 export const WalletDashboardScreen = ({ userData }) => {
@@ -191,8 +191,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                             </Text>
                         </View>
 
-                        {/* referal stats */}
-                        {/* select amount */}
+                        {/* Referral stats */}
                         <Text
                             style={[
                                 styles.streamListMainTitle,
@@ -200,40 +199,39 @@ export const WalletDashboardScreen = ({ userData }) => {
                                 { fontWeight: '400' }
                             ]}
                         >
-                            Referal Stats
+                            Referral Stats
                         </Text>
-                        <View style={styles.row}>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Balance</Text>
-                                <Text style={styles.value}>200</Text>
+                        <View style={styles.wDReferralStatsContainer}>
+                            <View style={styles.wDReferralStatsRow}>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Balance</Text>
+                                    <Text style={styles.wdRefStateValue}>200</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Today's Signups</Text>
+                                    <Text style={styles.wdRefStateValue}>20</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Monthly Signup</Text>
+                                    <Text style={styles.wdRefStateValue}>180</Text>
+                                </View>
                             </View>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Today's Signups</Text>
-                                <Text style={styles.value}>20</Text>
-                            </View>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Monthly Signup</Text>
-                                <Text style={styles.value}>180</Text>
+                            <View style={styles.wDReferralStatsRow}>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Total Signup</Text>
+                                    <Text style={styles.wdRefStateValue}>400</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Analytics</Text>
+                                    <Text style={styles.wdRefStateValue}>30</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Coming Soon</Text>
+                                    <Text style={styles.wdRefStateValue}>?</Text>
+                                </View>
                             </View>
                         </View>
-
-                        {/* Row 2 */}
-                        {/* <View style={styles.row}>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Total Signup</Text>
-                                <Text style={styles.value}>500</Text>
-                            </View>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Analytics</Text>
-                                <Text style={styles.value}>30</Text>
-                            </View>
-                            <View style={[styles.card, { width: cardWidth }]}>
-                                <Text style={styles.title}>Coming Soon</Text>
-                                <Text style={styles.value}>?</Text>
-                            </View>
-                        </View> */}
                     </ScrollView>
-
                 </View>
                 <Footer />
             </SafeAreaView>
