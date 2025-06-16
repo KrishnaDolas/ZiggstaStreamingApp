@@ -72,7 +72,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     // Initial permission check
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
     const handlesocketconnect = () => {
-      socket.emit('identify', userData.userid);
+      socket.emit('identify', userData.userid,userData.screenName);
     };
     // Socket event handlers
     const handleRoomCreated = ({ roomId ,socketid}) => {
