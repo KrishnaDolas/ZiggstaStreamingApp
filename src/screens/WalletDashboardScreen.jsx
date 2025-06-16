@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
@@ -19,8 +19,8 @@ export const WalletDashboardScreen = ({ userData }) => {
     const [selectedAmount, setSelectedAmount] = useState(5);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [selectBankName, setSelectBankName] = useState('');
-    const [userName, setUserName] = useState('')
-    const [errorMessage, setErrorMessage] = useState('This is an error message');
+    const [userName, setUserName] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
@@ -35,19 +35,26 @@ export const WalletDashboardScreen = ({ userData }) => {
     };
 
     const handleSubmit = () => {
-        if (!paymentMethod) {
-            setErrorMessage('Please select a payment method');
+        if (activeTab === 'Deposit') {
+            if (!paymentMethod) {
+                setErrorMessage('Please select a payment method');
+            } else {
+                setErrorMessage('');
+            }
+        } else if (activeTab === 'Withdraw') {
+            if (!selectBankName) {
+                setErrorMessage('Please select bank name');
+            } else {
+                setErrorMessage('');
+            }
         } else {
-            setErrorMessage('');
-            // Add your submission logic here
+            if (userName === '') {
+                setErrorMessage('Please enter user name');
+            } else {
+                setErrorMessage('');
+            }
         }
     };
-
-
-    useEffect(() => {
-        console.log('activeTab', activeTab);
-    }, [activeTab]);
-
 
     return (
         <LinearGradient
