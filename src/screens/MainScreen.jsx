@@ -569,6 +569,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       <StatusBar
         hidden={false} // Show the status bar
         barStyle="dark-content"
+        backgroundColor="#fff"
       />
       <View style={[styles.container]}>
         {!joined ? (

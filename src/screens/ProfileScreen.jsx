@@ -83,6 +83,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
             <StatusBar
                 hidden={false} // Show the status bar
                 barStyle="dark-content"
+                backgroundColor="#fff"
             />
             {isUserLoading ? (
                 <View style={styles.activityIndicatorMain}>

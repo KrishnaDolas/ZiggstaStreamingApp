@@ -9,7 +9,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth / 3 - 22; // 3 columns with margin
+const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
 
 export const WalletDashboardScreen = ({ userData }) => {
@@ -67,6 +67,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                 <StatusBar
                     hidden={false} // Show the status bar
                     barStyle="dark-content"
+                    backgroundColor="#fff"
                 />
                 <StreamListHeader />
                 <View

@@ -16,6 +16,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { useRoute } from '@react-navigation/native';
 const categoryData = [
     'Art & Music',
     'Entertainment & Gaming',
@@ -31,7 +32,7 @@ const categoryData = [
 ];
 
 export const StreamListHeader = ({ setGetselectcategory, userData }) => {
-    const { theme } = useContext(ThemeContext);
+    const route = useRoute();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -97,36 +98,37 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={styles.streamListHeaderBottom}>
-                {/* Left Fixed Icon */}
-                <TouchableOpacity style={styles.strHeaderFixedIcon}>
-                    <FontAwesome5 name="crown" size={18} color="#d93a63" />
-                </TouchableOpacity>
+            {route.name === 'Main' && (
+                <View style={styles.streamListHeaderBottom}>
+                    {/* Left Fixed Icon */}
+                    <TouchableOpacity style={styles.strHeaderFixedIcon}>
+                        <FontAwesome5 name="crown" size={18} color="#d93a63" />
+                    </TouchableOpacity>
 
-                {/* Scrollable Category Buttons */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.strHeaderScrollCategoryContainer}
-                >
-                    {categoryData.map((category, index) => (
-                        <TouchableOpacity key={index} style={[styles.strHeaderCategoryButton,
-                        selectedinterest.includes(category) &&
-                        styles.btnInterestActive]}
-                            onPress={() => selectedcategory(index)}>
-                            <Text style={[styles.strHeaderCategoryText,
+                    {/* Scrollable Category Buttons */}
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.strHeaderScrollCategoryContainer}
+                    >
+                        {categoryData.map((category, index) => (
+                            <TouchableOpacity key={index} style={[styles.strHeaderCategoryButton,
                             selectedinterest.includes(category) &&
-                            styles.btnInterestActiveText]}>{category}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                            styles.btnInterestActive]}
+                                onPress={() => selectedcategory(index)}>
+                                <Text style={[styles.strHeaderCategoryText,
+                                selectedinterest.includes(category) &&
+                                styles.btnInterestActiveText]}>{category}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
 
-                {/* Right Fixed Icon */}
-                <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setShowSearch(true)}>
-                    <Ionicons name="search" size={20} color="#d93a63" />
-                </TouchableOpacity>
-            </View>
-
+                    {/* Right Fixed Icon */}
+                    <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setShowSearch(true)}>
+                        <Ionicons name="search" size={20} color="#d93a63" />
+                    </TouchableOpacity>
+                </View>
+            )}
             {/* Search Modal */}
             {showSearch && (
                 <Modal visible={showSearch} transparent animationType="fade">

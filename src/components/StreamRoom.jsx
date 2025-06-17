@@ -683,7 +683,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                     {filteredGiftItems.length > 0 ? <>
                                         <ScrollView
                                             showsVerticalScrollIndicator={true}
-                                            indicatorStyle="white"
+                                            indicatorStyle="#d9d9d9"
                                         >
                                             <View style={styles.giftModalCategoryItemsContainer}>
                                                 {filteredGiftItems.map((item, index) => {

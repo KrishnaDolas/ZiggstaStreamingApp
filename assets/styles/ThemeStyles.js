@@ -1499,7 +1499,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     height: 200,
     marginHorizontal: 7,
-    borderColor: '#ccc',
+    borderColor: '#d9d9d9',
     borderWidth: 1,
   },
   giftModalCategoryItemsContainer: {
@@ -1690,7 +1690,7 @@ export const styles = StyleSheet.create({
   wDReferralStatsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 13,
+    marginBottom: 8,
   },
   wdRefStateCard: {
     backgroundColor: '#f5f5f5',
