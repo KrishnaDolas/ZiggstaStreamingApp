@@ -661,7 +661,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                                             isSelected && styles.giftModalCatTabActive,
                                                         ]}
                                                     >
-                                                        <Text style={styles.giftModalCatTabText}>{category.giftValue}</Text>
+                                                        <Text style={[styles.giftModalCatTabText, isSelected && styles.giftModalCatTabActiveText]}>{category.giftValue}</Text>
                                                     </TouchableOpacity>
                                                 );
                                             })}
@@ -689,10 +689,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                                 {filteredGiftItems.map((item, index) => {
                                                     const localImage = giftImages[item.giftIcon];
                                                     if (!localImage) return null;
-
-                                                    // Resolve local image to a URI that WebView can use
-                                                    {/* const resolvedAsset = RNImage.resolveAssetSource(localImage);
-                                                    console.log('resolvedAsset', resolvedAsset) */}
                                                     return (
                                                         <TouchableOpacity key={index}
                                                             style={styles.giftModalCatItem}

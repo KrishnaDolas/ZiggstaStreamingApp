@@ -28,9 +28,9 @@ const categoryData = [
     'Religion & Spiritual',
     'Sports & Adventure',
     'Travel & Holidays',
-  ];
+];
 
-export const StreamListHeader = ({setGetselectcategory,userData}) => {
+export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     const { theme } = useContext(ThemeContext);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
@@ -48,10 +48,12 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
 
         setIsFullScreen(!isFullScreen);
     };
+
+
     const selectedcategory = (category) => {
         if (selectedset.includes(category)) {
             const newSelectedSet = selectedset.filter(item => item !== category);
-            setGetselectcategory(newSelectedSet); 
+            setGetselectcategory(newSelectedSet);
             setSelectedset(newSelectedSet); // Update the selectedset state
         } else {
             const newSelectedSet = [...selectedset, category];
@@ -59,10 +61,10 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
             setGetselectcategory(newSelectedSet);
         }
         // Log the index and selected category
-        const value= categoryData[category] || 'Unknown Category';
-        if(!selectedinterest.includes(value)) { // Check if the value is already selected
-        setSelectedinterest((values)=>[...values,value]); // Update the selected interest state
-        }else{
+        const value = categoryData[category] || 'Unknown Category';
+        if (!selectedinterest.includes(value)) { // Check if the value is already selected
+            setSelectedinterest((values) => [...values, value]); // Update the selected interest state
+        } else {
             const newSelectedInterest = selectedinterest.filter(item => item !== value);
             setSelectedinterest(newSelectedInterest); // Update the selected interest state
         }
@@ -80,7 +82,7 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
                 />
                 <View style={styles.streamHeaderRightBox}>
                     <TouchableOpacity style={{ marginRight: 16 }} onPress={toggleFullscreen}>
-                        <SimpleLineIcons name='size-fullscreen' size={18} color="#fff" />
+                        <SimpleLineIcons name='size-fullscreen' size={18} color="#d93a63" />
                     </TouchableOpacity>
                     <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='aperture' solid size={16} color="#fff" />
@@ -98,7 +100,7 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
             <View style={styles.streamListHeaderBottom}>
                 {/* Left Fixed Icon */}
                 <TouchableOpacity style={styles.strHeaderFixedIcon}>
-                    <FontAwesome5 name="crown" size={18} color="#fff" />
+                    <FontAwesome5 name="crown" size={18} color="#d93a63" />
                 </TouchableOpacity>
 
                 {/* Scrollable Category Buttons */}
@@ -110,16 +112,18 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
                     {categoryData.map((category, index) => (
                         <TouchableOpacity key={index} style={[styles.strHeaderCategoryButton,
                         selectedinterest.includes(category) &&
-                        styles.btnInterestActive,]}
-                        onPress={() => selectedcategory(index)}>
-                        <Text style={styles.strHeaderCategoryText}>{category}</Text>
+                        styles.btnInterestActive]}
+                            onPress={() => selectedcategory(index)}>
+                            <Text style={[styles.strHeaderCategoryText,
+                            selectedinterest.includes(category) &&
+                            styles.btnInterestActiveText]}>{category}</Text>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
 
                 {/* Right Fixed Icon */}
                 <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setShowSearch(true)}>
-                    <Ionicons name="search" size={20} color="#fff" />
+                    <Ionicons name="search" size={20} color="#d93a63" />
                 </TouchableOpacity>
             </View>
 

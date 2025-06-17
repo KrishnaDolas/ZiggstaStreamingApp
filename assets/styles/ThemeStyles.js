@@ -508,7 +508,7 @@ export const styles = StyleSheet.create({
     margin: 5,
   },
   btnInterestActive: {
-    backgroundColor: 'rgba(190, 0, 105, 0.4)',
+    backgroundColor: '#d93a63',
   },
 
 
@@ -821,7 +821,7 @@ export const styles = StyleSheet.create({
   streamListHeader: {
     paddingHorizontal: 5,
     paddingTop: 5,
-    paddingBottom: 15,
+    paddingBottom: 2,
     zIndex: 10,
     width: '100%',
     backgroundColor: 'transparent',
@@ -872,22 +872,34 @@ export const styles = StyleSheet.create({
 
   strHeaderScrollCategoryContainer: {
     paddingHorizontal: 4,
+    paddingBottom: 3,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
   strHeaderCategoryButton: {
-    backgroundColor: '#ffffff33',
+    backgroundColor: '#ebebeb',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 6,
     marginHorizontal: 5,
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+
+    // Shadow for Android
+    elevation: 3,
   },
 
   strHeaderCategoryText: {
-    color: '#fff',
+    color: '#232323',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  btnInterestActiveText: {
+    color: '#fff',
   },
 
   streamListMainCardLayout: {
@@ -1433,7 +1445,7 @@ export const styles = StyleSheet.create({
 
   // gift modal
   giftModalCategoryMainLayout: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#fff',
     paddingVertical: 13,
     paddingHorizontal: 15,
     overflow: 'hidden',
@@ -1453,28 +1465,42 @@ export const styles = StyleSheet.create({
   },
   giftModalCategoryContainer: {
     flexDirection: 'row',
+    paddingBottom: 5,
   },
   giftModalCatTab: {
-    backgroundColor: '#333',
+    backgroundColor: '#ebebeb',
     paddingVertical: 5,
     paddingHorizontal: 25,
     borderRadius: 7,
     marginRight: 20,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+
+    // Android shadow
+    elevation: 3,
   },
   giftModalCatTabActive: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#d93a63',
   },
   giftModalCatTabText: {
-    color: '#fff',
+    color: '#232323',
     fontSize: 16,
     fontWeight: '500',
   },
+  giftModalCatTabActiveText: {
+    color: '#fff',
+  },
   giftModalItemsMainLayout: {
-    backgroundColor: '#222',
-    marginTop: 2,
+    backgroundColor: '#fff',
+    marginTop: 0,
     borderRadius: 8,
     height: 200,
     marginHorizontal: 7,
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
   giftModalCategoryItemsContainer: {
     flexDirection: 'row',
@@ -1488,7 +1514,7 @@ export const styles = StyleSheet.create({
     aspectRatio: 1, // keeps it square (optional)
     alignItems: 'center',
     marginBottom: 20,
-    marginRight: 20,
+    marginRight: 18,
   },
   giftModalCatItemImage: {
     height: '100%',
@@ -1496,6 +1522,14 @@ export const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: 'white',
     zIndex: 1,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+
+    // Android shadow
+    elevation: 2,
   },
   noGiftsTextContainer: {
     flex: 1,
