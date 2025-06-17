@@ -145,6 +145,7 @@ export const MainScreen = ({ onLogout, userData }) => {
         setError('Failed to connect to viewer.');
       }
     };
+
     const handleViewerJoined = async (hostId) => {
       if (!isViewer) return;
       try {
@@ -286,11 +287,19 @@ export const MainScreen = ({ onLogout, userData }) => {
       try {
         const pc = peerConnections.current[sender] || peerConnectionRef.current;
         if (pc) {
+          // Check signaling state to prevent setting remote description in invalid state
+          if (pc.signalingState !== 'have-local-offer') {
+            console.warn(`Cannot set remote answer in signaling state: ${pc.signalingState}`);
+            return;
+          }
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          console.log(`Successfully set remote answer for sender: ${sender}`);
+        } else {
+          console.warn(`No peer connection found for sender: ${sender}`);
         }
       } catch (err) {
         console.error('Answer error:', err);
-        setError('Failed to process stream answer.');
+        setError('Failed to process stream answer: ' + err.message);
       }
     };
 
@@ -299,7 +308,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       setJoined(false);
       setIsStreaming(false);
       setIsViewerStreaming(false);
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
+      closePeerConnections(peerConnections, peerListenerRef, localStream, setLocalStream, setRemoteStream);
     };
 
     const handleRoomClosed = () => {
@@ -381,7 +390,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('room-full', handleRoomFull);
       socket.off('invalid-room');
       socket.off('room-exists', handleRoomExists);
-      socket.on('room-info', handleRoomInfo);
+      socket.off('room-info', handleRoomInfo);
       socket.off('user-joined', handleUserJoined);
       socket.off('viewer-joined', handleViewerJoined);
       socket.off('user-left', handleUserLeft);
@@ -398,7 +407,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('socket-id-in-use');
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
-  }, [isHost,isViewer]);
+  }, [isHost]);
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
@@ -470,6 +479,12 @@ export const MainScreen = ({ onLogout, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
+
+      // Close any existing peer connection to avoid conflicts
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
 
       const peerConnection = new RTCPeerConnection(iceServers);
       stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
