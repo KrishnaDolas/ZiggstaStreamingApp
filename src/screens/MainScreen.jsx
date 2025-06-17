@@ -149,7 +149,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       if (!isViewer) return;
       try {
         let peerConnection = peerConnectionRef.current;
-        if (!peerConnection) {
+        if (!peerConnection || peerConnection.signalingState === 'closed') {
           peerConnection = new RTCPeerConnection(iceServers);
           peerConnection.ontrack = event => {
             console.log('Viewer received host stream:', event.streams[0]);
@@ -161,6 +161,7 @@ export const MainScreen = ({ onLogout, userData }) => {
             }
           };
           peerConnection.oniceconnectionstatechange = () => {
+            console.log('Viewer ICE connection state:', peerConnection.iceConnectionState);
             if (peerConnection.iceConnectionState === 'failed') {
               setError('WebRTC connection failed. Please try again.');
               peerConnection.close();
@@ -243,7 +244,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     const handleOffer = async ({ sdp, sender }) => {
       try {
         let peerConnection = peerConnections.current[sender] || peerConnectionRef.current;
-        if (!peerConnection) {
+        if (!peerConnection || peerConnection.signalingState === 'closed') {
           peerConnection = new RTCPeerConnection(iceServers);
           peerConnection.ontrack = event => {
             console.log('Viewer received host stream:', event.streams[0]);
@@ -255,6 +256,7 @@ export const MainScreen = ({ onLogout, userData }) => {
             }
           };
           peerConnection.oniceconnectionstatechange = () => {
+            console.log('Offer ICE connection state:', peerConnection.iceConnectionState);
             if (peerConnection.iceConnectionState === 'failed') {
               setError('WebRTC connection failed. Please try again.');
               peerConnection.close();
@@ -270,9 +272,11 @@ export const MainScreen = ({ onLogout, userData }) => {
           if (isViewer) peerConnectionRef.current = peerConnection;
         }
         await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        socket.emit('answer', { target: sender, sdp: answer });
+        if (peerConnection.signalingState === 'have-remote-offer') {
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          socket.emit('answer', { target: sender, sdp: answer });
+        }
       } catch (err) {
         console.error('Offer handling error:', err);
         setError('Failed to process stream offer.');
@@ -374,19 +378,19 @@ export const MainScreen = ({ onLogout, userData }) => {
     return () => {
       socket.off('connect', handlesocketconnect);
       socket.off('room-created', handleRoomCreated);
-      socket.off('viewer-joined', handleRoomJoined);
+      socket.off('room-joined', handleRoomJoined);
       socket.off('room-full', handleRoomFull);
       socket.off('invalid-room');
       socket.off('room-exists', handleRoomExists);
       socket.off('room-info', handleRoomInfo);
       socket.off('user-joined', handleUserJoined);
       socket.off('viewer-joined', handleViewerJoined);
-      socket.off('user-left-', handleUserLeft);
+      socket.off('user-left', handleUserLeft);
       socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('viewer-started-streaming', handleViewerStartedStreaming);
       socket.off('ice-candidate', handleIceCandidate);
-      socket.off('offer-', handleOffer);
-      socket.off('answer-', handleAnswer);
+      socket.off('offer', handleOffer);
+      socket.off('answer', handleAnswer);
       socket.off('host-left', handleHostLeft);
       socket.off('room-closed', handleRoomClosed);
       socket.off('incoming-stream-request', handleIncomingStreamRequest);
@@ -469,7 +473,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       localStreamRef.current = stream;
 
       let peerConnection = peerConnectionRef.current;
-      if (!peerConnection) {
+      if (!peerConnection || peerConnection.signalingState === 'closed') {
         peerConnection = new RTCPeerConnection(iceServers);
         peerConnection.ontrack = event => {
           console.log('Viewer received host stream:', event.streams[0]);
