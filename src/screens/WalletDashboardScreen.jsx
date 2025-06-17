@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
 import Footer from '../components/Footer';
 import { StreamListHeader } from '../components/StreamListHeader';
@@ -59,13 +60,13 @@ export const WalletDashboardScreen = ({ userData }) => {
     return (
         <LinearGradient
             style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
-            colors={['#a000df', '#fc4692']}
+            colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
             <SafeAreaView style={[styles.messageListSafeView]}>
                 <StatusBar
                     hidden={false} // Show the status bar
-                    barStyle="light-content"
+                    barStyle="dark-content"
                 />
                 <StreamListHeader />
                 <View

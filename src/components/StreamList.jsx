@@ -11,6 +11,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import themeColors from '../../assets/styles/Colors';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -196,7 +197,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     return (
         <LinearGradient
             style={{ height: '100%', width: '100%', position: 'relative' }}
-            colors={['#a000df', '#fc4692']}
+            colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
             <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} />

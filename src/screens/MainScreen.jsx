@@ -5,6 +5,7 @@ import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
+import themeColors from '../../assets/styles/Colors';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
@@ -267,12 +268,12 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on("incoming-stream-request",handlestreamingrequest );
     socket.on("stream-request-response",handleStreamRequestResponse);
     socket.on('socket-id-in-use', ()=>{
-      Alert.alert("User Already Login In Other Device", "Please Logout From Other Device", [  
+      Alert.alert("User Already Login In Other Device", "Please Logout From Other Device", [
         { text: "OK", onPress: () => onLogout()}
       ]
       );
     });
-    
+
     // Cleanup on unmount
     return () => {
       socket.off('room-created', handleRoomCreated);
@@ -293,7 +294,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off("stream-request-response",handleStreamRequestResponse );
       socket.off('connect', handlesocketconnect);
       socket.off('socket-id-in-use', ()=>{
-        Alert.alert("You Are Already Login In", "Please Logout From Other Device", [  
+        Alert.alert("You Are Already Login In", "Please Logout From Other Device", [
           { text: "OK", onPress: () => onLogout() }
         ]
         );
@@ -306,9 +307,9 @@ export const MainScreen = ({ onLogout, userData }) => {
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
     socket.emit('create-room', roomId);
-   setTimeout(() => {
-    startStreaming(roomId)
-   }, 3000);
+    setTimeout(() => {
+      startStreaming(roomId)
+    }, 3000);
   };
 
   const joinRoom = (targetRoomId, hostID) => {
@@ -417,10 +418,10 @@ export const MainScreen = ({ onLogout, userData }) => {
   }
 
   return (
-    <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
+    <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
       <StatusBar
         hidden={false} // Show the status bar
-        barStyle="light-content"
+        barStyle="dark-content"
       />
       <View style={[styles.container]}>
 
