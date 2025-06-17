@@ -398,14 +398,14 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('socket-id-in-use');
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream);
     };
-  }, []);
+  }, [isHost,isViewer]);
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
     socket.emit('create-room', roomId);
     setTimeout(() => {
       startStreaming(roomId);
-    }, 1000);
+    }, 3000);
   };
 
   const joinRoom = (targetRoomId, hostID) => {
