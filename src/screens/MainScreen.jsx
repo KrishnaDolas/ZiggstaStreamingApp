@@ -145,6 +145,34 @@ export const MainScreen = ({ onLogout, userData }) => {
         setError('Failed to connect to viewer.');
       }
     };
+    const handleViewerJoined = async (hostId) => {
+      if (!isViewer) return;
+      try {
+        const peerConnection = new RTCPeerConnection(iceServers);
+        peerConnection.ontrack = event => {
+          console.log('Viewer received host stream:', event.streams[0]);
+          setRemoteStream(event.streams[0]);
+        };
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            socket.emit('ice-candidate', { target: hostId, candidate: event.candidate });
+          }
+        };
+        peerConnection.oniceconnectionstatechange = () => {
+          if (peerConnection.iceConnectionState === 'failed') {
+            setError('WebRTC connection failed. Please try again.');
+            peerConnection.close();
+            peerConnectionRef.current = null;
+            setRemoteStream(null);
+          }
+        };
+        peerConnectionRef.current = peerConnection;
+        peerConnections.current[hostId] = peerConnection;
+      } catch (err) {
+        console.error('Viewer joined error:', err);
+        setError('Failed to initialize viewer stream.');
+      }
+    };
 
     const handleUserLeft = (viewerId) => {
       setViewers(prev => prev.filter(id => id !== viewerId));
@@ -328,6 +356,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
     socket.on('user-joined', handleUserJoined);
+    socket.on('viewer-joined', handleViewerJoined);
     socket.on('user-left', handleUserLeft);
     socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
@@ -354,6 +383,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('room-exists', handleRoomExists);
       socket.on('room-info', handleRoomInfo);
       socket.off('user-joined', handleUserJoined);
+      socket.off('viewer-joined', handleViewerJoined);
       socket.off('user-left', handleUserLeft);
       socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('viewer-started-streaming', handleViewerStartedStreaming);
