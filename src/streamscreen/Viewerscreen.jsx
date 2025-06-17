@@ -3,14 +3,29 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 
 const Viewerscreen = ({ remoteStream, localStream, isStreaming, isViewerStreaming, requestStreamPermission, hasRequestedStream, isFrontCamera, theme, viewerCount, toggleMute, switchCamera, leaveRoom }) => {
+    console.log('Viewerscreen props:', {
+        remoteStream,
+        localStream,
+        isStreaming,
+        isViewerStreaming,
+        requestStreamPermission,
+        hasRequestedStream,
+        isFrontCamera,
+        theme,
+        viewerCount,
+        toggleMute,
+        switchCamera,
+        leaveRoom
+        }
+    );
   return (
     <View style={styles.roomInfo}>
       <View style={styles.streamBox}>
         <View style={{ flexDirection: 'row', height: '100%' }}>
-          {isStreaming && remoteStream && (
+          {remoteStream && (
             <RTCView
               streamURL={remoteStream.toURL()}
-              style={[styles.fullScreenVideo, { width: isViewerStreaming ? '50%' : '100%' }]}
+              style={[styles.fullScreenVideo, { width: isViewerStreaming && localStream ? '50%' : '100%' }]}
               objectFit="cover"
               mirror={true}
             />

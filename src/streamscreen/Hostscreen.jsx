@@ -70,7 +70,7 @@ const Hostscreen = ({ localStream, remoteStream, isStreaming, isViewerStreaming,
             {localStream && (
               <RTCView
                 streamURL={localStream.toURL()}
-                style={[styles.fullScreenVideo, { width: isViewerStreaming ? '50%' : '100%' }]}
+                style={[styles.fullScreenVideo, { width: isViewerStreaming && remoteStream ? '50%' : '100%' }]}
                 objectFit="cover"
                 mirror={isFrontCamera}
               />
