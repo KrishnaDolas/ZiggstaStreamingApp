@@ -91,7 +91,7 @@ export const StreamListHeader = ({setGetselectcategory,userData}) => {
                         <Text style={styles.streamHeaderCountTitle}>2125</Text>
                     </View>
                     <TouchableOpacity style={{ marginRight: 12 }}>
-                        <Ionicons name='notifications' solid size={18} color="#fff" />
+                        <Ionicons name='notifications' solid size={18} color="#000" />
                     </TouchableOpacity>
                 </View>
             </View>

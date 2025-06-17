@@ -5,6 +5,7 @@ import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
+import themeColors from '../../assets/styles/Colors';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
@@ -534,10 +535,10 @@ export const MainScreen = ({ onLogout, userData }) => {
   };
 
   return (
-    <LinearGradient colors={['rgb(160, 0, 223)', 'rgba(252, 70, 146, 1)']} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
+    <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
       <StatusBar
-        hidden={false}
-        barStyle="light-content"
+        hidden={false} // Show the status bar
+        barStyle="dark-content"
       />
       <View style={[styles.container]}>
         {!joined ? (
