@@ -133,7 +133,7 @@ const Hostscreen = ({ localStream, remoteStream, isStreaming, isViewerStreaming,
                             <Text numberOfLines={1} style={styles.streamChatUserName}>
                               {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
                             </Text>
-                            <Text numberOfLines={1} style={styles.streamChatText}>
+                            <Text numberOfLines={1} style={styles.streamChatMessage}>
                               {chat.message.length > 40 ? chat.message.slice(0, 40) + '...' : chat.message}
                             </Text>
                           </View>
@@ -153,7 +153,7 @@ const Hostscreen = ({ localStream, remoteStream, isStreaming, isViewerStreaming,
                     </TouchableOpacity>
                   </View>
                 </View>
-                <View style={[styles.viewerscreenBottomBox, { marginBottom: keyboardOffset }]}>
+                <View style={[styles.strRoomBottomBox, { marginBottom: keyboardOffset }]}>
                   <TextInput
                     placeholder=""
                     placeholderTextColor="#414141"
