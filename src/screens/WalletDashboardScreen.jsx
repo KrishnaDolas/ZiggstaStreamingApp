@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import Footer from '../components/Footer';
@@ -7,6 +7,9 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+const screenWidth = Dimensions.get('window').width;
+const cardWidth = screenWidth / 3 - 22; // 3 columns with margin
+
 
 export const WalletDashboardScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
@@ -16,7 +19,7 @@ export const WalletDashboardScreen = ({ userData }) => {
     const [selectedAmount, setSelectedAmount] = useState(5);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [selectBankName, setSelectBankName] = useState('');
-    const [userName, setUserName] = useState('')
+    const [userName, setUserName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
@@ -32,19 +35,26 @@ export const WalletDashboardScreen = ({ userData }) => {
     };
 
     const handleSubmit = () => {
-        if (!paymentMethod) {
-            setErrorMessage('Please select a payment method');
+        if (activeTab === 'Deposit') {
+            if (!paymentMethod) {
+                setErrorMessage('Please select a payment method');
+            } else {
+                setErrorMessage('');
+            }
+        } else if (activeTab === 'Withdraw') {
+            if (!selectBankName) {
+                setErrorMessage('Please select bank name');
+            } else {
+                setErrorMessage('');
+            }
         } else {
-            setErrorMessage('');
-            // Add your submission logic here
+            if (userName === '') {
+                setErrorMessage('Please enter user name');
+            } else {
+                setErrorMessage('');
+            }
         }
     };
-
-
-    useEffect(() => {
-        console.log('activeTab', activeTab);
-    }, [activeTab]);
-
 
     return (
         <LinearGradient
@@ -148,6 +158,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                                             dropdownIconColor="#414141" // For Android
                                             mode="dropdown"
                                         >
+                                            <Picker.Item label="Select Bank" value="" color="#999999" />
                                             {bankName.map((method, index) => (
                                                 <Picker.Item key={index} label={method} value={method} color="#41414" />
                                             ))}
@@ -166,8 +177,8 @@ export const WalletDashboardScreen = ({ userData }) => {
                                 />
                             </>}
 
-                            {/* {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>} */}
-                            <Text style={styles.wdFormError}>This is an error message</Text>
+                            {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>}
+                            {/* <Text style={styles.wdFormError}>This is an error message</Text> */}
                             {/* actions bases on active tab */}
                             <LinearGradient
                                 colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
@@ -187,10 +198,47 @@ export const WalletDashboardScreen = ({ userData }) => {
                             </Text>
                         </View>
 
-                        {/* referal stats */}
-
+                        {/* Referral stats */}
+                        <Text
+                            style={[
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                                { fontWeight: '400' }
+                            ]}
+                        >
+                            Referral Stats
+                        </Text>
+                        <View style={styles.wDReferralStatsContainer}>
+                            <View style={styles.wDReferralStatsRow}>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Balance</Text>
+                                    <Text style={styles.wdRefStateValue}>200</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Today's Signups</Text>
+                                    <Text style={styles.wdRefStateValue}>20</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Monthly Signup</Text>
+                                    <Text style={styles.wdRefStateValue}>180</Text>
+                                </View>
+                            </View>
+                            <View style={styles.wDReferralStatsRow}>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Total Signup</Text>
+                                    <Text style={styles.wdRefStateValue}>400</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Analytics</Text>
+                                    <Text style={styles.wdRefStateValue}>30</Text>
+                                </View>
+                                <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={styles.wdRefStateTitle}>Coming Soon</Text>
+                                    <Text style={styles.wdRefStateValue}>?</Text>
+                                </View>
+                            </View>
+                        </View>
                     </ScrollView>
-
                 </View>
                 <Footer />
             </SafeAreaView>
