@@ -1,56 +1,51 @@
-import { View, Text, TouchableOpacity} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 
-const Viewerscreen = (props) => {
-    const { remoteStream, localStream, isStreaming, requestStreamPermission,
-         hasRequestedStream, isFrontCamera, theme,switchCamera,toggleMute,leaveRoom } = props;
-         console.log('Viewerscreen props:', props);
-    return (
-        <View>
-            <View style={styles.streamBox}>
-                {isStreaming && remoteStream ? (
-                    <>
-                        <RTCView
-                            streamURL={remoteStream.toURL()}
-                            style={styles.fullScreenVideo}
-                            objectFit="cover"
-                            mirror={true}
-                        />
-                         <View style={styles.controls}>
-                         <TouchableOpacity
-                        style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
-                        onPress={requestStreamPermission}
-                        disabled={hasRequestedStream}
-                    >
-                        <Text style={styles.buttonText}>
-                            {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
-                        </Text>
-                    </TouchableOpacity>
-                        <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
-                         </View>
-                    </>
-                ) : localStream ? (
-                    <RTCView
-                        streamURL={localStream.toURL()}
-                        style={styles.fullScreenVideo}
-                        objectFit="cover"
-                        mirror={isFrontCamera}
-                    />
-                ) : null}
-                {!isStreaming && (
-                    <TouchableOpacity
-                        style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
-                        onPress={requestStreamPermission}
-                        disabled={hasRequestedStream}
-                    >
-                        <Text style={styles.buttonText}>
-                            {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
-                        </Text>
-                    </TouchableOpacity>
-                )}
-            </View>
+const Viewerscreen = ({ remoteStream, localStream, isStreaming, isViewerStreaming, requestStreamPermission, hasRequestedStream, isFrontCamera, theme, viewerCount, toggleMute, switchCamera, leaveRoom }) => {
+  return (
+    <View style={styles.roomInfo}>
+      <View style={styles.streamBox}>
+        <View style={{ flexDirection: 'row', height: '100%' }}>
+          {isStreaming && remoteStream && (
+            <RTCView
+              streamURL={remoteStream.toURL()}
+              style={[styles.fullScreenVideo, { width: isViewerStreaming ? '50%' : '100%' }]}
+              objectFit="cover"
+              mirror={true}
+            />
+          )}
+          {isViewerStreaming && localStream && (
+            <RTCView
+              streamURL={localStream.toURL()}
+              style={[styles.fullScreenVideo, { width: '50%' }]}
+              objectFit="cover"
+              mirror={isFrontCamera}
+            />
+          )}
         </View>
-    )
-}
+        {isStreaming && (
+          <View style={styles.controls}>
+            {!isViewerStreaming && (
+              <TouchableOpacity
+                style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
+                onPress={requestStreamPermission}
+                disabled={hasRequestedStream}
+              >
+                <Text style={styles.buttonText}>
+                  {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
+                </Text>
+              </TouchableOpacity>
+            )}
+            <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream... ({viewerCount} viewers)</Text>
+            <TouchableOpacity onPress={leaveRoom} style={[styles.startStreamingButton, themeStyles[theme].startButton]}>
+              <Text style={styles.buttonText}>Leave Room</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
 export default Viewerscreen;
