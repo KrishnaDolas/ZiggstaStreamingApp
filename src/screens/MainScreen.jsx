@@ -622,7 +622,7 @@ export const MainScreen = ({ onLogout, userData }) => {
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
         ) : (
           <>
-            {isHost && (
+            {isHost || !isHost && (
               <StreamRoom
               remoteStreams={remoteStreams}
               localStream={localStream}
