@@ -621,8 +621,6 @@ export const MainScreen = ({ onLogout, userData }) => {
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
         ) : (
-          <>
-            {isHost || !isHost && (
               <StreamRoom
               remoteStreams={remoteStreams}
               localStream={localStream}
@@ -642,26 +640,6 @@ export const MainScreen = ({ onLogout, userData }) => {
               isHost={isHost}
               />
             )}
-            {/* {isViewer && (
-              <Viewerscreen
-                remoteStreams={remoteStreams}
-                localStream={localStream}
-                isStreaming={isStreaming}
-                isViewerStreaming={isViewerStreaming}
-                requestStreamPermission={requestStreamPermission}
-                hasRequestedStream={hasRequestedStream}
-                isFrontCamera={isFrontCamera}
-                theme={theme}
-                viewerCount={viewerCount}
-                toggleMute={toggleMute}
-                switchCamera={switchCamera}
-                leaveRoom={leaveRoom}
-                isMuted={isMuted}
-                hostId={hostId}
-              />
-            )} */}
-          </>
-        )}
       </View>
     </LinearGradient>
   );
