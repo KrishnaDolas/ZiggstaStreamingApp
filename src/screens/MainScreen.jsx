@@ -639,8 +639,6 @@ export const MainScreen = ({ onLogout, userData }) => {
               isMuted={isMuted}
               hostId={hostId}
               viewers={viewers}
-              stopStreaming={stopStreaming}
-              stopViewerStream={stopViewerStream}
               isHost={isHost}
               />
             )}

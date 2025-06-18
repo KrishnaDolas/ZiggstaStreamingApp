@@ -109,8 +109,6 @@ const StreamRoom = ({
     isMuted,
     hostId,
     viewers,
-    stopStreaming,
-    stopViewerStream,
     isHost,
 }) => {
     const insets = useSafeAreaInsets();
