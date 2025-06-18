@@ -210,7 +210,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
                     {visibleModal === 'setting' && (
-                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} />
+                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} />
                     )}
 
                     {/* center modal */}

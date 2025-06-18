@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
 import React, { useContext, useEffect, useRef } from 'react';
 import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
@@ -8,7 +9,7 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
 
-const ProfileSettingModal = ({ visible, onClose }) => {
+const ProfileSettingModal = ({ visible, onClose, onLogout }) => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
 
@@ -41,11 +42,33 @@ const ProfileSettingModal = ({ visible, onClose }) => {
     });
 
     const menuItems = [
-        { label: 'Categories', icon: 'icons' },
-        { label: 'Blocked Users', icon: 'user-slash' },
-        { label: 'Moderators', icon: 'user-secret' },
-        { label: 'Privacy Settings', icon: 'shield-alt' },
+        {
+            label: 'Categories',
+            icon: 'icons',
+            onPress: () => console.log('Navigate to Categories'),
+        },
+        {
+            label: 'Blocked Users',
+            icon: 'user-slash',
+            onPress: () => console.log('Navigate to Blocked Users'),
+        },
+        {
+            label: 'Moderators',
+            icon: 'user-secret',
+            onPress: () => console.log('Navigate to Moderators'),
+        },
+        {
+            label: 'Privacy Settings',
+            icon: 'shield-alt',
+            onPress: () => console.log('Navigate to Privacy Settings'),
+        },
+        {
+            label: 'Log Out',
+            icon: 'sign-out-alt',
+            onPress: onLogout,
+        },
     ];
+
 
     return (
         <Modal
@@ -96,7 +119,7 @@ const ProfileSettingModal = ({ visible, onClose }) => {
                         <View style={[styles.profileSettingMDivider]} />
                         {/* Menu Items */}
                         {menuItems.map((item, index) => (
-                            <TouchableOpacity key={index} style={[styles.profileSettingMMenuList, {
+                            <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, {
                                 borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                             }]}>
                                 <View style={styles.profileSettingMMenuListItem}>
