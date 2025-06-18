@@ -265,12 +265,23 @@ export const MainScreen = ({ onLogout, userData }) => {
 
     const handleOffer = async ({ sdp, sender }) => {
       try {
+        if (!sdp || !sender) {
+          throw new Error('Invalid offer: missing SDP or sender');
+        }
+    
         let peerConnection = peerConnections.current[sender];
+        if (peerConnection && peerConnection.signalingState !== 'stable' && peerConnection.signalingState !== 'have-local-offer') {
+          console.warn(`Discarding offer for ${sender} due to invalid signaling state: ${peerConnection.signalingState}`);
+          return;
+        }
+    
         if (!peerConnection) {
           peerConnection = new RTCPeerConnection(iceServers);
           peerConnection.ontrack = event => {
-            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
-            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
+            if (event.streams && event.streams[0]) {
+              console.log(`Received remote stream from ${sender}:`, event.streams[0]);
+              setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
+            }
           };
           peerConnection.onicecandidate = event => {
             if (event.candidate) {
@@ -279,7 +290,8 @@ export const MainScreen = ({ onLogout, userData }) => {
           };
           peerConnection.oniceconnectionstatechange = () => {
             if (peerConnection.iceConnectionState === 'failed') {
-              setError('WebRTC connection failed for ' + sender);
+              console.error(`WebRTC connection failed for ${sender}`);
+              setError(`WebRTC connection failed for ${sender}`);
               peerConnection.close();
               delete peerConnections.current[sender];
               setRemoteStreams(prev => {
@@ -289,21 +301,36 @@ export const MainScreen = ({ onLogout, userData }) => {
               });
             }
           };
+          // Add local tracks only if stream is available
           if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => {
-              peerConnection.addTrack(track, localStreamRef.current);
+              try {
+                peerConnection.addTrack(track, localStreamRef.current);
+              } catch (err) {
+                console.error(`Failed to add track for ${sender}:`, err);
+              }
             });
           }
           peerConnections.current[sender] = peerConnection;
-          if (isViewer && sender === hostId) peerConnectionRef.current = peerConnection;
+          if (isViewer && sender === hostId) {
+            peerConnectionRef.current = peerConnection;
+          }
         }
+    
+        // Ensure signaling state allows setting remote offer
+        if (peerConnection.signalingState !== 'stable') {
+          console.warn(`Cannot set remote offer in state ${peerConnection.signalingState} for ${sender}`);
+          return;
+        }
+    
         await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
         socket.emit('answer', { target: sender, sdp: answer });
+        console.log(`Successfully processed offer from ${sender}`);
       } catch (err) {
-        console.error('Offer handling error:', err);
-        setError('Failed to process stream offer.');
+        console.error(`Offer handling error for sender ${sender}:`, err.message, err.stack);
+        setError(`Failed to process stream offer: ${err.message}`);
       }
     };
 
