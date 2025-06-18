@@ -93,8 +93,26 @@ const giftImages = {
 };
 
 
-const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStream, switchCamera, toggleMute, isMuted,
-    requestStreamPermission, hasRequestedStream, leaveRoom, theme,
+const StreamRoom = ({
+    remoteStreams,
+    localStream,
+    isStreaming,
+    isViewerStreaming,
+    requestStreamPermission,
+    hasRequestedStream,
+    isFrontCamera,
+    theme,
+    viewerCount,
+    toggleMute,
+    switchCamera,
+    leaveRoom,
+    isMuted,
+    hostId, 
+    viewers,
+    stopStreaming,
+    stopViewerStream,
+    isHost,
+    theme,
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -117,7 +135,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [showMicIcon, setShowMicIcon] = useState(false);
-
+    const [screenlayoutlength, setScreenLayoutLength] = useState([1]);
 
     // Function to fetch gifts from the API
     const getGifts = async () => {
@@ -180,10 +198,25 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
 
 
     // managed screen layout for new user and existing user
+    useEffect(()=>{
+        if(viewerCount==1){
+            setScreenLayoutLength([1]);
+        }else if(viewerCount==2){
+            setScreenLayoutLength([1, 2]);
+        }else if(viewerCount==3){
+            setScreenLayoutLength([1, 2, 3]);
+        }else if(viewerCount==4){
+            setScreenLayoutLength([1, 2, 3, 4]);
+        }else if(viewerCount==5){
+            setScreenLayoutLength([1, 2, 3, 4, 5]);
+        }else if(viewerCount==6){
+            setScreenLayoutLength([1, 2, 3, 4, 5, 6]);  
+        }else{
+            setScreenLayoutLength([1])
+        }
+    },[viewerCount])
 
-    const userJoinedCount = 3;
 
-    const totalStreams = [1, 2, 3];
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
@@ -325,7 +358,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
             {isHost && (
                 <View style={[styles.streamBox]}>
                     <>
-                        {totalStreams.length === 1 ? (
+                        {screenlayoutlength.length === 1 ? (
                             <>
                                 {localStream && (
                                     <RTCView
@@ -338,7 +371,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                             </>
                         ) : <View style={[styles.streamVideosContainer]}>
                             <>
-                                {userJoinedCount === 3 ? (
+                                {viewerCount === 3 ? (
                                     // Custom 3-user layout
                                     <View style={styles.threeUserRow}>
                                         {/* Left column - full height */}
@@ -358,7 +391,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                             </View>
                                         </View>
                                     </View>
-                                ) : userJoinedCount === 5 ? (
+                                ) : viewerCount === 5 ? (
                                     <View style={styles.fiveUserWrapper}>
                                         {/* Row 1 - 2 columns (50% each) */}
                                         <View style={styles.fiveUserRow}>
@@ -381,11 +414,11 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                     </View>
                                 ) : (
                                     <View style={styles.streamVideosInnerGrid}>
-                                        {totalStreams.map((stream, index) => {
+                                        {screenlayoutlength.map((stream, index) => {
                                             return (
                                                 <View key={index} style={[
                                                     styles.streamVideo,
-                                                    getVideoTileStyle(userJoinedCount),
+                                                    getVideoTileStyle(viewerCount),
                                                 ]}>
                                                     <Text style={{ color: '#fff', fontSize: 22 }}>{index + 1}</Text>
                                                 </View>
@@ -451,7 +484,7 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                                     </View>
                                 </View>
                                 <LinearGradient
-                                    colors={totalStreams.length > 1 ? ['#1d1d1d', '#1d1d1d'] : ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)']}
+                                    colors={screenlayoutlength.length > 1 ? ['#1d1d1d', '#1d1d1d'] : ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)']}
                                     start={{ x: 0.5, y: 1 }}
                                     end={{ x: 0.5, y: 0 }}
                                     style={styles.strRoomFooter}
@@ -574,45 +607,6 @@ const StreamRoom = ({ isHost, localStream, isFrontCamera, isStreaming, remoteStr
                 </View>
             )
             }
-            {
-                !isHost && (
-                    <View style={styles.streamBox}>
-                        {isStreaming && remoteStream ? (
-                            <>
-                                <RTCView
-                                    streamURL={remoteStream.toURL()}
-                                    style={styles.fullScreenVideo}
-                                    objectFit="cover"
-                                    mirror={true}
-                                />
-                                <Text style={[styles.viewingText, themeStyles[theme].text]}>📡 Watching stream...</Text>
-                            </>
-                        ) : localStream ? (
-                            <RTCView
-                                streamURL={localStream.toURL()}
-                                style={styles.fullScreenVideo}
-                                objectFit="cover"
-                                mirror={isFrontCamera}
-                            />
-                        ) : null}
-                        {!isStreaming && (
-                            <TouchableOpacity
-                                style={[styles.startStreamingButton, hasRequestedStream && styles.disabledButton, themeStyles[theme].startButton]}
-                                onPress={requestStreamPermission}
-                                disabled={hasRequestedStream}
-                            >
-                                <Text style={styles.buttonText}>
-                                    {hasRequestedStream ? 'Awaiting Permission...' : 'Request to Stream'}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                )
-            }
-
-            {/* gift modal  */}
-
-
             {
                 giftModalVisible && (
                     <Modal
