@@ -70,297 +70,196 @@ export const MainScreen = ({ onLogout, userData }) => {
   };
 
   useEffect(() => {
-    checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
-
-    const handlesocketconnect = () => {
+    checkAndRequestPermissions().catch(err => console.error('Permission check failed:', err));
+  
+    const onSocketConnect = () => {
       socket.emit('identify', userData.userid, userData.screenName);
     };
-
+  
     const handleRoomCreated = ({ roomId, socketid }) => {
       setJoined(true);
       setIsHost(true);
       setHostId(socketid);
     };
-
+  
     const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount, approvedViewerIds }) => {
       setRoomId(roomId);
       setHostId(hostId);
       setIsViewer(true);
-      setIsStreaming(isHostStreaming);
       setJoined(true);
       setIsHost(false);
+      setIsStreaming(isHostStreaming);
       setViewerCount(viewerCount);
       setIsViewerStreaming(approvedViewerIds.includes(socket.id));
     };
-
-    const handleRoomFull = () => {
-      setError('Room is full. Cannot join.');
-    };
-
-    const handleRoomExists = () => {
-      setError('Room already exists.');
-    };
-
+  
     const handleRoomInfo = ({ viewerCount, isViewerStreaming, approvedViewerIds }) => {
       setViewerCount(viewerCount);
       setIsViewerStreaming(isViewerStreaming.includes(socket.id));
       setViewers([...isViewerStreaming, ...approvedViewerIds.filter(id => !isViewerStreaming.includes(id))]);
     };
-
+  
     const handleUserJoined = async (viewerId) => {
-      if (!isHost || !localStreamRef.current || localStreamRef.current.getTracks().length === 0) {
-        return;
-      }
-
+      if (!isHost || !localStreamRef.current) return;
       try {
-        const peerConnection = new RTCPeerConnection(iceServers);
-        peerConnection.oniceconnectionstatechange = () => {
-          if (peerConnection.iceConnectionState === 'failed') {
-            setError('WebRTC connection failed for viewer ' + viewerId);
-            peerConnection.close();
+        const pc = new RTCPeerConnection(iceServers);
+  
+        localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current));
+  
+        pc.onicecandidate = e => e.candidate && socket.emit('ice-candidate', { target: viewerId, candidate: e.candidate });
+        pc.ontrack = e => setRemoteStreams(prev => new Map(prev).set(viewerId, e.streams[0]));
+        pc.oniceconnectionstatechange = () => {
+          if (pc.iceConnectionState === 'failed') {
+            pc.close();
             delete peerConnections.current[viewerId];
             setRemoteStreams(prev => {
-              const newStreams = new Map(prev);
-              newStreams.delete(viewerId);
-              return newStreams;
+              const updated = new Map(prev);
+              updated.delete(viewerId);
+              return updated;
             });
           }
         };
-        localStreamRef.current.getTracks().forEach(track => {
-          peerConnection.addTrack(track, localStreamRef.current);
-        });
-        peerConnection.onicecandidate = event => {
-          if (event.candidate) {
-            socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
-          }
-        };
-        peerConnection.ontrack = event => {
-          console.log(`Host received stream from viewer ${viewerId}:`, event.streams[0]);
-          setRemoteStreams(prev => new Map(prev).set(viewerId, event.streams[0]));
-        };
-        peerConnections.current[viewerId] = peerConnection;
-        const offer = await peerConnection.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        });
-        await peerConnection.setLocalDescription(offer);
+  
+        peerConnections.current[viewerId] = pc;
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
         socket.emit('offer', { target: viewerId, sdp: offer });
+  
       } catch (err) {
-        console.error('Offer error for viewer', viewerId, err);
-        setError('Failed to connect to viewer.');
+        console.error('Host offer error:', err);
       }
     };
-
-    const handleViewerJoined = async (hostId) => {
-      if (!isViewer) return;
-      try {
-        const peerConnection = new RTCPeerConnection(iceServers);
-        peerConnection.ontrack = event => {
-          console.log('Viewer received host stream:', event.streams[0]);
-          setRemoteStreams(prev => new Map(prev).set(hostId, event.streams[0]));
-        };
-        peerConnection.onicecandidate = event => {
-          if (event.candidate) {
-            socket.emit('ice-candidate', { target: hostId, candidate: event.candidate });
-          }
-        };
-        peerConnection.oniceconnectionstatechange = () => {
-          if (peerConnection.iceConnectionState === 'failed') {
-            setError('WebRTC connection failed with host.');
-            peerConnection.close();
-            peerConnectionRef.current = null;
-            setRemoteStreams(prev => {
-              const newStreams = new Map(prev);
-              newStreams.delete(hostId);
-              return newStreams;
-            });
-          }
-        };
-        peerConnectionRef.current = peerConnection;
-        peerConnections.current[hostId] = peerConnection;
-      } catch (err) {
-        console.error('Viewer joined error:', err);
-        setError('Failed to initialize viewer stream.');
-      }
-    };
-
-    const handleUserLeft = (viewerId) => {
-      setViewers(prev => prev.filter(id => id !== viewerId));
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
-        setRemoteStreams(prev => {
-          const newStreams = new Map(prev);
-          newStreams.delete(viewerId);
-          return newStreams;
-        });
-      }
-    };
-
-    const handleHostStartedStreaming = () => {
-      setIsStreaming(true);
-    };
-
-    const handleViewerStartedStreaming = async (viewerId) => {
-      if (peerConnections.current[viewerId]) {
-        console.log('Peer connection already exists for viewer:', viewerId);
-        return;
-      }
-      try {
-        const peerConnection = new RTCPeerConnection(iceServers);
-        peerConnection.ontrack = event => {
-          console.log(`Received stream from viewer ${viewerId}:`, event.streams[0]);
-          setRemoteStreams(prev => new Map(prev).set(viewerId, event.streams[0]));
-        };
-        peerConnection.onicecandidate = event => {
-          if (event.candidate) {
-            socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
-          }
-        };
-        peerConnection.oniceconnectionstatechange = () => {
-          if (peerConnection.iceConnectionState === 'failed') {
-            setError('WebRTC connection failed for viewer ' + viewerId);
-            peerConnection.close();
-            delete peerConnections.current[viewerId];
-            setRemoteStreams(prev => {
-              const newStreams = new Map(prev);
-              newStreams.delete(viewerId);
-              return newStreams;
-            });
-          }
-        };
-        if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => {
-            peerConnection.addTrack(track, localStreamRef.current);
-          });
-        }
-        peerConnections.current[viewerId] = peerConnection;
-      } catch (err) {
-        console.error('Viewer streaming error:', err);
-        setError('Failed to process viewer stream.');
-      }
-    };
-
-    const handleIceCandidate = async ({ candidate, sender }) => {
-      try {
-        const pc = peerConnections.current[sender] || peerConnectionRef.current;
-        if (pc && candidate) {
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-      } catch (err) {
-        console.error('ICE candidate error:', err);
-      }
-    };
-
+  
     const handleOffer = async ({ sdp, sender }) => {
       try {
-        let peerConnection = peerConnections.current[sender];
-        if (!peerConnection) {
-          peerConnection = new RTCPeerConnection(iceServers);
-          peerConnection.ontrack = event => {
-            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
-            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
-          };
-          peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-              socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
-            }
-          };
-          peerConnection.oniceconnectionstatechange = () => {
-            if (peerConnection.iceConnectionState === 'failed') {
-              setError('WebRTC connection failed for ' + sender);
-              peerConnection.close();
+        let pc = peerConnections.current[sender];
+        if (!pc) {
+          pc = new RTCPeerConnection(iceServers);
+          peerConnections.current[sender] = pc;
+  
+          pc.onicecandidate = e => e.candidate && socket.emit('ice-candidate', { target: sender, candidate: e.candidate });
+          pc.ontrack = e => setRemoteStreams(prev => new Map(prev).set(sender, e.streams[0]));
+          pc.oniceconnectionstatechange = () => {
+            if (pc.iceConnectionState === 'failed') {
+              pc.close();
               delete peerConnections.current[sender];
               setRemoteStreams(prev => {
-                const newStreams = new Map(prev);
-                newStreams.delete(sender);
-                return newStreams;
+                const updated = new Map(prev);
+                updated.delete(sender);
+                return updated;
               });
             }
           };
+  
           if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => {
-              peerConnection.addTrack(track, localStreamRef.current);
-            });
+            localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current));
           }
-          peerConnections.current[sender] = peerConnection;
-          if (isViewer && sender === hostId) peerConnectionRef.current = peerConnection;
+          if (isViewer && sender === hostId) peerConnectionRef.current = pc;
         }
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
+  
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
         socket.emit('answer', { target: sender, sdp: answer });
       } catch (err) {
-        console.error('Offer handling error:', err);
-        setError('Failed to process stream offer.');
+        console.error('Handle offer error:', err);
       }
     };
-
+  
     const handleAnswer = async ({ sdp, sender }) => {
       try {
         const pc = peerConnections.current[sender] || peerConnectionRef.current;
-        if (pc) {
-          if (pc.signalingState !== 'have-local-offer') {
-            console.warn(`Cannot set remote answer in signaling state: ${pc.signalingState}`);
-            return;
-          }
+        if (pc?.signalingState === 'have-local-offer') {
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-          console.log(`Successfully set remote answer for sender: ${sender}`);
-        } else {
-          console.warn(`No peer connection found for sender: ${sender}`);
         }
       } catch (err) {
         console.error('Answer error:', err);
-        setError('Failed to process stream answer: ' + err.message);
       }
     };
-
-    const handleHostLeft = () => {
-      setError('Host has left the room.');
-      setJoined(false);
-      setIsStreaming(false);
-      setIsViewerStreaming(false);
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+  
+    const handleIceCandidate = async ({ candidate, sender }) => {
+      try {
+        const pc = peerConnections.current[sender] || peerConnectionRef.current;
+        pc && candidate && await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (err) {
+        console.error('ICE error:', err);
+      }
     };
-
-    const handleRoomClosed = () => {
-      setError('Room has been closed.');
-      setJoined(false);
-      setIsStreaming(false);
-      setIsViewerStreaming(false);
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+  
+    const handleViewerJoined = async (hostId) => {
+      if (!isViewer) return;
+      try {
+        const pc = new RTCPeerConnection(iceServers);
+        peerConnections.current[hostId] = pc;
+        peerConnectionRef.current = pc;
+  
+        pc.onicecandidate = e => e.candidate && socket.emit('ice-candidate', { target: hostId, candidate: e.candidate });
+        pc.ontrack = e => setRemoteStreams(prev => new Map(prev).set(hostId, e.streams[0]));
+        pc.oniceconnectionstatechange = () => {
+          if (pc.iceConnectionState === 'failed') {
+            pc.close();
+            peerConnectionRef.current = null;
+            setRemoteStreams(prev => {
+              const updated = new Map(prev);
+              updated.delete(hostId);
+              return updated;
+            });
+          }
+        };
+      } catch (err) {
+        console.error('Viewer join error:', err);
+      }
     };
-
+  
+    const handleHostStartedStreaming = () => setIsStreaming(true);
+  
     const handleIncomingStreamRequest = ({ viewerId, name }) => {
       if (!isHost) return;
-      Alert.alert(
-        "Stream Request",
-        `${name} wants to start streaming.`,
-        [
-          {
-            text: "Reject",
-            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: false }),
-            style: "cancel",
-          },
-          {
-            text: "Accept",
-            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: true }),
-          },
-        ]
-      );
+      Alert.alert("Stream Request", `${name} wants to stream.`, [
+        { text: "Reject", style: "cancel", onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: false }) },
+        { text: "Accept", onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: true }) },
+      ]);
     };
-
+  
     const handleStreamRequestResponse = async ({ accepted, roomId, hostId }) => {
       if (accepted) {
-        console.log(`Stream request accepted for room ${roomId}`);
         await startViewerStreaming(roomId, hostId);
         setHasRequestedStream(false);
       } else {
         setHasRequestedStream(false);
-        Alert.alert("Request Rejected", "Host declined your stream request.");
+        Alert.alert("Request Rejected", "Host rejected your stream request.");
       }
     };
-
+  
+    const handleUserLeft = (id) => {
+      setViewers(prev => prev.filter(v => v !== id));
+      if (peerConnections.current[id]) {
+        peerConnections.current[id].close();
+        delete peerConnections.current[id];
+      }
+      setRemoteStreams(prev => {
+        const updated = new Map(prev);
+        updated.delete(id);
+        return updated;
+      });
+    };
+  
+    const handleHostLeft = () => {
+      setError("Host has left.");
+      setJoined(false);
+      setIsStreaming(false);
+      setIsViewerStreaming(false);
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+    };
+  
+    const handleRoomClosed = () => {
+      setError("Room closed.");
+      setJoined(false);
+      setIsStreaming(false);
+      setIsViewerStreaming(false);
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+    };
+  
     const handleViewerStoppedStreaming = (viewerId) => {
       setIsViewerStreaming(false);
       if (peerConnections.current[viewerId]) {
@@ -368,68 +267,56 @@ export const MainScreen = ({ onLogout, userData }) => {
         delete peerConnections.current[viewerId];
       }
       setRemoteStreams(prev => {
-        const newStreams = new Map(prev);
-        newStreams.delete(viewerId);
-        return newStreams;
+        const updated = new Map(prev);
+        updated.delete(viewerId);
+        return updated;
       });
     };
-
-    const stopViewerStream = (viewerId) => {
-      if (!isHost) return;
-      socket.emit('stop-viewer-stream', viewerId);
-    };
-
-    socket.on('connect', handlesocketconnect);
+  
+    socket.on('connect', onSocketConnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
-    socket.on('room-full', handleRoomFull);
-    socket.on('invalid-room', () => setError('Invalid room ID.'));
-    socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
+    socket.on('room-full', () => setError('Room full'));
+    socket.on('room-exists', () => setError('Room already exists'));
     socket.on('user-joined', handleUserJoined);
     socket.on('viewer-joined', handleViewerJoined);
-    socket.on('user-left', handleUserLeft);
-    socket.on('host-started-streaming', handleHostStartedStreaming);
-    socket.on('viewer-started-streaming', handleViewerStartedStreaming);
     socket.on('ice-candidate', handleIceCandidate);
     socket.on('offer', handleOffer);
     socket.on('answer', handleAnswer);
-    socket.on('host-left', handleHostLeft);
-    socket.on('room-closed', handleRoomClosed);
+    socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('incoming-stream-request', handleIncomingStreamRequest);
     socket.on('stream-request-response', handleStreamRequestResponse);
     socket.on('viewer-stopped-streaming', handleViewerStoppedStreaming);
-    socket.on('socket-id-in-use', () => {
-      Alert.alert("User Already Logged In", "Please Logout From Other Device", [
-        { text: "OK", onPress: () => onLogout() }
-      ]);
-    });
-
+    socket.on('user-left', handleUserLeft);
+    socket.on('host-left', handleHostLeft);
+    socket.on('room-closed', handleRoomClosed);
+    socket.on('socket-id-in-use', () => Alert.alert("Already logged in", "Logout from other device", [{ text: "OK", onPress: onLogout }]));
+  
     return () => {
-      socket.off('connect', handlesocketconnect);
+      socket.off('connect', onSocketConnect);
       socket.off('room-created', handleRoomCreated);
       socket.off('room-joined', handleRoomJoined);
-      socket.off('room-full', handleRoomFull);
-      socket.off('invalid-room');
-      socket.off('room-exists', handleRoomExists);
       socket.off('room-info', handleRoomInfo);
+      socket.off('room-full');
+      socket.off('room-exists');
       socket.off('user-joined', handleUserJoined);
       socket.off('viewer-joined', handleViewerJoined);
-      socket.off('user-left', handleUserLeft);
-      socket.off('host-started-streaming', handleHostStartedStreaming);
-      socket.off('viewer-started-streaming', handleViewerStartedStreaming);
       socket.off('ice-candidate', handleIceCandidate);
       socket.off('offer', handleOffer);
       socket.off('answer', handleAnswer);
-      socket.off('host-left', handleHostLeft);
-      socket.off('room-closed', handleRoomClosed);
+      socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('incoming-stream-request', handleIncomingStreamRequest);
       socket.off('stream-request-response', handleStreamRequestResponse);
       socket.off('viewer-stopped-streaming', handleViewerStoppedStreaming);
+      socket.off('user-left', handleUserLeft);
+      socket.off('host-left', handleHostLeft);
+      socket.off('room-closed', handleRoomClosed);
       socket.off('socket-id-in-use');
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
-  }, [isHost,isViewer]);
+  }, [isHost, isViewer]);
+  
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
