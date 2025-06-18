@@ -107,12 +107,11 @@ const StreamRoom = ({
     switchCamera,
     leaveRoom,
     isMuted,
-    hostId, 
+    hostId,
     viewers,
     stopStreaming,
     stopViewerStream,
     isHost,
-    theme,
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
