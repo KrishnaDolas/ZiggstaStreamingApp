@@ -1,8 +1,10 @@
+/* eslint-disable react-native/no-inline-styles */
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
+    ActivityIndicator,
 } from 'react-native';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -110,14 +112,14 @@ const StreamRoom = ({
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
-    const screenWidth = Dimensions.get('window').width;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
+    const [giftsCategoryData, setGiftCategoryItems] = useState([]);
+    const [giftDataLoading, setGiftDataLoading] = useState(false);
     const [userChatInput, setUserChatInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [giftModalVisible, setGiftModalVisible] = useState(false);
     const [selectedGiftCategory, setSelectedGiftCategory] = useState('');
-    const [selectedGiftItems, setSelectedGiftItems] = useState([]);
     const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
     const scrollRef = useRef(null);
     const [showArrow, setShowArrow] = useState(true);
@@ -130,11 +132,12 @@ const StreamRoom = ({
     const [streamLayout, setStreamLayout] = useState([]);
 
     // Function to fetch gifts from the API
-    const getGifts = async () => {
+    const getGiftsCategory = async () => {
         try {
             const response = await Apiclient.get('/getgifts');
             if (response) {
-                setGiftItems(response.data.data || []);
+                setGiftCategoryItems(response.data.data || []);
+                console.log('giftCategories', response.data.data);
             }
         } catch (error) {
             console.error('Error fetching gifts:', error);
@@ -142,13 +145,39 @@ const StreamRoom = ({
     };
 
     useEffect(() => {
+        getGiftsCategory();
+    }, [giftModalVisible])
+
+
+    useEffect(() => {
+        console.log('selectedGiftCategory', selectedGiftCategory)
+    }, [selectedGiftCategory])
+
+    // Function to fetch gifts from the API
+    const getGifts = async () => {
+        setGiftDataLoading(true);
+        try {
+            const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
+            if (response) {
+                setGiftItems(response.data.data || []);
+                console.log('gift data', response.data.data)
+            }
+        } catch (error) {
+            console.error('Error fetching gifts:', error);
+        } finally {
+            setGiftDataLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
         getGifts();
-    }, [giftModalVisible]);
+    }, [giftModalVisible, selectedGiftCategory]);
 
     // Filter gifts by category
-    const filteredGiftItems = selectedGiftCategory === '' 
-        ? giftsData 
-        : giftsData.filter(item => item.giftValue === selectedGiftCategory);
+    // const filteredGiftItems = selectedGiftCategory === ''
+    //     ? giftsData
+    //     : giftsData.filter(item => item.giftValue === selectedGiftCategory);
 
     // Sort gifts by price and set default category
     useEffect(() => {
@@ -587,7 +616,7 @@ const StreamRoom = ({
                                     <View style={styles.giftModalCategoryContainer}>
                                         {Array.from(
                                             new Map(
-                                                giftsData
+                                                giftsCategoryData
                                                     .sort((a, b) => a.giftValue - b.giftValue)
                                                     .map(gift => [gift.giftValue, gift])
                                             ).values()
@@ -620,13 +649,17 @@ const StreamRoom = ({
                                 )}
                             </View>
                             <View style={[styles.giftModalItemsMainLayout]}>
-                                {filteredGiftItems.length > 0 ? (
+                                {giftsData.length > 0 ? (
                                     <ScrollView
                                         showsVerticalScrollIndicator={true}
                                         indicatorStyle="#d9d9d9"
                                     >
                                         <View style={styles.giftModalCategoryItemsContainer}>
-                                            {filteredGiftItems.map((item, index) => {
+                                            {giftDataLoading ? (
+                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
+                                                    <ActivityIndicator size="large" />
+                                                </View>
+                                            ) : giftsData.map((item, index) => {
                                                 const localImage = giftImages[item.giftIcon];
                                                 if (!localImage) return null;
                                                 return (
