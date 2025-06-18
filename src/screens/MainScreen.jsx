@@ -429,7 +429,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('socket-id-in-use');
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
-  }, [isHost]);
+  }, [isHost,isViewer]);
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
