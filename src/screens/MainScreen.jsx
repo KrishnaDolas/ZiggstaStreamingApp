@@ -378,6 +378,9 @@ export const MainScreen = ({ onLogout, userData }) => {
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
     socket.emit('create-room', roomId);
+    setTimeout(() => {
+      startStreaming(roomId)
+    }, 1000);
   };
 
   const joinRoom = (targetRoomId) => {
