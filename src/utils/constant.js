@@ -2,16 +2,28 @@
 import { io } from 'socket.io-client';
 // function connectUser(userId) { socket = io({ transports: ['polling', 'websocket'], // ✅ include both for fallback testing reconnection: true, // Enable automatic reconnection //forceNew: true, //autoConnect: false, //Prevents automatic connection; you call .connect() manually reconnectionAttempts: Infinity, // Keep trying forever reconnectionDelay: 5000, // Wait 15 seconds between attempts timeout: 15000 // (Optional) Fail a connection attempt after 20 seconds });
 // Exporting the socket instance for use in other parts of the application
-export const socket = io('http://192.168.0.18:5000', {
-    transports: ['websocket', 'polling'], // Include both for fallback testing
+export const socket = io('https://streamalong.live', {
+    transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
+  });
+  socket.on('connect', () => {
+    console.log('✅ Connected to Socket.IO server');
+  });
+  
+  socket.on('connect_error', (err) => {
+    console.log('❌ Connection Error:', err.message);
+  });
+  
+  socket.on('disconnect', (reason) => {
+    console.log('🔌 Disconnected:', reason);
   });
   
   // WebRTC ICE configuration with STUN and TURN servers
  export  const iceServers = {
     iceServers: [{
+      //38.242.235.250
         urls: 'turn:coturn.streamalong.live:3478?transport=udp',
         username: 'vikram',
         credential: 'vikram',
