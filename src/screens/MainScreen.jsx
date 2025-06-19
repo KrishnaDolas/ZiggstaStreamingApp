@@ -118,6 +118,49 @@ export const MainScreen = ({ onLogout, userData }) => {
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
     };
+    const handleUserJoined = async (viewerId) => {
+      if (!isHost || !localStreamRef.current || localStreamRef.current.getTracks().length === 0) {
+        return;
+      }
+
+      try {
+        const peerConnection = new RTCPeerConnection(iceServers);
+        peerConnection.oniceconnectionstatechange = () => {
+          if (peerConnection.iceConnectionState === 'failed') {
+            setError('WebRTC connection failed for viewer ' + viewerId);
+            peerConnection.close();
+            delete peerConnections.current[viewerId];
+            setRemoteStreams(prev => {
+              const newStreams = new Map(prev);
+              newStreams.delete(viewerId);
+              return newStreams;
+            });
+          }
+        };
+        localStreamRef.current.getTracks().forEach(track => {
+          peerConnection.addTrack(track, localStreamRef.current);
+        });
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
+          }
+        };
+        peerConnection.ontrack = event => {
+          console.log(`Host received stream from viewer ${viewerId}:`, event.streams[0]);
+          setRemoteStreams(prev => new Map(prev).set(viewerId, event.streams[0]));
+        };
+        peerConnections.current[viewerId] = peerConnection;
+        const offer = await peerConnection.createOffer({
+          offerToReceiveAudio: true,
+          offerToReceiveVideo: true,
+        });
+        await peerConnection.setLocalDescription(offer);
+        socket.emit('offer', { target: viewerId, sdp: offer });
+      } catch (err) {
+        console.error('Offer error for viewer', viewerId, err);
+        setError('Failed to connect to viewer.');
+      }
+    };
 
     const handleHostStartedStreaming = (hostId) => {
       setIsStreaming(true);
@@ -256,6 +299,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('invalid-room', () => setError('Invalid room ID.'));
     socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
+    socket.on('user-joined', handleUserJoined);
     socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
     socket.on('ice-candidate', handleIceCandidate);
@@ -280,6 +324,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('invalid-room');
       socket.off('room-exists', handleRoomExists);
       socket.off('room-info', handleRoomInfo);
+      socket.off('user-joined', handleUserJoined);
       socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('viewer-started-streaming', handleViewerStartedStreaming);
       socket.off('ice-candidate', handleIceCandidate);
