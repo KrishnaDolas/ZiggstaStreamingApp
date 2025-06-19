@@ -68,6 +68,53 @@ export const MainScreen = ({ onLogout, userData }) => {
     }
   };
 
+  // Connect to a streamer function
+  const connectToStreamer = async (streamerId) => {
+    if (streamerId === socket.id || peerConnections.current[streamerId]) return;
+    
+    try {
+      const pc = new RTCPeerConnection(iceServers);
+      peerConnections.current[streamerId] = pc;
+
+      // Add our local stream if we're streaming
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => {
+          pc.addTrack(track, localStreamRef.current);
+        });
+      }
+
+      pc.onicecandidate = event => {
+        if (event.candidate) {
+          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
+        }
+      };
+
+      pc.ontrack = event => {
+        console.log(`Received stream from ${streamerId}:`, event.streams[0]);
+        setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === 'failed') {
+          console.log(`Connection failed with streamer ${streamerId}`);
+          pc.close();
+          delete peerConnections.current[streamerId];
+          setRemoteStreams(prev => {
+            const newStreams = new Map(prev);
+            newStreams.delete(streamerId);
+            return newStreams;
+          });
+        }
+      };
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      socket.emit('offer', { target: streamerId, sdp: offer });
+    } catch (err) {
+      console.error('Error connecting to streamer:', err);
+    }
+  };
+
   useEffect(() => {
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
 
@@ -97,6 +144,13 @@ export const MainScreen = ({ onLogout, userData }) => {
       if (isHostStreaming) streamers.push(hostId);
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
+
+      // Connect to all active streamers
+      streamers.forEach(streamerId => {
+        if (streamerId !== socket.id) {
+          connectToStreamer(streamerId);
+        }
+      });
     };
 
     const handleRoomFull = () => {
@@ -110,13 +164,31 @@ export const MainScreen = ({ onLogout, userData }) => {
     const handleRoomInfo = ({ viewerCount, isViewerStreaming, approvedViewerIds, isHostStreaming, hostId }) => {
       setViewerCount(viewerCount);
       setIsViewerStreaming(approvedViewerIds.includes(socket.id));
-      setViewers([...isViewerStreaming, ...approvedViewerIds.filter(id => !isViewerStreaming.includes(id))]);
       
       // Update active streamers
       const streamers = [];
       if (isHostStreaming) streamers.push(hostId);
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
+    };
+
+    // IMPORTANT: Reinstated user-joined handler
+    const handleUserJoined = (viewerId) => {
+      setViewers(prev => [...prev, viewerId]);
+    };
+
+    // IMPORTANT: Reinstated user-left handler
+    const handleUserLeft = (viewerId) => {
+      setViewers(prev => prev.filter(id => id !== viewerId));
+      if (peerConnections.current[viewerId]) {
+        peerConnections.current[viewerId].close();
+        delete peerConnections.current[viewerId];
+      }
+      setRemoteStreams(prev => {
+        const newStreams = new Map(prev);
+        newStreams.delete(viewerId);
+        return newStreams;
+      });
     };
 
     const handleHostStartedStreaming = (hostId) => {
@@ -127,6 +199,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     };
 
     const handleViewerStartedStreaming = (viewerId) => {
+      setActiveStreamers(prev => [...prev, viewerId]);
       if (viewerId !== socket.id) {
         connectToStreamer(viewerId);
       }
@@ -248,7 +321,6 @@ export const MainScreen = ({ onLogout, userData }) => {
       }
     };
 
-
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
@@ -256,6 +328,10 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('invalid-room', () => setError('Invalid room ID.'));
     socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
+    // IMPORTANT: Reinstated user-joined listener
+    socket.on('user-joined', handleUserJoined);
+    // IMPORTANT: Reinstated user-left listener
+    socket.on('user-left', handleUserLeft);
     socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
     socket.on('ice-candidate', handleIceCandidate);
@@ -280,6 +356,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('invalid-room');
       socket.off('room-exists', handleRoomExists);
       socket.off('room-info', handleRoomInfo);
+      // IMPORTANT: Cleanup user-joined listener
+      socket.off('user-joined', handleUserJoined);
+      // IMPORTANT: Cleanup user-left listener
+      socket.off('user-left', handleUserLeft);
       socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('viewer-started-streaming', handleViewerStartedStreaming);
       socket.off('ice-candidate', handleIceCandidate);
@@ -294,58 +374,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
   }, [isHost, isViewer]);
-  const connectToStreamer = async (streamerId) => {
-    if (streamerId === socket.id || peerConnections.current[streamerId]) return;
-    
-    try {
-      const pc = new RTCPeerConnection(iceServers);
-      peerConnections.current[streamerId] = pc;
 
-      // Add our local stream if we're streaming
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current);
-        });
-      }
-
-      pc.onicecandidate = event => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
-        }
-      };
-
-      pc.ontrack = event => {
-        console.log(`Received stream from ${streamerId}:`, event.streams[0]);
-        setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
-      };
-
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === 'failed') {
-          console.log(`Connection failed with streamer ${streamerId}`);
-          pc.close();
-          delete peerConnections.current[streamerId];
-          setRemoteStreams(prev => {
-            const newStreams = new Map(prev);
-            newStreams.delete(streamerId);
-            return newStreams;
-          });
-        }
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socket.emit('offer', { target: streamerId, sdp: offer });
-    } catch (err) {
-      console.error('Error connecting to streamer:', err);
-    }
-  };
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
     socket.emit('create-room', roomId);
-    console.log(socket);
-   setTimeout(() => {
-    startStreaming(roomId);
-   }, 1000);
   };
 
   const joinRoom = (targetRoomId) => {
