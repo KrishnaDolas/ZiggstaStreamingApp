@@ -14,6 +14,7 @@ import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
+import { ConfirmModal } from '../modals/ConfirmModal';
 
 const chats = [
     {
@@ -130,6 +131,7 @@ const StreamRoom = ({
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [showMicIcon, setShowMicIcon] = useState(false);
     const [streamLayout, setStreamLayout] = useState([]);
+    const [closeStreamModal, setCloseStreamModal] = useState(false);
 
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
@@ -218,21 +220,7 @@ const StreamRoom = ({
     };
 
     const confirmleaveRoom = () => {
-        Alert.alert(
-            "Leave Room",
-            "Are you sure you want to leave the room?",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Leave",
-                    onPress: () => leaveRoom(),
-                    style: "destructive"
-                }
-            ]
-        );
+        setCloseStreamModal(true);
     };
 
     // Handle keyboard events
@@ -685,6 +673,11 @@ const StreamRoom = ({
                         </View>
                     </View>
                 </Modal>
+            )}
+
+            {/* close stream modal  */}
+            {closeStreamModal && (
+                <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
             )}
         </View>
     );
