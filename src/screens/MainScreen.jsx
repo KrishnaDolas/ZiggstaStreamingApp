@@ -256,7 +256,6 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('invalid-room', () => setError('Invalid room ID.'));
     socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
-    socket.on('user-joined', handleUserJoined);
     socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
     socket.on('ice-candidate', handleIceCandidate);
