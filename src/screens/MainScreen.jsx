@@ -457,8 +457,6 @@ export const MainScreen = ({ onLogout, userData }) => {
 
   const leaveRoom = () => {
     socket.emit('leave-room');
-      socket.emit('stop-viewer-stream',socket.id)
-      console.log('Viewer stopped streaming');
     setJoined(false);
     setIsStreaming(false);
     setIsViewerStreaming(false);
