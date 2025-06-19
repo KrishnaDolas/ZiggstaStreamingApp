@@ -173,28 +173,8 @@ export const MainScreen = ({ onLogout, userData }) => {
     };
 
     // IMPORTANT: Reinstated user-joined handler
-    const handleUserJoined = ({ viewerId, name, initiateConnection }) => {
-      if (initiateConnection) {
-        const peerConnection = new RTCPeerConnection();
-        // Add host's stream to peerConnection
-        hostStream.getTracks().forEach(track => peerConnection.addTrack(track, hostStream));
-        // Store peerConnection for this viewer
-        peerConnections[viewerId] = peerConnection;
-    
-        // Handle ICE candidates
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit('ice-candidate', { target: viewerId, candidate: event.candidate });
-          }
-        };
-    
-        // Create and send offer
-        peerConnection.createOffer()
-          .then(offer => peerConnection.setLocalDescription(offer))
-          .then(() => {
-            socket.emit('offer', { target: viewerId, sdp: peerConnection.localDescription });
-          });
-      }
+    const handleUserJoined = (viewerId) => {
+      setViewers(prev => [...prev, viewerId]);
     };
 
     // IMPORTANT: Reinstated user-left handler
@@ -251,29 +231,37 @@ export const MainScreen = ({ onLogout, userData }) => {
     };
 
     const handleOffer = async ({ sdp, sender }) => {
-      const peerConnection = new RTCPeerConnection();
-      peerConnections[sender] = peerConnection;
-    
-      // Handle incoming stream
-      peerConnection.ontrack = (event) => {
-        // Display stream in video element
-        document.getElementById('hostVideo').srcObject = event.streams[0];
-      };
-    
-      // Handle ICE candidates
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+      try {
+        let pc = peerConnections.current[sender];
+        if (!pc) {
+          pc = new RTCPeerConnection(iceServers);
+          peerConnections.current[sender] = pc;
+          
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => {
+              pc.addTrack(track, localStreamRef.current);
+            });
+          }
+
+          pc.onicecandidate = event => {
+            if (event.candidate) {
+              socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+            }
+          };
+
+          pc.ontrack = event => {
+            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
+            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
+          };
         }
-      };
-    
-      // Process offer
-      peerConnection.setRemoteDescription(new RTCSessionDescription(sdp))
-        .then(() => peerConnection.createAnswer())
-        .then(answer => peerConnection.setLocalDescription(answer))
-        .then(() => {
-          socket.emit('answer', { target: sender, sdp: peerConnection.localDescription });
-        });
+
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('answer', { target: sender, sdp: answer });
+      } catch (err) {
+        console.error('Offer handling error:', err);
+      }
     };
 
     const handleAnswer = async ({ sdp, sender }) => {
