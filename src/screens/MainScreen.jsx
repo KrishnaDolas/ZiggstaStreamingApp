@@ -1,4 +1,4 @@
-import { View, Alert, Platform, SafeAreaView, StatusBar } from 'react-native';
+import { View, Alert, Platform, StatusBar } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -9,10 +9,8 @@ import themeColors from '../../assets/styles/Colors';
 import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
-import Hostscreen from '../streamscreen/Hostscreen';
-import Viewerscreen from '../streamscreen/Viewerscreen';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import StreamRoom from '../components/StreamRoom';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const MainScreen = ({ onLogout, userData }) => {
   const insetsTop = useSafeAreaInsets();
@@ -151,36 +149,44 @@ export const MainScreen = ({ onLogout, userData }) => {
       }
     };
 
-    const handleViewerJoined = async (hostId) => {
+    const handleViewerJoined = async (streamerId) => {
       if (!isViewer) return;
       try {
-        const peerConnection = new RTCPeerConnection(iceServers);
-        peerConnection.ontrack = event => {
-          console.log('Viewer received host stream:', event.streams[0]);
-          setRemoteStreams(prev => new Map(prev).set(hostId, event.streams[0]));
-        };
-        peerConnection.onicecandidate = event => {
-          if (event.candidate) {
-            socket.emit('ice-candidate', { target: hostId, candidate: event.candidate });
-          }
-        };
-        peerConnection.oniceconnectionstatechange = () => {
-          if (peerConnection.iceConnectionState === 'failed') {
-            setError('WebRTC connection failed with host.');
-            peerConnection.close();
-            peerConnectionRef.current = null;
-            setRemoteStreams(prev => {
-              const newStreams = new Map(prev);
-              newStreams.delete(hostId);
-              return newStreams;
+        let peerConnection = peerConnections.current[streamerId];
+        if (!peerConnection) {
+          peerConnection = new RTCPeerConnection(iceServers);
+          peerConnection.ontrack = event => {
+            console.log(`Viewer received stream from ${streamerId}:`, event.streams[0]);
+            setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
+          };
+          peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+              socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
+            }
+          };
+          peerConnection.oniceconnectionstatechange = () => {
+            if (peerConnection.iceConnectionState === 'failed') {
+              setError(`WebRTC connection failed with ${streamerId}.`);
+              peerConnection.close();
+              delete peerConnections.current[streamerId];
+              setRemoteStreams(prev => {
+                const newStreams = new Map(prev);
+                newStreams.delete(streamerId);
+                return newStreams;
+              });
+            }
+          };
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => {
+              peerConnection.addTrack(track, localStreamRef.current);
             });
           }
-        };
-        peerConnectionRef.current = peerConnection;
-        peerConnections.current[hostId] = peerConnection;
+          peerConnections.current[streamerId] = peerConnection;
+          if (streamerId === hostId) peerConnectionRef.current = peerConnection;
+        }
       } catch (err) {
         console.error('Viewer joined error:', err);
-        setError('Failed to initialize viewer stream.');
+        setError('Failed to initialize stream connection.');
       }
     };
 
@@ -374,11 +380,6 @@ export const MainScreen = ({ onLogout, userData }) => {
       });
     };
 
-    const stopViewerStream = (viewerId) => {
-      if (!isHost) return;
-      socket.emit('stop-viewer-stream', viewerId);
-    };
-
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
@@ -429,7 +430,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       socket.off('socket-id-in-use');
       closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
-  }, [isHost,isViewer]);
+  }, [isHost, isViewer]);
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
@@ -621,25 +622,25 @@ export const MainScreen = ({ onLogout, userData }) => {
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
         ) : (
-              <StreamRoom
-              remoteStreams={remoteStreams}
-              localStream={localStream}
-              isStreaming={isStreaming}
-              isViewerStreaming={isViewerStreaming}
-              requestStreamPermission={requestStreamPermission}
-              hasRequestedStream={hasRequestedStream}
-              isFrontCamera={isFrontCamera}
-              theme={theme}
-              viewerCount={viewerCount}
-              toggleMute={toggleMute}
-              switchCamera={switchCamera}
-              leaveRoom={leaveRoom}
-              isMuted={isMuted}
-              hostId={hostId}
-              viewers={viewers}
-              isHost={isHost}
-              />
-            )}
+          <StreamRoom
+            remoteStreams={remoteStreams}
+            localStream={localStream}
+            isStreaming={isStreaming}
+            isViewerStreaming={isViewerStreaming}
+            requestStreamPermission={requestStreamPermission}
+            hasRequestedStream={hasRequestedStream}
+            isFrontCamera={isFrontCamera}
+            theme={theme}
+            viewerCount={viewerCount}
+            toggleMute={toggleMute}
+            switchCamera={switchCamera}
+            leaveRoom={leaveRoom}
+            isMuted={isMuted}
+            hostId={hostId}
+            viewers={viewers}
+            isHost={isHost}
+          />
+        )}
       </View>
     </LinearGradient>
   );
