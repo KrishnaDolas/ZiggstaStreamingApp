@@ -164,6 +164,9 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
     }
 
     if (question.field === 'dob') {
+      // Calculate max date for 18 years ago from current date
+      const currentDate = new Date();
+      const maxDate = new Date(currentDate.getFullYear() - 18, currentDate.getMonth(), currentDate.getDate());
       return (
         <View>
           <TouchableOpacity
@@ -184,10 +187,10 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
           {showDatePicker && (
             <DateTimePicker
               testID="dateTimePicker"
-              value={formData.dob ? new Date(formData.dob) : new Date(2000, 0, 1)} // Default to Jan 1, 2000 instead of today
+              value={formData.dob ? new Date(formData.dob) : maxDate}
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              maximumDate={new Date()}
+              maximumDate={maxDate}
               accentColor="#d93a63"
               onChange={(event, selectedDate) => {
                 setShowDatePicker(false);
@@ -217,9 +220,10 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
         <TextInput
           style={globalStyles.input}
           placeholder={question.placeholder}
-          placeholderTextColor="black"
+          placeholderTextColor="#9d9d9d"
           value={formData[question.field]}
           onChangeText={text => handleChange(question.field, text)}
+          editable={question.field === 'location' ? false : true}
         />
         {errors[question.field] ? (
           <Text style={{ color: 'red', marginTop: 5 }}>
