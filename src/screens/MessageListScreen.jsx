@@ -99,7 +99,7 @@ export const MessageListScreen = ({ userData }) => {
                     hidden={false} // Show the status bar
                     barStyle="dark-content"
                 />
-                <StreamListHeader />
+                <StreamListHeader userData={userData} />
                 <View
                     style={[
                         styles.messageListMainCardLayout,

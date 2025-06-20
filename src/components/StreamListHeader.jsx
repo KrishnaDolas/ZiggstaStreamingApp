@@ -7,7 +7,8 @@ import {
     ScrollView,
     TextInput,
     Modal,
-    Animated
+    Animated,
+    ActivityIndicator
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import LinearGradient from 'react-native-linear-gradient';
@@ -37,6 +38,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     const [categoryData, setCategoryData] = useState([]);
     const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
     const [isLiked, setIsLiked] = useState(true);
+    const [isInterestLoading, setIsInterestLoading] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const handleToggleLiked = () => {
@@ -64,6 +66,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     // Function to fetch user interest from the API
     const getInterestData = async () => {
         try {
+            setIsInterestLoading(true);
             const formData = {
                 userID: userData?.userid,
             };
@@ -73,14 +76,16 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
             }
         } catch (error) {
             console.error('Error fetching interest:', error);
+        } finally {
+            setIsInterestLoading(false);
         }
     };
 
     useEffect(() => {
-        if (route.name === 'Main') {
+        if (route?.name === 'Main' && userData?.userid) {
             getInterestData();
         }
-    }, [route.name]); // depend on route.name
+    }, [route?.name, userData?.userid]);
 
 
 
@@ -136,7 +141,11 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                         </Animated.View>
                     </TouchableOpacity>
                     {/* Scrollable Category Buttons */}
-                    <ScrollView
+                    {isInterestLoading ? (
+                        <View style={{ flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                            <ActivityIndicator size="small" color="#d93a63" />
+                        </View>
+                    ) : <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.strHeaderScrollCategoryContainer}
@@ -154,8 +163,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                                 </Text>
                             </TouchableOpacity>
                         ))}
-                    </ScrollView>
-
+                    </ScrollView>}
                     {/* Right Fixed Icon */}
                     <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setShowSearch(true)}>
                         <Ionicons name="search" size={20} color="#d93a63" />

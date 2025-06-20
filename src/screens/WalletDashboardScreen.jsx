@@ -69,7 +69,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                     barStyle="dark-content"
                     backgroundColor="#fff"
                 />
-                <StreamListHeader />
+                <StreamListHeader userData={userData} />
                 <View
                     style={[
                         styles.messageListMainCardLayout,

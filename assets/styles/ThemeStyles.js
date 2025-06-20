@@ -710,11 +710,16 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    // elevation: 4, // Android shadow
-    // shadowColor: '#000', // iOS shadow
-    // shadowOpacity: 0.3,
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowRadius: 3,
+    // Android
+    elevation: 10, // increased for deeper shadow
+
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOpacity: 0.4, // stronger
+    shadowOffset: { width: 0, height: -6 }, // shadow upwards
+    shadowRadius: 12, // softer and more spread
+
+    zIndex: 10, // ensure it's above other content
   },
   profileModalClose: {
     alignSelf: 'flex-end',
@@ -1729,6 +1734,22 @@ export const styles = StyleSheet.create({
     marginTop: 5,
     color: '#222',
     textAlign: 'center',
+  },
+  // profile sub setting modal
+  mySettingSubModalTitleBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  mySettingSubModalClose: {
+    width: 60,
+    paddingLeft: 8,
+  },
+  mySettingSubModalTitle: {
+    fontSize: 24,
+    color: '#d93a63',
+
   },
 });
 
