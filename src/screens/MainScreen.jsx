@@ -342,6 +342,19 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('incoming-stream-request', handleIncomingStreamRequest);
     socket.on('stream-request-response', handleStreamRequestResponse);
     socket.on('viewer-stopped-streaming', handleViewerStoppedStreaming);
+    socket.on('host-stopped-streaming',()=>{
+      setIsStreaming(false);
+      setIsViewerStreaming(false);
+      setRemoteStreams(new Map());
+      setActiveStreamers([]);
+      setLocalStream(null);
+      localStreamRef.current = null;
+      if(!isHost){
+        Alert.alert("Stream Ended", "The host has Leave the room. You can now leave the room");
+      }
+      // Close all peer connections and reset state
+      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+    })
     socket.on('socket-id-in-use', () => {
       Alert.alert("User Already Logged In", "Please Logout From Other Device", [
         { text: "OK", onPress: () => onLogout() }
