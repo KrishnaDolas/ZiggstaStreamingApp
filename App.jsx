@@ -93,7 +93,6 @@ const App = () => {
         `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=c4e3347f0fd44efbbb4fc4f7c7985659`
       );
       const data = await response.json();
-
       if (data.results && data.results.length > 0) {
         setUserAddress(data.results[0].components);
       } else {
@@ -109,7 +108,7 @@ const App = () => {
       try {
         const token = await AsyncStorage.getItem('token');
         const userDataStored = await AsyncStorage.getItem('UserData');
-
+        console.log(token);
         if (token) {
           setIsAuthenticated(true);
         } else {
@@ -136,7 +135,7 @@ const App = () => {
 
     init();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected,userData]);
+  }, [isConnected,userData,isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
