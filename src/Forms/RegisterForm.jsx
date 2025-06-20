@@ -1,11 +1,12 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
-import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
-import {globalStyles} from '../../assets/styles/GlobalStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { globalStyles } from '../../assets/styles/GlobalStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native-vector-icons is installed
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { formatISO } from 'date-fns';
 
 const questions = [
   {
@@ -23,9 +24,9 @@ const questions = [
     field: 'location',
     placeholder: 'Enter your location',
   },
-  {label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD'},
-  {label: 'Gender', field: 'gender'},
-  {label: 'Choose your Interests (Any 5)', field: 'interests'},
+  { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
+  { label: 'Gender', field: 'gender' },
+  { label: 'Choose your Interests (Any 5)', field: 'interests' },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -43,7 +44,7 @@ const interestOptions = [
   'Travel & Holidays',
 ];
 
-export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
+export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
@@ -56,24 +57,27 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
     dob: '',
     gender: '',
     interests: [],
+    city: '',
+    state: '',
+    country: '',
+    zipcode: '',
   });
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({...prev, [field]: value}));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   useEffect(() => {
     // console.log('userData:', userData);
-    // console.log('address:', userAddress);
+    console.log('address:', userAddress);
 
     if (userData || userAddress) {
       const updatedForm = {
         screenname: userData?.username || '',
-        email: '', // email is not available in userData
-        // location: userAddress?.city || '',
+        email: '',
+        location: userAddress?.city || '', // Set location to city from userAddress
         city: userAddress?.city || '',
         state: userAddress?.state_code || '',
-        // stateCode: userAddress?.state_code || '',
         country: userAddress?.country || '',
         zipcode: userAddress?.postcode || '',
       };
@@ -93,9 +97,9 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
     setFormData(prev => {
       const alreadySelected = prev.interests.includes(interest);
       if (alreadySelected) {
-        return {...prev, interests: prev.interests.filter(i => i !== interest)};
+        return { ...prev, interests: prev.interests.filter(i => i !== interest) };
       } else if (prev.interests.length < 5) {
-        return {...prev, interests: [...prev.interests, interest]};
+        return { ...prev, interests: [...prev.interests, interest] };
       }
       return prev;
     });
@@ -114,12 +118,12 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
                   styles.btnGender,
                   formData.gender === gender && styles.btnGenderActive,
                 ]}>
-                <Text style={{color: 'white'}}>{gender}</Text>
+                <Text style={{ color: 'white' }}>{gender}</Text>
               </TouchableOpacity>
             ))}
           </View>
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -144,14 +148,14 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
                 style={[
                   styles.btnInterest,
                   formData.interests.includes(interest) &&
-                    styles.btnInterestActive,
+                  styles.btnInterestActive,
                 ]}>
-                <Text style={{color: 'white'}}>{interest}</Text>
+                <Text style={{ color: 'white' }}>{interest}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -172,7 +176,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
                 justifyContent: 'space-between',
               },
             ]}>
-            <Text style={{color: formData.dob ? 'black' : '#999'}}>
+            <Text style={{ color: formData.dob ? 'black' : '#999' }}>
               {formData.dob || 'YYYY-MM-DD'}
             </Text>
             <Icon name="calendar-outline" size={20} color="#555" />
@@ -180,7 +184,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
           {showDatePicker && (
             <DateTimePicker
               testID="dateTimePicker"
-              value={formData.dob ? new Date(formData.dob) : new Date()}
+              value={formData.dob ? new Date(formData.dob) : new Date(2000, 0, 1)} // Default to Jan 1, 2000 instead of today
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               maximumDate={new Date()}
@@ -200,7 +204,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
             />
           )}
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -218,7 +222,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
           onChangeText={text => handleChange(question.field, text)}
         />
         {errors[question.field] ? (
-          <Text style={{color: 'red', marginTop: 5}}>
+          <Text style={{ color: 'red', marginTop: 5 }}>
             {errors[question.field]}
           </Text>
         ) : null}
@@ -233,7 +237,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
     if (step < questions.length - 1) {
       const newStep = step + 1;
       setStep(newStep);
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
     } else {
       const interestIndexes = formData.interests.map(interest =>
         interestOptions.indexOf(interest),
@@ -244,7 +248,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
         password: userData?.password,
         email: formData.email,
         screenName: formData.screenname,
-        dob: formData.dob, // Convert from YYYY-MM-DD to DD-MM-YYYY
+        dob: formatISO(formData.dob), // Convert from YYYY-MM-DD to DD-MM-YYYY
         gender: formData.gender,
         city: formData.city || formData.location,
         state: formData.state,
@@ -295,7 +299,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
       },
     );
     if (res.data.message === 'Login successful') {
-      Alert.alert('Success', `LogIn Success.`, [{text: 'OK'}]);
+      Alert.alert('Success', `LogIn Success.`, [{ text: 'OK' }]);
       onLogin();
       console.log(res.data.user);
       await AsyncStorage.setItem('token', res.data.token);
@@ -309,7 +313,7 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
     if (step > 0) {
       const newStep = step - 1;
       setStep(newStep);
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
     }
   };
 
@@ -367,20 +371,20 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
     }
 
     if (error) {
-      setErrors(prev => ({...prev, [currentQuestion.field]: error}));
+      setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
       return false;
     }
 
     // Clear previous error if validation passed
-    setErrors(prev => ({...prev, [currentQuestion.field]: ''}));
+    setErrors(prev => ({ ...prev, [currentQuestion.field]: '' }));
     return true;
   };
 
   return (
     <View
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       onLayout={event => {
-        const {width} = event.nativeEvent.layout;
+        const { width } = event.nativeEvent.layout;
         setLayoutWidth(width);
       }}>
       {
@@ -394,10 +398,10 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScrollEnd}
             scrollEventThrottle={16}
-            style={{flex: 1}}>
+            style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
-              <View key={index} style={{width: layoutWidth}}>
-                <View style={[styles.qAWrapper, {paddingHorizontal: 20}]}>
+              <View key={index} style={{ width: layoutWidth }}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
                   <Text style={styles.question}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>
@@ -409,11 +413,11 @@ export const RegisterForm = ({userData, theme, userAddress, onLogin}) => {
           <View style={styles.buttons}>
             {step > 0 && (
               <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
-                <Text style={{color: 'white'}}>Previous</Text>
+                <Text style={{ color: 'white' }}>Previous</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={handleNext} style={styles.btnNav}>
-              <Text style={{color: 'white'}}>
+              <Text style={{ color: 'white' }}>
                 {step === questions.length - 1 ? 'Finish' : 'Next'}
               </Text>
             </TouchableOpacity>
