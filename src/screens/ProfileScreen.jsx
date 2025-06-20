@@ -66,10 +66,10 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                 if (response.status === 200) {
                     setProfileData(response.data.user || {});
                 } else {
-                    setIsUserError('Failed to fetch rooms');
+                    setIsUserError('Failed to fetch user profile details');
                 }
             } catch (err) {
-                setIsUserError('Error fetching rooms: ' + err.message);
+                setIsUserError('Error fetching user profile details: ' + err.message);
             } finally {
                 setIsUserLoading(false);
             }
