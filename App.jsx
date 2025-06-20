@@ -108,11 +108,8 @@ const App = () => {
       try {
         const token = await AsyncStorage.getItem('token');
         const userDataStored = await AsyncStorage.getItem('UserData');
-        console.log(token);
         if (token) {
           setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
         }
 
         if (userDataStored) {
