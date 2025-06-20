@@ -116,7 +116,7 @@ const App = () => {
           setUserData(JSON.parse(userDataStored));
         }
 
-        if (isConnected) {
+        if (isConnected && !userAddress &&!isAuthenticated) {
           await requestLocationPermission();
         }
 
