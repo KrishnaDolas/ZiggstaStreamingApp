@@ -558,8 +558,8 @@ export const styles = StyleSheet.create({
   },
 
   profileAvatar: {
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderRadius: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
@@ -570,13 +570,13 @@ export const styles = StyleSheet.create({
   },
 
   profileMainText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '600',
     marginBottom: 5,
   },
 
   profileValueText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
   },
 
@@ -766,7 +766,7 @@ export const styles = StyleSheet.create({
 
   pSettingMDarkLightSTitle: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '400',
     color: '#232323',
   },
 
@@ -1761,7 +1761,7 @@ export const themeStyles = {
       color: '#d93a63',
     },
     profileValueText: {
-      color: 'darkkhaki',
+      color: '#202329',
     },
     profileStatCard: {
       backgroundColor: '#fff',
@@ -1770,7 +1770,7 @@ export const themeStyles = {
       color: 'rgb(136, 136, 136)',
     },
     profileStatValue: {
-      color: 'rgb(255, 9, 214)',
+      color: '#d93a63',
     },
     profileTableHeader: {
       backgroundColor: '#f0f0f0',

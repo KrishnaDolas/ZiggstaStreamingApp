@@ -77,8 +77,10 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     };
 
     useEffect(() => {
-        getInterestData();
-    }, []);
+        if (route.name === 'Main') {
+            getInterestData();
+        }
+    }, [route.name]); // depend on route.name
 
 
 
