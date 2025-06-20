@@ -1,73 +1,97 @@
-import React, { useContext, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
     Image,
     TouchableOpacity,
     ScrollView,
-    StatusBar,
     TextInput,
-    Modal
+    Modal,
+    Animated
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
-import ImmersiveMode from 'react-native-immersive';
-import { ThemeContext } from '../context/ThemeContext';
 import LinearGradient from 'react-native-linear-gradient';
-import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { useRoute } from '@react-navigation/native';
-const categoryData = [
-    'Art & Music',
-    'Entertainment & Gaming',
-    'Family & Parenting',
-    'Fashion & Shopping',
-    'Food & Cooking',
-    'Health & Fitness',
-    'Hobbies & Activities',
-    'News & Politics',
-    'Religion & Spiritual',
-    'Sports & Adventure',
-    'Travel & Holidays',
-];
+import Apiclient from '../utils/Apiclient';
+// const categoryData = [
+//     'Art & Music',
+//     'Entertainment & Gaming',
+//     'Family & Parenting',
+//     'Fashion & Shopping',
+//     'Food & Cooking',
+//     'Health & Fitness',
+//     'Hobbies & Activities',
+//     'News & Politics',
+//     'Religion & Spiritual',
+//     'Sports & Adventure',
+//     'Travel & Holidays',
+// ];
 
 export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     const route = useRoute();
-    const [isFullScreen, setIsFullScreen] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selectedset, setSelectedset] = useState([]); // State to track selected category
+    const [categoryData, setCategoryData] = useState([]);
     const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
-    const toggleFullscreen = () => {
-        if (isFullScreen) {
-            StatusBar.setHidden(false, 'fade');
-            ImmersiveMode.off(); // Exit immersive mode
-        } else {
-            StatusBar.setHidden(true, 'fade');
-            ImmersiveMode.on(); // Enter immersive mode (hides bottom nav too)
-        }
+    const [isLiked, setIsLiked] = useState(true);
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
-        setIsFullScreen(!isFullScreen);
+    const handleToggleLiked = () => {
+        setIsLiked(!isLiked);
     };
 
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(scaleAnim, {
+                    toValue: 1.2,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(scaleAnim, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+    }, []);
 
-    const selectedcategory = (category) => {
-        if (selectedset.includes(category)) {
-            const newSelectedSet = selectedset.filter(item => item !== category);
-            setGetselectcategory(newSelectedSet);
-            setSelectedset(newSelectedSet); // Update the selectedset state
-        } else {
-            const newSelectedSet = [...selectedset, category];
-            setSelectedset(newSelectedSet); // Update the selectedset state
-            setGetselectcategory(newSelectedSet);
+
+    // Function to fetch user interest from the API
+    const getInterestData = async () => {
+        try {
+            const formData = {
+                userID: 23,
+            };
+            const response = await Apiclient.post('/getUserInterests', formData);
+            if (response?.data?.interests) {
+                setCategoryData(response.data.interests);
+            }
+        } catch (error) {
+            console.error('Error fetching interest:', error);
         }
-        // Log the index and selected category
-        const value = categoryData[category] || 'Unknown Category';
-        if (!selectedinterest.includes(value)) { // Check if the value is already selected
-            setSelectedinterest((values) => [...values, value]); // Update the selected interest state
+    };
+
+    useEffect(() => {
+        getInterestData();
+    }, []);
+
+
+
+    const selectedcategory = (item) => {
+        const isSelected = selectedinterest.includes(item.CategoryID);
+        if (isSelected) {
+            const updated = selectedinterest.filter(id => id !== item.CategoryID);
+            setSelectedinterest(updated);
+            setGetselectcategory(updated);
         } else {
-            const newSelectedInterest = selectedinterest.filter(item => item !== value);
-            setSelectedinterest(newSelectedInterest); // Update the selected interest state
+            const updated = [...selectedinterest, item.CategoryID];
+            setSelectedinterest(updated);
+            setGetselectcategory(updated);
         }
     };
 
@@ -82,16 +106,13 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                     resizeMode="contain"
                 />
                 <View style={styles.streamHeaderRightBox}>
-                    <TouchableOpacity style={{ marginRight: 16 }} onPress={toggleFullscreen}>
-                        <SimpleLineIcons name='size-fullscreen' size={18} color="#d93a63" />
-                    </TouchableOpacity>
                     <View style={styles.streamHeaderCountBox}>
-                        <Ionicons name='aperture' solid size={16} color="#fff" />
-                        <Text style={styles.streamHeaderCountTitle}>{userData?.CreditBalance}</Text>
+                        <Ionicons name='eye-outline' solid size={16} color="#fff" />
+                        <Text style={styles.streamHeaderCountTitle}>245</Text>
                     </View>
                     <View style={styles.streamHeaderCountBox}>
-                        <Ionicons name='star' solid size={16} color="#fff" />
-                        <Text style={styles.streamHeaderCountTitle}>2125</Text>
+                        <FontAwesome name='dollar' solid size={14} color="#fff" />
+                        <Text style={styles.streamHeaderCountTitle}>{userData?.CreditBalance}</Text>
                     </View>
                     <TouchableOpacity style={{ marginRight: 12 }}>
                         <Ionicons name='notifications' solid size={18} color="#000" />
@@ -101,24 +122,34 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
             {route.name === 'Main' && (
                 <View style={styles.streamListHeaderBottom}>
                     {/* Left Fixed Icon */}
-                    <TouchableOpacity style={styles.strHeaderFixedIcon}>
-                        <FontAwesome5 name="crown" size={18} color="#d93a63" />
+                    <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => {
+                        handleToggleLiked();
+                    }}>
+                        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                            {isLiked ? (
+                                <Ionicons name="heart-sharp" size={22} color="#d93a63" />
+                            ) : (
+                                <Ionicons name="heart-outline" size={22} color="#d93a63" />
+                            )}
+                        </Animated.View>
                     </TouchableOpacity>
-
                     {/* Scrollable Category Buttons */}
                     <ScrollView
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                     >
-                        {categoryData.map((category, index) => (
-                            <TouchableOpacity key={index} style={[styles.strHeaderCategoryButton,
-                            selectedinterest.includes(category) &&
+                        {categoryData.map((item) => (
+                            <TouchableOpacity key={item.CategoryID} style={[styles.strHeaderCategoryButton,
+                            selectedinterest.includes(item.CategoryID) &&
                             styles.btnInterestActive]}
-                                onPress={() => selectedcategory(index)}>
-                                <Text style={[styles.strHeaderCategoryText,
-                                selectedinterest.includes(category) &&
-                                styles.btnInterestActiveText]}>{category}</Text>
+                                onPress={() => selectedcategory(item)}>
+                                <Text style={[
+                                    styles.strHeaderCategoryText,
+                                    selectedinterest.includes(item.CategoryID) && styles.btnInterestActiveText
+                                ]}>
+                                    {item.CategoryName}
+                                </Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>

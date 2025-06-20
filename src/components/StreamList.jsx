@@ -238,17 +238,17 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                 styles.streamListFiltersBtnGroup,
                 insets.bottom > 0 && { paddingBottom: insets.bottom },
             ]}>
-                <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+                {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="wrench" size={24} color="#262628" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity
                     style={styles.streamListFiltersColorBtn}
                     onPress={() => setOpenStreamInputModal(true)}>
                     <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+                {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             {openStreamInputModal && (

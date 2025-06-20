@@ -17,7 +17,7 @@ const Footer = () => {
   const getActiveTab = () => {
     switch (route.name) {
       case 'Main':
-        return 'Home';
+        return 'Main';
       case 'Profile':
         return 'Profile';
       case 'Messages':
@@ -41,8 +41,8 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Main') {
-            navigation.navigate('Main');
+          if (route.name !== 'Home') {
+            navigation.navigate('Home');
           }
         }}
       >
@@ -65,13 +65,13 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Live') {
-            navigation.navigate('Live');
+          if (route.name !== 'Main') {
+            navigation.navigate('Main');
           }
         }}
       >
-        <Ionicons name="play-outline" size={25} color={iconColor('Live')} />
-        <Text style={[styles.footerText, { color: iconColor('Live') }]}>Live</Text>
+        <Ionicons name="play" size={25} color={iconColor('Main')} />
+        <Text style={[styles.footerText, { color: iconColor('Main') }]}>Live</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

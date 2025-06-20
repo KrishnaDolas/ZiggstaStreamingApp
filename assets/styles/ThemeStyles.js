@@ -895,7 +895,7 @@ export const styles = StyleSheet.create({
 
   strHeaderCategoryText: {
     color: '#232323',
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
   },
   btnInterestActiveText: {
@@ -975,12 +975,12 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '8.5%',
+    bottom: '8.4%',
     left: '50%',
     transform: [{ translateX: -0.475 * screenWidth }],
     flexDirection: 'row',
     width: '95%',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 10,
   },
@@ -1006,13 +1006,24 @@ export const styles = StyleSheet.create({
   },
 
   streamListFiltersColorBtn: {
-    backgroundColor: '#be0069',
+    backgroundColor: '#de0037',
     borderRadius: 30,
     paddingHorizontal: 24,
     paddingVertical: 14,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 7,
+
+    // Shadow for Android
+    elevation: 4,
   },
 
   streamListFiltersColorBtnText: {
