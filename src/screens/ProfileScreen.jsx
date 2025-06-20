@@ -60,7 +60,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
             setIsUserError('');
             try {
                 const formData = {
-                    'userid': userData.userid,
+                    userid: userData.userid,
                 };
                 const response = await Apiclient.post('/getUserDetails', formData);
                 if (response.status === 200) {

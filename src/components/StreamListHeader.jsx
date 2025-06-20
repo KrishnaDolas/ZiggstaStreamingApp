@@ -65,7 +65,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     const getInterestData = async () => {
         try {
             const formData = {
-                userID: 23,
+                userID: userData?.userid,
             };
             const response = await Apiclient.post('/getUserInterests', formData);
             if (response?.data?.interests) {
