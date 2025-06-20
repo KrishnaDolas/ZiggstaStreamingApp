@@ -7,6 +7,7 @@ import {
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
@@ -496,7 +497,7 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={requestStreamPermission}>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
@@ -525,6 +526,12 @@ const StreamRoom = ({
                                             <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
+                                        {!isHost && (
+                                            <TouchableOpacity onPress={requestStreamPermission} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Guest</Text>
+                                                <MaterialCommunityIcons name="video-plus" size={21} color="#fff" />
+                                            </TouchableOpacity>
+                                        )}
                                         <TouchableOpacity onPress={() => toggleMute()} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Mute {isMuted ? 'OFF' : 'ON'}</Text>
                                             {isMuted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
