@@ -136,7 +136,7 @@ const App = () => {
 
     init();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [isConnected,userData]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
