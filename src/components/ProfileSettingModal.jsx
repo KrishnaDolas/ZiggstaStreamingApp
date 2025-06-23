@@ -69,15 +69,15 @@ const ProfileSettingModal = ({ visible, onClose, onLogout }) => {
             onPress: () => { setVisibleModal(true); setModalLabelName('Search Settings'); },
         },
         {
+            label: 'Log Out',
+            icon: 'sign-out-alt',
+            onPress: onLogout,
+        },
+        {
             label: 'Notification',
             icon: 'notifications-outline',
             onPress: () => { setVisibleModal(true); setModalLabelName('Notification'); },
         },
-        // {
-        //     label: 'Log Out',
-        //     icon: 'sign-out-alt',
-        //     onPress: onLogout,
-        // },
     ];
 
 
@@ -106,7 +106,7 @@ const ProfileSettingModal = ({ visible, onClose, onLogout }) => {
                         <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.3 + 20 }]}>
                             <ScrollView
                                 // contentContainerStyle={{ paddingBottom: 20 }}
-                                showsVerticalScrollIndicator={false}
+                                showsVerticalScrollIndicator={true}
                             >
                                 {/* dark / light setting */}
                                 <View style={[styles.profileSettingMDarkLightSetting]}>

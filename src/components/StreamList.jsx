@@ -5,13 +5,13 @@ import Modal from 'react-native-modal';
 import { format } from 'date-fns';
 import { StreamListHeader } from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import themeColors from '../../assets/styles/Colors';
+import { useRoute } from '@react-navigation/native';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -22,22 +22,9 @@ const hardcodedImages = [
     require('../../assets/images/LS-6.jpg'),
 ];
 
-const categoryData = [
-    'Art & Music',
-    'Entertainment & Gaming',
-    'Family & Parenting',
-    'Fashion & Shopping',
-    'Food & Cooking',
-    'Health & Fitness',
-    'Hobbies & Activities',
-    'News & Politics',
-    'Religion & Spiritual',
-    'Sports & Adventure',
-    'Travel & Holidays',
-];
-
 
 const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
+    const route = useRoute();
     const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
@@ -47,23 +34,25 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const [filteredRooms, setFilteredRooms] = useState([]); // store filtered rooms
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isFiltering, setIsFiltering] = useState(false);
+    const [categoryData, setCategoryData] = useState([]);
+    const [isInterestLoading, setIsInterestLoading] = useState(false);
+
 
     // Function to toggle category selection
-    const toggleCategory = (index) => {
-        // selct the only 5 categories at a time
-        if (selectedCategoryIndices.length >= 5 && !selectedCategoryIndices.includes(index)) {
+    const toggleCategory = (categoryID) => {
+        // select only 5 categories at a time
+        if (selectedCategoryIndices.length >= 5 && !selectedCategoryIndices.includes(categoryID)) {
             Alert.alert('Limit Reached', 'You can select up to 5 categories only.');
             return;
         }
         setSelectedCategoryIndices(prev => {
-            if (prev.includes(index)) {
-                return prev.filter(i => i !== index); // unselect
+            if (prev.includes(categoryID)) {
+                return prev.filter(id => id !== categoryID); // unselect
             } else {
-                return [...prev, index]; // select
+                return [...prev, categoryID]; // select
             }
         });
     };
-
     // Function to fetch rooms from the API
     const getRooms = async () => {
         try {
@@ -110,7 +99,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
         } else {
             getRooms();
         }
-        console.log(userData);
     }, [filteredRooms]);
 
     // Function to create a room
@@ -158,10 +146,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const viewerjoinedroom = (item) => {
         const roomId = item.roomID.toString();
         const hostID = item.hostID.toString();
-        if(item.hostID === userData.userid){
-            createRoom(roomId,hostID);
-        }else{
-            joinRoom(roomId,hostID);
+        if (item.hostID === userData.userid) {
+            createRoom(roomId, hostID);
+        } else {
+            joinRoom(roomId, hostID);
         }
     }
 
@@ -194,13 +182,38 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     };
 
 
+    // Function to fetch user interest from the API
+    const getInterestData = async () => {
+        try {
+            setIsInterestLoading(true);
+            const response = await Apiclient.post('/getcategories');
+            if (response?.data?.categories) {
+                setCategoryData(response.data.categories);
+            }
+        } catch (error) {
+            console.error('Error fetching interest:', error);
+        } finally {
+            setIsInterestLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (route?.name === 'Main') {
+            getInterestData();
+        }
+    }, [route?.name]);
+
+
+
+
     return (
         <LinearGradient
             style={{ height: '100%', width: '100%', position: 'relative' }}
             colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} />
+            <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
+            />
             <View
                 style={[
                     styles.streamListMainCardLayout,
@@ -264,13 +277,13 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                 >
                     <View style={[styles.halfScreenModalOverlay]}>
 
-                        <View style={[styles.profileSettingModalBody, { maxHeight: screenHeight * 0.5 }]}>
+                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.5 }]}>
                             <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
                                     onPress={() => setOpenStreamInputModal(false)}
                                     style={[styles.modalCloseBtn]}
                                 >
-                                    <Ionicons name="close" size={22} color="#333" />
+                                    <Ionicons name="close" size={24} color="#333" />
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.strHedSearchModalForm}>
@@ -286,40 +299,50 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                                         colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
                                         start={{ x: 0.15, y: 1 }}
                                         end={{ x: 1, y: 0 }}
-                                        style={styles.strHedSearchModalSearchBtn}>
+                                        style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
                                         <Text
                                             style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                            Create Room
+                                            Start Room
                                         </Text>
                                     </LinearGradient>
                                 </TouchableOpacity>
                             </View>
                             <Text style={[styles.modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
-                            <ScrollView
-                                showsVerticalScrollIndicator={false}
-                            >
-                                <View style={styles.modalCategoryContainer}>
-                                    {categoryData.map((category, index) => {
-                                        const isSelected = selectedCategoryIndices.includes(index);
-                                        return (
-                                            <TouchableOpacity key={index} onPress={() => toggleCategory(index)} style={[
-                                                styles.modalCategoryButton,
-                                                isSelected && styles.modalCategoryButtonActive,
-                                            ]}>
-                                                <Text style={styles.modalCategoryText}>{category}</Text>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
+                            {isInterestLoading ? (
+                                <View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                                    <ActivityIndicator size="large" color="#d93a63" />
                                 </View>
-                            </ScrollView>
+                            ) :
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
+                                >
+                                    <View style={styles.modalCategoryContainer}>
+                                        {categoryData.map((category, index) => {
+                                            const isSelected = selectedCategoryIndices.includes(category.categoryID);
+                                            return (
+                                                <TouchableOpacity
+                                                    key={category.categoryID}
+                                                    onPress={() => toggleCategory(category.categoryID)}
+                                                    style={[
+                                                        styles.modalCategoryButton,
+                                                        isSelected && styles.modalCategoryButtonActive,
+                                                    ]}>
+                                                    <Text style={styles.modalCategoryText}>{category.categoryName}</Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </ScrollView>
+                            }
                         </View>
 
                     </View>
                 </Modal>
-            )}
+            )
+            }
 
             <Footer />
-        </LinearGradient>
+        </LinearGradient >
     );
 };
 

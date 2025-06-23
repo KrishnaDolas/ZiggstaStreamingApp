@@ -187,7 +187,11 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
           {showDatePicker && (
             <DateTimePicker
               testID="dateTimePicker"
-              value={formData.dob ? new Date(formData.dob) : maxDate}
+              value={
+                formData.dob && !isNaN(new Date(formData.dob))
+                  ? new Date(formData.dob)
+                  : maxDate
+              }
               mode="date"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               maximumDate={maxDate}
@@ -223,7 +227,7 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
           placeholderTextColor="#9d9d9d"
           value={formData[question.field]}
           onChangeText={text => handleChange(question.field, text)}
-          editable={question.field === 'location' ? false : true}
+        // editable={question.field === 'location' ? false : true}
         />
         {errors[question.field] ? (
           <Text style={{ color: 'red', marginTop: 5 }}>
@@ -350,12 +354,19 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
         }
         break;
       case 'dob':
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        if (!value) {
+          error = 'Date of birth is required';
+        } else if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
           error = 'Date must be in YYYY-MM-DD format';
         } else {
           const dob = new Date(value);
           const age = new Date().getFullYear() - dob.getFullYear();
-          if (age < 13) {
+          const hasHadBirthdayThisYear =
+            new Date().getMonth() > dob.getMonth() ||
+            (new Date().getMonth() === dob.getMonth() && new Date().getDate() >= dob.getDate());
+          const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+
+          if (actualAge < 18) {
             error = 'You must be at least 18 years old';
           }
         }
@@ -366,8 +377,8 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
         }
         break;
       case 'interests':
-        if (!value || value.length < 1) {
-          error = 'Select at least 1 interest';
+        if (!value || value.length < 2) {
+          error = 'Select at least 2 interest';
         }
         break;
       default:

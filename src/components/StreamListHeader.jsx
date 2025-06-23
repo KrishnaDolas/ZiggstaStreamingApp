@@ -15,30 +15,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
-import Apiclient from '../utils/Apiclient';
-// const categoryData = [
-//     'Art & Music',
-//     'Entertainment & Gaming',
-//     'Family & Parenting',
-//     'Fashion & Shopping',
-//     'Food & Cooking',
-//     'Health & Fitness',
-//     'Hobbies & Activities',
-//     'News & Politics',
-//     'Religion & Spiritual',
-//     'Sports & Adventure',
-//     'Travel & Holidays',
-// ];
 
-export const StreamListHeader = ({ setGetselectcategory, userData }) => {
+export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
-    const [selectedset, setSelectedset] = useState([]); // State to track selected category
-    const [categoryData, setCategoryData] = useState([]);
     const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
     const [isLiked, setIsLiked] = useState(true);
-    const [isInterestLoading, setIsInterestLoading] = useState(false);
+    const [isSearchModalReady, setIsSearchModalReady] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const handleToggleLiked = () => {
@@ -63,40 +47,14 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
     }, []);
 
 
-    // Function to fetch user interest from the API
-    const getInterestData = async () => {
-        try {
-            setIsInterestLoading(true);
-            const formData = {
-                userID: userData?.userid,
-            };
-            const response = await Apiclient.post('/getUserInterests', formData);
-            if (response?.data?.interests) {
-                setCategoryData(response.data.interests);
-            }
-        } catch (error) {
-            console.error('Error fetching interest:', error);
-        } finally {
-            setIsInterestLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (route?.name === 'Main' && userData?.userid) {
-            getInterestData();
-        }
-    }, [route?.name, userData?.userid]);
-
-
-
     const selectedcategory = (item) => {
-        const isSelected = selectedinterest.includes(item.CategoryID);
+        const isSelected = selectedinterest.includes(item.categoryID);
         if (isSelected) {
-            const updated = selectedinterest.filter(id => id !== item.CategoryID);
+            const updated = selectedinterest.filter(id => id !== item.categoryID);
             setSelectedinterest(updated);
             setGetselectcategory(updated);
         } else {
-            const updated = [...selectedinterest, item.CategoryID];
+            const updated = [...selectedinterest, item.categoryID];
             setSelectedinterest(updated);
             setGetselectcategory(updated);
         }
@@ -113,10 +71,10 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                     resizeMode="contain"
                 />
                 <View style={styles.streamHeaderRightBox}>
-                    <View style={styles.streamHeaderCountBox}>
+                    {/* <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='eye-outline' solid size={16} color="#fff" />
                         <Text style={styles.streamHeaderCountTitle}>245</Text>
-                    </View>
+                    </View> */}
                     <View style={styles.streamHeaderCountBox}>
                         <FontAwesome name='dollar' solid size={14} color="#fff" />
                         <Text style={styles.streamHeaderCountTitle}>{userData?.CreditBalance}</Text>
@@ -151,15 +109,15 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
                         contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                     >
                         {categoryData.map((item) => (
-                            <TouchableOpacity key={item.CategoryID} style={[styles.strHeaderCategoryButton,
-                            selectedinterest.includes(item.CategoryID) &&
+                            <TouchableOpacity key={item.categoryID} style={[styles.strHeaderCategoryButton,
+                            selectedinterest.includes(item.categoryID) &&
                             styles.btnInterestActive]}
                                 onPress={() => selectedcategory(item)}>
                                 <Text style={[
                                     styles.strHeaderCategoryText,
-                                    selectedinterest.includes(item.CategoryID) && styles.btnInterestActiveText
+                                    selectedinterest.includes(item.categoryID) && styles.btnInterestActiveText
                                 ]}>
-                                    {item.CategoryName}
+                                    {item.categoryName}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -172,38 +130,66 @@ export const StreamListHeader = ({ setGetselectcategory, userData }) => {
             )}
             {/* Search Modal */}
             {showSearch && (
-                <Modal visible={showSearch} transparent animationType="fade">
-                    <View style={[styles.strHedSearchModalOverlay]}>
-                        <View style={[styles.strHedSearchModalCard]}>
-                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 14 }}>
-                                <TouchableOpacity
-                                    onPress={() => setShowSearch(false)}
-                                    style={[styles.strHedSearchModalCloseBtn]}
-                                >
-                                    <Ionicons name="close" size={14} color="#fff" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={[styles.strHedSearchModalForm]}>
-                                <TextInput
-                                    placeholder="Search Categories"
-                                    placeholderTextColor="#888"
-                                    value={searchText}
-                                    onChangeText={setSearchText}
-                                    style={[styles.strHedSearchModalInput]}
-                                />
-                                <TouchableOpacity>
-                                    <LinearGradient
-                                        colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
-                                        start={{ x: 0.15, y: 1 }}
-                                        end={{ x: 1, y: 0 }}
-                                        style={styles.strHedSearchModalSearchBtn}
+                <Modal
+                    visible={showSearch}
+                    transparent
+                    animationType="fade"
+                    onShow={() => setIsSearchModalReady(true)} // Trigger after layout
+                    onRequestClose={() => {
+                        setShowSearch(false);
+                        setIsSearchModalReady(false); // Reset
+                    }}
+                >
+                    {isSearchModalReady && (
+                        <View style={[styles.strHedSearchModalOverlay]}>
+                            <View style={[styles.strHedSearchModalCard]}>
+                                <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 14 }}>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setShowSearch(false);
+                                            setIsSearchModalReady(false); // Reset on close
+                                        }}
+                                        style={[styles.strHedSearchModalCloseBtn]}
                                     >
-                                        <Text style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>Search</Text>
-                                    </LinearGradient>
-                                </TouchableOpacity>
+                                        <Ionicons name="close" size={14} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={[styles.strHedSearchModalTopForm]}>
+                                    <TextInput
+                                        placeholder="Search by"
+                                        placeholderTextColor="#888"
+                                        value={searchText}
+                                        onChangeText={setSearchText}
+                                        style={[styles.strHedSearchModalInput]}
+                                    />
+                                    <View style={[styles.strHedSearchModalFormBtnBox]}>
+                                        <TouchableOpacity>
+                                            <LinearGradient
+                                                colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                                start={{ x: 0.15, y: 1 }}
+                                                end={{ x: 1, y: 0 }}
+                                                style={styles.strHedSearchModalSearchBtn}
+                                            >
+                                                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Category</Text>
+                                            </LinearGradient>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity>
+                                            <LinearGradient
+                                                colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                                start={{ x: 0.15, y: 1 }}
+                                                end={{ x: 1, y: 0 }}
+                                                style={styles.strHedSearchModalSearchBtn}
+                                            >
+                                                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>User</Text>
+                                            </LinearGradient>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
                             </View>
                         </View>
-                    </View>
+                    )}
+
                 </Modal>
             )}
 

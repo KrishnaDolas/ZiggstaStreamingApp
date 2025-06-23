@@ -1066,13 +1066,20 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 10,
   },
+
+  strHedSearchModalTopForm: {
+    paddingVertical: 20,
+  },
+
+
   strHedSearchModalForm: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingBottom: 20,
   },
+
   strHedSearchModalInput: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: '#f7f7f7',
     height: 50,
     borderRadius: 25,
@@ -1083,8 +1090,13 @@ export const styles = StyleSheet.create({
     fontWeight: '300',
     fontSize: 15,
   },
+  strHedSearchModalFormBtnBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
   strHedSearchModalSearchBtn: {
-    height: 50,
+    height: 40,
     paddingHorizontal: 25,
     borderRadius: 25,
     justifyContent: 'center',

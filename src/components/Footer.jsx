@@ -63,17 +63,17 @@ const Footer = () => {
         <Ionicons name="play" size={25} color={iconColor('Main')} />
         <Text style={[styles.footerText, { color: iconColor('Main') }]}>Live</Text>
       </TouchableOpacity> */}
-      {/* message */}
+      {/* Setting */}
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Messages') {
-            navigation.navigate('Messages');
+          if (route.name !== 'Profile') {
+            navigation.navigate('Profile');
           }
         }}
       >
-        <Ionicons name="chatbox-ellipses-outline" size={25} color={iconColor('Messages')} />
-        <Text style={[styles.footerText, { color: iconColor('Messages') }]}>Messages</Text>
+        <Ionicons name="settings-outline" size={25} color={iconColor('Profile')} />
+        <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Setting</Text>
       </TouchableOpacity>
       {/* home */}
       <TouchableOpacity
@@ -96,17 +96,17 @@ const Footer = () => {
         />
         <Text style={[styles.footerText, { color: iconColor('Main') }]}>Home</Text>
       </TouchableOpacity>
-      {/* Setting */}
+      {/* message */}
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Profile') {
-            navigation.navigate('Profile');
+          if (route.name !== 'Messages') {
+            navigation.navigate('Messages');
           }
         }}
       >
-        <Ionicons name="settings-outline" size={25} color={iconColor('Profile')} />
-        <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Setting</Text>
+        <Ionicons name="chatbox-ellipses-outline" size={25} color={iconColor('Messages')} />
+        <Text style={[styles.footerText, { color: iconColor('Messages') }]}>Messages</Text>
       </TouchableOpacity>
       {/* wallet */}
       <TouchableOpacity

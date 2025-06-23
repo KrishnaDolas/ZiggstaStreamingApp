@@ -7,6 +7,7 @@ import {
   Text,
   StyleSheet,
   AppState,
+  Alert,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -43,9 +44,37 @@ const App = () => {
 
 
 
+  // const handleLogout = async () => {
+  //   await AsyncStorage.clear();
+  //   setIsAuthenticated(false);
+  // };
+
   const handleLogout = async () => {
-    await AsyncStorage.clear();
-    setIsAuthenticated(false);
+    Alert.alert(
+      'Confirm Logout',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await AsyncStorage.clear();
+              setIsAuthenticated(false);
+              Alert.alert('Success', 'You have been logged out successfully.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to log out. Please try again.');
+              console.error('Logout error:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const requestLocationPermission = async () => {
