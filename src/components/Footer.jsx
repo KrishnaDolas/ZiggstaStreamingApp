@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import React, { useContext } from 'react';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -38,18 +38,8 @@ const Footer = () => {
 
   return (
     <View style={[styles.footer, themeStyles[theme].footer, { paddingBottom: insets.bottom }]}>
-      <TouchableOpacity
-        style={styles.footerItem}
-        onPress={() => {
-          if (route.name !== 'Home') {
-            navigation.navigate('Home');
-          }
-        }}
-      >
-        <Ionicons name="home-outline" size={25} color={iconColor('Home')} />
-        <Text style={[styles.footerText, { color: iconColor('Home') }]}>Home</Text>
-      </TouchableOpacity>
 
+      {/* Profile */}
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
@@ -61,8 +51,8 @@ const Footer = () => {
         <FontAwesome name="user-o" size={25} color={iconColor('Profile')} />
         <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Profile</Text>
       </TouchableOpacity>
-
-      <TouchableOpacity
+      {/* Live */}
+      {/* <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
           if (route.name !== 'Main') {
@@ -72,8 +62,8 @@ const Footer = () => {
       >
         <Ionicons name="play" size={25} color={iconColor('Main')} />
         <Text style={[styles.footerText, { color: iconColor('Main') }]}>Live</Text>
-      </TouchableOpacity>
-
+      </TouchableOpacity> */}
+      {/* message */}
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
@@ -85,7 +75,40 @@ const Footer = () => {
         <Ionicons name="chatbox-ellipses-outline" size={25} color={iconColor('Messages')} />
         <Text style={[styles.footerText, { color: iconColor('Messages') }]}>Messages</Text>
       </TouchableOpacity>
-
+      {/* home */}
+      <TouchableOpacity
+        style={styles.footerItem}
+        onPress={() => {
+          if (route.name !== 'Home') {
+            navigation.navigate('Main');
+          }
+        }}
+      >
+        {/* <Ionicons name="home-outline" size={25} color={iconColor('Main')} /> */}
+        <Image
+          source={require('../../assets/images/logo-icon.png')}
+          resizeMode="contain"
+          style={{
+            width: 30,
+            height: 30,
+            tintColor: route.name === 'Main' ? undefined : '#999', // gray if not active
+          }}
+        />
+        <Text style={[styles.footerText, { color: iconColor('Main') }]}>Home</Text>
+      </TouchableOpacity>
+      {/* Setting */}
+      <TouchableOpacity
+        style={styles.footerItem}
+        onPress={() => {
+          if (route.name !== 'Profile') {
+            navigation.navigate('Profile');
+          }
+        }}
+      >
+        <Ionicons name="settings-outline" size={25} color={iconColor('Profile')} />
+        <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Setting</Text>
+      </TouchableOpacity>
+      {/* wallet */}
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
@@ -95,7 +118,7 @@ const Footer = () => {
         }}
       >
         <Ionicons name="wallet-outline" size={25} color={iconColor('WalletDashboard')} />
-        <Text style={[styles.footerText, { color: iconColor('WalletDashboard') }]}>Settings</Text>
+        <Text style={[styles.footerText, { color: iconColor('WalletDashboard') }]}>Wallet</Text>
       </TouchableOpacity>
     </View>
   );

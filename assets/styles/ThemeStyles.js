@@ -1749,7 +1749,40 @@ export const styles = StyleSheet.create({
   mySettingSubModalTitle: {
     fontSize: 24,
     color: '#d93a63',
+  },
 
+  // bank details modal
+  bdLabel: {
+    fontSize: 14,
+    color: '#717580',
+    fontWeight: 500,
+    marginBottom: 5,
+  },
+  bdPickerWrapper: {
+    backgroundColor: '#f7f7f7',
+    borderRadius: 30,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#eaeaeb',
+    paddingLeft: 4,
+    marginBottom: 15,
+  },
+  bdPicker: {
+    height: 52,
+    width: '100%',
+    color: '#414141', // text color (selected item)
+    backgroundColor: Platform.OS === 'android' ? '#f7f7f7' : 'transparent',
+  },
+  bdInput: {
+    borderRadius: 20,
+    backgroundColor: '#f7f7f7',
+    borderColor: '#eaeaeb',
+    borderWidth: 1,
+    padding: 12,
+    width: '100%',
+    fontSize: 15,
+    marginBottom: 10,
+    color: '#414141',
   },
 });
 
