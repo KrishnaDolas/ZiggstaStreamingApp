@@ -509,6 +509,13 @@ export const MainScreen = ({ onLogout, userData }) => {
       setError('Failed to start viewer streaming: ' + err.message);
     }
   };
+  const HandleChatmessages=(message)=>{
+        console.log(`New message from ${userData?.screenName}: ${message.text}`);
+        socket.emit('send-message', {
+          userName: userData?.screenName,
+          message: message,
+        });
+  }
 
   const stopStreaming = () => {
     closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
@@ -597,6 +604,7 @@ export const MainScreen = ({ onLogout, userData }) => {
             viewers={viewers}
             isHost={isHost}
             startStreaming={() => startStreaming(roomId)}
+            HandleChatmessages={HandleChatmessages}
           />
         )}
       </View>
