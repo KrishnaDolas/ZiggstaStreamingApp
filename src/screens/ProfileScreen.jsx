@@ -13,6 +13,7 @@ import { CenterModal } from '../components/CenterModal';
 import FullScreenModal from '../components/FullScreenModal';
 import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BankDetailsModal from '../modals/BankDetailsModal';
 
 const tableData = [
     {
@@ -102,8 +103,9 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                     <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                         <View style={[styles.profileBlockLeftBox]}>
                             <Image
-                                source={require('../../assets/images/favicon.png')}
+                                source={require('../../assets/images/logo-icon.png')}
                                 style={styles.profileHeaderLogo}
+                                resizeMode="contain"
                             />
                             <Image
                                 source={require('../../assets/images/LS-3.jpg')}
@@ -159,7 +161,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         </View>
                         {/* Action Buttons */}
                         <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity onPress={() => setVisibleModal('half-screen-modal')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity onPress={() => setVisibleModal('bank-details')} style={[styles.profileActionBtnBox]}>
                                 <LinearGradient
                                     colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
                                     start={{ x: 0.5, y: 1 }}
@@ -202,6 +204,10 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         </View>
                     </ScrollView>
                     {/* Modals */}
+                    {/* full screen modal */}
+                    {visibleModal === 'bank-details' && (
+                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
                     {visibleModal === 'shop-manager' && (
                         <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
@@ -215,10 +221,6 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                     {/* center modal */}
                     {visibleModal === 'center-modal' && (
                         <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {/* full screen modal */}
-                    {visibleModal === 'full-screen-modal' && (
-                        <FullScreenModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
                     {/* full screen modal */}
                     {visibleModal === 'half-screen-modal' && (

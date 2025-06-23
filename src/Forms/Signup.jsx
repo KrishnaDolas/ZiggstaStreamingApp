@@ -106,16 +106,16 @@ export const Signup = ({ userData, setUserData, ShowloginForm, onToggleForm, Sig
           <View style={styles.Loginerror}>
             {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
           </View>
-          <LinearGradient
-            colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
-            start={{ x: 1, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.button}
-          >
-            <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleSignUp}>
+          <TouchableOpacity style={[themeStyles[theme].button]} onPress={handleSignUp}>
+            <LinearGradient
+              colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.button}
+            >
               <Text style={styles.buttonText}>Sign Up</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+            </LinearGradient>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => ShowloginForm()} style={{ alignItems: 'center', marginTop: 20 }}>
             <Text style={{ color: 'blue', textDecorationLine: 'underline', fontSize: 16 }}>Already have an account? Sign In</Text>
           </TouchableOpacity>
