@@ -16,7 +16,8 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 
-export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData }) => {
+export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
+    setIsNearBy }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -28,6 +29,10 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
     const handleToggleLiked = () => {
         setIsLiked(!isLiked);
     };
+
+    useEffect(() => {
+        console.log('userData', userData);
+    }, [userData]);
 
     useEffect(() => {
         Animated.loop(
@@ -44,7 +49,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                 }),
             ])
         ).start();
-    }, []);
+    }, [scaleAnim]);
 
 
     const selectedcategory = (item) => {
@@ -108,6 +113,12 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                     >
+                        <TouchableOpacity onPress={() => setIsNearBy(!isNearBy)} style={[styles.strHeaderCategoryButton, isNearBy &&
+                            styles.btnInterestActive]}>
+                            <Text style={[styles.strHeaderCategoryText, isNearBy && styles.btnInterestActiveText]}>
+                                Near By
+                            </Text>
+                        </TouchableOpacity>
                         {categoryData.map((item) => (
                             <TouchableOpacity key={item.categoryID} style={[styles.strHeaderCategoryButton,
                             selectedinterest.includes(item.categoryID) &&

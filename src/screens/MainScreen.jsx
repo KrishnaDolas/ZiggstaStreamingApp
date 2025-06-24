@@ -12,7 +12,7 @@ import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export const MainScreen = ({ onLogout, userData }) => {
+export const MainScreen = ({ onLogout, address, userData }) => {
   const insetsTop = useSafeAreaInsets();
   const [roomId, setRoomId] = useState('');
   const [joined, setJoined] = useState(false);
@@ -74,40 +74,40 @@ export const MainScreen = ({ onLogout, userData }) => {
       console.log(`Skipping connection to ${streamerId}: Already connected or self`);
       return;
     }
-  
+
     try {
       const pc = new RTCPeerConnection(iceServers);
       pc.addTransceiver('video', { direction: 'recvonly' });
       pc.addTransceiver('audio', { direction: 'recvonly' });
       peerConnections.current[streamerId] = pc;
-  
+
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => {
           pc.addTrack(track, localStreamRef.current);
         });
       }
-  
+
       pc.onicecandidate = event => {
         if (event.candidate) {
           console.log(`Sending ICE candidate to ${streamerId}`);
           socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
         }
       };
-  
+
       pc.ontrack = event => {
         if (event.streams[0]) {
           console.log(`Received stream from ${streamerId}:`, event.streams[0]);
           setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
         }
       };
-  
+
       pc.onaddstream = event => {
         if (event.stream) {
           console.log(`[ONADDSTREAM] from ${streamerId}`, event.stream);
           setRemoteStreams(prev => new Map(prev).set(streamerId, event.stream));
         }
       };
-  
+
       pc.oniceconnectionstatechange = () => {
         console.log(`ICE connection state for ${streamerId}: ${pc.iceConnectionState}`);
         if (pc.iceConnectionState === 'failed') {
@@ -140,7 +140,7 @@ export const MainScreen = ({ onLogout, userData }) => {
           console.log(`Successfully connected to ${streamerId}`);
         }
       };
-  
+
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
       console.log(`Sending offer to ${streamerId}`);
@@ -175,7 +175,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       setIsHost(false);
       setViewerCount(viewerCount);
       setIsViewerStreaming(approvedViewerIds.includes(socket.id));
-    
+
       const streamers = [];
       if (isHostStreaming) {
         console.log(`Host ${hostId} is streaming; adding to active streamers`);
@@ -187,7 +187,7 @@ export const MainScreen = ({ onLogout, userData }) => {
         console.log('Updated active streamers:', newStreamers);
         return newStreamers;
       });
-    
+
       // Connect only to new streamers
       streamers.forEach(streamerId => {
         if (streamerId !== socket.id && !peerConnections.current[streamerId]) {
@@ -208,7 +208,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     const handleRoomInfo = ({ viewerCount, isViewerStreaming, approvedViewerIds, isHostStreaming, hostId }) => {
       setViewerCount(viewerCount);
       setIsViewerStreaming(approvedViewerIds.includes(socket.id));
-      
+
       // Update active streamers
       const streamers = [];
       if (isHostStreaming) streamers.push(hostId);
@@ -296,7 +296,7 @@ export const MainScreen = ({ onLogout, userData }) => {
         if (!pc) {
           pc = new RTCPeerConnection(iceServers);
           peerConnections.current[sender] = pc;
-          
+
           if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => {
               pc.addTrack(track, localStreamRef.current);
@@ -468,10 +468,10 @@ export const MainScreen = ({ onLogout, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      
+
       socket.emit('host-streaming', roomId);
       setIsStreaming(true);
-      
+
       // Connect to all existing streamers
       activeStreamers.forEach(streamerId => {
         if (streamerId !== socket.id) {
@@ -493,11 +493,11 @@ export const MainScreen = ({ onLogout, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      
+
       socket.emit('viewer-streaming', roomId);
       setIsViewerStreaming(true);
       setIsStreaming(true);
-      
+
       // Connect to all existing streamers
       activeStreamers.forEach(streamerId => {
         if (streamerId !== socket.id) {
@@ -510,11 +510,11 @@ export const MainScreen = ({ onLogout, userData }) => {
     }
   };
   const HandleChatmessages=(message)=>{
-        console.log(`New message from ${userData?.screenName}: ${message.text}`);
-        socket.emit('send-message', {
-          userName: userData?.screenName,
-          message: message,
-        });
+    console.log(`New message from ${userData?.screenName}: ${message.text}`);
+    socket.emit('send-message', {
+      userName: userData?.screenName,
+      message: message,
+    });
   }
 
   const stopStreaming = () => {
@@ -584,7 +584,7 @@ export const MainScreen = ({ onLogout, userData }) => {
       />
       <View style={[styles.container]}>
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} address={address} />
         ) : (
           <StreamRoom
             remoteStreams={remoteStreams}
