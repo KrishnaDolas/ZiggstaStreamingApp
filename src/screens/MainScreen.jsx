@@ -217,7 +217,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     };
 
     // IMPORTANT: Reinstated user-joined handler
-    const handleUserJoined = (viewerId) => {
+    const handleUserJoined = (viewerId,name) => {
       setViewers(prev => [...prev, viewerId]);
     };
 
@@ -385,7 +385,7 @@ export const MainScreen = ({ onLogout, userData }) => {
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
     socket.on('room-full', handleRoomFull);
-    socket.on('invalid-room', () => setError('Invalid room ID.'));
+    socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK'}]));
     socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
     // IMPORTANT: Reinstated user-joined listener
