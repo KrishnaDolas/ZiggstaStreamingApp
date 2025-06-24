@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native-vector-icons is installed
@@ -30,6 +30,7 @@ const questions = [
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
+
 const interestOptions = [
   'Art & Music',
   'Entertainment & Gaming',
@@ -44,6 +45,16 @@ const interestOptions = [
   'Travel & Holidays',
 ];
 
+// Helper: return date 18 years ago from today in YYYY-MM-DD
+const getDefaultDOB = () => {
+  const today = new Date();
+  today.setFullYear(today.getFullYear() - 18);
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
@@ -54,7 +65,7 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
     screenname: '',
     email: '',
     location: '',
-    dob: '',
+    dob: getDefaultDOB(), // ✅ default 18 years ago
     gender: '',
     interests: [],
     city: '',
@@ -256,7 +267,8 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
         password: userData?.password,
         email: formData.email,
         screenName: formData.screenname,
-        dob: formatISO(formData.dob), // Convert from YYYY-MM-DD to DD-MM-YYYY
+        dob: formData.dob ? formatISO(formData.dob) : null,
+        // dob: formData.dob,
         gender: formData.gender,
         city: formData.city || formData.location,
         state: formData.state,

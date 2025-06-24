@@ -369,7 +369,7 @@ export const styles = StyleSheet.create({
   },
   splashButton: {
     position: 'absolute',
-    bottom: '40',
+    bottom: '60',
     flex: '1',
     alignItems: 'center',
     paddingVertical: 12, // Top & Bottom
