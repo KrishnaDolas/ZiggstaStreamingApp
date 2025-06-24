@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Platform, Dimensions } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -7,7 +7,9 @@ import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatISO } from 'date-fns';
+import WebView from 'react-native-webview';
 
+const screenHeight = Dimensions.get('window').height;
 const questions = [
   {
     label: 'What is your Screen name?',
@@ -26,7 +28,7 @@ const questions = [
   },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
-  { label: 'Choose your Interests (Any 5)', field: 'interests' },
+  { label: 'Choose your Interests (Any 2)', field: 'interests' },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -55,12 +57,13 @@ const getDefaultDOB = () => {
   return `${year}-${month}-${day}`;
 };
 
-export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
+export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onLogin }) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [formData, setFormData] = useState({
     screenname: '',
     email: '',
@@ -115,6 +118,38 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
       return prev;
     });
   };
+
+  // Callback for map taps returned via WebView message
+  // const onMapMessage = city => {
+  //   console.log('city', city);
+  //   handleChange('location', city);
+  // };
+
+
+  const onMapMessage = message => {
+    try {
+      const address = JSON.parse(message);
+      console.log('📍 Address from map:', address);
+
+      // Update both location and full userAddress
+      setFormData(prev => ({
+        ...prev,
+        location: address.city || '',
+        city: address.city || '',
+        state: address.state || '',
+        country: address.country || '',
+        zipcode: address.postcode || '',
+      }));
+
+      // Optional: if you want to update userAddress too (if passed from props)
+      if (typeof setUserAddress === 'function') {
+        setUserAddress(address);
+      }
+    } catch (err) {
+      console.error('Failed to parse map address:', err);
+    }
+  };
+
 
   const renderStepContent = question => {
     if (question.field === 'gender') {
@@ -226,6 +261,66 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
               {errors[question.field]}
             </Text>
           ) : null}
+        </View>
+      );
+    }
+
+
+    if (question.field === 'location') {
+      return (
+        <View>
+          <TextInput
+            style={globalStyles.input}
+            placeholder={question.placeholder}
+            placeholderTextColor="#9d9d9d"
+            value={formData.location}
+            onChangeText={text => handleChange('location', text)}
+          />
+          {errors.location && <Text style={{ color: 'red' }}>{errors.location}</Text>}
+
+          {/* ⚡️ Inline Geoapify Map */}
+          <View style={{ height: screenHeight * 0.5 + 60, marginTop: 20, backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
+            <WebView
+              originWhitelist={['*']}
+              javaScriptEnabled
+              source={{
+                html: `
+                  <!DOCTYPE html><html><head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                    <style>html,body,#map{margin:0;height:100%;width:100%}  /* Hide the Leaflet attribution */
+                     .leaflet-control-attribution {
+                         display: none !important;
+                      }
+                    </style>
+                  </head><body>
+                    <div id="map"></div>
+                    <script>
+                      const key = "25127ca1c55f48909b03f43048040037";
+                      const map = L.map('map').setView([18.5204,73.8567], 13);
+                      L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
+                        attribution: '© OpenMapTiles © OpenStreetMap contributors',
+                        maxZoom: 18
+                      }).addTo(map);
+                      const marker = L.marker([18.5204,73.8567]).addTo(map);
+                      async function rev(lat, lon) {
+                        const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
+                        const json = await res.json();
+                      const address = json.features?.[0]?.properties || {};
+                      window.ReactNativeWebView.postMessage(JSON.stringify(address));
+                      }
+                      map.on('click', e => {
+                        const {lat, lng} = e.latlng;
+                        marker.setLatLng([lat,lng]);
+                        rev(lat,lng);
+                      });
+                    </script>
+                  </body></html>`
+              }}
+              onMessage={e => onMapMessage(e.nativeEvent.data)}
+            />
+          </View>
         </View>
       );
     }
@@ -425,6 +520,7 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScrollEnd}
             scrollEventThrottle={16}
+            scrollEnabled={questions[step]?.field !== 'location'}
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
@@ -451,14 +547,16 @@ export const RegisterForm = ({ userData, theme, userAddress, onLogin }) => {
           </View>
 
           {/* Progress Dots */}
-          <View style={styles.dotsContainer}>
-            {questions.map((_, idx) => (
-              <View
-                key={idx}
-                style={[styles.dot, step === idx && styles.dotActive]}
-              />
-            ))}
-          </View>
+          {questions[step]?.field !== 'location' && (
+            <View style={styles.dotsContainer}>
+              {questions.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, step === idx && styles.dotActive]}
+                />
+              ))}
+            </View>
+          )}
         </>
       }
     </View>

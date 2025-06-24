@@ -119,16 +119,18 @@ const App = () => {
   const fetchAddress = async (latitude, longitude) => {
     try {
       const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=90c7b0d04a124d608bbadec11fe2c630`
+        `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
       );
       const data = await response.json();
-      if (data.results && data.results.length > 0) {
-        setUserAddress(data.results[0].components);
+
+      if (data.features && data.features.length > 0) {
+        const address = data.features[0].properties;
+        setUserAddress(address);
       } else {
-        console.log('No address found');
+        console.log('No address found from Geoapify');
       }
     } catch (error) {
-      console.error('Reverse geocoding error:', error);
+      console.error('Geoapify reverse geocoding error:', error);
     }
   };
 
@@ -238,6 +240,7 @@ const App = () => {
                       {...props}
                       onLogin={handleLogin}
                       userAddress={userAddress}
+                      setUserAddress={setUserAddress}
                     />
                   )}
                 </Stack.Screen>

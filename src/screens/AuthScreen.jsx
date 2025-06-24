@@ -6,17 +6,17 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Signup } from '../Forms/Signup';
 import { LoginForm } from '../Forms/LoginForm';
 
-export const AuthScreen = ({ onLogin, userAddress}) => {
+export const AuthScreen = ({ onLogin, userAddress, setUserAddress }) => {
   const [showsingup, setshowsingup] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
-  const [userData, setUserData] = useState({username: '', password: ''});
+  const [userData, setUserData] = useState({ username: '', password: '' });
 
   const toggleForm = () => setshowsingup(!showsingup);
-  const ShowloginForm=()=>{
+  const ShowloginForm = () => {
     setShowLogin(!showLogin);
   }
-  const SigninWithApple=()=>{
+  const SigninWithApple = () => {
     Alert.alert(
       "Coming Soon",
       "Sign in with Apple is not yet implemented.",
@@ -26,8 +26,8 @@ export const AuthScreen = ({ onLogin, userAddress}) => {
     console.log("Sign in with Apple clicked");
   }
 
-  const SigninWithGoogle=()=>{
-  Alert.alert(
+  const SigninWithGoogle = () => {
+    Alert.alert(
       "Coming Soon",
       "Sign in with Google is not yet implemented.",
       [{ text: "OK" }]
@@ -36,8 +36,8 @@ export const AuthScreen = ({ onLogin, userAddress}) => {
     console.log("Sign in with Google clicked");
   }
 
-  const SigninWithFacebook=()=>{
-  Alert.alert(
+  const SigninWithFacebook = () => {
+    Alert.alert(
       "Coming Soon",
       "Sign in with Facebook is not yet implemented.",
       [{ text: "OK" }]
@@ -48,14 +48,14 @@ export const AuthScreen = ({ onLogin, userAddress}) => {
 
   return (
     <View style={[styles.authContainer, themeStyles[theme].container]}>
-      {showLogin? 
-       ( 
-       <LoginForm ShowloginForm={ShowloginForm} onLogin={onLogin} theme={theme} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
-      ) :showsingup ? (
-        <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} theme={theme} />
-      ) : (
-        <RegisterForm userData={userData} theme={theme} userAddress={userAddress} onLogin={onLogin}/>
-      )}
+      {showLogin ?
+        (
+          <LoginForm ShowloginForm={ShowloginForm} onLogin={onLogin} theme={theme} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
+        ) : showsingup ? (
+          <Signup userData={userData} setUserData={setUserData} ShowloginForm={ShowloginForm} onToggleForm={toggleForm} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} theme={theme} />
+        ) : (
+          <RegisterForm userData={userData} theme={theme} userAddress={userAddress} setUserAddress={setUserAddress} onLogin={onLogin} />
+        )}
     </View>
   );
 };
