@@ -31,10 +31,6 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
     };
 
     useEffect(() => {
-        console.log('userData', userData);
-    }, [userData]);
-
-    useEffect(() => {
         Animated.loop(
             Animated.sequence([
                 Animated.timing(scaleAnim, {
