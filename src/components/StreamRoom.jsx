@@ -110,6 +110,7 @@ const StreamRoom = ({
     hostId,
     viewers,
     isHost,
+    HandleChatmessages
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -338,6 +339,11 @@ const StreamRoom = ({
         }
     }, [isMuted, fadeAnim]);
 
+    const HadleSendChat=()=>{
+        HandleChatmessages(userChatInput);
+        setUserChatInput('');
+    }
+    
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
@@ -549,10 +555,7 @@ const StreamRoom = ({
                                         style={styles.strRoomBottomBoxInput}
                                     />
                                     {keyboardOffset && isTyping ? (
-                                        <TouchableOpacity onPress={() => {
-                                            console.log("Submitted:", userChatInput);
-                                            setUserChatInput('');
-                                        }} style={styles.strRoomBottomBoxIconBox}>
+                                        <TouchableOpacity onPress={() => HadleSendChat()} style={styles.strRoomBottomBoxIconBox}>
                                             <FontAwesome name="send" size={24} color="#00FF00" />
                                         </TouchableOpacity>
                                     ) : (
