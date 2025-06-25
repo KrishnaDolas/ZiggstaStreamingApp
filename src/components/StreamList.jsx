@@ -38,6 +38,41 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     const [isInterestLoading, setIsInterestLoading] = useState(false);
     const [isNearBy, setIsNearBy] = useState(false);
     const [nearByRoomData, setNearByRoomData] = useState([]);
+    const [userDetails, setUserDetails] = useState([]);
+    const [isFavourite, setIsFavourite] = useState(false);
+
+    // Function to fetch user details from the API
+    const getUserDetails = async () => {
+        try {
+            const formData = {
+                userid: userData?.userid,
+            };
+            const response = await Apiclient.post('/getUserDetails', formData);
+            console.log('user details res', response.data.user);
+            if (response) {
+                const user = response.data.user;
+                setUserDetails(user || []);
+            }
+        } catch (error) {
+            console.error('Error fetching userDetails:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (userData?.userid) {
+            getUserDetails();
+        }
+    }, [userData?.userid]);
+
+    useEffect(() => {
+        if (isFavourite && userDetails?.Interests) {
+            const interestArray = userDetails.Interests.split(',').map(id => parseInt(id));
+            setSelectedCategoryIndices(interestArray);
+        } else if (!isFavourite) {
+            setSelectedCategoryIndices([]);
+        }
+    }, [isFavourite, userDetails]);
+
     // Function to toggle category selection
     const toggleCategory = (categoryID) => {
         // select only 5 categories at a time
@@ -53,6 +88,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             }
         });
     };
+
+
     // Function to fetch rooms from the API
     const getRooms = async () => {
         try {
@@ -68,7 +105,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         }
     };
 
-    // Function to fetch rooms from the API
+
+    // Function to fetch rooms by location from the API
     const getRoomsByLocation = async () => {
         try {
             setIsInitialLoading(true);
@@ -84,9 +122,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         }
     };
 
-    useEffect(() => {
-        console.log('address', address);
-    }, [address]);
+
+    // filter rooms based on selected categories
 
     const filterroomdata = async (selecteddata) => {
         try {
@@ -250,7 +287,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             end={{ x: 0.5, y: 1 }}>
             <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
                 isNearBy={isNearBy}
-                setIsNearBy={setIsNearBy} />
+                setIsNearBy={setIsNearBy} isFavourite={isFavourite}
+                setIsFavourite={setIsFavourite} />
             <View
                 style={[
                     styles.streamListMainCardLayout,
