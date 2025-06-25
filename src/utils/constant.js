@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('http://192.168.0.18:5000', {
+export const socket = io('https://streamalong.live', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -25,7 +25,7 @@ export const socket = io('http://192.168.0.18:5000', {
   
   // WebRTC ICE configuration with STUN and TURN servers
  export  const iceServers = {
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' },{
+    iceServers: [{
       //38.242.235.250
         urls: 'turn:coturn.streamalong.live:3478?transport=udp',
         username: 'vikram',

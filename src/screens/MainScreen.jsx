@@ -225,11 +225,18 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleViewerStartedStreaming = (viewerId) => {
-      setActiveStreamers(prev => [...prev, viewerId]);
-      if (viewerId !== socket.id) {
-        connectToStreamer(viewerId);
+      setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
+        // Always reconnect to ensure we receive their stream
+      if (peerConnections.current[viewerId]) {
+        peerConnections.current[viewerId].close();
+        delete peerConnections.current[viewerId];
       }
-    };
+      setTimeout(() => {
+          if (viewerId !== socket.id) {
+            connectToStreamer(viewerId);
+          }
+        }, 2000); // Wait 1 second (tweakable)
+      };
 
     const handleViewerStoppedStreaming = (viewerId) => {
       if (peerConnections.current[viewerId]) {
@@ -273,29 +280,31 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     const handleOffer = async ({ sdp, sender }) => {
       try {
+        console.log(`📨 Received offer from ${sender} while isStreaming: ${isStreaming}`);
+
         let pc = peerConnections.current[sender];
         if (!pc) {
           pc = new RTCPeerConnection(iceServers);
           peerConnections.current[sender] = pc;
-
+    
           if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => {
-              pc.addTrack(track, localStreamRef.current);
+              pc.addTrack(track, localStreamRef.current); // 💡 This is fine if this user is a streamer
             });
           }
-
+    
           pc.onicecandidate = event => {
             if (event.candidate) {
               socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
             }
           };
-
+    
           pc.ontrack = event => {
             console.log(`Received remote stream from ${sender}:`, event.streams[0]);
             setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
           };
         }
-
+    
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
