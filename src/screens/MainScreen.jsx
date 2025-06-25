@@ -187,7 +187,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
 
     const handleRoomInfo = (props) => {
-      const { hostId, isHostStreaming, approvedViewerIds, viewerCount, isViewerStreaming } = props;
+      const { hostId, isHostStreaming, viewerCount, isViewerStreaming } = props;
       console.log(props);
       setViewerCount(viewerCount);
 
@@ -196,14 +196,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       if (isHostStreaming) streamers.push(hostId);
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
-      if (isViewerStreaming.length > 0) {
-        isViewerStreaming.forEach((streamerId) => {
-          if (streamerId !== socket.id) {
-            console.log(`Connecting to viewer streamer ${streamerId}`);
-            connectToStreamer(streamerId);
-          }
-        })
-      }
     };
 
     // IMPORTANT: Reinstated user-joined handler
