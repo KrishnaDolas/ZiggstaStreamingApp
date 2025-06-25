@@ -185,10 +185,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
     };
 
-    const handleRoomFull = () => {
-      console.log('Room is full. Cannot join.');
-    };
-
 
     const handleRoomInfo = (props) => {
       const { hostId, isHostStreaming, approvedViewerIds, viewerCount, isViewerStreaming } = props;
@@ -374,7 +370,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
-    socket.on('room-full', handleRoomFull);
+    socket.on('room-full', ()=>Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
     socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK'}]));
     socket.on('room-info', handleRoomInfo);
     socket.on('user-joined', handleUserJoined);
@@ -400,7 +396,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('connect', handlesocketconnect);
       socket.off('room-created', handleRoomCreated);
       socket.off('room-joined', handleRoomJoined);
-      socket.off('room-full', handleRoomFull);
+      socket.off('room-full', ()=>Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
       socket.off('invalid-room');
       socket.off('room-info', handleRoomInfo);
       socket.off('user-joined', handleUserJoined);
@@ -416,7 +412,11 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('stream-request-response', handleStreamRequestResponse);
       socket.off('viewer-stopped-streaming', handleViewerStoppedStreaming);
       socket.off('host-stopped-streaming',handlehostleftstream)
-      socket.off('socket-id-in-use');
+      socket.off('socket-id-in-use',() => {
+        Alert.alert("User Already Logged In", "Please Logout From Other Device", [
+          { text: "OK", onPress: () => onLogout() }
+        ]);
+      });
     };
   }, [isHost]);
 
