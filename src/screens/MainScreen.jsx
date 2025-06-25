@@ -247,6 +247,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       setIsStreaming(false);
       setRemoteStreams(new Map());
       setActiveStreamers([]);
+      setHasRequestedStream(false)
       setLocalStream(null);
       localStreamRef.current = null;
       if (socket.id !== hostid) {
