@@ -105,7 +105,8 @@ const StreamRoom = ({
     leaveRoom,
     isMuted,
     isHost,
-    HandleChatmessages
+    HandleChatmessages,
+    roomchat
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -482,7 +483,7 @@ const StreamRoom = ({
                                                 <ScrollView
                                                     showsVerticalScrollIndicator={false}
                                                 >
-                                                    {chats.map((chat) => (
+                                                    {roomchat.map((chat) => (
                                                         <View key={chat.id} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>

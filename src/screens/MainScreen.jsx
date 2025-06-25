@@ -25,6 +25,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [activeStreamers, setActiveStreamers] = useState([]);
+  const [roomchat, setRoomchat] = useState([]);
   const { theme } = useContext(ThemeContext);
 
   const localStreamRef = useRef(null);
@@ -369,6 +370,16 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       }
     };
 
+    const Handleroomchat = ({ userName, message,id }) => {
+      const chatdata=    {
+        id: id,
+        userProfile: require('../../assets/images/LS-2.jpg'),
+        userName: userName,
+        message: message,
+    }
+      setRoomchat(prev => [...prev, chatdata]);
+      console.log(`New chat message from ${userName}: ${message}`);
+      }
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
@@ -388,6 +399,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('stream-request-response', handleStreamRequestResponse);
     socket.on('viewer-stopped-streaming', handleViewerStoppedStreaming);
     socket.on('host-stopped-streaming', handlehostleftstream)
+    socket.on('new-message',Handleroomchat)
     socket.on('socket-id-in-use', () => {
       Alert.alert("User Already Logged In", "Please Logout From Other Device", [
         { text: "OK", onPress: () => onLogout() }
@@ -502,6 +514,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.emit('send-message', {
       userName: userData?.screenName,
       message: message,
+      id:userData.userid
     });
   }
 
@@ -561,6 +574,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
             isMuted={isMuted}
             isHost={isHost}
             HandleChatmessages={HandleChatmessages}
+            roomchat={roomchat}
           />
         )}
       </View>
