@@ -97,17 +97,13 @@ const StreamRoom = ({
     remoteStreams,
     localStream,
     isStreaming,
-    isViewerStreaming,
     requestStreamPermission,
-    hasRequestedStream,
     isFrontCamera,
     viewerCount,
     toggleMute,
     switchCamera,
     leaveRoom,
     isMuted,
-    hostId,
-    viewers,
     isHost,
     HandleChatmessages
 }) => {
@@ -338,11 +334,11 @@ const StreamRoom = ({
         }
     }, [isMuted, fadeAnim]);
 
-    const HadleSendChat=()=>{
+    const HadleSendChat = () => {
         HandleChatmessages(userChatInput);
         setUserChatInput('');
     }
-    
+
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
