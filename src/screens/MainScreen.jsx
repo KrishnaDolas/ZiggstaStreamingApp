@@ -378,6 +378,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         userName: userName,
         message: message,
     }
+    console.log(chatdata);
       setRoomchat(prev => [...prev, chatdata]);
       console.log(`New chat message from ${userName}: ${message}`);
       }
