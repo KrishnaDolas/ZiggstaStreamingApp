@@ -158,11 +158,12 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       setIsHost(true);
     };
 
-    const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount, approvedViewerIds, isViewerStreaming }) => {
+    const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount, approvedViewerIds, isViewerStreaming,messages }) => {
       console.log(`Joined room ${roomId}, hostId: ${hostId}, isHostStreaming: ${isHostStreaming}`);
       setIsStreaming(isHostStreaming);
       setJoined(true);
       setIsHost(false);
+      setRoomchat(messages);
       setViewerCount(viewerCount);
 
       const streamers = [];
