@@ -336,6 +336,10 @@ const StreamRoom = ({
     }, [isMuted, fadeAnim]);
 
     const HadleSendChat = () => {
+        if(!userChatInput.trim()) {
+            Alert.alert('Please enter a message before sending.');
+            return;
+        }
         HandleChatmessages(userChatInput);
         setUserChatInput('');
     }

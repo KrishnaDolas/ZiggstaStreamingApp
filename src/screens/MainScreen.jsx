@@ -510,7 +510,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     }
   };
   const HandleChatmessages = (message) => {
-    console.log(`New message from ${userData?.screenName}: ${message.text}`);
+    console.log(`New message from ${userData?.screenName}: ${message}`);
     socket.emit('send-message', {
       userName: userData?.screenName,
       message: message,
