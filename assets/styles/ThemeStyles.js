@@ -1068,6 +1068,8 @@ export const styles = StyleSheet.create({
   },
 
   strHedSearchModalTopForm: {
+    flexDirection: 'row',
+    alignItems:'center',
     paddingVertical: 20,
   },
 
@@ -1093,7 +1095,7 @@ export const styles = StyleSheet.create({
   strHedSearchModalFormBtnBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    // marginTop: 10,
   },
   strHedSearchModalSearchBtn: {
     height: 40,
@@ -1102,7 +1104,35 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+
   },
+
+  strHedSearchTabBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  strHedSearchTabAction: {
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+    borderRadius: 30,
+    backgroundColor: '#ebebeb',
+    marginRight: 10,
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 1, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    // Shadow for Android
+    elevation: 3,
+  },
+
+  strHedSearchTabActionText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
   isFilteringOverlay: {
     position: 'absolute',
     top: 0,
@@ -1113,6 +1143,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
 
   isFilteringBlurBackground: {
     ...StyleSheet.absoluteFillObject,

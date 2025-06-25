@@ -48,7 +48,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
                 userid: userData?.userid,
             };
             const response = await Apiclient.post('/getUserDetails', formData);
-            console.log('user details res', response.data.user);
             if (response) {
                 const user = response.data.user;
                 setUserDetails(user || []);
@@ -65,13 +64,24 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     }, [userData?.userid]);
 
     useEffect(() => {
-        if (isFavourite && userDetails?.Interests) {
-            const interestArray = userDetails.Interests.split(',').map(id => parseInt(id));
+        if (
+            isFavourite &&
+            userDetails?.Interests &&
+            categoryData.length > 0
+        ) {
+            const interestArray = userDetails.Interests
+                .split(',')
+                .map(id => parseInt(id))
+                .filter(id =>
+                    categoryData.some(cat => cat.categoryID === id) // only valid IDs
+                );
+            setFilteredRooms(interestArray);
             setSelectedCategoryIndices(interestArray);
         } else if (!isFavourite) {
             setSelectedCategoryIndices([]);
+            setFilteredRooms([]);
         }
-    }, [isFavourite, userDetails]);
+    }, [isFavourite, userDetails, categoryData]);
 
     // Function to toggle category selection
     const toggleCategory = (categoryID) => {
@@ -159,6 +169,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             console.log('No categories selected');
         }
     }, [selectedCategoryIndices]);
+
 
     useEffect(() => {
         if (filteredRooms.length > 0) {
@@ -285,10 +296,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
+            <StreamListHeader setGetselectcategory={setFilteredRooms} filteredRooms={filteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
                 isNearBy={isNearBy}
                 setIsNearBy={setIsNearBy} isFavourite={isFavourite}
-                setIsFavourite={setIsFavourite} />
+                setIsFavourite={setIsFavourite} selectedCategoryIndices={selectedCategoryIndices} />
             <View
                 style={[
                     styles.streamListMainCardLayout,

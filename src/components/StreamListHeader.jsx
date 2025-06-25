@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -18,47 +18,50 @@ import { useRoute } from '@react-navigation/native';
 
 export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
-    setIsFavourite }) => {
+    setIsFavourite, selectedCategoryIndices }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
     const [isSearchModalReady, setIsSearchModalReady] = useState(false);
+    const [searchBy, setSearchBy] = useState('user');
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
-    const handleToggleLiked = () => {
-        setIsFavourite(!isFavourite);
-    };
 
+    // Sync selectedinterest with selectedCategoryIndices
+    useEffect(() => {
+        if (selectedCategoryIndices) {
+            setSelectedinterest(selectedCategoryIndices);
+            setGetselectcategory(selectedCategoryIndices); // Ensure StreamList's filteredRooms is updated
+        }
+    }, [selectedCategoryIndices, setGetselectcategory]);
+
+    // ✅ Memoize heart toggle
+    const handleToggleLiked = useCallback(() => {
+        setIsFavourite((prev) => !prev);
+    }, [setIsFavourite]);
+
+    // ✅ Animate heart icon once
     useEffect(() => {
         Animated.loop(
             Animated.sequence([
-                Animated.timing(scaleAnim, {
-                    toValue: 1.2,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(scaleAnim, {
-                    toValue: 1,
-                    duration: 300,
-                    useNativeDriver: true,
-                }),
+                Animated.timing(scaleAnim, { toValue: 1.2, duration: 300, useNativeDriver: true }),
+                Animated.timing(scaleAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
             ])
         ).start();
-    }, [scaleAnim]);
+    }, []);
 
 
     const selectedcategory = (item) => {
         const isSelected = selectedinterest.includes(item.categoryID);
+        let updated;
         if (isSelected) {
-            const updated = selectedinterest.filter(id => id !== item.categoryID);
-            setSelectedinterest(updated);
-            setGetselectcategory(updated);
+            updated = selectedinterest.filter((id) => id !== item.categoryID);
         } else {
-            const updated = [...selectedinterest, item.categoryID];
-            setSelectedinterest(updated);
-            setGetselectcategory(updated);
+            updated = [...selectedinterest, item.categoryID];
         }
+        setSelectedinterest(updated);
+        setGetselectcategory(updated); // Update StreamList's filteredRooms
     };
 
 
@@ -116,10 +119,13 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                             </Text>
                         </TouchableOpacity>
                         {categoryData.map((item) => (
-                            <TouchableOpacity key={item.categoryID} style={[styles.strHeaderCategoryButton,
-                            selectedinterest.includes(item.categoryID) &&
-                            styles.btnInterestActive]}
-                                onPress={() => selectedcategory(item)}>
+                            <TouchableOpacity
+                                key={item.categoryID}
+                                style={[styles.strHeaderCategoryButton,
+                                selectedinterest.includes(item.categoryID) &&
+                                styles.btnInterestActive]}
+                                onPress={() => selectedcategory(item)}
+                            >
                                 <Text style={[
                                     styles.strHeaderCategoryText,
                                     selectedinterest.includes(item.categoryID) && styles.btnInterestActiveText
@@ -161,13 +167,36 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                                         <Ionicons name="close" size={14} color="#fff" />
                                     </TouchableOpacity>
                                 </View>
+
+                                <View style={styles.strHedSearchTabBox}>
+                                    {['user', 'category'].map((type) => (
+                                        <TouchableOpacity
+                                            key={type}
+                                            onPress={() => setSearchBy(type)}
+                                            style={[
+                                                styles.strHedSearchTabAction,
+                                                { backgroundColor: searchBy === type ? '#d93a63' : '#fff' },
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.strHedSearchTabActionText,
+                                                    { color: searchBy === type ? '#fff' : '#d93a63' },
+                                                ]}
+                                            >
+                                                {type.charAt(0).toUpperCase() + type.slice(1)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
                                 <View style={[styles.strHedSearchModalTopForm]}>
                                     <TextInput
-                                        placeholder="Search by"
+                                        placeholder={`Search by ${searchBy === 'user' ? 'user' : 'category'}`}
                                         placeholderTextColor="#888"
                                         value={searchText}
                                         onChangeText={setSearchText}
-                                        style={[styles.strHedSearchModalInput]}
+                                        style={[styles.strHedSearchModalInput, { flex: 1 }]}
                                     />
                                     <View style={[styles.strHedSearchModalFormBtnBox]}>
                                         <TouchableOpacity>
@@ -177,17 +206,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                                                 end={{ x: 1, y: 0 }}
                                                 style={styles.strHedSearchModalSearchBtn}
                                             >
-                                                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Category</Text>
-                                            </LinearGradient>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity>
-                                            <LinearGradient
-                                                colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
-                                                start={{ x: 0.15, y: 1 }}
-                                                end={{ x: 1, y: 0 }}
-                                                style={styles.strHedSearchModalSearchBtn}
-                                            >
-                                                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>User</Text>
+                                                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Search</Text>
                                             </LinearGradient>
                                         </TouchableOpacity>
                                     </View>
@@ -198,8 +217,8 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                     )}
 
                 </Modal>
-            )}
-
+            )
+            }
         </View>
 
     );
