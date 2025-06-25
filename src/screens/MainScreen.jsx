@@ -57,7 +57,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         }
       }
     } catch (err) {
-     console.log(err);
+      console.log(err);
       throw err;
     }
   };
@@ -163,7 +163,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       setJoined(true);
       setIsHost(false);
       setViewerCount(viewerCount);
-    
+
       const streamers = [];
       if (isHostStreaming) {
         console.log(`Host ${hostId} is streaming; adding to active streamers`);
@@ -190,14 +190,14 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       const { hostId, isHostStreaming, approvedViewerIds, viewerCount, isViewerStreaming } = props;
       console.log(props);
       setViewerCount(viewerCount);
-      
+
       // Update active streamers
       const streamers = [];
       if (isHostStreaming) streamers.push(hostId);
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
-      if(isViewerStreaming.length > 0) {
-        isViewerStreaming.forEach((streamerId)=>{
+      if (isViewerStreaming.length > 0) {
+        isViewerStreaming.forEach((streamerId) => {
           if (streamerId !== socket.id) {
             console.log(`Connecting to viewer streamer ${streamerId}`);
             connectToStreamer(streamerId);
@@ -207,7 +207,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     // IMPORTANT: Reinstated user-joined handler
-    const handleUserJoined = (viewerId,name) => {
+    const handleUserJoined = (viewerId, name) => {
       setViewers(prev => [...prev, viewerId]);
     };
 
@@ -251,13 +251,13 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
       setActiveStreamers(prev => prev.filter(id => id !== viewerId));
     };
-    const handlehostleftstream=(hostid)=>{
+    const handlehostleftstream = (hostid) => {
       setIsStreaming(false);
       setRemoteStreams(new Map());
       setActiveStreamers([]);
       setLocalStream(null);
       localStreamRef.current = null;
-      if(socket.id !== hostid){
+      if (socket.id !== hostid) {
         Alert.alert("Stream Ended", "The host has Leave the room. You can now leave the room");
       }
       console.log(`Host ${hostid} has left the stream, closing connections...`);
@@ -370,8 +370,8 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
-    socket.on('room-full', ()=>Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
-    socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK'}]));
+    socket.on('room-full', () => Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
+    socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK' }]));
     socket.on('room-info', handleRoomInfo);
     socket.on('user-joined', handleUserJoined);
     socket.on('user-left', handleUserLeft);
@@ -385,7 +385,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('incoming-stream-request', handleIncomingStreamRequest);
     socket.on('stream-request-response', handleStreamRequestResponse);
     socket.on('viewer-stopped-streaming', handleViewerStoppedStreaming);
-    socket.on('host-stopped-streaming',handlehostleftstream)
+    socket.on('host-stopped-streaming', handlehostleftstream)
     socket.on('socket-id-in-use', () => {
       Alert.alert("User Already Logged In", "Please Logout From Other Device", [
         { text: "OK", onPress: () => onLogout() }
@@ -396,7 +396,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('connect', handlesocketconnect);
       socket.off('room-created', handleRoomCreated);
       socket.off('room-joined', handleRoomJoined);
-      socket.off('room-full', ()=>Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
+      socket.off('room-full', () => Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
       socket.off('invalid-room');
       socket.off('room-info', handleRoomInfo);
       socket.off('user-joined', handleUserJoined);
@@ -411,8 +411,8 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('incoming-stream-request', handleIncomingStreamRequest);
       socket.off('stream-request-response', handleStreamRequestResponse);
       socket.off('viewer-stopped-streaming', handleViewerStoppedStreaming);
-      socket.off('host-stopped-streaming',handlehostleftstream)
-      socket.off('socket-id-in-use',() => {
+      socket.off('host-stopped-streaming', handlehostleftstream)
+      socket.off('socket-id-in-use', () => {
         Alert.alert("User Already Logged In", "Please Logout From Other Device", [
           { text: "OK", onPress: () => onLogout() }
         ]);
@@ -438,10 +438,10 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   };
 
   const requestStreamPermission = () => {
-    if(!hasRequestedStream) {
-    socket.emit('request-stream');
-    setHasRequestedStream(true);
-    }else{
+    if (!hasRequestedStream) {
+      socket.emit('request-stream');
+      setHasRequestedStream(true);
+    } else {
       Alert.alert('Stream Request', 'You Are already Streaming')
     }
   };
@@ -495,7 +495,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       console.log('Failed to start viewer streaming: ' + err.message);
     }
   };
-  const HandleChatmessages=(message)=>{
+  const HandleChatmessages = (message) => {
     console.log(`New message from ${userData?.screenName}: ${message.text}`);
     socket.emit('send-message', {
       userName: userData?.screenName,

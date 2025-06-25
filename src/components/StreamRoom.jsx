@@ -334,11 +334,11 @@ const StreamRoom = ({
         }
     }, [isMuted, fadeAnim]);
 
-    const HadleSendChat=()=>{
+    const HadleSendChat = () => {
         HandleChatmessages(userChatInput);
         setUserChatInput('');
     }
-    
+
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
