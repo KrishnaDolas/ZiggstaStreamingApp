@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('https://streamalong.live', {
+export const socket = io('http://192.168.0.18:5000', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -33,14 +33,10 @@ export const socket = io('https://streamalong.live', {
       },
     ],
   };
-  export const closePeerConnections = (peerConnections, peerConnectionRef, localStream, setLocalStream, setRemoteStream) => {
+  export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStream) => {
     try {
       Object.values(peerConnections.current).forEach(pc => pc.close());
       peerConnections.current = {};
-      if (peerConnectionRef.current) {
-        peerConnectionRef.current.close();
-        peerConnectionRef.current = null;
-      }
       if (localStream) {
         localStream.getTracks().forEach(track => track.stop());
         setLocalStream(null);
