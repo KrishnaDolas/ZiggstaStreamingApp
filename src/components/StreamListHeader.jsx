@@ -17,17 +17,17 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 
 export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
-    setIsNearBy }) => {
+    setIsNearBy, isFavourite,
+    setIsFavourite }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
-    const [isLiked, setIsLiked] = useState(true);
     const [isSearchModalReady, setIsSearchModalReady] = useState(false);
     const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const handleToggleLiked = () => {
-        setIsLiked(!isLiked);
+        setIsFavourite(!isFavourite);
     };
 
     useEffect(() => {
@@ -92,7 +92,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                         handleToggleLiked();
                     }}>
                         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                            {isLiked ? (
+                            {isFavourite ? (
                                 <Ionicons name="heart-sharp" size={22} color="#d93a63" />
                             ) : (
                                 <Ionicons name="heart-outline" size={22} color="#d93a63" />

@@ -28,7 +28,7 @@ const questions = [
   },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
-  { label: 'Choose your Interests (Any 5)', field: 'interests' },
+  { label: 'Choose your Interests (Any 2)', field: 'interests' },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -89,21 +89,19 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
       const updatedForm = {
         screenname: userData?.username || '',
         email: '',
-        location: userAddress?.city || '', // Set location to city from userAddress
-        city: userAddress?.city || '',
-        state: userAddress?.state_code || '',
-        country: userAddress?.country || '',
-        zipcode: userAddress?.postcode || '',
+        // location: userAddress?.city || '', // Set location to city from userAddress
+        // city: userAddress?.city || '',
+        // state: userAddress?.state_code || '',
+        // country: userAddress?.country || '',
+        // zipcode: userAddress?.postcode || '',
       };
 
-      // console.log('Merged Form Data:', updatedForm);
 
       setFormData(prev => ({
         ...prev,
         ...updatedForm,
       }));
 
-      // console.log('Form Data:', formData);
     }
   }, [userData, userAddress]);
 
@@ -111,13 +109,19 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     setFormData(prev => {
       const alreadySelected = prev.interests.includes(interest);
       if (alreadySelected) {
-        return { ...prev, interests: prev.interests.filter(i => i !== interest) };
-      } else if (prev.interests.length < 5) {
-        return { ...prev, interests: [...prev.interests, interest] };
+        return {
+          ...prev,
+          interests: prev.interests.filter(i => i !== interest),
+        };
+      } else {
+        return {
+          ...prev,
+          interests: [...prev.interests, interest],
+        };
       }
-      return prev;
     });
   };
+
 
   // Callback for map taps returned via WebView message
   // const onMapMessage = city => {
