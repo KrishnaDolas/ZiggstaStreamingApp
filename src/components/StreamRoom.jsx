@@ -101,7 +101,6 @@ const StreamRoom = ({
     requestStreamPermission,
     hasRequestedStream,
     isFrontCamera,
-    theme,
     viewerCount,
     toggleMute,
     switchCamera,

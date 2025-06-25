@@ -1,4 +1,4 @@
-import { View, Alert, Platform, SafeAreaView, StatusBar } from 'react-native';
+import { View, Alert, Platform, StatusBar } from 'react-native';
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
 import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
@@ -14,25 +14,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const MainScreen = ({ onLogout, address, userData }) => {
   const insetsTop = useSafeAreaInsets();
-  const [roomId, setRoomId] = useState('');
   const [joined, setJoined] = useState(false);
   const [isHost, setIsHost] = useState(false);
-  const [hostId, setHostId] = useState('');
   const [viewerCount, setViewerCount] = useState(0);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [isViewerStreaming, setIsViewerStreaming] = useState(false);
-  const [error, setError] = useState('');
   const [viewers, setViewers] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStreams, setRemoteStreams] = useState(new Map());
   const [isMuted, setIsMuted] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
-  const [isViewer, setIsViewer] = useState(false);
   const [activeStreamers, setActiveStreamers] = useState([]);
   const { theme } = useContext(ThemeContext);
 
-  const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const peerConnections = useRef({});
 
@@ -63,7 +57,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         }
       }
     } catch (err) {
-      setError(err.message);
+     console.log(err);
       throw err;
     }
   };
@@ -161,21 +155,15 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     const handleRoomCreated = ({ roomId, socketid }) => {
       setJoined(true);
       setIsHost(true);
-      setHostId(socketid);
-      setRoomId(roomId);
     };
 
     const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount, approvedViewerIds, isViewerStreaming }) => {
       console.log(`Joined room ${roomId}, hostId: ${hostId}, isHostStreaming: ${isHostStreaming}`);
-      setRoomId(roomId);
-      setHostId(hostId);
-      setIsViewer(true);
       setIsStreaming(isHostStreaming);
       setJoined(true);
       setIsHost(false);
       setViewerCount(viewerCount);
-      setIsViewerStreaming(approvedViewerIds.includes(socket.id));
-
+    
       const streamers = [];
       if (isHostStreaming) {
         console.log(`Host ${hostId} is streaming; adding to active streamers`);
@@ -198,22 +186,28 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleRoomFull = () => {
-      setError('Room is full. Cannot join.');
+      console.log('Room is full. Cannot join.');
     };
 
-    const handleRoomExists = () => {
-      setError('Room already exists.');
-    };
 
-    const handleRoomInfo = ({ viewerCount, isViewerStreaming, approvedViewerIds, isHostStreaming, hostId }) => {
+    const handleRoomInfo = (props) => {
+      const { hostId, isHostStreaming, approvedViewerIds, viewerCount, isViewerStreaming } = props;
+      console.log(props);
       setViewerCount(viewerCount);
-      setIsViewerStreaming(approvedViewerIds.includes(socket.id));
-
+      
       // Update active streamers
       const streamers = [];
       if (isHostStreaming) streamers.push(hostId);
       streamers.push(...isViewerStreaming);
       setActiveStreamers(streamers);
+      if(isViewerStreaming.length > 0) {
+        isViewerStreaming.forEach((streamerId)=>{
+          if (streamerId !== socket.id) {
+            console.log(`Connecting to viewer streamer ${streamerId}`);
+            connectToStreamer(streamerId);
+          }
+        })
+      }
     };
 
     // IMPORTANT: Reinstated user-joined handler
@@ -250,7 +244,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleViewerStoppedStreaming = (viewerId) => {
-      setIsViewerStreaming(prev => viewerId === socket.id ? false : prev);
       if (peerConnections.current[viewerId]) {
         peerConnections.current[viewerId].close();
         delete peerConnections.current[viewerId];
@@ -264,7 +257,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
     const handlehostleftstream=(hostid)=>{
       setIsStreaming(false);
-      setIsViewerStreaming(false);
       setRemoteStreams(new Map());
       setActiveStreamers([]);
       setLocalStream(null);
@@ -274,7 +266,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       }
       console.log(`Host ${hostid} has left the stream, closing connections...`);
       // Close all peer connections and reset state
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     }
     const handleIceCandidate = async ({ candidate, sender }) => {
       try {
@@ -336,19 +328,17 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleHostLeft = () => {
-      setError('Host has left the room.');
+      console.log('Host has left the room.');
       setJoined(false);
       setIsStreaming(false);
-      setIsViewerStreaming(false);
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
 
     const handleRoomClosed = () => {
-      setError('Room has been closed.');
+      console.log('Room has been closed.');
       setJoined(false);
       setIsStreaming(false);
-      setIsViewerStreaming(false);
-      closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
+      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     };
 
     const handleIncomingStreamRequest = ({ viewerId, name }) => {
@@ -374,7 +364,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       if (accepted) {
         console.log(`Stream request accepted for room ${roomId}`);
         await startViewerStreaming(roomId, hostId);
-        setHasRequestedStream(false);
+        setHasRequestedStream(true);
       } else {
         setHasRequestedStream(false);
         Alert.alert("Request Rejected", "Host declined your stream request.");
@@ -386,11 +376,8 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('room-joined', handleRoomJoined);
     socket.on('room-full', handleRoomFull);
     socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK'}]));
-    socket.on('room-exists', handleRoomExists);
     socket.on('room-info', handleRoomInfo);
-    // IMPORTANT: Reinstated user-joined listener
     socket.on('user-joined', handleUserJoined);
-    // IMPORTANT: Reinstated user-left listener
     socket.on('user-left', handleUserLeft);
     socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
@@ -415,11 +402,8 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('room-joined', handleRoomJoined);
       socket.off('room-full', handleRoomFull);
       socket.off('invalid-room');
-      socket.off('room-exists', handleRoomExists);
       socket.off('room-info', handleRoomInfo);
-      // IMPORTANT: Cleanup user-joined listener
       socket.off('user-joined', handleUserJoined);
-      // IMPORTANT: Cleanup user-left listener
       socket.off('user-left', handleUserLeft);
       socket.off('host-started-streaming', handleHostStartedStreaming);
       socket.off('viewer-started-streaming', handleViewerStartedStreaming);
@@ -434,7 +418,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('host-stopped-streaming',handlehostleftstream)
       socket.off('socket-id-in-use');
     };
-  }, [isHost, isViewer]);
+  }, [isHost]);
 
   const createRoom = (roomId) => {
     console.log('Creating room with ID:', roomId);
@@ -447,16 +431,19 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
   const joinRoom = (targetRoomId) => {
     if (!targetRoomId.trim()) {
-      setError('Please enter a room ID.');
+      console.log('Please enter a room ID.');
       return;
     }
-    setRoomId(targetRoomId);
     socket.emit('join-room', targetRoomId);
   };
 
   const requestStreamPermission = () => {
+    if(!hasRequestedStream) {
     socket.emit('request-stream');
     setHasRequestedStream(true);
+    }else{
+      Alert.alert('Stream Request', 'You Are already Streaming')
+    }
   };
 
   const startStreaming = async (roomId) => {
@@ -480,7 +467,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
     } catch (err) {
       console.error('Streaming error:', err);
-      setError('Failed to start streaming: ' + err.message);
+      console.log('Failed to start streaming: ' + err.message);
     }
   };
 
@@ -495,7 +482,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       localStreamRef.current = stream;
 
       socket.emit('viewer-streaming', roomId);
-      setIsViewerStreaming(true);
       setIsStreaming(true);
 
       // Connect to all existing streamers
@@ -506,7 +492,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
     } catch (err) {
       console.error('Viewer streaming error:', err);
-      setError('Failed to start viewer streaming: ' + err.message);
+      console.log('Failed to start viewer streaming: ' + err.message);
     }
   };
   const HandleChatmessages=(message)=>{
@@ -517,23 +503,14 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     });
   }
 
-  const stopStreaming = () => {
-    closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-    setIsStreaming(false);
-    setIsViewerStreaming(false);
-  };
-
   const leaveRoom = () => {
     socket.emit('leave-room');
     setJoined(false);
     setIsStreaming(false);
-    setIsViewerStreaming(false);
     setViewers([]);
-    setRoomId('');
     setHasRequestedStream(false);
     setActiveStreamers([]);
-    closePeerConnections(peerConnections, peerConnectionRef, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-    setTimeout(() => setError(''), 4000);
+    closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
   };
 
   const toggleMute = () => {
@@ -552,28 +529,11 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         videoTrack._switchCamera();
         setIsFrontCamera(prev => !prev);
       } else {
-        setError('Camera switch not supported on this device.');
+        Alert.alert('Camera Error', 'Unable to switch camera. Please check your device settings.');
       }
     }
   };
 
-  const confirmLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress: onLogout,
-        },
-      ],
-      { cancelable: false }
-    );
-  };
 
   return (
     <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
@@ -590,20 +550,16 @@ export const MainScreen = ({ onLogout, address, userData }) => {
             remoteStreams={remoteStreams}
             localStream={localStream}
             isStreaming={isStreaming}
-            isViewerStreaming={isViewerStreaming}
             requestStreamPermission={requestStreamPermission}
             hasRequestedStream={hasRequestedStream}
             isFrontCamera={isFrontCamera}
-            theme={theme}
             viewerCount={viewerCount}
             toggleMute={toggleMute}
             switchCamera={switchCamera}
             leaveRoom={leaveRoom}
             isMuted={isMuted}
-            hostId={hostId}
             viewers={viewers}
             isHost={isHost}
-            startStreaming={() => startStreaming(roomId)}
             HandleChatmessages={HandleChatmessages}
           />
         )}
