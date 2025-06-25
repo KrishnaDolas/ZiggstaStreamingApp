@@ -145,17 +145,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       delete peerConnections.current[streamerId];
     }
   };
-  const Handleroomchat = ({ userName, message,id }) => {
-    const chatdata=    {
-      id: id,
-      userProfile: require('../../assets/images/LS-2.jpg'),
-      userName: userName,
-      message: message,
-  }
-  console.log(chatdata);
-    setRoomchat(prev => [...prev, chatdata]);
-    console.log(`New chat message from ${userName}: ${message}`);
-    }
+
   useEffect(() => {
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
 
@@ -381,6 +371,16 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       }
     };
 
+    const Handleroomchat = ({ userName, message,id }) => {
+      const chatdata=    {
+        id: id,
+        userProfile: require('../../assets/images/LS-2.jpg'),
+        userName: userName,
+        message: message,
+      }
+      console.log(chatdata);
+      setRoomchat(prev => [...prev, chatdata]);
+      }
     socket.on('connect', handlesocketconnect);
     socket.on('room-created', handleRoomCreated);
     socket.on('room-joined', handleRoomJoined);
@@ -427,6 +427,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.off('stream-request-response', handleStreamRequestResponse);
       socket.off('viewer-stopped-streaming', handleViewerStoppedStreaming);
       socket.off('host-stopped-streaming', handlehostleftstream)
+      socket.off('new-message',Handleroomchat)
       socket.off('socket-id-in-use', () => {
         Alert.alert("User Already Logged In", "Please Logout From Other Device", [
           { text: "OK", onPress: () => onLogout() }
