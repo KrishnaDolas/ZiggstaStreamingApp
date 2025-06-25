@@ -23,7 +23,7 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
+const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
@@ -36,8 +36,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const [isFiltering, setIsFiltering] = useState(false);
     const [categoryData, setCategoryData] = useState([]);
     const [isInterestLoading, setIsInterestLoading] = useState(false);
-
-
+    const [isNearBy, setIsNearBy] = useState(false);
+    const [nearByRoomData, setNearByRoomData] = useState([]);
     // Function to toggle category selection
     const toggleCategory = (categoryID) => {
         // select only 5 categories at a time
@@ -57,7 +57,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
     const getRooms = async () => {
         try {
             setIsInitialLoading(true);
-            const response = await Apiclient.get('/rooms/getrooms')
+            const response = await Apiclient.get('/rooms/getrooms');
             if (response) {
                 setApiRooms(response.data.data || []);
             }
@@ -68,14 +68,45 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
         }
     };
 
+    // Function to fetch rooms from the API
+    const getRoomsByLocation = async () => {
+        try {
+            setIsInitialLoading(true);
+            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.lat},${address.lon}`);
+            if (response) {
+                setApiRooms(response.data.data || []);
+                setNearByRoomData(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+        } finally {
+            setIsInitialLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        console.log('address', address);
+    }, [address]);
+
     const filterroomdata = async (selecteddata) => {
         try {
             console.log(selecteddata);
             setIsFiltering(true);
-            const response = await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`)
+            const response = await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`);
             if (response) {
                 console.log('Filtered Rooms:', response.data.data);
-                setApiRooms(response.data.data || []);
+                const filtered = response.data.data || [];
+
+                let combinedRooms = filtered;
+
+                if (isNearBy && nearByRoomData.length > 0) {
+                    // Merge filtered + nearby and remove duplicates
+                    combinedRooms = Array.from(new Map(
+                        [...nearByRoomData, ...filtered].map(item => [item.roomID, item])
+                    ).values());
+                }
+
+                setApiRooms(combinedRooms);
             }
         } catch (error) {
             console.log(error);
@@ -97,9 +128,13 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
             const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
             filterroomdata(sorteddata);
         } else {
-            getRooms();
+            if (isNearBy && address) {
+                getRoomsByLocation();
+            } else {
+                getRooms();
+            }
         }
-    }, [filteredRooms]);
+    }, [filteredRooms, isNearBy]);
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
@@ -127,9 +162,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                 participants: '',
                 thumbNail: 'dummyimg.jpg',
                 physicalLocation: 'pune',
-                Categories: sortcategories.join(',')
+                Categories: sortcategories.join(','),
+                geoLocation: `${address.lat},${address.lon}`,
             };
-            console.log(roomData);
+            console.log('created roomData', roomData);
 
             const response = await Apiclient.post('/rooms', roomData);
             console.log(response);
@@ -213,7 +249,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
             <StreamListHeader setGetselectcategory={setFilteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
-            />
+                isNearBy={isNearBy}
+                setIsNearBy={setIsNearBy} />
             <View
                 style={[
                     styles.streamListMainCardLayout,
@@ -232,8 +269,33 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
                         <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} />
                     </View>
                 )}
+
+
                 {isInitialLoading ? (
                     <StreamListSkeleton count={6} columns={2} />
+                ) : apiRooms.length === 0 ? (
+                    <View style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: screenHeight * 0.4,
+                        padding: 20,
+                    }}>
+                        <Image
+                            source={require('../../assets/images/default-streamer.jpg')}
+                            style={[
+                                styles.streamListImage,
+                                { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
+                            ]}
+                        />
+                        <Text style={{
+                            marginTop: 16,
+                            fontSize: 16,
+                            color: '#666',
+                            textAlign: 'center'
+                        }}>
+                            No stream rooms available at the moment.
+                        </Text>
+                    </View>
                 ) : (
                     <FlatList
                         data={apiRooms}
@@ -342,7 +404,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData }) => {
             }
 
             <Footer />
-        </LinearGradient >
+        </LinearGradient>
     );
 };
 

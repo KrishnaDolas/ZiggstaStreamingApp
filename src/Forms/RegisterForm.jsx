@@ -28,7 +28,7 @@ const questions = [
   },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
-  { label: 'Choose your Interests (Any 2)', field: 'interests' },
+  { label: 'Choose your Interests (Any 5)', field: 'interests' },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
