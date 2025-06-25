@@ -487,8 +487,8 @@ const StreamRoom = ({
                                                 <ScrollView
                                                     showsVerticalScrollIndicator={false}
                                                 >
-                                                    {roomchat.map((chat) => (
-                                                        <View key={chat.id} style={styles.streamChatItem}>
+                                                    {roomchat.map((chat,ind) => (
+                                                        <View key={ind} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
                                                                 <Text numberOfLines={1} style={styles.streamChatUserName}>
