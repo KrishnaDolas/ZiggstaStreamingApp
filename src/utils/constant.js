@@ -25,7 +25,7 @@ export const socket = io('http://192.168.0.18:5000', {
   
   // WebRTC ICE configuration with STUN and TURN servers
  export  const iceServers = {
-    iceServers: [{
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' },{
       //38.242.235.250
         urls: 'turn:coturn.streamalong.live:3478?transport=udp',
         username: 'vikram',
@@ -33,18 +33,15 @@ export const socket = io('http://192.168.0.18:5000', {
       },
     ],
   };
-  export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStream) => {
-    try {
-      Object.values(peerConnections.current).forEach(pc => pc.close());
-      peerConnections.current = {};
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        setLocalStream(null);
-      }
-      if(setRemoteStream){
-      setRemoteStream(null);
-      }
-    } catch (err) {
-      console.error('Error cleaning up WebRTC resources:', err);
-    }
-  };
+// In utils/constant.js or similar
+export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {
+  Object.values(peerConnections.current).forEach(pc => {
+    pc.close();
+  });
+  peerConnections.current = {};
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+  }
+  setLocalStream(null);
+  setRemoteStreams(() => new Map());
+};
