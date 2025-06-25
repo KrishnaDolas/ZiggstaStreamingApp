@@ -97,17 +97,13 @@ const StreamRoom = ({
     remoteStreams,
     localStream,
     isStreaming,
-    isViewerStreaming,
     requestStreamPermission,
-    hasRequestedStream,
     isFrontCamera,
     viewerCount,
     toggleMute,
     switchCamera,
     leaveRoom,
     isMuted,
-    hostId,
-    viewers,
     isHost,
     HandleChatmessages
 }) => {

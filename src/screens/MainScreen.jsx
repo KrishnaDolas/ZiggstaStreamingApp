@@ -551,14 +551,12 @@ export const MainScreen = ({ onLogout, address, userData }) => {
             localStream={localStream}
             isStreaming={isStreaming}
             requestStreamPermission={requestStreamPermission}
-            hasRequestedStream={hasRequestedStream}
             isFrontCamera={isFrontCamera}
             viewerCount={viewerCount}
             toggleMute={toggleMute}
             switchCamera={switchCamera}
             leaveRoom={leaveRoom}
             isMuted={isMuted}
-            viewers={viewers}
             isHost={isHost}
             HandleChatmessages={HandleChatmessages}
           />
