@@ -15,10 +15,12 @@ import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
+import SearchModal from '../modals/SearchModal';
 
 export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
-    setIsFavourite, selectedCategoryIndices }) => {
+    setIsFavourite, selectedCategoryIndices, searchFilteredData,
+    setSearchFilteredData }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -26,7 +28,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
     const [isSearchModalReady, setIsSearchModalReady] = useState(false);
     const [searchBy, setSearchBy] = useState('user');
     const scaleAnim = useRef(new Animated.Value(1)).current;
-
+    const [visibleModal, setVisibleModal] = useState(null);
 
     // Sync selectedinterest with selectedCategoryIndices
     useEffect(() => {
@@ -115,7 +117,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                         <TouchableOpacity onPress={() => setIsNearBy(!isNearBy)} style={[styles.strHeaderCategoryButton, isNearBy &&
                             styles.btnInterestActive]}>
                             <Text style={[styles.strHeaderCategoryText, isNearBy && styles.btnInterestActiveText]}>
-                                Near By
+                                Nearby
                             </Text>
                         </TouchableOpacity>
                         {categoryData.map((item) => (
@@ -136,7 +138,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                         ))}
                     </ScrollView>}
                     {/* Right Fixed Icon */}
-                    <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setShowSearch(true)}>
+                    <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setVisibleModal('search')}>
                         <Ionicons name="search" size={20} color="#d93a63" />
                     </TouchableOpacity>
                 </View>
@@ -219,6 +221,16 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                 </Modal>
             )
             }
+            {visibleModal === 'search' && (
+                <SearchModal
+                    visible="true"
+                    onClose={() => setVisibleModal(null)}
+                    searchFilteredData={searchFilteredData}
+                    setSearchFilteredData={setSearchFilteredData}
+                    categoryData={categoryData}
+                />
+            )}
+
         </View>
 
     );

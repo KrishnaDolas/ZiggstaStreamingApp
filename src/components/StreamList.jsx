@@ -40,6 +40,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     const [nearByRoomData, setNearByRoomData] = useState([]);
     const [userDetails, setUserDetails] = useState([]);
     const [isFavourite, setIsFavourite] = useState(false);
+    const [searchFilteredData, setSearchFilteredData] = useState([]);
 
     // Function to fetch user details from the API
     const getUserDetails = async () => {
@@ -62,6 +63,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             getUserDetails();
         }
     }, [userData?.userid]);
+
+
+    // console.log('address', address);
+
 
     useEffect(() => {
         if (
@@ -179,7 +184,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             if (isNearBy && address) {
                 getRoomsByLocation();
             } else {
-                getRooms();
+                if (searchFilteredData.length === 0) {
+                    // Optionally refetch rooms or keep apiRooms unchanged
+                    getRooms(); // or getRoomsByLocation() if isNearBy is true
+                }
             }
         }
     }, [filteredRooms, isNearBy]);
@@ -287,8 +295,25 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         }
     }, [route?.name]);
 
+    useEffect(() => {
+        console.log('searchFilteredData', searchFilteredData);
+    }, [searchFilteredData]);
 
+    useEffect(() => {
+        console.log('apiRooms', apiRooms);
+    }, [apiRooms]);
 
+    useEffect(() => {
+        if (searchFilteredData?.length > 0) {
+            // Update apiRooms with search results
+            setApiRooms(searchFilteredData);
+            console.log('Updated apiRooms with search results:', searchFilteredData);
+        } else {
+            // Clear apiRooms when searchFilteredData is empty
+            setApiRooms([]);
+            console.log('searchFilteredData is empty, cleared apiRooms');
+        }
+    }, [searchFilteredData]);
 
     return (
         <LinearGradient
@@ -296,10 +321,20 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
-            <StreamListHeader setGetselectcategory={setFilteredRooms} filteredRooms={filteredRooms} userData={userData} isInterestLoading={isInterestLoading} categoryData={categoryData}
+            <StreamListHeader
+                setGetselectcategory={setFilteredRooms}
+                filteredRooms={filteredRooms}
+                userData={userData}
+                isInterestLoading={isInterestLoading}
+                categoryData={categoryData}
                 isNearBy={isNearBy}
-                setIsNearBy={setIsNearBy} isFavourite={isFavourite}
-                setIsFavourite={setIsFavourite} selectedCategoryIndices={selectedCategoryIndices} />
+                setIsNearBy={setIsNearBy}
+                isFavourite={isFavourite}
+                setIsFavourite={setIsFavourite}
+                selectedCategoryIndices={selectedCategoryIndices}
+                searchFilteredData={searchFilteredData}
+                setSearchFilteredData={setSearchFilteredData}
+            />
             <View
                 style={[
                     styles.streamListMainCardLayout,
@@ -322,6 +357,29 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
 
                 {isInitialLoading ? (
                     <StreamListSkeleton count={6} columns={2} />
+                ) : apiRooms.length === 0 && searchFilteredData.length > 0 ? (
+                    <View style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: screenHeight * 0.4,
+                        padding: 20,
+                    }}>
+                        <Image
+                            source={require('../../assets/images/default-streamer.jpg')}
+                            style={[
+                                styles.streamListImage,
+                                { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
+                            ]}
+                        />
+                        <Text style={{
+                            marginTop: 16,
+                            fontSize: 16,
+                            color: '#666',
+                            textAlign: 'center'
+                        }}>
+                            No rooms found for this search.
+                        </Text>
+                    </View>
                 ) : apiRooms.length === 0 ? (
                     <View style={{
                         alignItems: 'center',
@@ -403,7 +461,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
                                     placeholderTextColor="#888"
                                     value={roomIdInput}
                                     onChangeText={setRoomIdInput}
-                                    style={styles.strHedSearchModalInput}
+                                    style={[styles.strHedSearchModalInput, { flex: 1 }]}
                                 />
                                 <TouchableOpacity onPress={submitroomnameandcreateroom}>
                                     <LinearGradient

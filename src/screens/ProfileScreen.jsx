@@ -51,8 +51,10 @@ export const ProfileScreen = ({ userData, onLogout }) => {
     const insetsTop = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
     const [profileData, setProfileData] = useState({});
+    const [averageIncomeData, setAverageIncomeData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
+    const [topGiftersData, setTopGiftersData] = useState([]);
 
     // get profile details from API
     useEffect(() => {
@@ -77,6 +79,47 @@ export const ProfileScreen = ({ userData, onLogout }) => {
         };
         fetchProfileDetails();
     }, [userData.userid]);
+
+    // to get average daily income of user
+    useEffect(() => {
+        const getAverageDaily = async () => {
+            try {
+                const response = await Apiclient.get(`/getUserDetails/averageIncome?userId=${userData.userid}`);
+                if (response.status === 200) {
+                    setAverageIncomeData(response.data || {});
+                } else {
+                    setIsUserError('Failed to fetch average Income data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching average Income data: ' + err.message);
+            }
+        };
+        getAverageDaily();
+    }, [userData.userid]);
+
+
+    // to get top gifters
+    useEffect(() => {
+        const getTopGifters = async () => {
+            const formData = {
+                toUserId: userData.userid,
+                gifterCount: 25,
+            }
+            try {
+                const response = await Apiclient.post('/topgifters', formData);
+                console.log('topgifters response', response.data);
+                if (response) {
+                    setTopGiftersData(response.data || []);
+                } else {
+                    setIsUserError('Failed to fetch top gifters data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching top gifters data: ' + err.message);
+            }
+        };
+        getTopGifters();
+    }, [userData.userid]);
+
 
     return (
         <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80, paddingTop: insetsTop.top }}>
@@ -132,7 +175,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         <View style={styles.profileStatCards}>
                             <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
                                 <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Revenue</Text>
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>#1234.00</Text>
+                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>${averageIncomeData?.averageIncome}</Text>
                             </View>
                             <View style={{ width: 5 }} />
                             <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
@@ -148,14 +191,21 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                                 <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
                             </View>
                             <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ maxHeight: 205 }}>
-                                {tableData.map((item, index) => {
+                                {topGiftersData.length === 0 ? <>
+                                    <View style={styles.profileTableRow}>
+                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>No Data Found</Text>
+                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                    </View>
+
+                                </> : topGiftersData.map((item, index) => {
                                     return (
                                         <View key={index} style={styles.profileTableRow}>
                                             <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.userName}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.amount}</Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.ScreenName}</Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
                                         </View>
-                                    )
+                                    );
                                 })}
                             </ScrollView>
                         </View>

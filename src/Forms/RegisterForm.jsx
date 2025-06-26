@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Platform, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Dimensions } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/Ionicons'; // Make sure react-native-vector-icons is installed
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatISO } from 'date-fns';
 import WebView from 'react-native-webview';
+import DropDownPicker from 'react-native-dropdown-picker';
+
 
 const screenHeight = Dimensions.get('window').height;
 const questions = [
@@ -61,8 +61,9 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
+  const webViewRef = useRef(null);
+
   const [errors, setErrors] = useState({});
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -76,6 +77,36 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     country: '',
     zipcode: '',
   });
+
+
+  const [openYear, setOpenYear] = useState(false);
+  const [openMonth, setOpenMonth] = useState(false);
+  const [openDay, setOpenDay] = useState(false);
+
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
+  const [yearDropdownY, setYearDropdownY] = useState(0);
+  const [monthDropdownY, setMonthDropdownY] = useState(0);
+  const [dayDropdownY, setDayDropdownY] = useState(0);
+
+
+  useEffect(() => {
+    if (formData.dob) {
+      const [y, m, d] = formData.dob.split('-');
+      setSelectedYear(y);
+      setSelectedMonth(m);
+      setSelectedDay(d);
+    }
+  }, [formData.dob]);
+
+  useEffect(() => {
+    if (selectedYear && selectedMonth && selectedDay) {
+      const dobValue = `${selectedYear}-${selectedMonth}-${selectedDay}`;
+      handleChange('dob', dobValue);
+    }
+  }, [selectedYear, selectedMonth, selectedDay]);
+
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -94,6 +125,11 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         // state: userAddress?.state_code || '',
         // country: userAddress?.country || '',
         // zipcode: userAddress?.postcode || '',
+        // location: '', // Set location to city from userAddress
+        // city: '',
+        // state: '',
+        // country: '',
+        // zipcode: '',
       };
 
 
@@ -130,22 +166,31 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
   // };
 
 
-  const onMapMessage = message => {
+  const updateMapLocation = (cityName) => {
+    if (webViewRef.current && cityName.length > 2) {
+      const escapedCity = cityName.replace(/'/g, "\\'");
+      const jsCode = `
+      window.postMessage(JSON.stringify({ type: 'SEARCH_CITY', payload: '${escapedCity}' }), '*');
+    `;
+      webViewRef.current.injectJavaScript(jsCode);
+    }
+  };
+
+
+  const onMapMessage = (message) => {
     try {
       const address = JSON.parse(message);
       console.log('📍 Address from map:', address);
 
-      // Update both location and full userAddress
       setFormData(prev => ({
         ...prev,
-        location: address.city || '',
+        location: address.source === 'tap' ? (address.city || '') : prev.location,
         city: address.city || '',
         state: address.state || '',
         country: address.country || '',
         zipcode: address.postcode || '',
       }));
 
-      // Optional: if you want to update userAddress too (if passed from props)
       if (typeof setUserAddress === 'function') {
         setUserAddress(address);
       }
@@ -213,57 +258,158 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
       );
     }
 
+    // dob input
     if (question.field === 'dob') {
-      // Calculate max date for 18 years ago from current date
-      const currentDate = new Date();
-      const maxDate = new Date(currentDate.getFullYear() - 18, currentDate.getMonth(), currentDate.getDate());
+      const years = Array.from({ length: 50 }, (_, i) => {
+        const year = new Date().getFullYear() - i;
+        return { label: `${year}`, value: `${year}` };
+      });
+
+      const months = Array.from({ length: 12 }, (_, i) => {
+        const month = String(i + 1).padStart(2, '0');
+        return { label: month, value: month };
+      });
+
+      const days = Array.from({ length: 31 }, (_, i) => {
+        const day = String(i + 1).padStart(2, '0');
+        return { label: day, value: day };
+      });
+
+      const dropdownStyle = {
+        backgroundColor: '#fff',
+        borderColor: '#ccc',
+        borderRadius: 10,
+        height: 50,
+        marginBottom: 10,
+        paddingHorizontal: 10,
+      };
+
+      const getModalContainerStyle = dropdownY => ({
+        width: Dimensions.get('window').width * 0.5,
+        maxHeight: Dimensions.get('window').height * 0.4,
+        backgroundColor: '#fff',
+        borderRadius: 15,
+        borderColor: '#ddd',
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 5,
+        position: 'absolute',
+        top: dropdownY + 210,
+        left: Dimensions.get('window').width * 0.25,
+      });
+
+      const containerStyle = {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+        zIndex: 5000,
+      };
+
+      const itemTextStyle = {
+        fontSize: 16,
+        color: '#333',
+        fontWeight: '500',
+      };
+
       return (
-        <View>
-          <TouchableOpacity
-            onPress={() => setShowDatePicker(true)}
-            style={[
-              globalStyles.input,
-              {
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              },
-            ]}>
-            <Text style={{ color: formData.dob ? 'black' : '#999' }}>
-              {formData.dob || 'YYYY-MM-DD'}
-            </Text>
-            <Icon name="calendar-outline" size={20} color="#555" />
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              testID="dateTimePicker"
-              value={
-                formData.dob && !isNaN(new Date(formData.dob))
-                  ? new Date(formData.dob)
-                  : maxDate
-              }
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              maximumDate={maxDate}
-              accentColor="#d93a63"
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  const year = selectedDate.getFullYear();
-                  const month = String(selectedDate.getMonth() + 1).padStart(
-                    2,
-                    '0',
-                  );
-                  const day = String(selectedDate.getDate()).padStart(2, '0');
-                  handleChange('dob', `${year}-${month}-${day}`);
-                }
-              }}
-            />
-          )}
+        <View style={{ zIndex: 5000, pointerEvents: 'box-none' }}>
+          <View style={[containerStyle, { pointerEvents: 'auto' }]}>
+            <View
+              style={{ flex: 1, zIndex: 4000 }}
+              onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}
+            >
+              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Year</Text>
+              <DropDownPicker
+                open={openYear}
+                value={selectedYear}
+                items={years}
+                setOpen={setOpenYear}
+                setValue={setSelectedYear}
+                placeholder="YYYY"
+                style={dropdownStyle}
+                listMode="MODAL"
+                dropDownDirection="BOTTOM"
+                modalContentContainerStyle={getModalContainerStyle(yearDropdownY)}
+                textStyle={itemTextStyle}
+                modalProps={{
+                  animationType: 'fade',
+                  transparent: true,
+                  presentationStyle: 'overFullScreen',
+                }}
+                modalTitle="Select Year"
+                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
+                showCloseButton={true}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
+                zIndex={4000}
+              />
+            </View>
+            <View
+              style={{ flex: 1, zIndex: 3000 }}
+              onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}
+            >
+              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Month</Text>
+              <DropDownPicker
+                open={openMonth}
+                value={selectedMonth}
+                items={months}
+                setOpen={setOpenMonth}
+                setValue={setSelectedMonth}
+                placeholder="MM"
+                style={dropdownStyle}
+                listMode="MODAL"
+                dropDownDirection="BOTTOM"
+                modalContentContainerStyle={getModalContainerStyle(monthDropdownY)}
+                textStyle={itemTextStyle}
+                modalProps={{
+                  animationType: 'fade',
+                  transparent: true,
+                  presentationStyle: 'overFullScreen',
+                }}
+                modalTitle="Select Month"
+                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
+                showCloseButton={true}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
+                zIndex={3000}
+              />
+            </View>
+            <View
+              style={{ flex: 1, zIndex: 2000 }}
+              onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}
+            >
+              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Day</Text>
+              <DropDownPicker
+                open={openDay}
+                value={selectedDay}
+                items={days}
+                setOpen={setOpenDay}
+                setValue={setSelectedDay}
+                placeholder="DD"
+                style={dropdownStyle}
+                listMode="MODAL"
+                dropDownDirection="BOTTOM"
+                modalContentContainerStyle={getModalContainerStyle(dayDropdownY)}
+                textStyle={itemTextStyle}
+                modalProps={{
+                  animationType: 'fade',
+                  transparent: true,
+                  presentationStyle: 'overFullScreen',
+                }}
+                modalTitle="Select Day"
+                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
+                showCloseButton={true}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
+                zIndex={2000}
+              />
+            </View>
+          </View>
           {errors[question.field] ? (
-            <Text style={{ color: 'red', marginTop: 5 }}>
-              {errors[question.field]}
-            </Text>
+            <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
           ) : null}
         </View>
       );
@@ -278,49 +424,75 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             placeholder={question.placeholder}
             placeholderTextColor="#9d9d9d"
             value={formData.location}
-            onChangeText={text => handleChange('location', text)}
+            onChangeText={text => {
+              handleChange('location', text);
+              updateMapLocation(text); // 🔄 Pan map to city
+            }}
           />
-          {errors.location && <Text style={{ color: 'red' }}>{errors.location}</Text>}
+          {errors.location && (
+            <Text style={{ color: 'red' }}>{errors.location}</Text>
+          )}
 
-          {/* ⚡️ Inline Geoapify Map */}
           <View style={{ height: screenHeight * 0.5 + 60, marginTop: 20, backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
             <WebView
+              ref={webViewRef}
               originWhitelist={['*']}
               javaScriptEnabled
               source={{
                 html: `
-                  <!DOCTYPE html><html><head>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                    <style>html,body,#map{margin:0;height:100%;width:100%}  /* Hide the Leaflet attribution */
-                     .leaflet-control-attribution {
-                         display: none !important;
-                      }
-                    </style>
-                  </head><body>
-                    <div id="map"></div>
-                    <script>
-                      const key = "25127ca1c55f48909b03f43048040037";
-                      const map = L.map('map').setView([18.5204,73.8567], 13);
-                      L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
-                        attribution: '© OpenMapTiles © OpenStreetMap contributors',
-                        maxZoom: 18
-                      }).addTo(map);
-                      const marker = L.marker([18.5204,73.8567]).addTo(map);
-                      async function rev(lat, lon) {
-                        const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
+              <!DOCTYPE html><html><head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                <style>
+                  html, body, #map { margin: 0; height: 100%; width: 100%; }
+                  .leaflet-control-attribution { display: none !important; }
+                </style>
+              </head><body>
+                <div id="map"></div>
+                <script>
+                  const key = "25127ca1c55f48909b03f43048040037";
+                  const map = L.map('map').setView([18.5204, 73.8567], 13);
+                  L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
+                    maxZoom: 18
+                  }).addTo(map);
+                  const marker = L.marker([18.5204, 73.8567]).addTo(map);
+
+                  async function rev(lat, lon, source = 'tap') {
+                    const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
+                    const json = await res.json();
+                    const address = json.features?.[0]?.properties || {};
+                    window.ReactNativeWebView.postMessage(JSON.stringify({ ...address, source }));
+                  }
+
+                  map.on('click', e => {
+                    const { lat, lng } = e.latlng;
+                    marker.setLatLng([lat, lng]);
+                    rev(lat, lng, 'tap');
+                  });
+
+                  window.addEventListener('message', async (event) => {
+                    try {
+                      const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                      if (msg.type === 'SEARCH_CITY') {
+                        const city = msg.payload;
+                        const res = await fetch(\`https://api.geoapify.com/v1/geocode/search?text=\${encodeURIComponent(city)}&limit=1&apiKey=\${key}\`);
                         const json = await res.json();
-                      const address = json.features?.[0]?.properties || {};
-                      window.ReactNativeWebView.postMessage(JSON.stringify(address));
+                        const location = json.features?.[0]?.geometry?.coordinates;
+                        if (location) {
+                          const [lon, lat] = location;
+                          map.setView([lat, lon], 13);
+                          marker.setLatLng([lat, lon]);
+                          rev(lat, lon, 'search');
+                        }
                       }
-                      map.on('click', e => {
-                        const {lat, lng} = e.latlng;
-                        marker.setLatLng([lat,lng]);
-                        rev(lat,lng);
-                      });
-                    </script>
-                  </body></html>`
+                    } catch (err) {
+                      console.error('Map message error:', err);
+                    }
+                  });
+                </script>
+              </body></html>
+            `
               }}
               onMessage={e => onMapMessage(e.nativeEvent.data)}
             />
@@ -376,7 +548,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         interests: interestIndexes.join(','),
       };
 
-      // console.log('✅ Final Payload to POST:', finalData);
+      console.log('✅ Final Payload to POST:', finalData);
 
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
@@ -418,7 +590,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
       },
     );
     if (res.data.message === 'Login successful') {
-      Alert.alert('Success', `LogIn Success.`, [{ text: 'OK' }]);
+      Alert.alert('Welcome!', 'You’ve successfully logged in.', [{ text: 'Continue' }]);
       onLogin();
       console.log(res.data.user);
       await AsyncStorage.setItem('token', res.data.token);
@@ -465,21 +637,8 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         }
         break;
       case 'dob':
-        if (!value) {
-          error = 'Date of birth is required';
-        } else if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-          error = 'Date must be in YYYY-MM-DD format';
-        } else {
-          const dob = new Date(value);
-          const age = new Date().getFullYear() - dob.getFullYear();
-          const hasHadBirthdayThisYear =
-            new Date().getMonth() > dob.getMonth() ||
-            (new Date().getMonth() === dob.getMonth() && new Date().getDate() >= dob.getDate());
-          const actualAge = hasHadBirthdayThisYear ? age : age - 1;
-
-          if (actualAge < 18) {
-            error = 'You must be at least 18 years old';
-          }
+        if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+          error = 'Please select a valid date';
         }
         break;
       case 'gender':
@@ -524,6 +683,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScrollEnd}
             scrollEventThrottle={16}
+            nestedScrollEnabled={true}
             scrollEnabled={questions[step]?.field !== 'location'}
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
