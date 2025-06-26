@@ -104,35 +104,21 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       };
 
       pc.oniceconnectionstatechange = () => {
-        console.log(`ICE connection state for ${streamerId}: ${pc.iceConnectionState}`);
-        if (pc.iceConnectionState === 'failed') {
-          console.warn(`ICE connection failed with ${streamerId}`);
-          pc.restartIce(); // Attempt ICE renegotiation
+        console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
+        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
           setTimeout(() => {
             if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
               console.log(`Retrying connection to ${streamerId}`);
-              pc.close();
-              delete peerConnections.current[streamerId];
               connectToStreamer(streamerId);
             }
-          }, 10000); // Wait 10s for signaling to complete
-        } else if (pc.iceConnectionState === 'disconnected') {
-          console.warn(`ICE connection disconnected with ${streamerId}`);
-          setTimeout(() => {
-            if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
-              pc.restartIce();
-            }
-          }, 5000); // Wait 5s before retrying ICE
+          }, 5000);
         } else if (pc.iceConnectionState === 'closed') {
-          console.log(`Peer connection closed for ${streamerId}`);
           delete peerConnections.current[streamerId];
           setRemoteStreams(prev => {
             const newStreams = new Map(prev);
             newStreams.delete(streamerId);
             return newStreams;
           });
-        } else if (pc.iceConnectionState === 'connected') {
-          console.log(`Successfully connected to ${streamerId}`);
         }
       };
 
