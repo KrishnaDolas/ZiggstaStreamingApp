@@ -105,6 +105,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       };
 
       pc.oniceconnectionstatechange = () => {
+        socket.emit('Errorlogs','pc.oniceconnectionstatechange',`ICE connection state changed for ${streamerId}: ${pc.iceConnectionState}`);
         console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
         if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
           setTimeout(() => {
