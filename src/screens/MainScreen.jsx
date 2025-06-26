@@ -217,7 +217,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
           if (viewerId !== socket.id) {
             connectToStreamer(viewerId);
           }
-        }, 1000); // Wait 1 second (tweakable)
+        }, 2000); // Wait 1 second (tweakable)
       };
 
     const handleViewerStoppedStreaming = (viewerId) => {
