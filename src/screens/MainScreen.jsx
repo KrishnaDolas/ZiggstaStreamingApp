@@ -58,6 +58,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         }
       }
     } catch (err) {
+      socket.emit('Errorlogs',`Permission error:`,err);
       console.log(err);
       throw err;
     }
@@ -127,6 +128,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       console.log(`Sending offer to ${streamerId}`);
       socket.emit('offer', { target: streamerId, sdp: offer });
     } catch (err) {
+      socket.emit('Errorlogs',err)
       console.error(`Error connecting to streamer ${streamerId}:`, err);
       delete peerConnections.current[streamerId];
     }
@@ -255,6 +257,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
       } catch (err) {
+        socket.emit('Errorlogs',`ICE candidate error for ${sender}`, err);
         console.error(`ICE candidate error for ${sender}:`, err);
       }
     };
@@ -291,6 +294,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         await pc.setLocalDescription(answer);
         socket.emit('answer', { target: sender, sdp: answer });
       } catch (err) {
+        socket.emit('Errorlogs',`Offer handling error for ${sender}`, err);
         console.error('Offer handling error:', err);
       }
     };
@@ -302,6 +306,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
         }
       } catch (err) {
+      socket.emit('Errorlogs',`Answer handling error for ${sender}`, err);
         console.error('Answer error:', err);
       }
     };
@@ -391,7 +396,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
         'viewer-started-streaming', 'ice-candidate', 'offer', 
         'answer', 'host-left', 'room-closed', 'incoming-stream-request',
         'stream-request-response', 'viewer-stopped-streaming',
-        'host-stopped-streaming', 'new-message', 'socket-id-in-use'
+        'host-stopped-streaming', 'new-message', 'socket-id-in-use','Errorlogs'
       ];
       
       events.forEach(event => socket.off(event));
@@ -430,6 +435,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       socket.emit('host-streaming', roomId);
       setIsStreaming(true);
     } catch (err) {
+      socket.emit('Errorlogs',`Streaming error:`, err);
       console.error('Streaming error:', err);
     }
   };
