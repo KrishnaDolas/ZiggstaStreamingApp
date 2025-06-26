@@ -209,10 +209,10 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     const handleViewerStartedStreaming = (viewerId) => {
       setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
         // Always reconnect to ensure we receive their stream
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
-      }
+      // if (peerConnections.current[viewerId]) {
+      //   peerConnections.current[viewerId].close();
+      //   delete peerConnections.current[viewerId];
+      // }
       setTimeout(() => {
           if (viewerId !== socket.id) {
             connectToStreamer(viewerId);
