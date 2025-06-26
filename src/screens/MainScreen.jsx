@@ -65,73 +65,75 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
   // Connect to a streamer function
   const connectToStreamer = async (streamerId) => {
-    if (streamerId === socket.id || peerConnections.current[streamerId]) {
-      console.log(`Skipping connection to ${streamerId}: Already connected or self`);
-      return;
-    }
-
+    if (streamerId === socket.id) return;
+  
     try {
-      const pc = new RTCPeerConnection(iceServers);
-      pc.addTransceiver('video', { direction: 'recvonly' });
-      pc.addTransceiver('audio', { direction: 'recvonly' });
-      peerConnections.current[streamerId] = pc;
-
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current);
-        });
-      }
-
-      pc.onicecandidate = event => {
-        if (event.candidate) {
-          console.log(`Sending ICE candidate to ${streamerId}`);
-          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
-        }
-      };
-
-      pc.ontrack = event => {
-        if (event.streams[0]) {
-          console.log(`Received stream from ${streamerId}:`, event.streams[0]);
-          setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
-        }
-      };
-
-      pc.onaddstream = event => {
-        if (event.stream) {
-          console.log(`[ONADDSTREAM] from ${streamerId}`, event.stream);
-          setRemoteStreams(prev => new Map(prev).set(streamerId, event.stream));
-        }
-      };
-
-      pc.oniceconnectionstatechange = () => {
-        console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-          setTimeout(() => {
-            if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
-              console.log(`Retrying connection to ${streamerId}`);
-              connectToStreamer(streamerId);
-            }
-          }, 5000);
-        } else if (pc.iceConnectionState === 'closed') {
-          delete peerConnections.current[streamerId];
-          setRemoteStreams(prev => {
-            const newStreams = new Map(prev);
-            newStreams.delete(streamerId);
-            return newStreams;
-          });
-        }
-      };
-
-      const offer = await pc.createOffer();
+      const pc = createPeerConnection(streamerId, true);
+      const offer = await pc.createOffer({
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true,
+      });
       await pc.setLocalDescription(offer);
-      console.log(`Sending offer to ${streamerId}`);
       socket.emit('offer', { target: streamerId, sdp: offer });
+      console.log(`Sent offer to ${streamerId}`);
     } catch (err) {
-      console.error(`Error connecting to streamer ${streamerId}:`, err);
+      console.error(`Error connecting to ${streamerId}:`, err);
       delete peerConnections.current[streamerId];
     }
   };
-
+  const createPeerConnection = (streamerId, isInitiator = false) => {
+    if (peerConnections.current[streamerId]) {
+      console.log(`Closing existing peer connection for ${streamerId}`);
+      peerConnections.current[streamerId].close();
+      delete peerConnections.current[streamerId];
+    }
+  
+    const pc = new RTCPeerConnection(iceServers);
+    peerConnections.current[streamerId] = pc;
+  
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current));
+    }
+  
+    pc.onicecandidate = event => {
+      if (event.candidate) {
+        socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
+      }
+    };
+  
+    pc.ontrack = event => {
+      if (event.streams[0]) {
+        console.log(`Received stream from ${streamerId}`);
+        setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
+      }
+    };
+  
+    pc.oniceconnectionstatechange = () => {
+      console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
+      if (pc.iceConnectionState === 'disconnected') {
+        console.warn(`ICE disconnected for ${streamerId}, attempting ICE restart`);
+        pc.restartIce(); // Attempt immediate ICE restart
+        setTimeout(() => {
+          if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
+            console.log(`Retrying connection to ${streamerId}`);
+            connectToStreamer(streamerId); // Full reconnection if ICE restart fails
+          }
+        }, 3000); // Reduced delay for faster recovery
+      } else if (pc.iceConnectionState === 'failed') {
+        console.warn(`ICE failed for ${streamerId}, initiating full reconnection`);
+        connectToStreamer(streamerId);
+      } else if (pc.iceConnectionState === 'closed') {
+        delete peerConnections.current[streamerId];
+        setRemoteStreams(prev => {
+          const newStreams = new Map(prev);
+          newStreams.delete(streamerId);
+          return newStreams;
+        });
+      }
+    };
+  
+    return pc;
+  };
   useEffect(() => {
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
 
@@ -214,17 +216,11 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     const handleViewerStartedStreaming = (viewerId) => {
       setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
-        // Always reconnect to ensure we receive their stream
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
+      if (viewerId !== socket.id) {
+        console.log(`Viewer ${viewerId} started streaming, connecting...`);
+        connectToStreamer(viewerId); // Immediate connection attempt
       }
-      setTimeout(() => {
-          if (viewerId !== socket.id) {
-            connectToStreamer(viewerId);
-          }
-        }, 2000); // Wait 1 second (tweakable)
-      };
+    };
 
     const handleViewerStoppedStreaming = (viewerId) => {
       if (peerConnections.current[viewerId]) {
@@ -252,64 +248,43 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       // Close all peer connections and reset state
       closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
     }
-    const handleIceCandidate = async ({ candidate, sender }) => {
-      try {
-        const pc = peerConnections.current[sender];
-        if (pc && candidate) {
-          console.log(`Adding ICE candidate from ${sender}`);
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        } else {
-          console.warn(`No peer connection or invalid candidate for ${sender}`);
-        }
-      } catch (err) {
-        console.error(`ICE candidate error for ${sender}:`, err);
-      }
-    };
 
     const handleOffer = async ({ sdp, sender }) => {
       try {
-        console.log(`📨 Received offer from ${sender} while isStreaming: ${isStreaming}`);
-
-        let pc = peerConnections.current[sender];
-        if (!pc) {
-          pc = new RTCPeerConnection(iceServers);
-          peerConnections.current[sender] = pc;
-    
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => {
-              pc.addTrack(track, localStreamRef.current); // 💡 This is fine if this user is a streamer
-            });
-          }
-    
-          pc.onicecandidate = event => {
-            if (event.candidate) {
-              socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
-            }
-          };
-    
-          pc.ontrack = event => {
-            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
-            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
-          };
-        }
-    
+        console.log(`Received offer from ${sender}`);
+        const pc = createPeerConnection(sender);
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         socket.emit('answer', { target: sender, sdp: answer });
+        console.log(`Sent answer to ${sender}`);
       } catch (err) {
-        console.error('Offer handling error:', err);
+        console.error(`Offer handling error for ${sender}:`, err);
       }
     };
-
+    
     const handleAnswer = async ({ sdp, sender }) => {
       try {
+        console.log(`Received answer from ${sender}`);
         const pc = peerConnections.current[sender];
         if (pc) {
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          console.log(`Set remote description for ${sender}`);
         }
       } catch (err) {
-        console.error('Answer error:', err);
+        console.error(`Answer error for ${sender}:`, err);
+      }
+    };
+    
+    const handleIceCandidate = async ({ candidate, sender }) => {
+      try {
+        const pc = peerConnections.current[sender];
+        if (pc && candidate) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log(`Added ICE candidate from ${sender}`);
+        }
+      } catch (err) {
+        console.error(`ICE candidate error for ${sender}:`, err);
       }
     };
 
@@ -473,7 +448,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     }
   };
 
-  const startViewerStreaming = async (roomId, hostId) => {
+  const startViewerStreaming = async (roomId) => {
     try {
       await checkAndRequestPermissions();
       const stream = await mediaDevices.getUserMedia({
@@ -482,19 +457,30 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-
       socket.emit('viewer-streaming', roomId);
       setIsStreaming(true);
-
-      // Connect to all existing streamers
+  
+      // Update existing peer connections with new stream
+      Object.entries(peerConnections.current).forEach(([streamerId, pc]) => {
+        if (pc.signalingState !== 'closed') {
+          stream.getTracks().forEach(track => pc.addTrack(track, stream));
+          // Trigger renegotiation if needed
+          pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true })
+            .then(offer => pc.setLocalDescription(offer))
+            .then(() => socket.emit('offer', { target: streamerId, sdp: pc.localDescription }))
+            .catch(err => console.error(`Renegotiation error for ${streamerId}:`, err));
+        }
+      });
+  
+      // Connect to all active streamers
       activeStreamers.forEach(streamerId => {
-        if (streamerId !== socket.id) {
+        if (streamerId !== socket.id && !peerConnections.current[streamerId]) {
           connectToStreamer(streamerId);
         }
       });
     } catch (err) {
       console.error('Viewer streaming error:', err);
-      console.log('Failed to start viewer streaming: ' + err.message);
+      Alert.alert('Error', 'Failed to start viewer streaming: ' + err.message);
     }
   };
   const HandleChatmessages = (message) => {
