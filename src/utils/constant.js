@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('http://192.168.0.18:5000', {
+export const socket = io('https://streamalong.live', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -33,6 +33,7 @@ export const socket = io('http://192.168.0.18:5000', {
       },
     ],
     iceTransportPolicy: 'all', // Use 'all' to allow all ICE candidates
+     sdpSemantics: 'unified-plan' // Use 'unified-plan' for multi-stream support
   };
 // In utils/constant.js or similar
 export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {
