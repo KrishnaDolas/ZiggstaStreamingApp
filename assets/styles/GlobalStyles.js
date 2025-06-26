@@ -27,4 +27,19 @@ export const globalStyles = StyleSheet.create({
     color: '#dc3131',
     marginTop: 5,
   },
+  pickerWrapper: {
+  backgroundColor: '#fff',
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 10,
+  overflow: 'hidden',
+  justifyContent: 'center',
+  height: 50,
+  paddingHorizontal: 10,
+  elevation: 2, // For Android shadow
+  shadowColor: '#000', // For iOS shadow
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+},
 });
