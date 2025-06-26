@@ -24,16 +24,19 @@ export const socket = io('https://streamalong.live', {
   });
   
   // WebRTC ICE configuration with STUN and TURN servers
- export  const iceServers = {
-    iceServers: [{
-      //38.242.235.250
+  export const iceServers = {
+    iceServers: [
+      {
+        urls: 'stun:coturn.streamalong.live:3478'
+      },
+      {
         urls: 'turn:coturn.streamalong.live:3478?transport=udp',
         username: 'vikram',
-        credential: 'vikram',
-      },
+        credential: 'vikram'
+      }
     ],
-    iceTransportPolicy: 'all', // Use 'all' to allow all ICE candidates
-     sdpSemantics: 'unified-plan' // Use 'unified-plan' for multi-stream support
+    iceTransportPolicy: 'all',
+    sdpSemantics: 'unified-plan'
   };
 // In utils/constant.js or similar
 export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {

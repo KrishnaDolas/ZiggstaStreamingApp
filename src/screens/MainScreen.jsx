@@ -73,34 +73,31 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     try {
       const pc = new RTCPeerConnection(iceServers);
-      pc.addTransceiver('video', { direction: 'recvonly' });
-      pc.addTransceiver('audio', { direction: 'recvonly' });
       peerConnections.current[streamerId] = pc;
-
-      if (localStreamRef.current) {
+  
+      // Decide direction based on whether you're sending a stream
+      const isSendingStream = !!localStreamRef.current;
+  
+      if (isSendingStream) {
         localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current);
+          pc.addTrack(track, localStreamRef.current); // send
         });
+      } else {
+        pc.addTransceiver('video', { direction: 'recvonly' }); // receive
+        pc.addTransceiver('audio', { direction: 'recvonly' }); // receive
       }
-
-      pc.onicecandidate = event => {
-        if (event.candidate) {
-          console.log(`Sending ICE candidate to ${streamerId}`);
-          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
-        }
-      };
-
+  
       pc.ontrack = event => {
         if (event.streams[0]) {
           console.log(`Received stream from ${streamerId}:`, event.streams[0]);
           setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
         }
       };
-
-      pc.onaddstream = event => {
-        if (event.stream) {
-          console.log(`[ONADDSTREAM] from ${streamerId}`, event.stream);
-          setRemoteStreams(prev => new Map(prev).set(streamerId, event.stream));
+  
+      pc.onicecandidate = event => {
+        if (event.candidate) {
+          console.log(`Sending ICE candidate to ${streamerId}`);
+          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
         }
       };
 
