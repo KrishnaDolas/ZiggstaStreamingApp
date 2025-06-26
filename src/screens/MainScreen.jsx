@@ -396,7 +396,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       
       events.forEach(event => socket.off(event));
     };
-  }, []);
+  }, [isHost]);
 
   const createRoom = (roomId) => {
     socket.emit('create-room', roomId);
