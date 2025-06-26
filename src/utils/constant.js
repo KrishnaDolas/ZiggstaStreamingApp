@@ -25,13 +25,31 @@ export const socket = io('http://192.168.0.18:5000', {
   
   // WebRTC ICE configuration with STUN and TURN servers
  export  const iceServers = {
-    iceServers: [{
-      //38.242.235.250
-        urls: 'turn:coturn.streamalong.live:3478?transport=udp',
-        username: 'vikram',
-        credential: 'vikram',
-      },
-    ],
+  iceServers: [
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:in.relay.metered.ca:80",
+      username: "92b58ddc6becca9a7458fe50",
+      credential: "f0VH3WmLtV6ZANec",
+    },
+    {
+      urls: "turn:in.relay.metered.ca:80?transport=tcp",
+      username: "92b58ddc6becca9a7458fe50",
+      credential: "f0VH3WmLtV6ZANec",
+    },
+    {
+      urls: "turn:in.relay.metered.ca:443",
+      username: "92b58ddc6becca9a7458fe50",
+      credential: "f0VH3WmLtV6ZANec",
+    },
+    {
+      urls: "turns:in.relay.metered.ca:443?transport=tcp",
+      username: "92b58ddc6becca9a7458fe50",
+      credential: "f0VH3WmLtV6ZANec",
+    },
+],
     iceTransportPolicy: 'all', // Use 'all' to allow all ICE candidates
   };
 // In utils/constant.js or similar
