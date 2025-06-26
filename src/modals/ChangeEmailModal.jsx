@@ -1,28 +1,49 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, TextInput } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
+import Apiclient from '../utils/Apiclient';
 
-const ChangeEmailModal = ({ visible, onClose }) => {
+const ChangeEmailModal = ({ visible, onClose, userData }) => {
     const screenHeight = Dimensions.get('window').height;
-
     const [currentEmail, setCurrentEmail] = useState('');
     const [newEmail, setNewEmail] = useState('');
     const [errors, setErrors] = useState({});
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // get profile details from API
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            try {
+                const formData = {
+                    userid: userData.userid,
+                };
+                const response = await Apiclient.post('/getUserDetails', formData);
+                if (response.status === 200) {
+                    setCurrentEmail(response.data.user.email || {});
+                }
+            } catch (err) {
+                setErrors('Error fetching user profile details: ' + err.message);
+            }
+        };
+        fetchProfileDetails();
+    }, [userData.userid]);
+
+
 
     const validate = () => {
         const newErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        if (!currentEmail.trim()) {
-            newErrors.currentEmail = 'Current email is required.';
-        } else if (!emailRegex.test(currentEmail)) {
-            newErrors.currentEmail = 'Enter a valid email address.';
-        }
+        // if (!currentEmail.trim()) {
+        //     newErrors.currentEmail = 'Current email is required.';
+        // } else if (!emailRegex.test(currentEmail)) {
+        //     newErrors.currentEmail = 'Enter a valid email address.';
+        // }
 
         if (!newEmail.trim()) {
             newErrors.newEmail = 'New email is required.';
@@ -37,15 +58,31 @@ const ChangeEmailModal = ({ visible, onClose }) => {
     };
 
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (validate()) {
-            // Proceed to save
-            console.log('Saving new email:', { currentEmail, newEmail });
-            // reset state if needed
-            setCurrentEmail('');
-            setNewEmail('');
-            setErrors({});
-            onClose(); // Close modal after saving
+            try {
+                const formData = {
+                    userid: userData.userid,
+                    email: newEmail,
+                };
+                const response = await Apiclient.post('/updateuser', formData);
+                console.log('response update email', response.data);
+                if (response.status === 200 && response.data.success) {
+                    setSuccessMessage(response.data.message);
+                    setNewEmail('');
+                    setErrors({});
+
+                    // Auto-close modal after short delay
+                    setTimeout(() => {
+                        setSuccessMessage('');
+                        onClose();
+                    }, 1500);
+                } else {
+                    setErrors(response.data.message);
+                }
+            } catch (err) {
+                setErrors({ apiError: 'Error updating email: ' + err.message });
+            }
         }
     };
 
@@ -99,6 +136,7 @@ const ChangeEmailModal = ({ visible, onClose }) => {
                                 onChangeText={setCurrentEmail}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
+                                readOnly
                             />
                             {errors.currentEmail && (
                                 <Text style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
@@ -122,6 +160,11 @@ const ChangeEmailModal = ({ visible, onClose }) => {
                                 </Text>
                             )}
                         </View>
+                        {successMessage !== '' && (
+                            <Text style={{ color: 'green', fontSize: 13 }}>
+                                {successMessage}
+                            </Text>
+                        )}
                         <View style={{ marginVertical: 10 }}>
                             <TouchableOpacity style={styles.btnNav} onPress={handleSave}>
                                 <Text style={{ color: 'white' }}>Save</Text>

@@ -10,41 +10,11 @@ import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
 import Apiclient from '../utils/Apiclient';
 import { CenterModal } from '../components/CenterModal';
-import FullScreenModal from '../components/FullScreenModal';
 import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BankDetailsModal from '../modals/BankDetailsModal';
 
-const tableData = [
-    {
-        userName: 'Chris Evanson',
-        amount: '$1005',
-    },
-    {
-        userName: 'Perry Walker',
-        amount: '$980',
-    },
-    {
-        userName: 'Jasmine Senna',
-        amount: '$750',
-    },
-    {
-        userName: 'Alfred William DCosta II',
-        amount: '$690',
-    },
-    {
-        userName: 'John Wick',
-        amount: '$600',
-    },
-    {
-        userName: 'Callum Jones',
-        amount: '$500',
-    },
-    {
-        userName: 'Allan Donald',
-        amount: '$200',
-    },
-];
+
 
 export const ProfileScreen = ({ userData, onLogout }) => {
     const { theme } = useContext(ThemeContext);
@@ -79,6 +49,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
         };
         fetchProfileDetails();
     }, [userData.userid]);
+
 
     // to get average daily income of user
     useEffect(() => {
@@ -265,7 +236,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
                     {visibleModal === 'setting' && (
-                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} />
+                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} />
                     )}
 
                     {/* center modal */}

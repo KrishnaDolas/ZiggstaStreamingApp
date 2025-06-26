@@ -11,7 +11,7 @@ import Slider from '@react-native-community/slider';
 import ChangeEmailModal from './ChangeEmailModal';
 import ChangePasswordModal from './ChangePasswordModal';
 
-const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout }) => {
+const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
@@ -154,7 +154,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout }) => {
                 </View>
             </Modal>
             {visibleModal === 'change-email' && (
-                <ChangeEmailModal visible="true" onClose={() => setVisibleModal(null)} />
+                <ChangeEmailModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
             )
             }
             {visibleModal === 'change-password' && (

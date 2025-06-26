@@ -297,7 +297,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         shadowRadius: 5,
         elevation: 5,
         position: 'absolute',
-        top: dropdownY + 210,
+        top: Dimensions.get('window').height * 0.3 - 40 - dropdownY,
         left: Dimensions.get('window').width * 0.25,
       });
 
@@ -548,7 +548,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         interests: interestIndexes.join(','),
       };
 
-      console.log('✅ Final Payload to POST:', finalData);
+      // console.log('✅ Final Payload to POST:', finalData);
 
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 

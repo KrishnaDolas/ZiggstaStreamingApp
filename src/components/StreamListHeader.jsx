@@ -228,6 +228,8 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                     searchFilteredData={searchFilteredData}
                     setSearchFilteredData={setSearchFilteredData}
                     categoryData={categoryData}
+                    selectedcategory={selectedcategory}
+                    selectedinterest={selectedinterest}
                 />
             )}
 

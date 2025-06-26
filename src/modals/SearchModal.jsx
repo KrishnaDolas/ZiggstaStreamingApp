@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, Text, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -17,6 +17,8 @@ const SearchModal = ({ visible, onClose,
     const [layoutReady, setLayoutReady] = useState(false);
     const [isSearchLoading, setIsSearchLoading] = useState(false);
     const [isError, setIsError] = useState(null);
+    const [selectedCategory, setSelectCategory] = useState([]);
+
 
     useLayoutEffect(() => {
         if (visible) {
@@ -29,16 +31,10 @@ const SearchModal = ({ visible, onClose,
         }
     }, [visible]);
 
-    // Function to fetch rooms from the API
-
-
-    useEffect(() => {
-        console.log('username', searchText);
-    }, [searchText]);
-
+    // Function to fetch searches data from the API
 
     const handleSearchByUser = async () => {
-        if (!searchText.trim()) {
+        if (searchText && !searchText.trim()) {
             setSearchFilteredData([]);
             setIsError('Please enter a valid search term.');
             return;
@@ -47,8 +43,10 @@ const SearchModal = ({ visible, onClose,
         setIsSearchLoading(true);
         setIsError(null);
 
+        const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',')
+
         try {
-            const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?username=${searchText}`);
+            const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?Categories=${filteredCategories}&username=${searchText.trim()}`);
             const data = response?.data?.data;
 
             if (Array.isArray(data) && data.length > 0) {
@@ -73,6 +71,28 @@ const SearchModal = ({ visible, onClose,
     //     setSearchFilteredData([]);
     // };
 
+
+    const toggleSelectCategory = (item) => {
+        const isSelected = selectedCategory.includes(item.categoryID);
+        let updated;
+
+        if (isSelected) {
+            // If already selected, remove it
+            updated = selectedCategory.filter((id) => id !== item.categoryID);
+        } else {
+            // If not selected and already 3 selected, prevent adding more
+            if (selectedCategory.length >= 3) {
+                setIsError('You can only select up to 3 categories.');
+                return;
+            }
+            updated = [...selectedCategory, item.categoryID];
+        }
+
+        setIsError(null); // clear any previous error
+        setSelectCategory(updated);
+    };
+
+
     return (
         <>
             {layoutReady &&
@@ -86,17 +106,18 @@ const SearchModal = ({ visible, onClose,
                     useNativeDriver={true}
                     avoidKeyboard={false}
                     backdropOpacity={0}
-                    style={[styles.profileModalMain]}
+                    style={[styles.profileModalMain, { margin: 0 }]}
                 >
-                    <View style={[styles.profileModalOverlay]}>
+                    <View style={[styles.profileModalOverlay, { height: screenHeight * 0.6 }]}>
                         {/* close modal */}
                         <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
                             <Ionicons name="close" size={23} color="#333" />
                         </TouchableOpacity>
-                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.3 }]}>
+                        <View style={[styles.profileSettingModalBody]}>
                             <ScrollView
-                                // contentContainerStyle={{ paddingBottom: 20 }}
+                                keyboardShouldPersistTaps="handled"  // Added this prop
                                 showsVerticalScrollIndicator={true}
+                                contentContainerStyle={{ paddingBottom: 100 }}
                             >
                                 <View style={styles.strHedSearchTabBox}>
                                     {['user', 'category'].map((type) => (
@@ -160,13 +181,36 @@ const SearchModal = ({ visible, onClose,
                                         </TouchableOpacity>
                                     </View>
                                 </View>
+
+                                {/* category data */}
+                                {searchBy === 'category' && (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        {categoryData.map((item) => (
+                                            <TouchableOpacity
+                                                key={item.categoryID}
+                                                disabled={
+                                                    !selectedCategory.includes(item.categoryID) && selectedCategory.length >= 3
+                                                }
+                                                style={[
+                                                    styles.modalCategoryButton,
+                                                    selectedCategory.includes(item.categoryID) && styles.modalCategoryButtonActive,
+                                                    { margin: 7, opacity: !selectedCategory.includes(item.categoryID) && selectedCategory.length >= 3 ? 0.5 : 1 }
+                                                ]}
+                                                onPress={() => toggleSelectCategory(item)}
+                                            >
+                                                <Text style={styles.modalCategoryText}>
+                                                    {item.categoryName}
+                                                </Text>
+                                            </TouchableOpacity>
+
+                                        ))}
+                                    </View>
+                                )}
                             </ScrollView>
                         </View>
-
                     </View>
                 </Modal>
             }
-
         </>
 
     );
