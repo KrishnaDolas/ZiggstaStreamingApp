@@ -6,7 +6,7 @@ import { PermissionsAndroid } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
-import { closePeerConnections, iceServers, socket } from '../utils/constant';
+import { closePeerConnections, forceVP8Only, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
@@ -67,11 +67,15 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   // Connect to a streamer function
   const connectToStreamer = async (streamerId) => {
     // Step 1: Skip self or already connected
-    if (streamerId === socket.id || peerConnections.current[streamerId]) {
+    if (streamerId === socket.id ) {
       console.log(`Skipping connection to ${streamerId}: Already connected or self`);
       return;
     }
-  
+  if( peerConnections.current[streamerId] && peerConnections.current[streamerId].iceConnectionState === 'connected') {
+      console.log(`Already connected to ${streamerId}, skipping connection`);
+      peerConnections.current[streamerId].close();
+      delete peerConnections.current[streamerId];
+    }
     try {
       // Step 2: Create RTCPeerConnection
       const pc = new RTCPeerConnection(iceServers);
@@ -142,7 +146,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       // Step 9: Send offer to target peer
       socket.emit('offer', {
         target: streamerId,
-        sdp: offer,
+        sdp: {type:offer.type,sdp:forceVP8Only(offer.sdp)}, // Ensure VP8 codec is used
       });
       console.log(`📤 Sent offer to ${streamerId}`);
   
