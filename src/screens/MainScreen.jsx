@@ -145,31 +145,12 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       setIsHost(true);
     };
 
-    const handleRoomJoined = ({ roomId, hostId, isHostStreaming, viewerCount, approvedViewerIds, isViewerStreaming, messages }) => {
-      console.log(`Joined room ${roomId}, hostId: ${hostId}, isHostStreaming: ${isHostStreaming}`);
+    const handleRoomJoined = ({isHostStreaming, viewerCount, messages }) => {
       setIsStreaming(isHostStreaming);
       setJoined(true);
       setIsHost(false);
       setRoomchat(messages);
       setViewerCount(viewerCount);
-
-      // Identify all active streamers
-      const streamers = [];
-      if (isHostStreaming) streamers.push(hostId);
-      streamers.push(...approvedViewerIds.filter(id => isViewerStreaming.includes(id)));
-      setActiveStreamers(prev => {
-        const newStreamers = [...new Set([...prev, ...streamers])]; // Avoid duplicates
-        console.log('Updated active streamers:', newStreamers);
-        return newStreamers;
-      });
-
-      // Connect only to new streamers
-      streamers.forEach(streamerId => {
-        if (streamerId !== socket.id && !peerConnections.current[streamerId]) {
-          console.log(`Connecting to streamer ${streamerId}`);
-          connectToStreamer(streamerId);
-        }
-      });
     };
 
 
@@ -431,7 +412,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      socket.emit('host-streaming', roomId);
+      // socket.emit('host-streaming', roomId);
       setIsStreaming(true);
     } catch (err) {
       socket.emit('Errorlogs',`Streaming error:`, err);
