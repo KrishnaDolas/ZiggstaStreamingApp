@@ -263,12 +263,21 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
     setLocalStream(stream);
     localStreamRef.current = stream;
-    socket.emit(isHost ? 'host-streaming' : 'viewer-streaming', roomId);
+    console.log(isHost ? 'host-streaming' : 'viewer-streaming', roomId);
+    socket.emit('host-streaming', roomId);
+    setIsStreaming(true);
+  };
+  const startStreaming1 = async roomId => {
+    await checkAndRequestPermissions();
+    const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+    setLocalStream(stream);
+    localStreamRef.current = stream;
+    socket.emit('viewer-streaming', roomId);
     setIsStreaming(true);
   };
 
   const startViewerStreaming = async roomId => {
-    await startStreaming(roomId);
+    await startStreaming1(roomId);
     activeStreamers.forEach(id => id !== socket.id && connectTo(id));
   };
 
