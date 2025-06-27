@@ -50,33 +50,3 @@ export const closePeerConnections = (peerConnections, localStream, setLocalStrea
   setLocalStream(null);
   setRemoteStreams(() => new Map());
 };
-
-export const forceVP8Only = (sdp) => {
-  const lines = sdp.split('\r\n');
-  const mLineIndex = lines.findIndex(line => line.startsWith('m=video'));
-
-  if (mLineIndex === -1) return sdp;
-
-  const codecPayloads = [];
-  const vp8Payloads = [];
-
-  for (const line of lines) {
-    if (line.startsWith('a=rtpmap:')) {
-      const payload = line.match(/a=rtpmap:(\d+) (\w+)\/\d+/);
-      if (payload) {
-        codecPayloads.push({ payload: payload[1], codec: payload[2] });
-        if (payload[2].toUpperCase() === 'VP8') {
-          vp8Payloads.push(payload[1]);
-        }
-      }
-    }
-  }
-
-  // Replace the video m-line to include only VP8
-  const mLineParts = lines[mLineIndex].split(' ');
-  const mLineHeader = mLineParts.slice(0, 3);
-  const newMLine = [...mLineHeader, ...vp8Payloads].join(' ');
-  lines[mLineIndex] = newMLine;
-
-  return lines.join('\r\n');
-};
