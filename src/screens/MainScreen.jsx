@@ -346,6 +346,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     const handleStreamRequestResponse = async ({ accepted, roomId, hostId }) => {
       if (accepted) {
+      socket.emit('viewer-streaming', roomId);
         await startViewerStreaming(roomId, hostId);
         setHasRequestedStream(true);
       } else {
@@ -450,7 +451,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      socket.emit('viewer-streaming', roomId);
       setIsStreaming(true);
 
       // Connect to all existing streamers
