@@ -402,6 +402,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       ];
       
       events.forEach(event => socket.off(event));
+      socket.disconnect();
     };
   }, [isHost]);
 
