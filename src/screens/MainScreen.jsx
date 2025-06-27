@@ -257,6 +257,12 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   const joinRoom = roomId => {
     if (roomId.trim()) socket.emit('join-room', roomId);
   };
+  const requestStreamPermission = () => {
+    if (!hasRequestedStream) {
+      socket.emit('request-stream');
+      setHasRequestedStream(true);
+    }
+  };
 
   const startStreaming = async roomId => {
     await checkAndRequestPermissions();
@@ -329,7 +335,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
             remoteStreams={remoteStreams}
             localStream={localStream}
             isStreaming={isStreaming}
-            requestStreamPermission={() => setHasRequestedStream(true)}
+            requestStreamPermission={requestStreamPermission}
             toggleMute={toggleMute}
             switchCamera={switchCamera}
             leaveRoom={leaveRoom}
