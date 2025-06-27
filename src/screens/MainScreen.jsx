@@ -110,7 +110,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
               console.log(`Retrying connection to ${streamerId}`);
               connectToStreamer(streamerId);
             }
-          }, 5000);
+          }, 500);
         } else if (pc.iceConnectionState === 'closed') {
           delete peerConnections.current[streamerId];
           setRemoteStreams(prev => {
