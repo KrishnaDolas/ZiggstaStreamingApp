@@ -183,6 +183,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleUserJoined = (viewerId, name) => {
+      console.log(`User joined: ${name} (ID: ${viewerId})`);
       setViewers(prev => [...prev, viewerId]);
     };
 

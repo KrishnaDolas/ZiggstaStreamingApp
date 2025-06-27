@@ -479,7 +479,7 @@ const StreamRoom = ({
                                             <Text style={styles.strTitle}>The world is a happy place</Text>
                                             <View style={styles.streamViewerCount}>
                                                 <Ionicons name="eye-outline" size={18} color="#ffea23" />
-                                                <Text style={styles.streamViewerCountTitle}>1.4k</Text>
+                                                <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
                                             </View>
                                         </View>
                                         <View style={styles.strRoomFooterChatOrActionsBox}>
