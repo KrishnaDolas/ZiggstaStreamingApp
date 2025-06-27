@@ -182,7 +182,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       setActiveStreamers(streamers);
     };
 
-    const handleUserJoined = (viewerId, name) => {
+    const handleUserJoined = ({viewerId, name}) => {
       console.log(`User joined: ${name} (ID: ${viewerId})`);
       setViewers(prev => [...prev, viewerId]);
     };
