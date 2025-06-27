@@ -246,7 +246,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     return () => {
       socket.off();
     };
-  }, []);
+  }, [isHost,joined]);
 
   // 🎤 Local Streaming
   const createRoom = roomId => {
