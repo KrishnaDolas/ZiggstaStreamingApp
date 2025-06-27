@@ -71,11 +71,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       console.log(`Skipping connection to self: ${streamerId}`);
       return;
     }
-    if( peerConnections.current[streamerId] && peerConnections.current[streamerId].iceConnectionState === 'connected') {
-      console.log(`Already connected to ${streamerId}, skipping connection`);
-      peerConnections.current[streamerId].close();
-      delete peerConnections.current[streamerId];
-    }
   
     try {
       // Step 2: Create RTCPeerConnection
