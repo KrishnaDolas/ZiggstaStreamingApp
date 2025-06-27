@@ -26,14 +26,11 @@ export const socket = io('http://192.168.0.18:5000', {
   // WebRTC ICE configuration with STUN and TURN servers
   export const iceServers = {
     iceServers: [
-      { urls: 'stun:coturn.streamalong.live:3478' },
       {
-        urls: 'turn:coturn.streamalong.live:3478?transport=udp',
-        username: 'vikram',
-        credential: 'vikram'
+        urls: 'stun:coturn.streamalong.live:3478'
       },
       {
-        urls: 'turn:coturn.streamalong.live:3478?transport=tcp',
+        urls: 'turn:coturn.streamalong.live:3478?transport=udp',
         username: 'vikram',
         credential: 'vikram'
       }
@@ -41,7 +38,6 @@ export const socket = io('http://192.168.0.18:5000', {
     iceTransportPolicy: 'all',
     sdpSemantics: 'unified-plan'
   };
-  
 // In utils/constant.js or similar
 export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {
   Object.values(peerConnections.current).forEach(pc => {
