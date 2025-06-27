@@ -66,71 +66,96 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
   // Connect to a streamer function
   const connectToStreamer = async (streamerId) => {
+    // Step 1: Skip self or already connected
     if (streamerId === socket.id || peerConnections.current[streamerId]) {
       console.log(`Skipping connection to ${streamerId}: Already connected or self`);
       return;
     }
-
+  
     try {
+      // Step 2: Create RTCPeerConnection
       const pc = new RTCPeerConnection(iceServers);
       peerConnections.current[streamerId] = pc;
   
-      // Decide direction based on whether you're sending a stream
       const isSendingStream = !!localStreamRef.current;
   
+      // Step 3: Add transceivers or tracks based on stream direction
       if (isSendingStream) {
         localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current); // send
+          pc.addTrack(track, localStreamRef.current);
         });
       } else {
-        pc.addTransceiver('video', { direction: 'recvonly' }); // receive
-        pc.addTransceiver('audio', { direction: 'recvonly' }); // receive
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
       }
   
+      // Step 4: Handle incoming media tracks
       pc.ontrack = event => {
-        if (event.streams[0]) {
-          console.log(`Received stream from ${streamerId}:`, event.streams[0]);
+        if (event.streams && event.streams[0]) {
+          console.log(`📺 Received remote stream from ${streamerId}`);
           setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
         }
       };
   
+      // Step 5: Send ICE candidates
       pc.onicecandidate = event => {
         if (event.candidate) {
-          console.log(`Sending ICE candidate to ${streamerId}`);
+          console.log(`📨 Sending ICE candidate to ${streamerId}`);
           socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
         }
       };
-
+  
+      // Step 6: Monitor ICE state and reconnect logic
       pc.oniceconnectionstatechange = () => {
-        socket.emit('Errorlogs','pc.oniceconnectionstatechange',`ICE connection state changed for ${streamerId}: ${pc.iceConnectionState}`);
-        console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        const state = pc.iceConnectionState;
+        socket.emit('Errorlogs', 'pc.oniceconnectionstatechange', `ICE connection state for ${streamerId}: ${state}`);
+        console.log(`🔄 ICE state for ${streamerId}: ${state}`);
+  
+        if (state === 'failed' || state === 'disconnected') {
           setTimeout(() => {
-            if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
-              console.log(`Retrying connection to ${streamerId}`);
+            if (peerConnections.current[streamerId] && peerConnections.current[streamerId].iceConnectionState !== 'connected') {
+              console.log(`🔁 Retrying connection to ${streamerId}`);
+              peerConnections.current[streamerId].close();
+              delete peerConnections.current[streamerId];
               connectToStreamer(streamerId);
             }
-          }, 500);
-        } else if (pc.iceConnectionState === 'closed') {
+          }, 1000);
+        } else if (state === 'closed') {
+          console.log(`❌ Connection closed with ${streamerId}`);
           delete peerConnections.current[streamerId];
           setRemoteStreams(prev => {
-            const newStreams = new Map(prev);
-            newStreams.delete(streamerId);
-            return newStreams;
+            const newMap = new Map(prev);
+            newMap.delete(streamerId);
+            return newMap;
           });
         }
       };
-
+  
+      // Step 7: Create SDP offer
       const offer = await pc.createOffer();
+      console.log(`📄 Created SDP offer of type: ${offer.type}`);
+  
+      // Step 8: Set local description
       await pc.setLocalDescription(offer);
-      console.log(`Sending offer to ${streamerId}`);
-      socket.emit('offer', { target: streamerId, sdp: offer });
+      console.log(`✅ Local description set for offer to ${streamerId}`);
+  
+      // Step 9: Send offer to target peer
+      socket.emit('offer', {
+        target: streamerId,
+        sdp: offer,
+      });
+      console.log(`📤 Sent offer to ${streamerId}`);
+  
     } catch (err) {
-      socket.emit('Errorlogs',err)
-      console.error(`Error connecting to streamer ${streamerId}:`, err);
-      delete peerConnections.current[streamerId];
+      console.error(`❗ Error connecting to streamer ${streamerId}:`, err);
+      socket.emit('Errorlogs', 'connectToStreamer', err);
+      if (peerConnections.current[streamerId]) {
+        peerConnections.current[streamerId].close();
+        delete peerConnections.current[streamerId];
+      }
     }
   };
+  
 
   useEffect(() => {
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
