@@ -154,22 +154,21 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
 
-    const handleRoomInfo = (props) => {
-      const { hostId, isHostStreaming, viewerCount, isViewerStreaming } = props;
-      setViewerCount(viewerCount);
-      const streamers = [];
-      if (isHostStreaming) streamers.push(hostId);
-      streamers.push(...isViewerStreaming);
-      setActiveStreamers(streamers);
-    };
+    const handleUserJoined = ({vieweractivestream,hostId}) => {
+      if(hostId){
+        if( hostId !== socket.id) {
+        connectToStreamer(hostId);
+        }
+      }
+      vieweractivestream.forEach(streamerId => {
+        if (streamerId !== socket.id) {
+          connectToStreamer(streamerId);
+        }
+      });
 
-    const handleUserJoined = ({viewerId, name}) => {
-      console.log(`User joined: ${name}`);
-      setViewers(prev => [...prev, viewerId]);
     };
 
     const handleUserLeft = (viewerId) => {
-      setViewers(prev => prev.filter(id => id !== viewerId));
       if (peerConnections.current[viewerId]) {
         peerConnections.current[viewerId].close();
         delete peerConnections.current[viewerId];
@@ -181,25 +180,18 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       }
     };
 
-    const handleHostStartedStreaming = (hostId) => {
-      setIsStreaming(true);
-      if (hostId !== socket.id) {
-        connectToStreamer(hostId);
-      }
-    };
+    // const handleHostStartedStreaming = (hostId) => {
+    //   setIsStreaming(true);
+    //   if (hostId !== socket.id) {
+    //     connectToStreamer(hostId);
+    //   }
+    // };
 
     const handleViewerStartedStreaming = (viewerId) => {
       setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
-        // Always reconnect to ensure we receive their stream
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
-      }
-      setTimeout(() => {
           if (viewerId !== socket.id) {
             connectToStreamer(viewerId);
           }
-        }, 2000); // Wait 1 second (tweakable)
       };
 
     const handleViewerStoppedStreaming = (viewerId) => {
@@ -347,10 +339,9 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.on('room-joined', handleRoomJoined);
     socket.on('room-full', () => Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
     socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK' }]));
-    socket.on('room-info', handleRoomInfo);
     socket.on('user-joined', handleUserJoined);
     socket.on('user-left', handleUserLeft);
-    socket.on('host-started-streaming', handleHostStartedStreaming);
+    // socket.on('host-started-streaming', handleHostStartedStreaming);
     socket.on('viewer-started-streaming', handleViewerStartedStreaming);
     socket.on('ice-candidate', handleIceCandidate);
     socket.on('offer', handleOffer);
@@ -371,7 +362,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     return () => {
       // Clean up all socket listeners
       const events = [
-        'connect', 'room-created', 'room-joined', 'room-info', 
+        'connect', 'room-created', 'room-joined', 
         'user-joined', 'user-left', 'host-started-streaming', 
         'viewer-started-streaming', 'ice-candidate', 'offer', 
         'answer', 'host-left', 'room-closed', 'incoming-stream-request',
@@ -455,7 +446,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     socket.emit('leave-room');
     setJoined(false);
     setIsStreaming(false);
-    setViewers([]);
     setHasRequestedStream(false);
     setActiveStreamers([]);
     closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
