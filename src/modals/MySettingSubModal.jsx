@@ -10,11 +10,14 @@ import { Dimensions, ScrollView } from 'react-native';
 import Slider from '@react-native-community/slider';
 import ChangeEmailModal from './ChangeEmailModal';
 import ChangePasswordModal from './ChangePasswordModal';
+import EmailConfirmModal from './EmailConfirmModal';
 
 const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
+    const [onlyProfileVerified, setOnlyProfileVerified] = useState(false);
+    const [allowNotification, setAllowNotification] = useState(false);
     const [distanceRange, setDistanceRange] = useState(10);
     const [visibleModal, setVisibleModal] = useState('');
 
@@ -23,7 +26,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
             case 'My Account':
                 return [
                     { label: 'Change email address:', icon: 'envelope', onPress: () => { setVisibleModal('change-email'); }, rightArrowVisible: true },
-                    { label: 'Confirm email:', icon: 'check-square', onPress: () => { }, rightArrowVisible: true },
+                    { label: 'Confirm email:', icon: 'check-square', onPress: () => { setVisibleModal('email-confirm'); }, rightArrowVisible: true },
                     { label: 'Change password:', icon: 'unlock-alt', onPress: () => { setVisibleModal('change-password'); }, rightArrowVisible: true },
                     { label: 'Delete account', icon: 'trash-alt', onPress: () => { }, rightArrowVisible: true },
                 ];
@@ -37,11 +40,11 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                     { label: 'Categories', icon: 'icons', onPress: () => { }, rightArrowVisible: true },
                     { label: 'Distance (Km)', icon: 'people-arrows', type: 'slider', onPress: () => { }, rightArrowVisible: false },
                     // { label: 'Adult content:', icon: 'male', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
-                    { label: 'Only verified profiles:', icon: 'user-check', onPress: () => { }, rightArrowVisible: true },
+                    { label: 'Only verified profiles:', icon: 'user-check', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                 ];
             case 'Notification':
                 return [
-                    { label: 'Allow Notifications [ON/OFF]:', icon: 'bell', onPress: () => { }, rightArrowVisible: true },
+                    { label: 'Allow Notifications:', icon: 'bell', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                 ];
             default:
                 return [];
@@ -120,7 +123,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
                                                 <Slider
                                                     style={{ width: '70%' }}
-                                                    minimumValue={0}
+                                                    minimumValue={100}
                                                     maximumValue={200}
                                                     step={1}
                                                     value={distanceRange}
@@ -142,6 +145,24 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                                 ios_backgroundColor="#ccc"
                                                 style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
                                             />
+                                        ) : item.label === 'Only verified profiles:' ? (
+                                            <Switch
+                                                value={onlyProfileVerified}
+                                                onValueChange={setOnlyProfileVerified}
+                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
+                                                thumbColor="#ffffff"                             // white thumb
+                                                ios_backgroundColor="#ccc"
+                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
+                                            />
+                                        ) : item.label === 'Allow Notifications:' ? (
+                                            <Switch
+                                                value={allowNotification}
+                                                onValueChange={setAllowNotification}
+                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
+                                                thumbColor="#ffffff"                             // white thumb
+                                                ios_backgroundColor="#ccc"
+                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
+                                            />
                                         ) : null
                                     )}
 
@@ -158,7 +179,11 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
             )
             }
             {visibleModal === 'change-password' && (
-                <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} />
+                <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+            )
+            }
+            {visibleModal === 'email-confirm' && (
+                <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
             )
             }
         </>

@@ -227,7 +227,7 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                     {/* Modals */}
                     {/* full screen modal */}
                     {visibleModal === 'bank-details' && (
-                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
+                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
                     )}
                     {visibleModal === 'shop-manager' && (
                         <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />

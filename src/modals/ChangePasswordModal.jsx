@@ -6,15 +6,17 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
+import Apiclient from '../utils/Apiclient';
 
-const ChangePasswordModal = ({ visible, onClose }) => {
+const ChangePasswordModal = ({ visible, onClose, userData }) => {
     const screenHeight = Dimensions.get('window').height;
 
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({});
-    
+    const [successMessage, setSuccessMessage] = useState('');
+
     // State for password visibility toggles
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -30,9 +32,13 @@ const ChangePasswordModal = ({ visible, onClose }) => {
 
         if (!newPassword.trim()) {
             newErrors.newPassword = 'New password is required.';
-        } else if (!passwordRegex.test(newPassword)) {
-            newErrors.newPassword = 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.';
-        } else if (currentPassword.trim() === newPassword.trim()) {
+        } else if (newPassword.length < 6) {
+            newErrors.newPassword = 'Password must be at least 6 characters long.';
+        }
+        // else if (!passwordRegex.test(newPassword)) {
+        //     newErrors.newPassword = 'Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character.';
+        // }
+        else if (currentPassword.trim() === newPassword.trim()) {
             newErrors.newPassword = 'New password must be different from current password.';
         }
 
@@ -46,16 +52,47 @@ const ChangePasswordModal = ({ visible, onClose }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSave = () => {
+    // const handleSave = () => {
+    //     if (validate()) {
+    //         // Proceed to save
+    //         console.log('Changing password:', { currentPassword, newPassword });
+    //         // reset state if needed
+    //         setCurrentPassword('');
+    //         setNewPassword('');
+    //         setConfirmPassword('');
+    //         setErrors({});
+    //         onClose(); // Close modal after saving
+    //     }
+    // };
+
+
+    const handleSave = async () => {
         if (validate()) {
-            // Proceed to save
-            console.log('Changing password:', { currentPassword, newPassword });
-            // reset state if needed
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            setErrors({});
-            onClose(); // Close modal after saving
+            try {
+                const formData = {
+                    userid: userData.userid,
+                    password: confirmPassword,
+                };
+                const response = await Apiclient.post('/updateuser', formData);
+                console.log('response update password', response.data);
+                if (response.status === 200 && response.data.success) {
+                    setSuccessMessage(response.data.message);
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setErrors({});
+
+                    // Auto-close modal after short delay
+                    setTimeout(() => {
+                        setSuccessMessage('');
+                        onClose();
+                    }, 1500);
+                } else {
+                    setErrors(response.data.message);
+                }
+            } catch (err) {
+                setErrors({ apiError: 'Error updating email: ' + err.message });
+            }
         }
     };
 
@@ -99,26 +136,26 @@ const ChangePasswordModal = ({ visible, onClose }) => {
                     >
                         {/* Divider */}
                         <View style={[styles.profileSettingMDivider]} />
-                        
+
                         {/* Current Password */}
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1 }]}
+                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
                                     placeholder="Current Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={currentPassword}
                                     onChangeText={setCurrentPassword}
                                     secureTextEntry={!showCurrentPassword}
                                 />
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     onPress={() => setShowCurrentPassword(!showCurrentPassword)}
-                                    style={{ padding: 10 }}
+                                    style={{ padding: 10, position: 'absolute', right: 0 }}
                                 >
-                                    <FontAwesome 
-                                        name={showCurrentPassword ? 'eye-slash' : 'eye'} 
-                                        size={20} 
-                                        color="#9d9d9d" 
+                                    <FontAwesome
+                                        name={showCurrentPassword ? 'eye-slash' : 'eye'}
+                                        size={20}
+                                        color="#9d9d9d"
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -128,26 +165,26 @@ const ChangePasswordModal = ({ visible, onClose }) => {
                                 </Text>
                             )}
                         </View>
-                        
+
                         {/* New Password */}
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1 }]}
+                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
                                     placeholder="New Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={newPassword}
                                     onChangeText={setNewPassword}
                                     secureTextEntry={!showNewPassword}
                                 />
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     onPress={() => setShowNewPassword(!showNewPassword)}
-                                    style={{ padding: 10 }}
+                                    style={{ padding: 10, position: 'absolute', right: 0 }}
                                 >
-                                    <FontAwesome 
-                                        name={showNewPassword ? 'eye-slash' : 'eye'} 
-                                        size={20} 
-                                        color="#9d9d9d" 
+                                    <FontAwesome
+                                        name={showNewPassword ? 'eye-slash' : 'eye'}
+                                        size={20}
+                                        color="#9d9d9d"
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -157,26 +194,26 @@ const ChangePasswordModal = ({ visible, onClose }) => {
                                 </Text>
                             )}
                         </View>
-                        
+
                         {/* Confirm Password */}
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1 }]}
+                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
                                     placeholder="Confirm New Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
                                     secureTextEntry={!showConfirmPassword}
                                 />
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    style={{ padding: 10 }}
+                                    style={{ padding: 10, position: 'absolute', right: 0 }}
                                 >
-                                    <FontAwesome 
-                                        name={showConfirmPassword ? 'eye-slash' : 'eye'} 
-                                        size={20} 
-                                        color="#9d9d9d" 
+                                    <FontAwesome
+                                        name={showConfirmPassword ? 'eye-slash' : 'eye'}
+                                        size={20}
+                                        color="#9d9d9d"
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -186,7 +223,11 @@ const ChangePasswordModal = ({ visible, onClose }) => {
                                 </Text>
                             )}
                         </View>
-                        
+                        {successMessage !== '' && (
+                            <Text style={{ color: 'green', fontSize: 13 }}>
+                                {successMessage}
+                            </Text>
+                        )}
                         <View style={{ marginVertical: 10 }}>
                             <TouchableOpacity style={styles.btnNav} onPress={handleSave}>
                                 <Text style={{ color: 'white' }}>Save</Text>

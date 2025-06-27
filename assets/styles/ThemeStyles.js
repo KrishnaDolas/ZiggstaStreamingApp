@@ -2003,7 +2003,7 @@ export const themeStyles = {
     },
 
     streamListEyeCountContainer: {
-      backgroundColor: '#a000df',
+     backgroundColor: '#575757b3',
       borderColor: '#fff',
     },
     streamListEyeCount: {
