@@ -18,7 +18,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   const [isHost, setIsHost] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [viewers, setViewers] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStreams, setRemoteStreams] = useState(new Map());
   const [isMuted, setIsMuted] = useState(false);
@@ -68,7 +67,13 @@ export const MainScreen = ({ onLogout, address, userData }) => {
   const connectToStreamer = async (streamerId) => {
     // Step 1: Skip self or already connected
     if (streamerId === socket.id) {
-      console.log(`Skipping connection to self: ${streamerId}`);
+      console.log(`🚫 Skipping connection to self (${streamerId})`)
+      socket.emit('Errorlogs', 'connectToStreamer', `Skipping connection to self (${streamerId})`);
+      return;
+    }
+    if (peerConnections.current[streamerId]?.iceConnectionState === 'connected') {
+      console.log(`🔗 Already connected to ${streamerId} or self, skipping connection.`);
+      socket.emit('Errorlogs', 'connectToStreamer', `Already connected to ${streamerId}, skipping connection.`);
       return;
     }
   
@@ -341,6 +346,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     const handleStreamRequestResponse = async ({ accepted, roomId, hostId }) => {
       if (accepted) {
+      socket.emit('viewer-streaming', roomId);
         await startViewerStreaming(roomId, hostId);
         setHasRequestedStream(true);
       } else {
@@ -445,7 +451,6 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       });
       setLocalStream(stream);
       localStreamRef.current = stream;
-      socket.emit('viewer-streaming', roomId);
       setIsStreaming(true);
 
       // Connect to all existing streamers
