@@ -78,21 +78,14 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       // Decide direction based on whether you're sending a stream
       const isSendingStream = !!localStreamRef.current;
   
-      // Always use transceivers in consistent order
-      const videoTransceiver = pc.addTransceiver('video', {
-        direction: isSendingStream ? 'sendrecv' : 'recvonly',
-      });
-      const audioTransceiver = pc.addTransceiver('audio', {
-        direction: isSendingStream ? 'sendrecv' : 'recvonly',
-      });
-
       if (isSendingStream) {
-        const videoTrack = localStreamRef.current.getVideoTracks()[0];
-        const audioTrack = localStreamRef.current.getAudioTracks()[0];
-        if (videoTrack) videoTransceiver.sender.replaceTrack(videoTrack);
-        if (audioTrack) audioTransceiver.sender.replaceTrack(audioTrack);
+        localStreamRef.current.getTracks().forEach(track => {
+          pc.addTrack(track, localStreamRef.current); // send
+        });
+      } else {
+        pc.addTransceiver('video', { direction: 'recvonly' }); // receive
+        pc.addTransceiver('audio', { direction: 'recvonly' }); // receive
       }
-
   
       pc.ontrack = event => {
         if (event.streams[0]) {
@@ -190,7 +183,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
     };
 
     const handleUserJoined = ({viewerId, name}) => {
-      console.log(`User joined: ${name} (ID: ${viewerId})`);
+      console.log(`User joined: ${name}`);
       setViewers(prev => [...prev, viewerId]);
     };
 
@@ -277,20 +270,11 @@ export const MainScreen = ({ onLogout, address, userData }) => {
           pc = new RTCPeerConnection(iceServers);
           peerConnections.current[sender] = pc;
 
-          const videoTransceiver = pc.addTransceiver('video', {
-            direction: localStreamRef.current ? 'sendrecv' : 'recvonly',
-          });
-          const audioTransceiver = pc.addTransceiver('audio', {
-            direction: localStreamRef.current ? 'sendrecv' : 'recvonly',
-          });
-          
           if (localStreamRef.current) {
-            const videoTrack = localStreamRef.current.getVideoTracks()[0];
-            const audioTrack = localStreamRef.current.getAudioTracks()[0];
-            if (videoTrack) videoTransceiver.sender.replaceTrack(videoTrack);
-            if (audioTrack) audioTransceiver.sender.replaceTrack(audioTrack);
+            localStreamRef.current.getTracks().forEach(track => {
+              pc.addTrack(track, localStreamRef.current);
+            });
           }
-          
 
           pc.onicecandidate = event => {
             if (event.candidate) {
