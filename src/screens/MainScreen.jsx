@@ -70,67 +70,81 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       console.log(`Skipping connection to ${streamerId}: Already connected or self`);
       return;
     }
-
+  
+    const isPolite = socket.id > streamerId; // Simple polite peer logic
+    let makingOffer = false;
+    let ignoreOffer = false;
+  
     try {
       const pc = new RTCPeerConnection(iceServers);
       peerConnections.current[streamerId] = pc;
   
-      // Decide direction based on whether you're sending a stream
-      const isSendingStream = !!localStreamRef.current;
-  
-      if (isSendingStream) {
+      if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current); // send
+          pc.addTrack(track, localStreamRef.current);
         });
       } else {
-        pc.addTransceiver('video', { direction: 'recvonly' }); // receive
-        pc.addTransceiver('audio', { direction: 'recvonly' }); // receive
+        pc.addTransceiver('video', { direction: 'recvonly' });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
       }
+  
+      pc.onicecandidate = event => {
+        if (event.candidate) {
+          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
+        }
+      };
   
       pc.ontrack = event => {
         if (event.streams[0]) {
-          console.log(`Received stream from ${streamerId}:`, event.streams[0]);
           setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
         }
       };
   
-      pc.onicecandidate = event => {
-        if (event.candidate) {
-          console.log(`Sending ICE candidate to ${streamerId}`);
-          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
+      pc.oniceconnectionstatechange = async () => {
+        const state = pc.iceConnectionState;
+        console.log(`ICE state for ${streamerId}: ${state}`);
+        socket.emit('Errorlogs', 'ICE state', `${streamerId}: ${state}`);
+  
+        if (state === 'disconnected') {
+          const offer = await pc.createOffer({ iceRestart: true });
+          await pc.setLocalDescription(offer);
+          socket.emit('offer', { target: streamerId, sdp: offer });
         }
-      };
-
-      pc.oniceconnectionstatechange = () => {
-        socket.emit('Errorlogs','pc.oniceconnectionstatechange',`ICE connection state changed for ${streamerId}: ${pc.iceConnectionState}`);
-        console.log(`ICE state for ${streamerId}: ${pc.iceConnectionState}`);
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-          setTimeout(() => {
-            if (pc.iceConnectionState !== 'connected' && peerConnections.current[streamerId]) {
-              console.log(`Retrying connection to ${streamerId}`);
-              connectToStreamer(streamerId);
-            }
-          }, 5000);
-        } else if (pc.iceConnectionState === 'closed') {
+  
+        if (state === 'closed' || state === 'failed') {
           delete peerConnections.current[streamerId];
           setRemoteStreams(prev => {
-            const newStreams = new Map(prev);
-            newStreams.delete(streamerId);
-            return newStreams;
+            const updated = new Map(prev);
+            updated.delete(streamerId);
+            return updated;
           });
         }
       };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      console.log(`Sending offer to ${streamerId}`);
-      socket.emit('offer', { target: streamerId, sdp: offer });
+  
+      pc.onnegotiationneeded = async () => {
+        try {
+          makingOffer = true;
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socket.emit('offer', { target: streamerId, sdp: pc.localDescription });
+        } catch (err) {
+          console.error('Negotiation failed:', err);
+        } finally {
+          makingOffer = false;
+        }
+      };
+  
+      // Save flags for later access
+      pc._isPolite = isPolite;
+      pc._makingOffer = makingOffer;
+      pc._ignoreOffer = ignoreOffer;
+  
     } catch (err) {
-      socket.emit('Errorlogs',err)
-      console.error(`Error connecting to streamer ${streamerId}:`, err);
-      delete peerConnections.current[streamerId];
+      socket.emit('Errorlogs', 'connectToStreamer error', err);
+      console.error('connectToStreamer error:', err);
     }
   };
+  
 
   useEffect(() => {
     checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
@@ -208,17 +222,26 @@ export const MainScreen = ({ onLogout, address, userData }) => {
 
     const handleViewerStartedStreaming = (viewerId) => {
       setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
-        // Always reconnect to ensure we receive their stream
+    
       if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
+        const pc = peerConnections.current[viewerId];
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+            pc.addTrack(track, localStreamRef.current);
+          });
+        }
+    
+        // Trigger ICE restart to negotiate new stream
+        pc.createOffer({ iceRestart: true }).then(offer => {
+          return pc.setLocalDescription(offer);
+        }).then(() => {
+          socket.emit('offer', { target: viewerId, sdp: pc.localDescription });
+        });
+      } else {
+        connectToStreamer(viewerId);
       }
-      setTimeout(() => {
-          if (viewerId !== socket.id) {
-            connectToStreamer(viewerId);
-          }
-        }, 2000); // Wait 1 second (tweakable)
-      };
+    };
+    
 
     const handleViewerStoppedStreaming = (viewerId) => {
       if (peerConnections.current[viewerId]) {
@@ -251,51 +274,67 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       try {
         const pc = peerConnections.current[sender];
         if (pc && candidate) {
-          console.log(`Adding ICE candidate from ${sender}`);
           await pc.addIceCandidate(new RTCIceCandidate(candidate));
         }
       } catch (err) {
-        socket.emit('Errorlogs',`ICE candidate error for ${sender}`, err);
-        console.error(`ICE candidate error for ${sender}:`, err);
+        socket.emit('Errorlogs', `ICE error for ${sender}`, err);
+        console.error('ICE candidate error:', err);
       }
     };
 
     const handleOffer = async ({ sdp, sender }) => {
-      try {
-        console.log(`Received offer from ${sender}`);
-
-        let pc = peerConnections.current[sender];
-        if (!pc) {
-          pc = new RTCPeerConnection(iceServers);
-          peerConnections.current[sender] = pc;
-
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => {
-              pc.addTrack(track, localStreamRef.current);
-            });
-          }
-
-          pc.onicecandidate = event => {
-            if (event.candidate) {
-              socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
-            }
-          };
-
-          pc.ontrack = event => {
-            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
-            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
-          };
+      let pc = peerConnections.current[sender];
+      const isPolite = socket.id > sender;
+    
+      if (!pc) {
+        pc = new RTCPeerConnection(iceServers);
+        peerConnections.current[sender] = pc;
+    
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+            pc.addTrack(track, localStreamRef.current);
+          });
+        } else {
+          pc.addTransceiver('video', { direction: 'recvonly' });
+          pc.addTransceiver('audio', { direction: 'recvonly' });
         }
-
+    
+        pc.onicecandidate = event => {
+          if (event.candidate) {
+            socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+          }
+        };
+    
+        pc.ontrack = event => {
+          if (event.streams[0]) {
+            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
+          }
+        };
+    
+        pc._isPolite = isPolite;
+      }
+    
+      try {
+        const offerCollision = pc._makingOffer || pc.signalingState !== 'stable';
+    
+        if (!pc._isPolite && offerCollision) {
+          pc._ignoreOffer = true;
+          console.log(`Ignoring offer from ${sender} due to collision`);
+          return;
+        }
+    
+        pc._ignoreOffer = false;
+    
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        socket.emit('answer', { target: sender, sdp: answer });
+        socket.emit('answer', { target: sender, sdp: pc.localDescription });
       } catch (err) {
-        socket.emit('Errorlogs',`Offer handling error for ${sender}`, err);
-        console.error('Offer handling error:', err);
+        socket.emit('Errorlogs', 'handleOffer error', err);
+        console.error('Error handling offer:', err);
       }
     };
+    
 
     const handleAnswer = async ({ sdp, sender }) => {
       try {
@@ -304,7 +343,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
         }
       } catch (err) {
-      socket.emit('Errorlogs',`Answer handling error for ${sender}`, err);
+        socket.emit('Errorlogs', `Answer error for ${sender}`, err);
         console.error('Answer error:', err);
       }
     };

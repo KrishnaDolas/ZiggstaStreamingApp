@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('https://streamalong.live', {
+export const socket = io('http://192.168.0.18:5000', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -26,11 +26,14 @@ export const socket = io('https://streamalong.live', {
   // WebRTC ICE configuration with STUN and TURN servers
   export const iceServers = {
     iceServers: [
-      {
-        urls: 'stun:coturn.streamalong.live:3478'
-      },
+      { urls: 'stun:coturn.streamalong.live:3478' },
       {
         urls: 'turn:coturn.streamalong.live:3478?transport=udp',
+        username: 'vikram',
+        credential: 'vikram'
+      },
+      {
+        urls: 'turn:coturn.streamalong.live:3478?transport=tcp',
         username: 'vikram',
         credential: 'vikram'
       }
@@ -38,6 +41,7 @@ export const socket = io('https://streamalong.live', {
     iceTransportPolicy: 'all',
     sdpSemantics: 'unified-plan'
   };
+  
 // In utils/constant.js or similar
 export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {
   Object.values(peerConnections.current).forEach(pc => {
