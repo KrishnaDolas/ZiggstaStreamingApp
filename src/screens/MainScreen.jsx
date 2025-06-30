@@ -29,7 +29,7 @@ export const MainScreen = ({address, userData }) => {
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
-  const [requestStreamPermission, setRequestStreamPermission] = useState(false);
+  const [hasRequestedStream, setHasRequestedStream] = useState(false);
 
   const { theme } = useContext(ThemeContext);
 
@@ -49,6 +49,8 @@ export const MainScreen = ({address, userData }) => {
         setIsHost(true);
         await startLocalStream();
         socket.emit('assignHost');
+      }else{
+        setIsStreaming(true);
       }
     
       if (isHost && !localStreamRef.current) {
@@ -217,9 +219,16 @@ export const MainScreen = ({address, userData }) => {
       Alert.alert("Camera/Mic permission denied");
     }
   };
+  const requestStreamPermission = () => {
+    if (!hasRequestedStream) {
+      socket.emit('requestStream');
+      setHasRequestedStream(true);
+    }
+  };
 
   const startLocalStream = async () => {
-    const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+    const stream = await mediaDevices.getUserMedia({
+      video: { width: 300, height: 320, facingMode: 'user' },audio: true,});
     localStreamRef.current = stream;
     setLocalStream(stream);
     setIsStreaming(true);
