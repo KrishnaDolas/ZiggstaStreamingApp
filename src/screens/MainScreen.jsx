@@ -50,15 +50,17 @@ export const MainScreen = ({address, userData }) => {
         await startLocalStream();
         socket.emit('assignHost');
       }
+    
+      if (isHost && !localStreamRef.current) {
+        await startLocalStream();
+      }
+    
       setViewerCount(users.length);
       console.log('Users in room:', users);
       users.forEach(userId => {
         if (!peersRef.current[userId]) {
-          console.log(`Creating peer for user ${userId}`);
           const peer = createPeer(userId);
           peersRef.current[userId] = peer;
-        }else{
-          console.log(`Peer already exists for user ${userId}`);
         }
       });
     });
@@ -137,6 +139,19 @@ export const MainScreen = ({address, userData }) => {
     socket.emit('signal', { to: userId, data: peer.localDescription });
       }
     });
+    socket.on('reconnectWithNewPeer', async (newUserId) => {
+      const peer = peersRef.current[newUserId];
+      if (!peer || !localStreamRef.current) return;
+    
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+    
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+      socket.emit('signal', { to: newUserId, data: peer.localDescription });
+    });
+    
 
     socket.on('userLeft', socketId => {
       if (peersRef.current[socketId]) {
@@ -172,6 +187,10 @@ export const MainScreen = ({address, userData }) => {
         return [...prev, { id: socketId, stream }];
       });
     };
+    peer.onaddstream = (event) => {
+      console.log(`Received remote stream from ${socketId}`, event.stream);
+    };
+    
 
     peer.onicecandidate = (event) => {
       if (event.candidate) {
