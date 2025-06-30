@@ -1,3 +1,4 @@
+import { set } from 'date-fns';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -24,19 +25,35 @@ export default function DemoFile() {
   const [rooms, setRooms] = useState([]);
   const [joinedRoom, setJoinedRoom] = useState(null);
   const [remoteStreams, setRemoteStreams] = useState([]);
+  const [localStream, setLocalStream] = useState(null);
+  const [isHost, setIsHost] = useState(false);
   const localStreamRef = useRef(null);
   const peersRef = useRef({});
   const pendingCandidates = useRef({});
 
   useEffect(() => {
+    console.log('Connecting to socket server...');
     socket.emit('getRooms');
 
     socket.on('roomsList', (rooms) => {
       setRooms(rooms);
     });
 
-    socket.on('joined', ({ room, users }) => {
+    socket.on('assignHost', async () => {
+      setIsHost(true);
+      await startLocalStream();
+    });
+
+    socket.on('joined', async ({ room, users }) => {
       setJoinedRoom(room);
+
+      // If no one else, you're host
+      if (users.length === 0) {
+        setIsHost(true);
+        await startLocalStream();
+        socket.emit('assignHost');
+      }
+
       users.forEach(userId => {
         if (!peersRef.current[userId]) {
           const peer = createPeer(userId);
@@ -85,6 +102,41 @@ export default function DemoFile() {
       }
     });
 
+    socket.on('streamRequest', (requesterId) => {
+      if (isHost) {
+        Alert.alert(
+          'Stream Request',
+          `User ${requesterId.slice(0, 4)} wants to stream.`,
+          [
+            {
+              text: 'Approve',
+              onPress: () => socket.emit('approveStream', requesterId)
+            },
+            {
+              text: 'Reject',
+              style: 'cancel'
+            }
+          ]
+        );
+      }
+    });
+
+    socket.on('streamApproved', async () => {
+      await startLocalStream();
+      // Add tracks to existing peer connections
+      for (const userId in peersRef.current) {
+        const peer = peersRef.current[userId];
+        localStreamRef.current.getTracks().forEach(track =>
+          peer.addTrack(track, localStreamRef.current)
+        );
+            // Renegotiate by sending a new offer
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+    socket.emit('signal', { to: userId, data: peer.localDescription });
+      }
+    });
+
     socket.on('userLeft', socketId => {
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
@@ -92,11 +144,7 @@ export default function DemoFile() {
         setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
       }
     });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  }, [isHost]);
 
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -110,16 +158,16 @@ export default function DemoFile() {
   const joinRoom = async (roomName) => {
     try {
       await requestPermissions();
-
-      const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
-      localStreamRef.current = stream;
-
-      setJoinedRoom(roomName);
       socket.emit('joinRoom', roomName);
     } catch (err) {
       Alert.alert("Camera/Mic permission denied");
-      console.error(err);
     }
+  };
+
+  const startLocalStream = async () => {
+    const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+    localStreamRef.current = stream;
+    setLocalStream(stream);
   };
 
   const createPeer = (socketId) => {
@@ -133,9 +181,11 @@ export default function DemoFile() {
       sdpSemantics: 'unified-plan'
     });
 
-    localStreamRef.current.getTracks().forEach(track =>
-      peer.addTrack(track, localStreamRef.current)
-    );
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+    }
 
     peer.ontrack = (event) => {
         console.log(`Received track from ${socketId}`, event);
@@ -200,11 +250,16 @@ export default function DemoFile() {
       ) : (
         <View style={{ flex: 1 }}>
           <Text style={styles.heading}>Room: {joinedRoom}</Text>
+
+          {!isHost && !localStream && (
+            <Button title="Request to Stream" onPress={() => socket.emit('requestStream')} />
+          )}
+
           <ScrollView contentContainerStyle={styles.videoContainer}>
-            {localStreamRef.current && (
+            {localStream && (
               <View style={styles.videoSlot}>
                 <RTCView
-                  streamURL={localStreamRef.current.toURL()}
+                  streamURL={localStream.toURL()}
                   style={styles.rtcView}
                   mirror
                 />
