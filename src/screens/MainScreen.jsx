@@ -1,505 +1,242 @@
-import { View, Alert, Platform, StatusBar } from 'react-native';
-import React, { useState, useEffect, useRef, useContext } from 'react';
-import { mediaDevices, RTCPeerConnection, RTCSessionDescription, RTCIceCandidate } from 'react-native-webrtc';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { PermissionsAndroid } from 'react-native';
+import { View, StatusBar } from 'react-native';
+import {
+  PermissionsAndroid,
+  Platform,
+  Alert,
+} from 'react-native';
+import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
+import React, { useState, useContext,useEffect, useRef, } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
-import { closePeerConnections, iceServers, socket } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { preferVP8, socket } from '../utils/constant';
 
-export const MainScreen = ({ onLogout, address, userData }) => {
+export const MainScreen = ({address, userData }) => {
+  const [remoteStreams, setRemoteStreams] = useState([]);
+  const [localStream, setLocalStream] = useState(null);
+  const [isHost, setIsHost] = useState(false);
+  const localStreamRef = useRef(null);
+  const peersRef = useRef({});
+  const pendingCandidates = useRef({});
   const insetsTop = useSafeAreaInsets();
   const [joined, setJoined] = useState(false);
-  const [isHost, setIsHost] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [localStream, setLocalStream] = useState(null);
-  const [remoteStreams, setRemoteStreams] = useState(new Map());
+  const [roomchat, setRoomchat] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isFrontCamera, setIsFrontCamera] = useState(true);
-  const [hasRequestedStream, setHasRequestedStream] = useState(false);
-  const [activeStreamers, setActiveStreamers] = useState([]);
-  const [roomchat, setRoomchat] = useState([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [viewerCount, setViewerCount] = useState(0);
+  const [requestStreamPermission, setRequestStreamPermission] = useState(false);
+
   const { theme } = useContext(ThemeContext);
 
-  const localStreamRef = useRef(null);
-  const peerConnections = useRef({});
-
-  const checkAndRequestPermissions = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        const cameraStatus = await check(PERMISSIONS.IOS.CAMERA);
-        const micStatus = await check(PERMISSIONS.IOS.MICROPHONE);
-
-        if (cameraStatus !== RESULTS.GRANTED) {
-          const result = await request(PERMISSIONS.IOS.CAMERA);
-          if (result !== RESULTS.GRANTED) throw new Error('Camera permission denied');
-        }
-        if (micStatus !== RESULTS.GRANTED) {
-          const result = await request(PERMISSIONS.IOS.MICROPHONE);
-          if (result !== RESULTS.GRANTED) throw new Error('Microphone permission denied');
-        }
-      } else {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        ]);
-        if (
-          granted[PermissionsAndroid.PERMISSIONS.CAMERA] !== PermissionsAndroid.RESULTS.GRANTED ||
-          granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] !== PermissionsAndroid.RESULTS.GRANTED
-        ) {
-          throw new Error('Camera or microphone permission denied');
-        }
-      }
-    } catch (err) {
-      socket.emit('Errorlogs',`Permission error:`,err);
-      console.log(err);
-      throw err;
-    }
-  };
-
-  // Connect to a streamer function
-  const connectToStreamer = async (streamerId) => {
-    // Step 1: Skip self or already connected
-    if (streamerId === socket.id) {
-      console.log(`🚫 Skipping connection to self (${streamerId})`)
-      socket.emit('Errorlogs', 'connectToStreamer', `Skipping connection to self (${streamerId})`);
-      return;
-    }
-    if (peerConnections.current[streamerId]?.iceConnectionState === 'connected') {
-      console.log(`🔗 Already connected to ${streamerId} or self, skipping connection.`);
-      socket.emit('Errorlogs', 'connectToStreamer', `Already connected to ${streamerId}, skipping connection.`);
-      return;
-    }
-  
-    try {
-      // Step 2: Create RTCPeerConnection
-      const pc = new RTCPeerConnection(iceServers);
-      peerConnections.current[streamerId] = pc;
-  
-      const isSendingStream = !!localStreamRef.current;
-  
-      // Step 3: Add transceivers or tracks based on stream direction
-      if (isSendingStream) {
-        localStreamRef.current.getTracks().forEach(track => {
-          pc.addTrack(track, localStreamRef.current);
-        });
-      } else {
-        pc.addTransceiver('video', { direction: 'recvonly' });
-        pc.addTransceiver('audio', { direction: 'recvonly' });
-      }
-  
-      // Step 4: Handle incoming media tracks
-      pc.ontrack = event => {
-        if (event.streams && event.streams[0]) {
-          console.log(`📺 Received remote stream from ${streamerId}`);
-          setRemoteStreams(prev => new Map(prev).set(streamerId, event.streams[0]));
-        }
-      };
-  
-      // Step 5: Send ICE candidates
-      pc.onicecandidate = event => {
-        if (event.candidate) {
-          console.log(`📨 Sending ICE candidate to ${streamerId}`);
-          socket.emit('ice-candidate', { target: streamerId, candidate: event.candidate });
-        }
-      };
-  
-      // Step 6: Monitor ICE state and reconnect logic
-      pc.oniceconnectionstatechange = () => {
-        const state = pc.iceConnectionState;
-        socket.emit('Errorlogs', 'pc.oniceconnectionstatechange', `ICE connection state for ${streamerId}: ${state}`);
-        console.log(`🔄 ICE state for ${streamerId}: ${state}`);
-  
-        if (state === 'failed' || state === 'disconnected') {
-          setTimeout(() => {
-            if (peerConnections.current[streamerId] && peerConnections.current[streamerId].iceConnectionState !== 'connected') {
-              console.log(`🔁 Retrying connection to ${streamerId}`);
-              peerConnections.current[streamerId].close();
-              delete peerConnections.current[streamerId];
-              connectToStreamer(streamerId);
-            }
-          }, 1000);
-        } else if (state === 'closed') {
-          console.log(`❌ Connection closed with ${streamerId}`);
-          delete peerConnections.current[streamerId];
-          setRemoteStreams(prev => {
-            const newMap = new Map(prev);
-            newMap.delete(streamerId);
-            return newMap;
-          });
-        }
-      };
-  
-      // Step 7: Create SDP offer
-      const offer = await pc.createOffer();
-      console.log(`📄 Created SDP offer of type: ${offer.type}`);
-  
-      // Step 8: Set local description
-      await pc.setLocalDescription(offer);
-      console.log(`✅ Local description set for offer to ${streamerId}`);
-  
-      // Step 9: Send offer to target peer
-      socket.emit('offer', {
-        target: streamerId,
-        sdp: offer,
-      });
-      console.log(`📤 Sent offer to ${streamerId}`);
-  
-    } catch (err) {
-      console.error(`❗ Error connecting to streamer ${streamerId}:`, err);
-      socket.emit('Errorlogs', 'connectToStreamer', err);
-      if (peerConnections.current[streamerId]) {
-        peerConnections.current[streamerId].close();
-        delete peerConnections.current[streamerId];
-      }
-    }
-  };
-  
-
   useEffect(() => {
-    checkAndRequestPermissions().catch(err => console.error('Initial permission check failed:', err));
+    console.log('Connecting to socket server...');
 
-    const handlesocketconnect = () => {
-      socket.emit('identify', userData.userid, userData.screenName);
-    };
-
-    const handleRoomCreated = ({ roomId, socketid }) => {
-      console.log(`Room created with ID: ${roomId}, Host ID: ${socketid}`);
-      setJoined(true);
+    socket.on('assignHost', async () => {
       setIsHost(true);
-    };
+      await startLocalStream();
+    });
 
-    const handleRoomJoined = ({isHostStreaming, viewerCount, messages }) => {
-      setIsStreaming(isHostStreaming);
+    socket.on('joined', async ({ room, users }) => {
       setJoined(true);
-      setIsHost(false);
-      setRoomchat(messages);
-      setViewerCount(viewerCount);
-    };
 
-
-    const handleUserJoined = ({vieweractivestream,hostId}) => {
-      if(hostId){
-        if( hostId !== socket.id) {
-        connectToStreamer(hostId);
-        }
+      // If no one else, you're host
+      if (users.length === 0) {
+        setIsHost(true);
+        await startLocalStream();
+        socket.emit('assignHost');
       }
-      vieweractivestream.forEach(streamerId => {
-        if (streamerId !== socket.id) {
-          connectToStreamer(streamerId);
+      setViewerCount(users.length);
+      console.log('Users in room:', users);
+      users.forEach(userId => {
+        if (!peersRef.current[userId]) {
+          console.log(`Creating peer for user ${userId}`);
+          const peer = createPeer(userId);
+          peersRef.current[userId] = peer;
+        }else{
+          console.log(`Peer already exists for user ${userId}`);
         }
       });
+    });
 
-    };
+    socket.on('newUser', async (userId) => {
+      if (!peersRef.current[userId]) {
+        const peer = createPeer(userId);
+        peersRef.current[userId] = peer;
 
-    const handleUserLeft = (viewerId) => {
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
-        setRemoteStreams(prev => {
-          const newStreams = new Map(prev);
-          newStreams.delete(viewerId);
-          return newStreams;
-        });
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+        socket.emit('signal', { to: userId, data: peer.localDescription });
       }
-    };
+    });
 
-    // const handleHostStartedStreaming = (hostId) => {
-    //   setIsStreaming(true);
-    //   if (hostId !== socket.id) {
-    //     connectToStreamer(hostId);
-    //   }
-    // };
-
-    const handleViewerStartedStreaming = (viewerId) => {
-      setActiveStreamers(prev => [...new Set([...prev, viewerId])]);
-          if (viewerId !== socket.id) {
-            connectToStreamer(viewerId);
-          }
-      };
-
-    const handleViewerStoppedStreaming = (viewerId) => {
-      if (peerConnections.current[viewerId]) {
-        peerConnections.current[viewerId].close();
-        delete peerConnections.current[viewerId];
+    socket.on('signal', async ({ from, data }) => {
+      let peer = peersRef.current[from];
+      if (!peer) {
+        peer = createPeer(from);
+        peersRef.current[from] = peer;
       }
-      setRemoteStreams(prev => {
-        const newStreams = new Map(prev);
-        newStreams.delete(viewerId);
-        return newStreams;
-      });
-      setActiveStreamers(prev => prev.filter(id => id !== viewerId));
-    };
 
-    const handlehostleftstream = (hostid) => {
-      setIsStreaming(false);
-      setRemoteStreams(new Map());
-      setActiveStreamers([]);
-      setHasRequestedStream(false);
-      setLocalStream(null);
-      localStreamRef.current = null;
-      if (socket.id !== hostid) {
-        Alert.alert("Stream Ended", "The host has Leave the room. You can now leave the room");
-      }
-      console.log(`Host ${hostid} has left the stream, closing connections...`);
-      // Close all peer connections and reset state
-      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-    }
-    const handleIceCandidate = async ({ candidate, sender }) => {
-      try {
-        const pc = peerConnections.current[sender];
-        if (pc && candidate) {
-          console.log(`Adding ICE candidate from ${sender}`);
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      if (data.type === 'offer') {
+        await peer.setRemoteDescription(new RTCSessionDescription(data));
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
+        socket.emit('signal', { to: from, data: peer.localDescription });
+
+        (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+        pendingCandidates.current[from] = [];
+      } else if (data.type === 'answer') {
+        if (!peer.remoteDescription) {
+          await peer.setRemoteDescription(new RTCSessionDescription(data));
         }
-      } catch (err) {
-        socket.emit('Errorlogs',`ICE candidate error for ${sender}`, err);
-        console.error(`ICE candidate error for ${sender}:`, err);
+      } else if (data.candidate) {
+        const candidate = new RTCIceCandidate(data.candidate);
+        if (peer.remoteDescription?.type) {
+          await peer.addIceCandidate(candidate);
+        } else {
+          (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
+        }
       }
-    };
+    });
 
-    const handleOffer = async ({ sdp, sender }) => {
-      try {
-        console.log(`Received offer from ${sender}`);
-
-        let pc = peerConnections.current[sender];
-        if (!pc) {
-          pc = new RTCPeerConnection(iceServers);
-          peerConnections.current[sender] = pc;
-
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => {
-              pc.addTrack(track, localStreamRef.current);
-            });
-          }
-
-          pc.onicecandidate = event => {
-            if (event.candidate) {
-              socket.emit('ice-candidate', { target: sender, candidate: event.candidate });
+    socket.on('streamRequest', (requesterId) => {
+      if (isHost) {
+        Alert.alert(
+          'Stream Request',
+          `User ${requesterId.slice(0, 4)} wants to stream.`,
+          [
+            {
+              text: 'Approve',
+              onPress: () => socket.emit('approveStream', requesterId)
+            },
+            {
+              text: 'Reject',
+              style: 'cancel'
             }
-          };
-
-          pc.ontrack = event => {
-            console.log(`Received remote stream from ${sender}:`, event.streams[0]);
-            setRemoteStreams(prev => new Map(prev).set(sender, event.streams[0]));
-          };
-        }
-
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        socket.emit('answer', { target: sender, sdp: answer });
-      } catch (err) {
-        socket.emit('Errorlogs',`Offer handling error for ${sender}`, err);
-        console.error('Offer handling error:', err);
+          ]
+        );
       }
-    };
-
-    const handleAnswer = async ({ sdp, sender }) => {
-      try {
-        const pc = peerConnections.current[sender];
-        if (pc) {
-          await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        }
-      } catch (err) {
-      socket.emit('Errorlogs',`Answer handling error for ${sender}`, err);
-        console.error('Answer error:', err);
-      }
-    };
-
-    const handleHostLeft = () => {
-      setJoined(false);
-      setIsStreaming(false);
-      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-    };
-
-    const handleRoomClosed = () => {
-      setJoined(false);
-      setIsStreaming(false);
-      closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-    };
-
-    const handleIncomingStreamRequest = ({ viewerId, name }) => {
-      if (!isHost) return;
-      Alert.alert(
-        "Stream Request",
-        `${name} wants to start streaming.`,
-        [
-          {
-            text: "Reject",
-            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: false }),
-            style: "cancel",
-          },
-          {
-            text: "Accept",
-            onPress: () => socket.emit("respond-stream-request", { viewerId, accepted: true }),
-          },
-        ]
-      );
-    };
-
-    const handleStreamRequestResponse = async ({ accepted, roomId, hostId }) => {
-      if (accepted) {
-      socket.emit('viewer-streaming', roomId);
-        await startViewerStreaming(roomId, hostId);
-        setHasRequestedStream(true);
-      } else {
-        setHasRequestedStream(false);
-        Alert.alert("Request Rejected", "Host declined your stream request.");
-      }
-    };
-
-    const Handleroomchat = ({ userName, message, id }) => {
-      setRoomchat(prev => [...prev, {
-        id: id,
-        userProfile: require('../../assets/images/LS-2.jpg'),
-        userName: userName,
-        message: message,
-      }]);
-    };
-
-    // Socket event listeners
-    socket.on('connect', handlesocketconnect);
-    socket.on('room-created', handleRoomCreated);
-    socket.on('room-joined', handleRoomJoined);
-    socket.on('room-full', () => Alert.alert('Room Full', 'The room is full. Please try again later.', [{ text: 'OK' }]));
-    socket.on('invalid-room', () => Alert.alert('Stream Closed', 'Stream has been ended.', [{ text: 'OK' }]));
-    socket.on('user-joined', handleUserJoined);
-    socket.on('user-left', handleUserLeft);
-    // socket.on('host-started-streaming', handleHostStartedStreaming);
-    socket.on('viewer-started-streaming', handleViewerStartedStreaming);
-    socket.on('ice-candidate', handleIceCandidate);
-    socket.on('offer', handleOffer);
-    socket.on('answer', handleAnswer);
-    socket.on('host-left', handleHostLeft);
-    socket.on('room-closed', handleRoomClosed);
-    socket.on('incoming-stream-request', handleIncomingStreamRequest);
-    socket.on('stream-request-response', handleStreamRequestResponse);
-    socket.on('viewer-stopped-streaming', handleViewerStoppedStreaming);
-    socket.on('host-stopped-streaming', handlehostleftstream);
-    socket.on('new-message', Handleroomchat);
-    socket.on('socket-id-in-use', () => {
-      Alert.alert("User Already Logged In", "Please Logout From Other Device", [
-        { text: "OK", onPress: () => onLogout() }
-      ]);
     });
 
-    return () => {
-      // Clean up all socket listeners
-      const events = [
-        'connect', 'room-created', 'room-joined', 
-        'user-joined', 'user-left', 'host-started-streaming', 
-        'viewer-started-streaming', 'ice-candidate', 'offer', 
-        'answer', 'host-left', 'room-closed', 'incoming-stream-request',
-        'stream-request-response', 'viewer-stopped-streaming',
-        'host-stopped-streaming', 'new-message', 'socket-id-in-use','Errorlogs'
-      ];
-      
-      events.forEach(event => socket.off(event));
-      // socket.disconnect();
-    };
+    socket.on('streamApproved', async () => {
+      await startLocalStream();
+      // Add tracks to existing peer connections
+      for (const userId in peersRef.current) {
+        const peer = peersRef.current[userId];
+        localStreamRef.current.getTracks().forEach(track =>
+          peer.addTrack(track, localStreamRef.current)
+        );
+            // Renegotiate by sending a new offer
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+    socket.emit('signal', { to: userId, data: peer.localDescription });
+      }
+    });
+
+    socket.on('userLeft', socketId => {
+      if (peersRef.current[socketId]) {
+        peersRef.current[socketId].close();
+        delete peersRef.current[socketId];
+        setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+      }
+    });
   }, [isHost]);
-
-  const createRoom = (roomId) => {
-    socket.emit('create-room', roomId);
-    setTimeout(() => {
-      startStreaming(roomId)
-    }, 1000);
-  };
-
-  const joinRoom = (targetRoomId) => {
-    if (targetRoomId.trim()) {
-      socket.emit('join-room', targetRoomId);
-    }
-  };
-
-  const requestStreamPermission = () => {
-    if (!hasRequestedStream) {
-      socket.emit('request-stream');
-      setHasRequestedStream(true);
-    }
-  };
-
-  const startStreaming = async (roomId) => {
-    try {
-      await checkAndRequestPermissions();
-      const stream = await mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, facingMode: 'user' },
-        audio: true,
-      });
-      setLocalStream(stream);
-      localStreamRef.current = stream;
-      // socket.emit('host-streaming', roomId);
-      setIsStreaming(true);
-    } catch (err) {
-      socket.emit('Errorlogs',`Streaming error:`, err);
-      console.error('Streaming error:', err);
-    }
-  };
-
-  const startViewerStreaming = async (roomId, hostId) => {
-    try {
-      await checkAndRequestPermissions();
-      const stream = await mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, facingMode: 'user' },
-        audio: true,
-      });
-      setLocalStream(stream);
-      localStreamRef.current = stream;
-      setIsStreaming(true);
-
-      // Connect to all existing streamers
-      activeStreamers.forEach(streamerId => {
-        if (streamerId !== socket.id) {
-          connectToStreamer(streamerId);
-        }
-      });
-    } catch (err) {
-      console.error('Viewer streaming error:', err);
-    }
-  };
-
-  const HandleChatmessages = (message) => {
-    socket.emit('send-message', {
-      userName: userData?.screenName,
-      message: message,
-      id: userData.userid
+  const createPeer = (socketId) => {
+    const peer = new RTCPeerConnection({
+      iceServers: [{
+        urls: ['turn:coturn.streamalong.live:3478'],
+        username: 'webrtcuser',
+        credential: 'Test@1234'
+      }],
+      iceTransportPolicy: 'all',
+      sdpSemantics: 'unified-plan'
     });
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+    }
+    peer.ontrack = (event) => {
+        console.log(`Received track from ${socketId}`, event);
+      const stream = event.streams[0];
+      if (!stream || !stream.getVideoTracks().length) return;
+      setRemoteStreams(prev => {
+        const exists = prev.some(s => s.id === socketId);
+        if (exists) return prev;
+        return [...prev, { id: socketId, stream }];
+      });
+    };
+
+    peer.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+      }
+    };
+
+    return peer;
+  };
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+      ]);
+    }
   };
 
-  const leaveRoom = () => {
-    socket.emit('leave-room');
+  const joinRoom = async (roomID) => {
+    try {
+      await requestPermissions();
+      socket.emit('joinRoom', roomID);
+    } catch (err) {
+      Alert.alert("Camera/Mic permission denied");
+    }
+  };
+
+  const startLocalStream = async () => {
+    const stream = await mediaDevices.getUserMedia({ video: true, audio: true });
+    localStreamRef.current = stream;
+    setLocalStream(stream);
+    setIsStreaming(true);
+  };
+
+  const leaveRoom=()=>{
     setJoined(false);
-    setIsStreaming(false);
-    setHasRequestedStream(false);
-    setActiveStreamers([]);
-    closePeerConnections(peerConnections, localStream, setLocalStream, () => setRemoteStreams(new Map()));
-  };
-
+    socket.emit('disconnect')
+  }
   const toggleMute = () => {
     if (localStreamRef.current) {
       localStreamRef.current.getAudioTracks().forEach(track => {
         track.enabled = !track.enabled;
       });
-      setIsMuted(prev => !prev);
+      setIsMuted(!isMuted);
     }
-  };
-
+  }
   const switchCamera = () => {
     if (localStreamRef.current) {
-      const videoTrack = localStreamRef.current.getVideoTracks()[0];
-      if (videoTrack && typeof videoTrack._switchCamera === 'function') {
-        videoTrack._switchCamera();
-        setIsFrontCamera(prev => !prev);
-      }
+      localStreamRef.current.getVideoTracks().forEach(track => {
+        track._switchCamera();
+      });
+      setIsFrontCamera(!isFrontCamera);
     }
   };
+  const HandleChatmessages = (message) => {
+    if (message.trim()) {
+      const newMessage = {
+        user: userData.name,
+        message: message,
+        timestamp: new Date().toLocaleTimeString(),
+      };
+      setRoomchat(prev => [...prev, newMessage]);
+      socket.emit('chatMessage', newMessage);
+    }
+  }
 
   return (
     <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
@@ -510,7 +247,7 @@ export const MainScreen = ({ onLogout, address, userData }) => {
       />
       <View style={[styles.container]}>
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={createRoom} userData={userData} address={address} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={joinRoom} userData={userData} address={address} />
         ) : (
           <StreamRoom
             remoteStreams={remoteStreams}

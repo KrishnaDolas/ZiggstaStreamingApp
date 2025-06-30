@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('https://streamalong.live', {
+export const socket = io('http://192.168.0.18:3001', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -38,15 +38,25 @@ export const socket = io('https://streamalong.live', {
     iceTransportPolicy: 'all',
     sdpSemantics: 'unified-plan'
   };
-// In utils/constant.js or similar
-export const closePeerConnections = (peerConnections, localStream, setLocalStream, setRemoteStreams) => {
-  Object.values(peerConnections.current).forEach(pc => {
-    pc.close();
-  });
-  peerConnections.current = {};
-  if (localStream) {
-    localStream.getTracks().forEach(track => track.stop());
-  }
-  setLocalStream(null);
-  setRemoteStreams(() => new Map());
-};
+  export const  preferVP8 = (sdp) => {
+    const sdpLines = sdp.split('\r\n');
+    const mLineIndex = sdpLines.findIndex(line => line.startsWith('m=video'));
+    if (mLineIndex === -1) return sdp;
+
+    const vp8Payloads = [];
+    for (const line of sdpLines) {
+      const match = line.match(/^a=rtpmap:(\d+) VP8\/90000/i);
+      if (match) vp8Payloads.push(match[1]);
+    }
+
+    const parts = sdpLines[mLineIndex].split(' ');
+    const header = parts.slice(0, 3);
+    const payloads = parts.slice(3);
+    const reordered = [
+      ...vp8Payloads.filter(p => payloads.includes(p)),
+      ...payloads.filter(p => !vp8Payloads.includes(p))
+    ];
+
+    sdpLines[mLineIndex] = [...header, ...reordered].join(' ');
+    return sdpLines.join('\r\n');
+  };

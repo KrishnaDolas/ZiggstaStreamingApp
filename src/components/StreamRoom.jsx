@@ -197,14 +197,27 @@ const StreamRoom = ({
         if (localStream && isStreaming) {
             streams.push({ type: 'local', stream: localStream });
         }
-        // Add remote streams
-        remoteStreams.forEach((stream, userId) => {
-            streams.push({ type: 'remote', stream, userId });
+      
+        // Add remote streams (assume remoteStreams is an array of { id, stream })
+        remoteStreams.forEach(({ id, stream }) => {
+          if (stream && typeof stream.toURL === 'function') {
+            console.log(`Adding remote stream for user ${id}`, stream.toURL());
+            streams.push({ type: 'remote', stream, userId: id });
+          } else {
+            console.warn('⚠️ Invalid remote stream:', stream);
+          }
         });
-
+      
         setStreamLayout(streams);
-    }, [localStream, remoteStreams, isStreaming, viewerCount]);
-
+        console.log('StreamLayout:', streams.map(s => ({
+            type: s.type,
+            hasVideo: s.stream?.getVideoTracks?.().length,
+            videoMuted: s.stream?.getVideoTracks?.()[0]?.muted,
+            readyState: s.stream?.getVideoTracks?.()[0]?.readyState,
+          })));
+          
+      }, [localStream, remoteStreams, isStreaming, viewerCount]);
+      
     const getVideoTileStyle = (count) => {
         if (count === 1) {
             return { width: '100%', height: '100%' };
@@ -349,10 +362,10 @@ const StreamRoom = ({
             <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <RTCView
-                        streamURL={streamLayout[0].stream.toURL()}
+                        streamURL={streamLayout[0]?.stream.toURL()}
                         style={styles.fullScreenVideo}
                         objectFit="cover"
-                        mirror={streamLayout[0].type === 'local' && isFrontCamera}
+                        mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
                     />
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
