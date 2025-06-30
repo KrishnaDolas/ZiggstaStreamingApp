@@ -236,7 +236,7 @@ export const MainScreen = ({address, userData }) => {
 
   const leaveRoom=()=>{
     setJoined(false);
-    socket.emit('disconnect')
+    socket.emit('leaveRoom')
   }
   const toggleMute = () => {
     if (localStreamRef.current) {
