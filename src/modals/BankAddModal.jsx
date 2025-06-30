@@ -214,9 +214,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
 
         try {
             const response = await Apiclient.post('https://api.streamalong.live/saveuserbank', payload);
-            console.log('response of saveuserbank', response.data);
-
-            if (response?.data.status) {
+            console.log('response of saveuserbank', response);
+            if (response?.status === 201) {
                 Alert.alert('Success', 'Bank details saved successfully.');
                 setFormData({
                     accountHolder: '',

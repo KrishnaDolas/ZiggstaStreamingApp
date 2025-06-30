@@ -110,7 +110,7 @@ export const LoginForm = ({ onLogin, ShowloginForm, SigninWithApple, SigninWithF
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => ShowloginForm()} style={{ alignItems: 'center', marginTop: 20 }}>
-            <Text style={{ color: 'blue', textDecorationLine: 'underline', fontSize: 16 }}>
+            <Text style={{ color: theme === 'dark' ? '#fff' : 'blue', textDecorationLine: 'underline', fontSize: 16 }}>
               Don't have an account? Sign Up
             </Text>
           </TouchableOpacity>

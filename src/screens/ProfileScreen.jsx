@@ -16,7 +16,7 @@ import BankDetailsModal from '../modals/BankDetailsModal';
 
 
 
-export const ProfileScreen = ({ userData, onLogout }) => {
+export const ProfileScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
     const insetsTop = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
@@ -233,10 +233,10 @@ export const ProfileScreen = ({ userData, onLogout }) => {
                         <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
                     )}
                     {visibleModal === 'social' && (
-                        <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} />
+                        <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
                     )}
                     {visibleModal === 'setting' && (
-                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} />
+                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} address={address} />
                     )}
 
                     {/* center modal */}

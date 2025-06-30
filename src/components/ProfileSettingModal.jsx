@@ -10,7 +10,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
 import MySettingSubModal from '../modals/MySettingSubModal';
 
-const ProfileSettingModal = ({ visible, onClose, onLogout, userData }) => {
+const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) => {
     const { theme, toggleTheme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [visibleModal, setVisibleModal] = useState(false);
@@ -159,7 +159,9 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData }) => {
                     modalLabelName={modalLabelName}
                     onClose={() => setVisibleModal(null)}
                     onLogout={onLogout}
-                    userData={userData} />
+                    userData={userData}
+                    address={address}
+                     />
             )
             }
 

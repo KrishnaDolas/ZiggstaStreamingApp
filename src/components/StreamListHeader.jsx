@@ -20,7 +20,7 @@ import SearchModal from '../modals/SearchModal';
 export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
     setIsFavourite, selectedCategoryIndices, searchFilteredData,
-    setSearchFilteredData }) => {
+    setSearchFilteredData, address }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -230,6 +230,7 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                     categoryData={categoryData}
                     selectedcategory={selectedcategory}
                     selectedinterest={selectedinterest}
+                    address={address}
                 />
             )}
 

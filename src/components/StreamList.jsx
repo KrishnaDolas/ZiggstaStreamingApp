@@ -334,6 +334,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
                 selectedCategoryIndices={selectedCategoryIndices}
                 searchFilteredData={searchFilteredData}
                 setSearchFilteredData={setSearchFilteredData}
+                address={address}
             />
             <View
                 style={[

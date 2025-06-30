@@ -321,7 +321,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
               style={{ flex: 1, zIndex: 4000 }}
               onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}
             >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Year</Text>
+              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Year</Text>
               <DropDownPicker
                 open={openYear}
                 value={selectedYear}
@@ -351,7 +351,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
               style={{ flex: 1, zIndex: 3000 }}
               onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}
             >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Month</Text>
+              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Month</Text>
               <DropDownPicker
                 open={openMonth}
                 value={selectedMonth}
@@ -381,7 +381,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
               style={{ flex: 1, zIndex: 2000 }}
               onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}
             >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: '#333' }}>Day</Text>
+              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Day</Text>
               <DropDownPicker
                 open={openDay}
                 value={selectedDay}

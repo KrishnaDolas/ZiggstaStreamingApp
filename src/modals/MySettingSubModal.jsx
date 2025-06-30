@@ -1,6 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, Switch } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, TouchableOpacity, Text, Switch, Platform, PermissionsAndroid, Alert, Linking } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -11,8 +10,9 @@ import Slider from '@react-native-community/slider';
 import ChangeEmailModal from './ChangeEmailModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import EmailConfirmModal from './EmailConfirmModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData }) => {
+const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData, address }) => {
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
@@ -20,6 +20,214 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
     const [allowNotification, setAllowNotification] = useState(false);
     const [distanceRange, setDistanceRange] = useState(10);
     const [visibleModal, setVisibleModal] = useState('');
+
+
+    const checkLocationPermission = async () => {
+        const status = await AsyncStorage.getItem('locationPermission');
+        if (status === 'granted') {
+            console.log('User has granted location permission');
+        } else if (status === 'denied') {
+            console.log('User has denied location permission');
+        } else {
+            console.log('Permission not yet requested');
+        }
+    };
+
+
+    useEffect(() => {
+        checkLocationPermission();
+    }, [isLocationTrackingEnabled]);
+
+    // Check current system permission status
+    const checkSystemLocationPermission = async () => {
+        if (Platform.OS === 'android') {
+            try {
+                const granted = await PermissionsAndroid.check(
+                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+                );
+                return granted;
+            } catch (error) {
+                console.error('Error checking location permission:', error);
+                return false;
+            }
+        }
+        // For iOS, you would need to use react-native-permissions
+        return true; // Fallback for iOS
+    };
+
+    // Initialize state from AsyncStorage and system permission
+    useEffect(() => {
+        const initToggleStates = async () => {
+            try {
+                // Get user preference from AsyncStorage
+                const userPreference = await AsyncStorage.getItem('locationPermission');
+
+                // Check actual system permission
+                const hasSystemPermission = await checkSystemLocationPermission();
+
+                // Location is enabled only if user wants it AND has system permission
+                const isEnabled = userPreference === 'granted' && hasSystemPermission;
+                setIsLocationTrackingEnabled(isEnabled);
+
+                // If user preference is enabled but no system permission, 
+                // reset the preference to disabled
+                if (userPreference === 'granted' && !hasSystemPermission) {
+                    await AsyncStorage.setItem('locationPermission', 'denied');
+                    setIsLocationTrackingEnabled(false);
+                }
+
+
+                // Load other preferences
+                // const adultContent = await AsyncStorage.getItem('adultContentEnabled');
+                const profileVerified = await AsyncStorage.getItem('onlyProfileVerified');
+                // const notifications = await AsyncStorage.getItem('allowNotification');
+                const distance = await AsyncStorage.getItem('distanceRange');
+
+                // if (adultContent !== null) setIsAdultContentEnabled(adultContent === 'true');
+                if (profileVerified !== null) setOnlyProfileVerified(profileVerified === 'true');
+                // if (notifications !== null) setAllowNotification(notifications === 'true');
+                if (distance !== null) setDistanceRange(parseInt(distance));
+
+            } catch (error) {
+                console.error('Error initializing location state:', error);
+                setIsLocationTrackingEnabled(false);
+            }
+        };
+
+        if (visible) {
+            initToggleStates();
+        }
+    }, [visible]);
+
+    // Handle location tracking toggle
+    const handleToggleLocationTracking = async (value) => {
+        try {
+            if (value) {
+                // User wants to enable location tracking
+                if (Platform.OS === 'android') {
+                    const granted = await PermissionsAndroid.request(
+                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+                        {
+                            title: 'Location Permission',
+                            message: 'We need your location to show nearby users and provide better recommendations.',
+                            buttonPositive: 'Allow',
+                            buttonNegative: 'Deny',
+                        }
+                    );
+
+                    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                        // Permission granted
+                        await AsyncStorage.setItem('locationPermission', 'granted');
+                        setIsLocationTrackingEnabled(true);
+                        console.log('Location permission granted');
+                    } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                        // User selected "Don't ask again"
+                        await AsyncStorage.setItem('locationPermission', 'denied');
+                        setIsLocationTrackingEnabled(false);
+
+                        // Show alert to go to settings
+                        Alert.alert(
+                            'Permission Required',
+                            'Location permission is required to show nearby users. Please enable it in app settings.',
+                            [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                    text: 'Open Settings',
+                                    onPress: () => Linking.openSettings()
+                                }
+                            ]
+                        );
+                    } else {
+                        // Permission denied
+                        await AsyncStorage.setItem('locationPermission', 'denied');
+                        setIsLocationTrackingEnabled(false);
+                        console.log('Location permission denied');
+                    }
+                } else {
+                    // For iOS - you would handle iOS permissions here
+                    // For now, just enabling for iOS
+                    await AsyncStorage.setItem('locationPermission', 'granted');
+                    setIsLocationTrackingEnabled(true);
+                }
+            } else {
+                // User wants to disable location tracking
+                await AsyncStorage.setItem('locationPermission', 'denied');
+                setIsLocationTrackingEnabled(false);
+
+                // Show info about completely disabling permission
+                Alert.alert(
+                    'Location Tracking Denied',
+                    'Location tracking has been Disabled in the app. To completely revoke location permission, please go to your device settings.',
+                    [
+                        { text: 'OK', style: 'default' },
+                        {
+                            text: 'Open Settings',
+                            onPress: () => Linking.openSettings()
+                        }
+                    ]
+                );
+            }
+        } catch (error) {
+            console.error('Error handling location permission:', error);
+            setIsLocationTrackingEnabled(false);
+        }
+    };
+
+    // Handle other toggle changes with persistence
+    // const handleAdultContentToggle = async (value) => {
+    //     setIsAdultContentEnabled(value);
+    //     await AsyncStorage.setItem('adultContentEnabled', value.toString());
+    // };
+
+    const handleProfileVerifiedToggle = async (value) => {
+        setOnlyProfileVerified(value);
+        await AsyncStorage.setItem('onlyProfileVerified', value.toString());
+    };
+
+    const handleNotificationToggle = async (value) => {
+        setAllowNotification(value);
+        await AsyncStorage.setItem('allowNotification', value.toString());
+    };
+
+    const handleDistanceChange = async (value) => {
+        setDistanceRange(value);
+        await AsyncStorage.setItem('distanceRange', value.toString());
+    };
+
+
+    // useEffect(() => {
+    //     const checkVerifiedStatus = async () => {
+    //         const status = await AsyncStorage.getItem('onlyProfileVerified');
+    //         console.log('onlyProfileVerified', status);
+    //     };
+    //     checkVerifiedStatus();
+    // }, [onlyProfileVerified]);
+
+
+    // useEffect(() => {
+    //     const checkDistanceStatus = async () => {
+    //         const status = await AsyncStorage.getItem('distanceRange');
+    //         console.log('distanceRange', status);
+    //     };
+    //     checkDistanceStatus();
+    // }, [distanceRange]);
+
+
+
+    // Check if user has system permission but app preference is disabled
+    useEffect(() => {
+        if (visible) {
+            const recheckLocationStatus = async () => {
+                const hasSystemPermission = await checkSystemLocationPermission();
+                const userPreference = await AsyncStorage.getItem('locationPermission');
+
+                // If system permission exists but user preference is disabled, 
+                // the toggle should remain off
+                setIsLocationTrackingEnabled(userPreference === 'granted' && hasSystemPermission);
+            };
+            recheckLocationStatus();
+        }
+    }, [visible]);
 
     const getMenuItems = () => {
         switch (modalLabelName) {
@@ -32,7 +240,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                 ];
             case 'Privacy Settings':
                 return [
-                    { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
+                    { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', rightArrowVisible: false },
                     { label: 'Blocked users:', icon: 'user-alt-slash', type: 'slider', onPress: () => { }, rightArrowVisible: true },
                 ];
             case 'Search Settings':
@@ -53,7 +261,6 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
 
     const menuItems = getMenuItems();
 
-
     return (
         <>
             <Modal
@@ -73,7 +280,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                 }}
             >
                 <View style={{
-                    width: '100%', // like drawer
+                    width: '100%',
                     backgroundColor: '#fff',
                     padding: 16,
                     shadowColor: '#000',
@@ -82,7 +289,6 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                     shadowRadius: 6,
                     elevation: 8,
                 }}>
-                    {/* close modal */}
                     <View style={[styles.mySettingSubModalTitleBox]}>
                         <TouchableOpacity style={styles.mySettingSubModalClose} onPress={onClose}>
                             <FontAwesome name="angle-left" size={30} color="#d93a63" />
@@ -90,20 +296,18 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                         <Text style={styles.mySettingSubModalTitle}>{modalLabelName}</Text>
                     </View>
                     <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.3 - 10 }]}>
-                        <ScrollView
-                            // contentContainerStyle={{ paddingBottom: 20 }}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            {/* Divider */}
+                        <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={[styles.profileSettingMDivider]} />
-                            {/* Menu Items */}
                             {menuItems.map((item, index) => (
                                 <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, {
                                     borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                                 }]}>
                                     <View style={styles.profileSettingMMenuListItem}>
                                         {item.label === 'Notification' ?
-                                            <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> : item.label === 'Search Settings' ? <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> : <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
+                                            <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> :
+                                            item.label === 'Search Settings' ?
+                                                <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> :
+                                                <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
                                         }
                                         <Text style={{ fontSize: 15, color: '#000' }}>{item.label}</Text>
                                     </View>
@@ -113,11 +317,11 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                         item.label === 'Location tracking:' ? (
                                             <Switch
                                                 value={isLocationTrackingEnabled}
-                                                onValueChange={setIsLocationTrackingEnabled}
-                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
-                                                thumbColor="#ffffff"                             // white thumb
+                                                onValueChange={handleToggleLocationTracking}
+                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}
+                                                thumbColor="#ffffff"
                                                 ios_backgroundColor="#ccc"
-                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
+                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
                                             />
                                         ) : item.label === 'Distance (Km)' ? (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
@@ -128,6 +332,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                                     step={1}
                                                     value={distanceRange}
                                                     onValueChange={setDistanceRange}
+                                                    onSlidingComplete={handleDistanceChange}
                                                     minimumTrackTintColor="#ccc"
                                                     maximumTrackTintColor="#ccc"
                                                     thumbTintColor="#4CAF50"
@@ -139,7 +344,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                         ) : item.label === 'Adult content:' ? (
                                             <Switch
                                                 value={isAdultContentEnabled}
-                                                onValueChange={setIsAdultContentEnabled}
+                                                // onValueChange={handleAdultContentToggle}
                                                 trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
                                                 thumbColor="#ffffff"                             // white thumb
                                                 ios_backgroundColor="#ccc"
@@ -148,46 +353,39 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                         ) : item.label === 'Only verified profiles:' ? (
                                             <Switch
                                                 value={onlyProfileVerified}
-                                                onValueChange={setOnlyProfileVerified}
-                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
-                                                thumbColor="#ffffff"                             // white thumb
+                                                onValueChange={handleProfileVerifiedToggle}
+                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}
+                                                thumbColor="#ffffff"
                                                 ios_backgroundColor="#ccc"
-                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
+                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
                                             />
                                         ) : item.label === 'Allow Notifications:' ? (
                                             <Switch
                                                 value={allowNotification}
-                                                onValueChange={setAllowNotification}
-                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}  // green like iOS
-                                                thumbColor="#ffffff"                             // white thumb
+                                                onValueChange={handleNotificationToggle}
+                                                trackColor={{ false: '#ccc', true: '#4CAF50' }}
+                                                thumbColor="#ffffff"
                                                 ios_backgroundColor="#ccc"
-                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }} // slightly bigger
+                                                style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
                                             />
                                         ) : null
                                     )}
-
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
-
                     </View>
-
                 </View>
             </Modal>
             {visibleModal === 'change-email' && (
                 <ChangeEmailModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )
-            }
+            )}
             {visibleModal === 'change-password' && (
                 <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )
-            }
+            )}
             {visibleModal === 'email-confirm' && (
                 <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )
-            }
+            )}
         </>
-
     );
 };
 
