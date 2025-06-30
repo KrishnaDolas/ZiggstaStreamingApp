@@ -728,7 +728,7 @@ export const styles = StyleSheet.create({
 
   profileMSocialBox: {
     marginTop: 10,
-    marginBottom: 80,
+    marginBottom: 20,
   },
 
   profileMSocialBoxItem: {
@@ -1943,7 +1943,7 @@ export const themeStyles = {
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
     roomItem: { backgroundColor: '#2a2a2a' },
-    splashButtonText: { color: 'black' },
+    splashButtonText: { color: '#fff' },
     SingInlabel: { color: 'white' },
     // profile css
     profileHeader: {

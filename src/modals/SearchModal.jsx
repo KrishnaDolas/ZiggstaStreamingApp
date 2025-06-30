@@ -1,16 +1,17 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
-import React, { useEffect, useLayoutEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SearchModal = ({ visible, onClose,
-    setSearchFilteredData, categoryData }) => {
+    setSearchFilteredData, categoryData, address }) => {
     const screenHeight = Dimensions.get('window').height;
     const [searchText, setSearchText] = useState('');
     const [searchBy, setSearchBy] = useState('user');
@@ -43,10 +44,23 @@ const SearchModal = ({ visible, onClose,
         setIsSearchLoading(true);
         setIsError(null);
 
-        const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',')
+        const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',');
+        const getIsVerified = await AsyncStorage.getItem('onlyProfileVerified');
+        const getMaxDistance = await AsyncStorage.getItem('distanceRange');
+        const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
+        const userLocation = `${address.lat},${address.lon}`;
+        const isVerifiedValue = getIsVerified === 'true' ? 1 : 0;
+
+
+        // Construct query parameters
+        let queryParams = `Categories=${filteredCategories}&username=${searchText.trim()}&isVerified=${isVerifiedValue}`;
+
+        // if (checkLocationPermission === 'granted') {
+        //     queryParams += `&maxDistance=${Number(getMaxDistance)}&userLocation=${userLocation}`;
+        // }
 
         try {
-            const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?Categories=${filteredCategories}&username=${searchText.trim()}`);
+            const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?${queryParams}`);
             const data = response?.data?.data;
 
             if (Array.isArray(data) && data.length > 0) {

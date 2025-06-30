@@ -90,29 +90,37 @@ const App = () => {
             buttonPositive: 'OK',
           }
         );
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission denied');
-          return;
-        }
-      }
 
-      Geolocation.getCurrentPosition(
-        position => {
-          const { latitude, longitude } = position.coords;
-          fetchAddress(latitude, longitude);
-        },
-        error => {
-          console.error('Location error:', error.code, error.message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 10000,
-          forceRequestLocation: true,
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Location permission granted');
+          await AsyncStorage.setItem('locationPermission', 'granted');
+
+          Geolocation.getCurrentPosition(
+            position => {
+              const { latitude, longitude } = position.coords;
+              fetchAddress(latitude, longitude);
+            },
+            error => {
+              console.error('Location error:', error.code, error.message);
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 15000,
+              maximumAge: 10000,
+              forceRequestLocation: true,
+            }
+          );
+        } else {
+          console.log('Location permission denied');
+          await AsyncStorage.setItem('locationPermission', 'denied');
         }
-      );
+      } else {
+        // iOS logic (optional, assuming permission is granted for now)
+        await AsyncStorage.setItem('locationPermission', 'granted');
+      }
     } catch (error) {
-      console.error('Permission error:', error);
+      console.error('Permission request error:', error);
+      await AsyncStorage.setItem('locationPermission', 'denied');
     }
   };
 
@@ -212,6 +220,7 @@ const App = () => {
                         {...props}
                         onLogout={handleLogout}
                         userData={userData}
+                        address={userAddress}
                       />
                     )}
                   </Stack.Screen>

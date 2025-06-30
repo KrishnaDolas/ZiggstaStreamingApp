@@ -117,7 +117,7 @@ export const Signup = ({ userData, setUserData, ShowloginForm, onToggleForm, Sig
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => ShowloginForm()} style={{ alignItems: 'center', marginTop: 20 }}>
-            <Text style={{ color: 'blue', textDecorationLine: 'underline', fontSize: 16 }}>Already have an account? Sign In</Text>
+            <Text style={{ color: theme === 'dark' ? '#fff' : 'blue', textDecorationLine: 'underline', fontSize: 16 }}>Already have an account? Sign In</Text>
           </TouchableOpacity>
           <View style={styles.Othersinginoption}>
             <View style={styles.Loginoption}>
