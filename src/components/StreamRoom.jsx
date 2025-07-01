@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import LoaderImage from '../../assets/images/LS-2.jpg';
+import Loader from '../Loader/Loader';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -334,17 +335,7 @@ const StreamRoom = ({
 
     return (
         <View style={[styles.roomInfo]}>
-            {isloading ?(
-                <ImageBackground
-                source={LoaderImage} // Replace with your image path
-                style={styles.StreamLoader}
-                resizeMode="cover"
-              >
-                <View style={{height:"30" ,width:'40',borderRadius:'20'}}>
-                    <ActivityIndicator size="large" color="white" />
-                </View>
-                </ImageBackground>
-            ):
+            {isloading ?(<Loader LoaderImage={LoaderImage} />):
             (<View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <RTCView
