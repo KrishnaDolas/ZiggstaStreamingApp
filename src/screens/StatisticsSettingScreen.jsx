@@ -178,19 +178,31 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                         </View>
                         {/* Action Buttons */}
                         <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity onPress={() => setVisibleModal('bank-details')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('bank-details')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
                                 <Icon name="card-outline" size={26} color="#4CAF50" style={styles.actionButtonIcon} />
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('shop-manager')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('shop-manager')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
                                 <Icon name="storefront-outline" size={24} color="#FF9800" style={styles.actionButtonIcon} />
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Shop Manager</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('social')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('social')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
                                 <Icon name="people-outline" size={28} color="#2196F3" style={styles.actionButtonIcon} />
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.profileActionBtnBox]}>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('setting')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
                                 <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
                             </TouchableOpacity>

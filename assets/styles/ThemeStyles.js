@@ -879,7 +879,10 @@ export const styles = StyleSheet.create({
     marginRight: 12,
     backgroundColor: '#d93a63',
     borderRadius: 30,
-    padding: 5,
+    // padding: 5,
+    paddingLeft: 8,
+    paddingRight: 5,
+    paddingVertical: 3
   },
 
   streamHeaderCountTitle: {
@@ -1913,7 +1916,9 @@ export const themeStyles = {
     profileActionButtonText: {
       color: '#000',
     },
-
+    profileActionBtnBox: {
+      backgroundColor: '#fff',
+    },
     // stream list
 
     streamListMainTitle: {
@@ -2013,6 +2018,9 @@ export const themeStyles = {
     },
     profileActionButtonText: {
       color: '#fff',
+    },
+    profileActionBtnBox: {
+      backgroundColor: '#2a2a2a',
     },
     // stream list
 

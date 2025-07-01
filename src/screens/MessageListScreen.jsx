@@ -8,6 +8,7 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
+import FriendActionsModal from '../modals/FriendActionsModal';
 
 
 const messages = [
@@ -20,61 +21,62 @@ const messages = [
     },
     {
         id: '2',
-        name: 'Harry Styles',
+        name: 'Emma Watson',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-2.jpg'),
     },
     {
         id: '3',
-        name: 'Harry Styles',
+        name: 'Chris Evans',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-3.jpg'),
     },
     {
         id: '4',
-        name: 'Harry Styles',
+        name: 'Zendaya Coleman',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-4.jpg'),
     },
     {
         id: '5',
-        name: 'Harry Styles',
+        name: 'Robert Downey',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-5.jpg'),
     },
     {
         id: '6',
-        name: 'Harry Styles',
+        name: 'Scarlett Johansson',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-6.jpg'),
     },
     {
         id: '7',
-        name: 'Harry Styles',
+        name: 'Tom Holland',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-1.jpg'),
     },
     {
         id: '8',
-        name: 'Harry Styles',
+        name: 'Natalie Portman',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-6.jpg'),
     },
     {
         id: '9',
-        name: 'Harry Styles',
+        name: 'Chris Hemsworth',
         message: 'Absolutely love this stream',
         time: '2:57 PM',
         avatar: require('../../assets/images/LS-1.jpg'),
     },
 ];
+
 
 const friendRequests = [
     {
@@ -92,10 +94,10 @@ const friendRequests = [
 export const MessageListScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
-
+    const [visibleModal, setVisibleModal] = useState(null);
     const [menuVisible, setMenuVisible] = useState(false);
     const [listType, setListType] = useState('friends'); // 'friends' or 'blocked'
-
+    const [friendInfo, setFriendInfo] = useState({});
 
 
     const handleConfirm = (id) => {
@@ -146,6 +148,9 @@ export const MessageListScreen = ({ userData }) => {
                     <Text numberOfLines={1} style={[styles.meListMessage, themeStyles[theme].meListMessage]}>
                         {item.message}
                     </Text>
+                    {listType === 'friends' && (
+                        <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.time}</Text>
+                    )}
                 </TouchableOpacity>
                 {listType === 'blocked' ? (
                     <TouchableOpacity
@@ -153,13 +158,32 @@ export const MessageListScreen = ({ userData }) => {
                         style={{
                             paddingVertical: 6,
                             paddingHorizontal: 12,
-                            backgroundColor: '#d93a63',
+                            backgroundColor: '#f3f3f3',
                             borderRadius: 6,
                         }}>
-                        <Text style={{ color: '#fff', fontWeight: '500', fontSize: 14 }}>Unblock</Text>
+                        <Text style={{ color: '#000', fontWeight: '500', fontSize: 14 }}>Unblock</Text>
                     </TouchableOpacity>
                 ) : (
-                    <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.time}</Text>
+                    <>
+                        <TouchableOpacity
+                            onPress={() => { setVisibleModal('friend-action'); setFriendInfo(item); }}
+                            style={{
+                                backgroundColor: theme === 'dark' ? '#1e1e1e' : '#fafafa',
+                                height: 30,
+                                width: 30,
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderRadius: 30,
+                            }}
+                        >
+                            <Feather
+                                name="more-horizontal"
+                                size={20}
+                                color={theme === 'dark' ? '#fff' : '#000'}
+                            />
+                        </TouchableOpacity>
+                    </>
                 )}
             </View>
         );
@@ -189,32 +213,55 @@ export const MessageListScreen = ({ userData }) => {
                         styles.messageListMainCardLayout,
                         themeStyles[theme].messageListMainCardLayout,
                     ]}>
+                    {/* filter */}
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginHorizontal: 10,
+                            marginTop: 10,
+                            flexWrap: 'wrap'
+                        }}
+                    >
+                        {['friends', 'blocked', 'requests'].map((type) => (
+                            <TouchableOpacity
+                                key={type}
+                                onPress={() => {
+                                    setListType(type);
+                                    setMenuVisible(false);
+                                }}
+                                style={{
+                                    paddingVertical: 6,
+                                    backgroundColor: listType === type ? '#d93a63' : '#f3f3f3',
+                                    borderRadius: 4,
+                                    paddingHorizontal: 10,
+                                    // marginBottom: 4,
+                                    marginRight: 8,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        fontWeight: '500',
+                                        color: listType === type ? '#fff' : '#333',
+                                    }}
+                                >
+                                    {type === 'friends'
+                                        ? 'Friends'
+                                        : type === 'blocked'
+                                            ? 'Blocked Users'
+                                            : 'Friend Requests'}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 12 }}>
                         <Text
                             style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}
                         >
                             {getTitle()}
                         </Text>
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: theme === 'dark' ? '#1e1e1e' : '#fafafa',
-                                height: 30,
-                                width: 30,
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 30,
-                            }}
-                            onPress={() => setMenuVisible(true)}
-                        >
-                            <Feather
-                                name="more-vertical"
-                                size={20}
-                                color={theme === 'dark' ? '#fff' : '#000'}
-                            />
-                        </TouchableOpacity>
                     </View>
-
                     <FlatList
                         data={listType === 'requests' ? friendRequests : messages}
                         keyExtractor={(item) => item.id}
@@ -224,65 +271,9 @@ export const MessageListScreen = ({ userData }) => {
                     />
                 </View>
                 <Footer />
-
-                {/* Menu Modal */}
-                <Modal
-                    visible={menuVisible}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setMenuVisible(false)}
-                >
-                    <Pressable
-                        onPress={() => setMenuVisible(false)}
-                        style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }}
-                    >
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 100,
-                                right: 20,
-                                backgroundColor: '#fff',
-                                borderRadius: 6,
-                                padding: 10,
-                                elevation: 5,
-                                shadowColor: '#000',
-                                shadowOpacity: 0.2,
-                                shadowOffset: { width: 0, height: 2 },
-                            }}
-                        >
-                            {['friends', 'blocked', 'requests'].map((type) => (
-                                <TouchableOpacity
-                                    key={type}
-                                    onPress={() => {
-                                        setListType(type);
-                                        setMenuVisible(false);
-                                    }}
-                                    style={{
-                                        paddingVertical: 6,
-                                        backgroundColor: listType === type ? '#f3f3f3' : 'transparent',
-                                        borderRadius: 4,
-                                        paddingHorizontal: 10,
-                                        marginBottom: 4,
-                                    }}
-                                >
-                                    <Text
-                                        style={{
-                                            fontSize: 14,
-                                            fontWeight: listType === type ? 'bold' : 'normal',
-                                            color: listType === type ? '#333' : '#666',
-                                        }}
-                                    >
-                                        {type === 'friends'
-                                            ? 'Friends'
-                                            : type === 'blocked'
-                                                ? 'Blocked Users'
-                                                : 'Friend Requests'}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </Pressable>
-                </Modal>
+                {visibleModal === 'friend-action' && (
+                    <FriendActionsModal visible="true" onClose={() => setVisibleModal(null)} friendInfo={friendInfo} />
+                )}
             </SafeAreaView>
         </LinearGradient>
 
