@@ -103,11 +103,19 @@ const FriendActionsModal = ({ visible, onClose, friendInfo }) => {
                                     }]}>
                                         <View style={styles.profileSettingMMenuListItem}>
                                             {item.lib === 'ionicons' ? (
-                                                <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} />
+                                                <Ionicons name={item.icon}
+                                                    size={20}
+                                                    color="#232323"
+                                                    style={{
+                                                        width: 30,
+                                                        textShadowColor: '#000',
+                                                        textShadowOffset: { width: 0.5, height: 0.5 },
+                                                        textShadowRadius: 1,
+                                                    }} />
                                             ) : (
                                                 <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
                                             )}
-                                            <Text style={{ fontSize: 15, color: '#000' }}>{item.label}</Text>
+                                            <Text style={{ fontSize: 15, color: '#000', fontWeight: '400' }}>{item.label}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 ))}
