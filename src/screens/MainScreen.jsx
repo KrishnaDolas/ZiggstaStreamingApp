@@ -15,7 +15,7 @@ import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
-let ISIdentiFy=false
+import { set } from 'date-fns';
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -121,6 +121,7 @@ export const MainScreen = ({address, userData }) => {
           },
           {
             text: 'Reject',
+            onPress: () => socket.emit('rejectStream', requesterId),
             style: 'cancel'
           }
         ]
@@ -141,6 +142,14 @@ export const MainScreen = ({address, userData }) => {
 
   socket.emit('signal', { to: userId, data: peer.localDescription });
     }
+  }
+  const HandleStreamReject = (Name) => {
+    setHasRequestedStream(false);
+    Alert.alert(
+      'Stream Request Rejected',
+      `Host ${Name} has rejected your stream request.`,
+      [{ text: 'OK' }]
+    );
   }
   const HandlereconnectWithNewPeer =async (newUserId) => {
     const peer = peersRef.current[newUserId];
@@ -201,14 +210,6 @@ export const MainScreen = ({address, userData }) => {
       setHasRequestedStream(true);
     }
   };
-  
-  useEffect(()=>{
-    if(ISIdentiFy && !userData) return;
-    if(userData?.userid && userData?.screenName && !ISIdentiFy){
-      socket.emit('Identify', {CustomID: userData.userid, Name: userData.screenName});
-      ISIdentiFy=true;
-    }
-  },[userData,ISIdentiFy])
   useEffect(() => {
     // Handles socket events
     console.log('Connecting to socket server...');
@@ -219,6 +220,7 @@ export const MainScreen = ({address, userData }) => {
     socket.on('new-message',HandleNewMessage)
     socket.on('streamRequest', HandleStreamRequest);
     socket.on('streamApproved',HandleApprovedStream);
+    socket.on('streamRejected',HandleStreamReject)
     socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
     socket.on('host-action', HandleHostAction);
     socket.on('userLeft',HandleUserLeft);
@@ -291,7 +293,7 @@ export const MainScreen = ({address, userData }) => {
   const joinRoom = async (roomID) => {
     try {
       await requestPermissions();
-      socket.emit('joinRoom', roomID);
+      socket.emit('joinRoom', roomID, userData?.userid, userData?.screenName);
     } catch (err) {
       Alert.alert("Camera/Mic permission denied");
     }
