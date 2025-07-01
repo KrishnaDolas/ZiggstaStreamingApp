@@ -1,6 +1,6 @@
 // components/ProfileSocialsModal.js
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, TextInput, Text, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,9 +17,9 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
     const [loading, setLoading] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
     const socials = [
-        { key: 'instagramUrl', icon: 'instagram', placeholder: 'your insta id' },
-        { key: 'twitterUrl', icon: 'twitter', placeholder: 'your twitter X handle' },
-        { key: 'facebookUrl', icon: 'facebook', placeholder: 'your facebook id' },
+        { key: 'instagramUrl', icon: 'instagram', type: 'icon', placeholder: 'your insta id' },
+        { key: 'twitterUrl', image: require('../../assets/images/tx-logo-black.png'), type: 'image', placeholder: 'your twitter X handle' },
+        { key: 'facebookUrl', icon: 'facebook', type: 'icon', placeholder: 'your facebook id' },
     ];
 
     const platformKeyMap = {
@@ -115,36 +115,46 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
                     <View style={[styles.profileMSocialBox]}>
                         {loading ? (
                             <ActivityIndicator size="large" />
-                        ) : socials.map((item, i) => (
-                            <View key={i} style={[styles.profileMSocialBoxItem]}>
-                                <FontAwesome5 name={item.icon} size={24} color="#232323" style={[styles.profileMSocialBoxItemIcon]} />
-                                <TextInput
-                                    value={
-                                        formData[item.key]
-                                            ? `${platformDomainMap[item.key]}${formData[item.key]}`
-                                            : ''
-                                    }
-                                    onChangeText={(text) => {
-                                        const prefix = platformDomainMap[item.key];
-                                        let clean = text;
+                        ) : socials.map((item, i) => {
+                            return (
+                                <View key={i} style={[styles.profileMSocialBoxItem]}>
+                                    {item.type === 'icon' ? (
+                                        <FontAwesome5
+                                            name={item.icon}
+                                            size={24}
+                                            color="#232323"
+                                            style={[styles.profileMSocialBoxItemIcon]}
+                                        />
+                                    ) : (
+                                        <Image
+                                            source={item.image}
+                                            style={[styles.profileMSocialBoxItemIcon, { width: 20, height: 20, resizeMode: 'contain' }]}
+                                        />
+                                    )}
+                                    <TextInput
+                                        value={formData[item.key]}
+                                        onChangeText={(text) => {
+                                            const prefix = platformDomainMap[item.key];
+                                            let clean = text;
 
-                                        // If the text starts with the prefix, remove it
-                                        if (text.startsWith(prefix)) {
-                                            clean = text.replace(prefix, '');
-                                        }
+                                            // If the text starts with the prefix, remove it
+                                            if (text.startsWith(prefix)) {
+                                                clean = text.replace(prefix, '');
+                                            }
 
-                                        // Also prevent accidental full pasting of a full URL
-                                        const regexDomain = new RegExp(/^https:\/\/[a-z]+\.[a-z]+\/?/i);
-                                        clean = clean.replace(regexDomain, '');
+                                            // Also prevent accidental full pasting of a full URL
+                                            const regexDomain = new RegExp(/^https:\/\/[a-z]+\.[a-z]+\/?/i);
+                                            clean = clean.replace(regexDomain, '');
 
-                                        setFormData((prev) => ({ ...prev, [item.key]: clean }));
-                                    }}
-                                    placeholderTextColor="#999"
-                                    placeholder={item.placeholder}
-                                    style={[styles.profileMSocialBoxItemInput]}
-                                />
-                            </View>
-                        ))}
+                                            setFormData((prev) => ({ ...prev, [item.key]: clean }));
+                                        }}
+                                        placeholderTextColor="#999"
+                                        placeholder={item.placeholder}
+                                        style={[styles.profileMSocialBoxItemInput]}
+                                    />
+                                </View>
+                            )
+                        })}
                     </View>
                     {saveMessage ? (
                         <Text style={{ color: '#28a745', textAlign: 'center' }}>{saveMessage}</Text>

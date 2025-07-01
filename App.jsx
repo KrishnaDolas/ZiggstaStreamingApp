@@ -23,6 +23,7 @@ import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
+import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -217,6 +218,16 @@ const App = () => {
                   <Stack.Screen name="Profile">
                     {props => (
                       <ProfileScreen
+                        {...props}
+                        onLogout={handleLogout}
+                        userData={userData}
+                        address={userAddress}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="Stats">
+                    {props => (
+                      <StatisticsSettingScreen
                         {...props}
                         onLogout={handleLogout}
                         userData={userData}

@@ -665,6 +665,22 @@ export const styles = StyleSheet.create({
 
   profileActionBtnBox: {
     width: '48%',
+    paddingHorizontal: 15,
+    height: 80,
+    borderRadius: 12,
+    marginBottom: 8,
+    alignItems: 'start',
+    // flexDirection: 'c',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5, // for Android
   },
 
   profileActionButton: {
@@ -672,15 +688,25 @@ export const styles = StyleSheet.create({
     height: 80,
     borderRadius: 12,
     marginBottom: 8,
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: 'start',
+    // flexDirection: 'c',
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5, // for Android
   },
 
   profileActionButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: 'start',
+    marginTop: 4,
   },
 
   profileErrorBoxMain: {
@@ -1069,7 +1095,7 @@ export const styles = StyleSheet.create({
 
   strHedSearchModalTopForm: {
     flexDirection: 'row',
-    alignItems:'center',
+    alignItems: 'center',
     paddingVertical: 20,
   },
 
@@ -2003,7 +2029,7 @@ export const themeStyles = {
     },
 
     streamListEyeCountContainer: {
-     backgroundColor: '#575757b3',
+      backgroundColor: '#575757b3',
       borderColor: '#fff',
     },
     streamListEyeCount: {

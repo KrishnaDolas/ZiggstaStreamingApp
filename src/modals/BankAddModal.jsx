@@ -10,7 +10,7 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { Picker } from '@react-native-picker/picker';
 import Apiclient from '../utils/Apiclient';
 
-const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
+const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) => {
     const [selectedRegion, setSelectedRegion] = useState('');
     const [isModalRendered, setIsModalRendered] = useState(false);
     const [formData, setFormData] = useState({
@@ -32,28 +32,90 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
     const [loading, setLoading] = useState(false);
 
 
+    // const handleInputChange = (field, value) => {
+    //     const trimmedValue = value.trimStart(); // Trim only start to allow typing with space later
+    //     setFormData(prev => ({ ...prev, [field]: trimmedValue }));
+    //     setErrors(prev => ({ ...prev, [field]: '' }));
+    // };
+    // Modified handleInputChange - no uppercase conversion here
     const handleInputChange = (field, value) => {
         const trimmedValue = value.trimStart(); // Trim only start to allow typing with space later
         setFormData(prev => ({ ...prev, [field]: trimmedValue }));
         setErrors(prev => ({ ...prev, [field]: '' }));
     };
 
+    // const handleInputChange = (field, value) => {
+    //     const trimmedValue = value.trimStart();
+    //     let finalValue = trimmedValue;
+
+    //     // Apply uppercase for specific banking codes
+    //     switch (field) {
+    //         case 'ifscCode':
+    //         case 'bicSwiftCode':
+    //         case 'swiftCode':
+    //         case 'iban':
+    //         case 'bsbCode':
+    //             finalValue = trimmedValue.toUpperCase();
+    //             break;
+    //         case 'accountNumber':
+    //             // For international region, treat as IBAN (uppercase)
+    //             if (selectedRegion === 'intl') {
+    //                 finalValue = trimmedValue.toUpperCase();
+    //             }
+    //             break;
+    //         default:
+    //             finalValue = trimmedValue;
+    //     }
+
+    //     setFormData(prev => ({ ...prev, [field]: finalValue }));
+    //     setErrors(prev => ({ ...prev, [field]: '' }));
+    // };
+
+    // Helper function to get autoCapitalize value for each field
+    const getAutoCapitalize = (field) => {
+        const uppercaseFields = ['ifscCode', 'bicSwiftCode', 'swiftCode', 'iban', 'bsbCode'];
+        if (uppercaseFields.includes(field)) return 'characters';
+        if (field === 'accountNumber' && selectedRegion === 'intl') return 'characters';
+        return 'none';
+    };
+
+    // Helper function to format data for API (convert to uppercase where needed)
+    const getFormattedFormData = () => {
+        const uppercaseFields = ['ifscCode', 'bicSwiftCode', 'swiftCode', 'iban', 'bsbCode'];
+        const formatted = { ...formData };
+
+        // Convert specific fields to uppercase
+        uppercaseFields.forEach(field => {
+            if (formatted[field]) {
+                formatted[field] = formatted[field].toUpperCase();
+            }
+        });
+
+        // Handle accountNumber for international region
+        if (selectedRegion === 'intl' && formatted.accountNumber) {
+            formatted.accountNumber = formatted.accountNumber.toUpperCase();
+        }
+
+        return formatted;
+    };
+
     const ErrorText = ({ field }) =>
         errors[field] ? <Text style={{ color: 'red', fontSize: 12 }}>{errors[field]}</Text> : null;
+
 
     const validateFields = () => {
         let tempErrors = {};
 
         const regex = {
-            name: /^[a-zA-Z\s]+$/,
-            accountNumber: /^\d{8,20}$/,
-            ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/,
-            swift: /^[A-Za-z0-9]{8,11}$/,
-            iban: /^[A-Z]{2}[A-Z0-9]{14,34}$/,
-            routing: /^\d{9}$/,
-            sortCode: /^\d{6}$/,
-            bsb: /^\d{3,6}$/,
-            address: /^[a-zA-Z0-9\s,.-]+$/,
+            name: /^[a-zA-Z\s]+$/,                             // Valid for names like "John Doe"
+            accountNumber: /^\d{8,20}$/,                       // 8–20 digits only
+            ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/,                    // e.g., SBIN0001234
+            swift: /^[A-Za-z0-9]{8,11}$/,                      // e.g., HDFCINBBXXX
+            iban: /^[A-Z]{2}[0-9A-Z]{14,32}$/,                 // e.g., GB29NWBK60161331926819
+            routing: /^\d{9}$/,                                // U.S. Routing number, 9 digits
+            sortCode: /^\d{6}$/,                               // U.K. Sort code, 6 digits
+            bsb: /^[A-Za-z0-9]{3,6}$/,                         // ✔️ Fixed: 3–6 alphanumeric characters
+            address: /^[a-zA-Z0-9\s,./#()-]+$/,                // ✔️ Fixed: allows commas, slashes, dots, parentheses
         };
 
         if (!selectedRegion.trim()) tempErrors.selectedRegion = 'Region is required';
@@ -76,107 +138,110 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
             tempErrors.bankAddress = 'Invalid bank address';
         }
 
+        // Get formatted data for validation (with uppercase)
+        const formattedData = getFormattedFormData();
+
         switch (selectedRegion) {
             case 'us':
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account number is required';
-                } else if (!regex.accountNumber.test(formData.accountNumber)) {
+                } else if (!regex.accountNumber.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Account number should be 8–20 digits';
                 }
 
-                if (!formData.routingNumber.trim()) {
+                if (!formattedData.routingNumber.trim()) {
                     tempErrors.routingNumber = 'Routing number is required';
-                } else if (!regex.routing.test(formData.routingNumber)) {
+                } else if (!regex.routing.test(formattedData.routingNumber)) {
                     tempErrors.routingNumber = 'Routing number must be 9 digits';
                 }
                 break;
 
             case 'eu':
-                if (!formData.iban.trim()) {
+                if (!formattedData.iban.trim()) {
                     tempErrors.iban = 'IBAN is required';
-                } else if (!regex.iban.test(formData.iban)) {
+                } else if (!regex.iban.test(formattedData.iban)) {
                     tempErrors.iban = 'Invalid IBAN format';
                 }
 
-                if (!formData.bicSwiftCode.trim()) {
+                if (!formattedData.bicSwiftCode.trim()) {
                     tempErrors.bicSwiftCode = 'SWIFT/BIC code is required';
-                } else if (!regex.swift.test(formData.bicSwiftCode)) {
+                } else if (!regex.swift.test(formattedData.bicSwiftCode)) {
                     tempErrors.bicSwiftCode = 'Invalid SWIFT/BIC format';
                 }
                 break;
 
             case 'uk':
-                if (!formData.sortCode.trim()) {
+                if (!formattedData.sortCode.trim()) {
                     tempErrors.sortCode = 'Sort code is required';
-                } else if (!regex.sortCode.test(formData.sortCode)) {
+                } else if (!regex.sortCode.test(formattedData.sortCode)) {
                     tempErrors.sortCode = 'Sort code must be 6 digits';
                 }
 
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account number is required';
-                } else if (!regex.accountNumber.test(formData.accountNumber)) {
+                } else if (!regex.accountNumber.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Account number should be 8–20 digits';
                 }
                 break;
 
             case 'in':
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account number is required';
-                } else if (!regex.accountNumber.test(formData.accountNumber)) {
+                } else if (!regex.accountNumber.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Account number should be 8–20 digits';
                 }
 
-                if (!formData.ifscCode.trim()) {
+                if (!formattedData.ifscCode.trim()) {
                     tempErrors.ifscCode = 'IFSC code is required';
-                } else if (!regex.ifsc.test(formData.ifscCode)) {
+                } else if (!regex.ifsc.test(formattedData.ifscCode)) {
                     tempErrors.ifscCode = 'Invalid IFSC code format';
                 }
                 break;
 
             case 'au':
-                if (!formData.bsbCode.trim()) {
+                if (!formattedData.bsbCode.trim()) {
                     tempErrors.bsbCode = 'BSB code is required';
-                } else if (!regex.bsb.test(formData.bsbCode)) {
+                } else if (!regex.bsb.test(formattedData.bsbCode)) {
                     tempErrors.bsbCode = 'BSB code must be 6 digits';
                 }
 
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account number is required';
-                } else if (!regex.accountNumber.test(formData.accountNumber)) {
+                } else if (!regex.accountNumber.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Account number should be 8–20 digits';
                 }
                 break;
 
             case 'sea':
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account number is required';
-                } else if (!regex.accountNumber.test(formData.accountNumber)) {
+                } else if (!regex.accountNumber.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Account number should be 8–20 digits';
                 }
 
-                if (!formData.bsbCode.trim()) {
+                if (!formattedData.bsbCode.trim()) {
                     tempErrors.bsbCode = 'Bank code is required';
-                } else if (!regex.bsb.test(formData.bsbCode)) {
-                    tempErrors.bsbCode = 'Bank code should be 3–6 digits';
+                } else if (!regex.bsb.test(formattedData.bsbCode)) {
+                    tempErrors.bsbCode = 'Bank code should be 3–6 alphanumeric characters';
                 }
 
-                if (!formData.bicSwiftCode.trim()) {
+                if (!formattedData.bicSwiftCode.trim()) {
                     tempErrors.bicSwiftCode = 'SWIFT/BIC code is required';
-                } else if (!regex.swift.test(formData.bicSwiftCode)) {
+                } else if (!regex.swift.test(formattedData.bicSwiftCode)) {
                     tempErrors.bicSwiftCode = 'Invalid SWIFT/BIC format';
                 }
                 break;
 
             case 'intl':
-                if (!formData.accountNumber.trim()) {
+                if (!formattedData.accountNumber.trim()) {
                     tempErrors.accountNumber = 'Account/IBAN is required';
-                } else if (!regex.iban.test(formData.accountNumber)) {
+                } else if (!regex.iban.test(formattedData.accountNumber)) {
                     tempErrors.accountNumber = 'Invalid IBAN/account number';
                 }
 
-                if (!formData.bicSwiftCode.trim()) {
+                if (!formattedData.bicSwiftCode.trim()) {
                     tempErrors.bicSwiftCode = 'SWIFT/BIC code is required';
-                } else if (!regex.swift.test(formData.bicSwiftCode)) {
+                } else if (!regex.swift.test(formattedData.bicSwiftCode)) {
                     tempErrors.bicSwiftCode = 'Invalid SWIFT/BIC format';
                 }
                 break;
@@ -193,25 +258,28 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
     const handleSubmit = async () => {
         if (!validateFields()) return;
 
-        setLoading(true);
+        // setLoading(true);
+
+        // Get formatted data with uppercase fields
+        const formattedData = getFormattedFormData();
+
         const payload = {
             UserID: userData.userid,
-            BankName: formData.bankName,
-            AccountNumber: formData.accountNumber,
-            AccountHolderName: formData.accountHolder,
-            IFSCCode: formData.ifscCode,
-            SWIFTBIC: formData.swiftCode || formData.bicSwiftCode,
-            IBAN: formData.iban,
-            RoutingNumber: formData.routingNumber,
-            Country: selectedRegion,
+            BankName: formattedData.bankName.trim(),
+            AccountNumber: formattedData.accountNumber.trim(),
+            AccountHolderName: formattedData.accountHolder.trim(),
+            IFSCCode: formattedData.ifscCode.trim(),
+            SWIFTBIC: formattedData.swiftCode.trim() || formattedData.bicSwiftCode.trim(),
+            IBAN: formattedData.iban.trim(),
+            RoutingNumber: formattedData.routingNumber.trim(),
+            Country: selectedRegion.toUpperCase(),
             Currency: 'AUD', // Optional or default
-            BankAddress: formData.bankAddress,
+            BankAddress: formattedData.bankAddress.trim(),
             IsPrimary: bankListData?.length === 0 ? '1' : '0',
-            SortCode: formData.sortCode,
-            BSBCode: formData.bsbCode,
+            SortCode: formattedData.sortCode.trim(),
+            BSBCode: formattedData.bsbCode.trim(),
         };
         console.log('payload of saveuserbank', payload);
-
         try {
             const response = await Apiclient.post('https://api.streamalong.live/saveuserbank', payload);
             console.log('response of saveuserbank', response);
@@ -232,7 +300,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                     bsbCode: '',
                 });
                 setSelectedRegion('');
-                onClose();
+                onSuccess?.();
             } else {
                 Alert.alert('Error', response?.data?.message || 'Something went wrong.');
             }
@@ -254,6 +322,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
+                            keyboardType="numeric"
                         />
                         <ErrorText field="accountNumber" />
 
@@ -262,6 +332,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.routingNumber}
                             onChangeText={(text) => handleInputChange('routingNumber', text)}
+                            autoCapitalize="none"
+                            keyboardType="numeric"
                         />
                         <ErrorText field="routingNumber" />
                     </>
@@ -274,6 +346,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.iban}
                             onChangeText={(text) => handleInputChange('iban', text)}
+                            autoCapitalize={getAutoCapitalize('iban')}
                         />
                         <ErrorText field="iban" />
 
@@ -282,6 +355,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
+                            autoCapitalize={getAutoCapitalize('bicSwiftCode')}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -294,6 +368,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.sortCode}
                             onChangeText={(text) => handleInputChange('sortCode', text)}
+                            autoCapitalize="none"
+                            keyboardType="numeric"
                         />
                         <ErrorText field="sortCode" />
 
@@ -302,6 +378,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
+                            keyboardType="numeric"
                         />
                         <ErrorText field="accountNumber" />
                     </>
@@ -314,6 +392,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
+                            keyboardType="numeric"
                         />
                         <ErrorText field="accountNumber" />
 
@@ -322,6 +402,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.ifscCode}
                             onChangeText={(text) => handleInputChange('ifscCode', text)}
+                            autoCapitalize={getAutoCapitalize('ifscCode')}
                         />
                         <ErrorText field="ifscCode" />
                     </>
@@ -336,6 +417,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             placeholderTextColor="gray"
                             value={formData.bsbCode}
                             onChangeText={(text) => handleInputChange('bsbCode', text)}
+                            autoCapitalize={getAutoCapitalize('bsbCode')}
                         />
                         <ErrorText field="bsbCode" />
 
@@ -344,6 +426,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
+                            keyboardType="numeric"
                         />
                         <ErrorText field="accountNumber" />
                     </>
@@ -356,6 +440,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
+                            keyboardType="numeric"
                         />
                         <ErrorText field="accountNumber" />
 
@@ -366,6 +452,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             placeholderTextColor="gray"
                             value={formData.bsbCode}
                             onChangeText={(text) => handleInputChange('bsbCode', text)}
+                            autoCapitalize={getAutoCapitalize('bsbCode')}
                         />
                         <ErrorText field="bsbCode" />
 
@@ -374,6 +461,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
+                            autoCapitalize={getAutoCapitalize('bicSwiftCode')}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -386,6 +474,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
+                            autoCapitalize={getAutoCapitalize('accountNumber')}
                         />
                         <ErrorText field="accountNumber" />
 
@@ -394,6 +483,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
+                            autoCapitalize={getAutoCapitalize('bicSwiftCode')}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -466,6 +556,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                                 style={styles.bdInput}
                                 value={formData.accountHolder}
                                 onChangeText={(text) => handleInputChange('accountHolder', text)}
+                                autoCapitalize="words"
                             />
                             <ErrorText field="accountHolder" />
 
@@ -474,13 +565,17 @@ const BankAddModal = ({ visible, onClose, userData, bankListData }) => {
                                 style={styles.bdInput}
                                 value={formData.bankName}
                                 onChangeText={(text) => handleInputChange('bankName', text)}
+                                autoCapitalize="words"
                             />
-                            <ErrorText field="bankAddress" />
+                            <ErrorText field="bankName" />
                             <Text style={styles.bdLabel}>Bank Address:</Text>
                             <TextInput
                                 style={styles.bdInput}
                                 value={formData.bankAddress}
                                 onChangeText={(text) => handleInputChange('bankAddress', text)}
+                                autoCapitalize="words"
+                                multiline={true}
+                                numberOfLines={2}
                             />
                             <ErrorText field="bankAddress" />
 

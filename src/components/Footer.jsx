@@ -22,8 +22,8 @@ const Footer = () => {
         return 'Profile';
       case 'Messages':
         return 'Messages';
-      case 'Live':
-        return 'Live';
+      case 'Stats':
+        return 'Stats';
       case 'WalletDashboard':
         return 'WalletDashboard';
       default:
@@ -67,13 +67,13 @@ const Footer = () => {
       <TouchableOpacity
         style={styles.footerItem}
         onPress={() => {
-          if (route.name !== 'Profile') {
-            navigation.navigate('Profile');
+          if (route.name !== 'Stats') {
+            navigation.navigate('Stats');
           }
         }}
       >
-        <Ionicons name="settings-outline" size={25} color={iconColor('Profile')} />
-        <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Setting</Text>
+        <Ionicons name="stats-chart" size={25} color={iconColor('Stats')} />
+        <Text style={[styles.footerText, { color: iconColor('Stats') }]}>Stats</Text>
       </TouchableOpacity>
       {/* home */}
       <TouchableOpacity

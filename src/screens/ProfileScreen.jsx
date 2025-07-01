@@ -1,27 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, Image, ScrollView, SafeAreaView, StatusBar } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
-import LinearGradient from 'react-native-linear-gradient';
 import { ActivityIndicator } from 'react-native';
 import Footer from '../components/Footer';
-import ProfileSocialsModal from '../components/ProfileSocialsModal';
-import ProfileSettingModal from '../components/ProfileSettingModal';
-import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
 import Apiclient from '../utils/Apiclient';
-import { CenterModal } from '../components/CenterModal';
-import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BankDetailsModal from '../modals/BankDetailsModal';
-
-
 
 export const ProfileScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
     const insetsTop = useSafeAreaInsets();
-    const [visibleModal, setVisibleModal] = useState(null);
     const [profileData, setProfileData] = useState({});
-    const [averageIncomeData, setAverageIncomeData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
     const [topGiftersData, setTopGiftersData] = useState([]);
@@ -48,24 +37,6 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
             }
         };
         fetchProfileDetails();
-    }, [userData.userid]);
-
-
-    // to get average daily income of user
-    useEffect(() => {
-        const getAverageDaily = async () => {
-            try {
-                const response = await Apiclient.get(`/getUserDetails/averageIncome?userId=${userData.userid}`);
-                if (response.status === 200) {
-                    setAverageIncomeData(response.data || {});
-                } else {
-                    setIsUserError('Failed to fetch average Income data');
-                }
-            } catch (err) {
-                setIsUserError('Error fetching average Income data: ' + err.message);
-            }
-        };
-        getAverageDaily();
     }, [userData.userid]);
 
 
@@ -142,111 +113,9 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
                     </View>
                     {/* Scrollable Content */}
                     <ScrollView showsVerticalScrollIndicator={false} style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
-                        {/* Stat Cards */}
-                        <View style={styles.profileStatCards}>
-                            <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
-                                <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Revenue</Text>
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>${averageIncomeData?.averageIncome}</Text>
-                            </View>
-                            <View style={{ width: 5 }} />
-                            <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
-                                <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Time</Text>
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>4h 32min</Text>
-                            </View>
-                        </View>
-                        {/* History Table */}
-                        <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
-                            <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
-                            </View>
-                            <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ maxHeight: 205 }}>
-                                {topGiftersData.length === 0 ? <>
-                                    <View style={styles.profileTableRow}>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>No Data Found</Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
-                                    </View>
 
-                                </> : topGiftersData.map((item, index) => {
-                                    return (
-                                        <View key={index} style={styles.profileTableRow}>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.ScreenName}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
-                        </View>
-                        {/* Action Buttons */}
-                        <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity onPress={() => setVisibleModal('bank-details')} style={[styles.profileActionBtnBox]}>
-                                <LinearGradient
-                                    colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
-                                    start={{ x: 0.5, y: 1 }}
-                                    end={{ x: 0.5, y: 0 }}
-                                    style={styles.profileActionButton}
-                                >
-                                    <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('shop-manager')} style={[styles.profileActionBtnBox]}>
-                                <LinearGradient
-                                    colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
-                                    start={{ x: 0.5, y: 1 }}
-                                    end={{ x: 0.5, y: 0 }}
-                                    style={styles.profileActionButton}
-                                >
-                                    <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Shop Manager</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('social')} style={[styles.profileActionBtnBox]}>
-                                <LinearGradient
-                                    colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
-                                    start={{ x: 0.5, y: 1 }}
-                                    end={{ x: 0.5, y: 0 }}
-                                    style={styles.profileActionButton}
-                                >
-                                    <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.profileActionBtnBox]}>
-                                <LinearGradient
-                                    colors={theme === 'light' ? ['rgba(232,232,232,1)', 'rgba(250,250,250,1)'] : ['#444', '#666']}
-                                    start={{ x: 0.5, y: 1 }}
-                                    end={{ x: 0.5, y: 0 }}
-                                    style={styles.profileActionButton}
-                                >
-                                    <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        </View>
                     </ScrollView>
-                    {/* Modals */}
-                    {/* full screen modal */}
-                    {visibleModal === 'bank-details' && (
-                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                    )}
-                    {visibleModal === 'shop-manager' && (
-                        <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {visibleModal === 'social' && (
-                        <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                    )}
-                    {visibleModal === 'setting' && (
-                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} address={address} />
-                    )}
 
-                    {/* center modal */}
-                    {visibleModal === 'center-modal' && (
-                        <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {/* full screen modal */}
-                    {visibleModal === 'half-screen-modal' && (
-                        <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
                     <Footer />
                 </>)}
         </SafeAreaView>

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
@@ -8,6 +8,7 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
@@ -27,6 +28,14 @@ export const WalletDashboardScreen = ({ userData }) => {
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
     const bankName = ['Bank 1', 'Bank 2', 'Bank 3'];
 
+    const getToken = async () => {
+        const token = await AsyncStorage.getItem('token');
+        console.log('token', token);
+    }
+
+    useEffect(() => {
+        getToken()
+    }, [])
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);

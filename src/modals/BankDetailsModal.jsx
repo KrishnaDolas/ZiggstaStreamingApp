@@ -150,15 +150,10 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                 {message && (
                                     <View
                                         style={{
-                                            // backgroundColor: messageType === 'success' ? '#d4edda' : '#f8d7da',
-                                            // borderColor: messageType === 'success' ? '#c3e6cb' : '#f5c6cb',
-                                            // borderWidth: 1,
-                                            // padding: 10,
-                                            // borderRadius: 5,
                                             marginBottom: 10,
                                         }}
                                     >
-                                        <Text style={{ color: messageType === 'success' ? '#d4edda' : '#f8d7da' }}>{message}</Text>
+                                        <Text style={{ color: messageType === 'success' ? '#099d2d' : '#cd0013' }}>{message}</Text>
                                     </View>
                                 )}
 
@@ -247,6 +242,10 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                     onClose={() => setVisibleModal(null)}
                     userData={userData}
                     bankListData={bankListData}
+                    onSuccess={() => {
+                        getBankListData();
+                        setVisibleModal(null);
+                    }}
                 />
             )}
 
