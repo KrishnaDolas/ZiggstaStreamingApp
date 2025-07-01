@@ -41,7 +41,7 @@ export const MainScreen = ({address, userData }) => {
     await startLocalStream();
   };
 
-  const HandleJoined =async ({ room, users }) => {
+  const HandleJoined =async ({users }) => {
     setJoined(true);
 
     // If no one else, you're host
