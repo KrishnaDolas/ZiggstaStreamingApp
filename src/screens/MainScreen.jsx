@@ -303,7 +303,7 @@ export const MainScreen = ({address, userData }) => {
     try {
       setStreamInfo(RoomInfo);
       console.log(userData.userid);
-      const IsHost=RoomInfo.hostID===userData?.userid
+      const IsHost=RoomInfo?.hostID===userData?.userid
       await requestPermissions();
       socket.emit('joinRoom',IsHost, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
