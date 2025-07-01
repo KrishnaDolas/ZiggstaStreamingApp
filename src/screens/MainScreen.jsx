@@ -368,14 +368,18 @@ export const MainScreen = ({address, userData }) => {
     }
   }
   const HandleSetLivestatus=async(roomID)=>{
-    console.log(`Updating live status for room ${roomID}`);
-     const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
-     if(response.status === 200) {
-       console.log('Live status updated successfully');
-     }else{
-      console.log(response);
-        Alert.alert('Error', 'Failed to update live status. Please try again later.');
-     }
+    try {
+      console.log(`Updating live status for room ${roomID}`);
+      const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
+      if(response.status === 200) {
+        console.log('Live status updated successfully');
+      }else{
+       console.log(response);
+         Alert.alert('Error', 'Failed to update live status. Please try again later.');
+      }
+    } catch (error) {
+      console.log('Error updating live status:', error);
+    }
   }
 
   return (
