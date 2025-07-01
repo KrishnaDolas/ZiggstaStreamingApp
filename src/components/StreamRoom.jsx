@@ -200,8 +200,9 @@ const StreamRoom = ({
         }
       
         // Add remote streams (assume remoteStreams is an array of { id, stream })
-        remoteStreams.forEach(({ id, stream }) => {
+        remoteStreams.forEach(({ id, stream,name }) => {
           if (stream && typeof stream.toURL === 'function') {
+            console.log(name);
             console.log(`Adding remote stream for user ${id}`, stream.toURL());
             streams.push({ type: 'remote', stream, userId: id });
           } else {
