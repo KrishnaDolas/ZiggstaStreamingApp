@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
 import { set } from 'date-fns';
+import Apiclient from '../utils/Apiclient';
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -332,6 +333,9 @@ export const MainScreen = ({address, userData }) => {
       setLocalStream(null);
       setRemoteStreams([]);
     }
+   if(isHost){
+    HandleSetLivestatus(streamInfo?.roomID);
+   }
     setJoined(false);
     setViewerCount(0);
     socket.emit('leaveRoom',socket.id)
@@ -362,6 +366,16 @@ export const MainScreen = ({address, userData }) => {
       };
       socket.emit('send-message', newMessage);
     }
+  }
+  const HandleSetLivestatus=async(roomID)=>{
+    console.log(`Updating live status for room ${roomID}`);
+     const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
+     if(response.status === 200) {
+       console.log('Live status updated successfully');
+     }else{
+      console.log(response);
+        Alert.alert('Error', 'Failed to update live status. Please try again later.');
+     }
   }
 
   return (
