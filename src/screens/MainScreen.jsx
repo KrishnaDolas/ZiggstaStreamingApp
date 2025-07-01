@@ -156,6 +156,7 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleUserLeft = socketId => {
     console.log(`User left: ${socketId}`);
+    setViewerCount(prevCount => prevCount - 1);
     if (peersRef.current[socketId]) {
       console.log(`Closing peer connection for ${socketId}`);
       peersRef.current[socketId].close();
@@ -179,6 +180,7 @@ export const MainScreen = ({address, userData }) => {
     pendingCandidates.current = {};
     // Reset state
     setRemoteStreams([]);
+    setViewerCount(0);
     setJoined(false);
     setIsHost(false);
   }
@@ -312,6 +314,7 @@ export const MainScreen = ({address, userData }) => {
       setRemoteStreams([]);
     }
     setJoined(false);
+    setViewerCount(0);
     socket.emit('leaveRoom',socket.id)
   }
   const toggleMute = () => {
