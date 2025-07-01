@@ -150,6 +150,14 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  StreamLoader:{
+    width: '100%',
+    height: '100%',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#00000033',
+  },
   streamBox: {
     width: '100%',
     position: 'relative',

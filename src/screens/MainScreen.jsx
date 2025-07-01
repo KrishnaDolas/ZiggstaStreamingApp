@@ -15,13 +15,13 @@ import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
-import { set } from 'date-fns';
 import Apiclient from '../utils/Apiclient';
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
   const localStreamRef = useRef(null);
+  const [isloading, setIsLoading] = useState(false);
   const peersRef = useRef({});
   const pendingCandidates = useRef({});
   const insetsTop = useSafeAreaInsets();
@@ -43,7 +43,7 @@ export const MainScreen = ({address, userData }) => {
   };
 
   const HandleJoined =async ({users }) => {
-    setJoined(true);
+    setIsLoading(false);
 
     // If no one else, you're host
     if (users.length === 0) {
@@ -301,6 +301,8 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = async (roomID,RoomInfo) => {
     try {
+      setIsLoading(true);
+      setJoined(true);
       setStreamInfo(RoomInfo);
       console.log(userData.userid);
       const IsHost=RoomInfo?.hostID===userData?.userid
@@ -408,6 +410,7 @@ export const MainScreen = ({address, userData }) => {
             HandleChatmessages={HandleChatmessages}
             roomchat={roomchat}
             streamInfo={streamInfo}
+            isloading={isloading}
           />
         )}
       </View>
