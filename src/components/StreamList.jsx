@@ -227,7 +227,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             console.log(response);
             if (response.data.roomID) {
                 console.log('Room created successfully:', response);
-                createRoom(response.data.roomID.toString());
+                createRoom(response.data.roomID.toString(),item);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
             }
@@ -239,9 +239,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         const roomId = item.roomID.toString();
         const hostID = item.hostID.toString();
         if (item.hostID === userData.userid) {
-            createRoom(roomId, hostID);
+            createRoom(roomId, item);
         } else {
-            joinRoom(roomId, hostID);
+            joinRoom(roomId, item);
         }
     }
 

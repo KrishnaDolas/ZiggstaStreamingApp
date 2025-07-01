@@ -65,6 +65,11 @@ export const MainScreen = ({address, userData }) => {
       }
     });
   }
+  const HandleStreamNotAvailable = () => {
+    Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
+      [{ text: 'OK' }]
+    );
+  }
   const HandleNewUser =async (userId) => {
     if (!peersRef.current[userId]) {
       const peer = createPeer(userId);
@@ -215,6 +220,7 @@ export const MainScreen = ({address, userData }) => {
     console.log('Connecting to socket server...');
     socket.on('assignHost', HandleAssignHost);
     socket.on('joined',HandleJoined);
+    socket.on('StreamNotAvailable',HandleStreamNotAvailable)
     socket.on('newUser', HandleNewUser);
     socket.on('signal', HandleSignal);
     socket.on('new-message',HandleNewMessage)
@@ -231,6 +237,7 @@ export const MainScreen = ({address, userData }) => {
       console.log('Disconnecting from socket server...');
       socket.off('assignHost', HandleAssignHost);
       socket.off('joined',HandleJoined);
+      socket.on('StreamNotAvailable',HandleStreamNotAvailable)
       socket.off('newUser', HandleNewUser);
       socket.off('signal', HandleSignal);
       socket.off('new-message',HandleNewMessage);
@@ -290,10 +297,12 @@ export const MainScreen = ({address, userData }) => {
     }
   };
 
-  const joinRoom = async (roomID) => {
+  const joinRoom = async (roomID,RoomInfo) => {
     try {
+      console.log(userData.userid);
+      const IsHost=RoomInfo.hostID===userData?.userid
       await requestPermissions();
-      socket.emit('joinRoom', roomID, userData?.userid, userData?.screenName);
+      socket.emit('joinRoom',IsHost, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
       Alert.alert("Camera/Mic permission denied");
     }
