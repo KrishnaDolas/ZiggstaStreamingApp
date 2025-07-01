@@ -14,7 +14,7 @@ import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
-
+import chatimage from '../../assets/images/LS-2.jpg';
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -30,7 +30,6 @@ export const MainScreen = ({address, userData }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
-
   const { theme } = useContext(ThemeContext);
 
 
@@ -106,7 +105,7 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleNewMessage =({ userName, message, id })=>{
     console.log('New message received');
-    const data={id: id,userProfile: require('../../assets/images/LS-2.jpg'),userName: userName,message: message}
+    const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
   const HandleStreamRequest =(requesterId) => {
@@ -163,6 +162,25 @@ export const MainScreen = ({address, userData }) => {
       setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
     }
   }
+  const HandleHostLeft = () => {
+    console.log('Host left, leaving room...');
+    Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
+    // Stop local stream if exists
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+      setLocalStream(null);
+    }
+    // clear peer connections
+    Object.values(peersRef.current).forEach(peer => peer.close());
+    peersRef.current = {};
+    // clear pending candidates
+    pendingCandidates.current = {};
+    // Reset state
+    setRemoteStreams([]);
+    setJoined(false);
+    setIsHost(false);
+    }
 
   useEffect(() => {
     // Handles socket events
@@ -176,6 +194,7 @@ export const MainScreen = ({address, userData }) => {
     socket.on('streamApproved',HandleApprovedStream);
     socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
     socket.on('userLeft',HandleUserLeft);
+    socket.on('Hostleft',HandleHostLeft)
 
     return () => {
       // Cleanup socket listeners
@@ -189,6 +208,7 @@ export const MainScreen = ({address, userData }) => {
       socket.off('streamApproved',HandleApprovedStream);
       socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
       socket.off('userLeft',HandleUserLeft);
+      socket.off('Hostleft',HandleHostLeft)
     }
   }, [isHost]);
   const createPeer = (socketId) => {
