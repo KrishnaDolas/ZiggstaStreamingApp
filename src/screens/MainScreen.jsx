@@ -15,6 +15,7 @@ import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
+let ISIdentiFy=false
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -31,7 +32,6 @@ export const MainScreen = ({address, userData }) => {
   const [viewerCount, setViewerCount] = useState(0);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const { theme } = useContext(ThemeContext);
-
 
   //Handle socket functions 
   const HandleAssignHost= async () => {
@@ -109,11 +109,11 @@ export const MainScreen = ({address, userData }) => {
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleStreamRequest =(requesterId) => {
+  const HandleStreamRequest =(requesterId,name) => {
     if (isHost) {
       Alert.alert(
         'Stream Request',
-        `User ${requesterId.slice(0, 4)} wants to stream.`,
+        `User ${name} wants to stream.`,
         [
           {
             text: 'Approve',
@@ -202,7 +202,13 @@ export const MainScreen = ({address, userData }) => {
     }
   };
   
-
+  useEffect(()=>{
+    if(ISIdentiFy && !userData) return;
+    if(userData?.userid && userData?.screenName && !ISIdentiFy){
+      socket.emit('Identify', {CustomID: userData.userid, Name: userData.screenName});
+      ISIdentiFy=true;
+    }
+  },[userData,ISIdentiFy])
   useEffect(() => {
     // Handles socket events
     console.log('Connecting to socket server...');
