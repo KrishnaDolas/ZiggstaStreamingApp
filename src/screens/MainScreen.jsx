@@ -69,7 +69,8 @@ export const MainScreen = ({address, userData }) => {
     if (!peersRef.current[userId]) {
       const peer = createPeer(userId);
       peersRef.current[userId] = peer;
-
+      //viewer count increment
+      setViewerCount(prevCount => prevCount + 1);
       const offer = await peer.createOffer();
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
       socket.emit('signal', { to: userId, data: peer.localDescription });
