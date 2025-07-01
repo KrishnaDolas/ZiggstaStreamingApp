@@ -2,7 +2,7 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator,ImageBackground 
+    ActivityIndicator,
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
@@ -16,8 +16,6 @@ import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
-import LoaderImage from '../../assets/images/LS-2.jpg';
-import Loader from '../Loader/Loader';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -335,8 +333,7 @@ const StreamRoom = ({
 
     return (
         <View style={[styles.roomInfo]}>
-            {isloading ?(<Loader LoaderImage={LoaderImage} />):
-            (<View style={[styles.streamBox]}>
+            <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <RTCView
                         streamURL={streamLayout[0]?.stream.toURL()}
@@ -571,7 +568,7 @@ const StreamRoom = ({
                         </View>
                     </>
                 )}
-            </View>)}
+            </View>
             {giftModalVisible && (
                 <Modal
                     isVisible={giftModalVisible}
