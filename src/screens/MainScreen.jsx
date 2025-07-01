@@ -181,7 +181,25 @@ export const MainScreen = ({address, userData }) => {
     setRemoteStreams([]);
     setJoined(false);
     setIsHost(false);
+  }
+  const HandleHostAction = ({ action }) => {
+    if (!localStreamRef.current) return;
+  
+    if (action === 'mute') {
+      localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = false));
+      setIsMuted(true);
+    } else if (action === 'unmute') {
+      localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
+      setIsMuted(false);
+    } else if (action === 'stop-stream') {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+      setLocalStream(null);
+      setIsStreaming(false);
+      setHasRequestedStream(true);
     }
+  };
+  
 
   useEffect(() => {
     // Handles socket events
@@ -194,6 +212,7 @@ export const MainScreen = ({address, userData }) => {
     socket.on('streamRequest', HandleStreamRequest);
     socket.on('streamApproved',HandleApprovedStream);
     socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+    socket.on('host-action', HandleHostAction);
     socket.on('userLeft',HandleUserLeft);
     socket.on('Hostleft',HandleHostLeft)
 
@@ -208,6 +227,7 @@ export const MainScreen = ({address, userData }) => {
       socket.off('streamRequest', HandleStreamRequest);
       socket.off('streamApproved',HandleApprovedStream);
       socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+      socket.off('host-action', HandleHostAction);
       socket.off('userLeft',HandleUserLeft);
       socket.off('Hostleft',HandleHostLeft)
     }
