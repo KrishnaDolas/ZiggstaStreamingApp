@@ -106,7 +106,8 @@ const StreamRoom = ({
     isMuted,
     isHost,
     HandleChatmessages,
-    roomchat
+    roomchat,
+    streamInfo
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -236,6 +237,7 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
+        console.log(streamInfo);
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
         });
@@ -489,7 +491,7 @@ const StreamRoom = ({
                                 {!openMoreSettingList && (
                                     <>
                                         <View style={styles.strLiveStats}>
-                                            <Text style={styles.strTitle}>The world is a happy place</Text>
+                                            <Text style={styles.strTitle}>{streamInfo?.RoomName}</Text>
                                             <View style={styles.streamViewerCount}>
                                                 <Ionicons name="eye-outline" size={18} color="#ffea23" />
                                                 <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>

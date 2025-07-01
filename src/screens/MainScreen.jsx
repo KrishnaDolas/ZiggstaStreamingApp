@@ -31,6 +31,7 @@ export const MainScreen = ({address, userData }) => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
+  const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
 
   //Handle socket functions 
@@ -299,6 +300,7 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = async (roomID,RoomInfo) => {
     try {
+      setStreamInfo(RoomInfo);
       console.log(userData.userid);
       const IsHost=RoomInfo.hostID===userData?.userid
       await requestPermissions();
@@ -387,6 +389,7 @@ export const MainScreen = ({address, userData }) => {
             isHost={isHost}
             HandleChatmessages={HandleChatmessages}
             roomchat={roomchat}
+            streamInfo={streamInfo}
           />
         )}
       </View>
