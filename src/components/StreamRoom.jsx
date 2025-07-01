@@ -2,7 +2,7 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator,
+    ActivityIndicator,ImageBackground 
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
@@ -16,45 +16,7 @@ import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
-
-const chats = [
-    {
-        id: 1,
-        userProfile: require('../../assets/images/LS-3.jpg'),
-        userName: 'Kevin Spacey Kevin Spacey Kevin Spacey Kevin Spacey',
-        message: 'This is looking good now This is looking good now This is looking good now',
-    },
-    {
-        id: 2,
-        userProfile: require('../../assets/images/LS-2.jpg'),
-        userName: 'Mary Pollard',
-        message: 'Yes we need that',
-    },
-    {
-        id: 3,
-        userProfile: require('../../assets/images/LS-1.jpg'),
-        userName: 'Harry Styles',
-        message: 'Absolutely love this stream',
-    },
-    {
-        id: 4,
-        userProfile: require('../../assets/images/LS-3.jpg'),
-        userName: 'Kevin Spacey',
-        message: 'This is looking good now',
-    },
-    {
-        id: 5,
-        userProfile: require('../../assets/images/LS-3.jpg'),
-        userName: 'Kevin Spacey Kevin Spacey Kevin Spacey Kevin Spacey',
-        message: 'This is looking good now This is looking good now This is looking good now',
-    },
-    {
-        id: 6,
-        userProfile: require('../../assets/images/LS-2.jpg'),
-        userName: 'Mary Pollard',
-        message: 'Yes we need that',
-    },
-];
+import LoaderImage from '../../assets/images/LS-2.jpg';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -107,7 +69,8 @@ const StreamRoom = ({
     isHost,
     HandleChatmessages,
     roomchat,
-    streamInfo
+    streamInfo,
+    isloading
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -149,7 +112,6 @@ const StreamRoom = ({
         getGiftsCategory();
     }, [giftModalVisible])
 
-
     useEffect(() => {
         console.log('selectedGiftCategory', selectedGiftCategory)
     }, [selectedGiftCategory])
@@ -170,17 +132,10 @@ const StreamRoom = ({
         }
     };
 
-
     useEffect(() => {
         getGifts();
     }, [giftModalVisible, selectedGiftCategory]);
 
-    // Filter gifts by category
-    // const filteredGiftItems = selectedGiftCategory === ''
-    //     ? giftsData
-    //     : giftsData.filter(item => item.giftValue === selectedGiftCategory);
-
-    // Sort gifts by price and set default category
     useEffect(() => {
         if (giftsData?.length > 0) {
             const sortedByValue = [...giftsData].sort((a, b) => a.giftValue - b.giftValue);
@@ -379,7 +334,18 @@ const StreamRoom = ({
 
     return (
         <View style={[styles.roomInfo]}>
-            <View style={[styles.streamBox]}>
+            {isloading ?(
+                <ImageBackground
+                source={LoaderImage} // Replace with your image path
+                style={styles.StreamLoader}
+                resizeMode="cover"
+              >
+                <View style={{height:"30" ,width:'40',borderRadius:'20'}}>
+                    <ActivityIndicator size="large" color="white" />
+                </View>
+                </ImageBackground>
+            ):
+            (<View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <RTCView
                         streamURL={streamLayout[0]?.stream.toURL()}
@@ -614,7 +580,7 @@ const StreamRoom = ({
                         </View>
                     </>
                 )}
-            </View>
+            </View>)}
             {giftModalVisible && (
                 <Modal
                     isVisible={giftModalVisible}
