@@ -41,7 +41,7 @@ export const MainScreen = ({address, userData }) => {
     await startLocalStream();
   };
 
-  const HandleJoined =async ({users,userNames }) => {
+  const HandleJoined =async ({ room, users }) => {
     setJoined(true);
 
     // If no one else, you're host
@@ -59,11 +59,9 @@ export const MainScreen = ({address, userData }) => {
   
     setViewerCount(users.length);
     console.log('Users in room:', users);
-    users.forEach((userId,ind) => {
+    users.forEach(userId => {
       if (!peersRef.current[userId]) {
-        const user= userNames[ind]  // Fallback if userNames is not provided
-        console.log(userNames[ind]);
-        const peer = createPeer(userId,user?.name);
+        const peer = createPeer(userId);
         peersRef.current[userId] = peer;
       }
     });
@@ -73,9 +71,9 @@ export const MainScreen = ({address, userData }) => {
       [{ text: 'OK' }]
     );
   }
-  const HandleNewUser =async ({userId}) => {
+  const HandleNewUser =async (userId) => {
     if (!peersRef.current[userId]) {
-      const peer = createPeer(userId,name);
+      const peer = createPeer(userId);
       peersRef.current[userId] = peer;
       //viewer count increment
       setViewerCount(prevCount => prevCount + 1);
@@ -87,8 +85,7 @@ export const MainScreen = ({address, userData }) => {
   const HandleSignal=async ({ from, data }) => {
     let peer = peersRef.current[from];
     if (!peer) {
-      const [id,name]=from
-      peer = createPeer(id,name);
+      peer = createPeer(from);
       peersRef.current[from] = peer;
     }
 
@@ -253,7 +250,7 @@ export const MainScreen = ({address, userData }) => {
       socket.off('Hostleft',HandleHostLeft)
     }
   }, [isHost]);
-  const createPeer = (socketId,name) => {
+  const createPeer = (socketId) => {
     const peer = new RTCPeerConnection({
       iceServers: [{
         urls: ['turn:coturn.streamalong.live:3478'],
@@ -276,7 +273,7 @@ export const MainScreen = ({address, userData }) => {
       setRemoteStreams(prev => {
         const exists = prev.some(s => s.id === socketId);
         if (exists) return prev;
-        return [...prev, { id: socketId,name:name, stream }];
+        return [...prev, { id: socketId, stream }];
       });
     };
     peer.onaddstream = (event) => {
