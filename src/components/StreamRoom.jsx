@@ -131,7 +131,7 @@ const StreamRoom = ({
     const [showMicIcon, setShowMicIcon] = useState(false);
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
-
+    const [userDetails, setUserDetails] = useState({});
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
@@ -238,7 +238,10 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
-        console.log(streamInfo);
+    //    if(!isHost){
+        GetUserDetails(streamInfo.hostID)
+    //    }
+        console.log(streamInfo.hostID);
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
         });
@@ -360,6 +363,20 @@ const StreamRoom = ({
         setUserChatInput('');
     }
 
+    const GetUserDetails=async(userid)=>{
+     try {
+        const formData = {userid:userid };
+        const response = await Apiclient.post('/getUserDetails', formData);
+        if (response) {
+        const user = response.data.user;
+        setUserDetails(user);
+        console.log(user);
+       }
+     } catch (error) {
+        console.log(error);
+     }
+    }
+
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
@@ -462,11 +479,11 @@ const StreamRoom = ({
                                     <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
                                     <View style={styles.strRoomHeaderLeftProfileInfo}>
                                         <Text style={[styles.strRoomHeaderLeftProfileName]}>
-                                            Angenlico Marias
+                                            {userDetails?.screenName }
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="heart" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>12345</Text>
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{userDetails?.CreditBalance}</Text>
                                         </View>
                                     </View>
                                 </View>
