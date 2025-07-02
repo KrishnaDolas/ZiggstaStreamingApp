@@ -109,38 +109,41 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.psmProfileContainer}>
-                            {/* Profile Content */}
-                            <View style={styles.psmProfileTopCard}>
-                                {/* Profile Image */}
-                                <View style={[styles.psmProfileImageContainer]}>
-                                    <Image
-                                        source={require('../../assets/images/LS-3.jpg')}
-                                        style={styles.psmProfileImage}
-                                    />
-                                </View>
-
-                                {/* Name and ID */}
-                                <Text style={styles.psmProfileName}>Katherine Ziggler</Text>
-                                <Text style={styles.psmProfileId}>ID: 1298786</Text>
-
-                                {/* Stats Section */}
-                                <View style={styles.psmStatsContainer}>
-                                    <View style={styles.psmStatItem}>
-                                        <Text style={styles.psmStatLabel}>FRIENDS</Text>
-                                        <Text style={styles.psmStatValue}>4k1</Text>
+                        {layoutReady && (
+                            <View style={styles.psmProfileContainer}>
+                                {/* Profile Content */}
+                                <View style={styles.psmProfileTopCard}>
+                                    {/* Profile Image */}
+                                    <View style={[styles.psmProfileImageContainer]}>
+                                        <Image
+                                            source={require('../../assets/images/LS-3.jpg')}
+                                            style={styles.psmProfileImage}
+                                        />
                                     </View>
-                                    <View style={styles.psmStatItem}>
-                                        <Text style={styles.psmStatLabel}>FOLLOWING</Text>
-                                        <Text style={styles.psmStatValue}>1K2</Text>
-                                    </View>
-                                    <View style={styles.psmStatItem}>
-                                        <Text style={styles.psmStatLabel}>FANS</Text>
-                                        <Text style={styles.psmStatValue}>800</Text>
+
+                                    {/* Name and ID */}
+                                    <Text style={styles.psmProfileName}>Katherine Ziggler</Text>
+                                    <Text style={styles.psmProfileId}>ID: 1298786</Text>
+
+                                    {/* Stats Section */}
+                                    <View style={styles.psmStatsContainer}>
+                                        <View style={styles.psmStatItem}>
+                                            <Text style={styles.psmStatLabel}>FRIENDS</Text>
+                                            <Text style={styles.psmStatValue}>4k1</Text>
+                                        </View>
+                                        <View style={styles.psmStatItem}>
+                                            <Text style={styles.psmStatLabel}>FOLLOWING</Text>
+                                            <Text style={styles.psmStatValue}>1K2</Text>
+                                        </View>
+                                        <View style={styles.psmStatItem}>
+                                            <Text style={styles.psmStatLabel}>FANS</Text>
+                                            <Text style={styles.psmStatValue}>800</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
-                        </View>
+                        )}
+
                         {layoutReady &&
                             <ScrollView
                                 contentContainerStyle={{ paddingBottom: 40 }}
@@ -187,9 +190,8 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                         </TouchableOpacity>
                                     </View>
                                     {/* Top Gifters */}
-                                    <View style={styles.psmTopGiftersContainer}>
+                                    {/* <View style={styles.psmTopGiftersContainer}>
                                         <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
-                                        {/* Top Gifter Card */}
                                         <LinearGradient
                                             colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
                                             start={{ x: 0, y: 1 }}
@@ -207,8 +209,6 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                                 <Text style={styles.psmTopGifterMainAmount}>{topGifters[0].amount}</Text>
                                             </View>
                                         </LinearGradient>
-
-                                        {/* Other Gifters */}
                                         <View style={styles.psmOtherGiftersContainer}>
                                             {topGifters.slice(1).map((gifter, index) => (
                                                 <View
@@ -232,7 +232,7 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                                 </View>
                                             ))}
                                         </View>
-                                    </View>
+                                    </View> */}
                                 </View>
                             </ScrollView>
                         }
