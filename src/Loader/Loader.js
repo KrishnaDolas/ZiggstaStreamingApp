@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, StyleSheet, Animated, Dimensions } from 'react-native';
-
+import { View, Image, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
 const { width, height } = Dimensions.get('window');
 
-const Loader = ({LoaderImage}) => {
+const Loader = ({ LoaderImage }) => {
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -11,34 +11,37 @@ const Loader = ({LoaderImage}) => {
       Animated.timing(rotateAnim, {
         toValue: 1,
         duration: 1000,
+        easing: Easing.linear,
         useNativeDriver: true,
       })
     ).start();
-  }, [rotateAnim]);
-
-  const rotateInterpolate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  }, []);
 
   const rotateStyle = {
-    transform: [{ rotate: rotateInterpolate }],
+    transform: [
+      {
+        rotate: rotateAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', '360deg'],
+        }),
+      },
+    ],
   };
 
   return (
     <View style={styles.container}>
-      <Image
-        source={LoaderImage} // put your background image in assets
-        style={styles.backgroundImage}
-        resizeMode="cover"
+      <Image source={LoaderImage} style={styles.backgroundImage} resizeMode="cover" />
+      <BlurView
+        style={StyleSheet.absoluteFill}
+        blurType="light" // or "dark", "extraLight"
+        blurAmount={6}
+        reducedTransparencyFallbackColor="white" // for Android fallback
       />
       <View style={styles.centerContent}>
-        <Animated.View style={[styles.loaderCircle, rotateStyle]}>
-          <Image
-            source={LoaderImage} // put your logo image in assets
-            style={styles.logo}
-          />
-        </Animated.View>
+        <View style={styles.logoWrapper}>
+          <Image source={LoaderImage} style={styles.logo} resizeMode="cover" />
+        </View>
+        <Animated.View style={[styles.spinnerBorder, rotateStyle]} />
       </View>
     </View>
   );
@@ -50,28 +53,40 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     position: 'absolute',
-    width: width,
-    height: height,
+    width,
+    height,
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loaderCircle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 8,
-    borderColor: 'rgba(255,255,255,0.3)',
-    borderTopColor: '#ffffff',
+
+  logoWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 40,
+    overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 2, // Bring image above spinner
   },
+
   logo: {
     width: 80,
     height: 80,
     borderRadius: 40,
+  },
+
+  spinnerBorder: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 5,
+    borderColor: 'rgba(255,255,255,0.2)',
+    borderTopColor: '#ffffff',
+    zIndex: 1,
   },
 });
 

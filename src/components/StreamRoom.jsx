@@ -68,8 +68,7 @@ const StreamRoom = ({
     isHost,
     HandleChatmessages,
     roomchat,
-    streamInfo,
-    isloading
+    streamInfo
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
