@@ -9,6 +9,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import FriendActionsModal from '../modals/FriendActionsModal';
+import { useAppContext } from '../context/AppContext';
 
 
 const messages = [
@@ -96,7 +97,7 @@ export const MessageListScreen = ({ userData }) => {
     const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
     const [menuVisible, setMenuVisible] = useState(false);
-    const [listType, setListType] = useState('friends'); // 'friends' or 'blocked'
+    const { friendListType, setFriendListType } = useAppContext();
     const [friendInfo, setFriendInfo] = useState({});
 
 
@@ -109,7 +110,7 @@ export const MessageListScreen = ({ userData }) => {
     };
 
     const renderItem = ({ item }) => {
-        if (listType === 'requests') {
+        if (friendListType === 'requests') {
             return (
                 <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer, { alignItems: 'center' }]}>
                     <TouchableOpacity onPress={() => alert(`Profile Open`)}>
@@ -148,11 +149,11 @@ export const MessageListScreen = ({ userData }) => {
                     <Text numberOfLines={1} style={[styles.meListMessage, themeStyles[theme].meListMessage]}>
                         {item.message}
                     </Text>
-                    {listType === 'friends' && (
+                    {friendListType === 'friends' && (
                         <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.time}</Text>
                     )}
                 </TouchableOpacity>
-                {listType === 'blocked' ? (
+                {friendListType === 'blocked' ? (
                     <TouchableOpacity
                         onPress={() => alert(`Unblocked ${item.name}`)}
                         style={{
@@ -190,9 +191,9 @@ export const MessageListScreen = ({ userData }) => {
     };
 
     const getTitle = () => {
-        if (listType === 'friends') return 'Friends';
-        if (listType === 'blocked') return 'Blocked Users';
-        if (listType === 'requests') return 'Friend Requests';
+        if (friendListType === 'friends') return 'Friends';
+        if (friendListType === 'blocked') return 'Blocked Users';
+        if (friendListType === 'requests') return 'Friend Requests';
         return '';
     };
 
@@ -227,12 +228,12 @@ export const MessageListScreen = ({ userData }) => {
                             <TouchableOpacity
                                 key={type}
                                 onPress={() => {
-                                    setListType(type);
+                                    setFriendListType(type);
                                     setMenuVisible(false);
                                 }}
                                 style={{
                                     paddingVertical: 6,
-                                    backgroundColor: listType === type ? '#d93a63' : '#f3f3f3',
+                                    backgroundColor: friendListType === type ? '#d93a63' : '#f3f3f3',
                                     borderRadius: 4,
                                     paddingHorizontal: 10,
                                     // marginBottom: 4,
@@ -243,7 +244,7 @@ export const MessageListScreen = ({ userData }) => {
                                     style={{
                                         fontSize: 14,
                                         fontWeight: '500',
-                                        color: listType === type ? '#fff' : '#333',
+                                        color: friendListType === type ? '#fff' : '#333',
                                     }}
                                 >
                                     {type === 'friends'
@@ -263,7 +264,7 @@ export const MessageListScreen = ({ userData }) => {
                         </Text>
                     </View>
                     <FlatList
-                        data={listType === 'requests' ? friendRequests : messages}
+                        data={friendListType === 'requests' ? friendRequests : messages}
                         keyExtractor={(item) => item.id}
                         renderItem={renderItem}
                         contentContainerStyle={styles.messageListLayout}

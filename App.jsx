@@ -24,6 +24,7 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
+import { AppProvider } from './src/context/AppContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -198,76 +199,79 @@ const App = () => {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <ThemeProvider >
-          <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
-              {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
-              {isAuthenticated ? (
-                <>
-                  <Stack.Screen name="Main">
+        <AppProvider>
+          <ThemeProvider >
+            <NavigationContainer>
+              <Stack.Navigator screenOptions={{ headerShown: false }}>
+                {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
+                {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
+                {isAuthenticated ? (
+                  <>
+                    <Stack.Screen name="Main">
+                      {props => (
+                        <MainScreen
+                          {...props}
+                          onLogout={handleLogout}
+                          address={userAddress}
+                          userData={userData}
+                        />
+                      )}
+                    </Stack.Screen>
+                    <Stack.Screen name="Profile">
+                      {props => (
+                        <ProfileScreen
+                          {...props}
+                          onLogout={handleLogout}
+                          userData={userData}
+                          address={userAddress}
+                        />
+                      )}
+                    </Stack.Screen>
+                    <Stack.Screen name="Stats">
+                      {props => (
+                        <StatisticsSettingScreen
+                          {...props}
+                          onLogout={handleLogout}
+                          userData={userData}
+                          address={userAddress}
+                        />
+                      )}
+                    </Stack.Screen>
+                    <Stack.Screen name="Messages">
+                      {props => (
+                        <MessageListScreen
+                          {...props}
+                          userData={userData}
+                        />
+                      )}
+                    </Stack.Screen>
+                    <Stack.Screen name="WalletDashboard">
+                      {props => (
+                        <WalletDashboardScreen
+                          {...props}
+                          userData={userData}
+                        />
+                      )}
+                    </Stack.Screen>
+                    {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
+                  </>
+                ) : (
+                  <Stack.Screen name="Auth">
                     {props => (
-                      <MainScreen
+                      <AuthScreen
                         {...props}
-                        onLogout={handleLogout}
-                        address={userAddress}
-                        userData={userData}
+                        onLogin={handleLogin}
+                        userAddress={userAddress}
+                        setUserAddress={setUserAddress}
                       />
                     )}
                   </Stack.Screen>
-                  <Stack.Screen name="Profile">
-                    {props => (
-                      <ProfileScreen
-                        {...props}
-                        onLogout={handleLogout}
-                        userData={userData}
-                        address={userAddress}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="Stats">
-                    {props => (
-                      <StatisticsSettingScreen
-                        {...props}
-                        onLogout={handleLogout}
-                        userData={userData}
-                        address={userAddress}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="Messages">
-                    {props => (
-                      <MessageListScreen
-                        {...props}
-                        userData={userData}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="WalletDashboard">
-                    {props => (
-                      <WalletDashboardScreen
-                        {...props}
-                        userData={userData}
-                      />
-                    )}
-                  </Stack.Screen>
-                  {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
-                </>
-              ) : (
-                <Stack.Screen name="Auth">
-                  {props => (
-                    <AuthScreen
-                      {...props}
-                      onLogin={handleLogin}
-                      userAddress={userAddress}
-                      setUserAddress={setUserAddress}
-                    />
-                  )}
-                </Stack.Screen>
-              )}
-            </Stack.Navigator>
-          </NavigationContainer>
-        </ThemeProvider>
+                )}
+              </Stack.Navigator>
+            </NavigationContainer>
+          </ThemeProvider>
+        </AppProvider>
+
       </SafeAreaProvider>
 
     </ErrorBoundary>

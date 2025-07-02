@@ -159,7 +159,7 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
                     {saveMessage ? (
                         <Text style={{ color: '#28a745', textAlign: 'center' }}>{saveMessage}</Text>
                     ) : null}
-                    {visible && (
+                    {(visible && !loading) && (
                         <View style={{ marginVertical: 10 }}>
                             <TouchableOpacity style={styles.btnNav} onPress={handleUpdateSocialData}>
                                 <Text style={{ color: 'white' }}>Save</Text>

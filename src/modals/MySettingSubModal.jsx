@@ -11,6 +11,8 @@ import ChangeEmailModal from './ChangeEmailModal';
 import ChangePasswordModal from './ChangePasswordModal';
 import EmailConfirmModal from './EmailConfirmModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppContext } from '../context/AppContext';
+import { useNavigation } from '@react-navigation/native';
 
 const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData, address }) => {
     const screenHeight = Dimensions.get('window').height;
@@ -20,7 +22,8 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
     const [allowNotification, setAllowNotification] = useState(false);
     const [distanceRange, setDistanceRange] = useState(10);
     const [visibleModal, setVisibleModal] = useState('');
-
+    const { setFriendListType } = useAppContext();
+    const navigation = useNavigation();
 
     const checkLocationPermission = async () => {
         const status = await AsyncStorage.getItem('locationPermission');
@@ -241,7 +244,14 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
             case 'Privacy Settings':
                 return [
                     { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', rightArrowVisible: false },
-                    { label: 'Blocked users:', icon: 'user-alt-slash', type: 'slider', onPress: () => { }, rightArrowVisible: true },
+                    {
+                        label: 'Blocked users:', icon: 'user-alt-slash', type: 'slider',
+                        onPress: () => {
+                            setFriendListType('blocked');
+                            navigation.navigate('Messages');
+                        },
+                        rightArrowVisible: true,
+                    },
                 ];
             case 'Search Settings':
                 return [
