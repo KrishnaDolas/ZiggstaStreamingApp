@@ -192,7 +192,9 @@ const StreamRoom = ({
     // Handle keyboard events
     useEffect(() => {
     //    if(!isHost){
-        GetUserDetails(streamInfo.hostID)
+        if(streamInfo){
+            GetUserDetails(streamInfo?.hostID)
+        }
     //    }
         console.log(streamInfo.hostID);
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
