@@ -4,7 +4,6 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext,useEffect, useRef, } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
@@ -80,17 +79,6 @@ export const MainScreen = ({address, userData }) => {
       [{ text: 'OK' }]
     );
   }
-  const addLocalTracks = (peer, localStreamRef) => {
-   console.log(localStreamRef);
-   console.log(localStream);
-   if (!localStreamRef) return;
-   localStreamRef.getAudioTracks().forEach(track => {
-     peer.addTrack(track, localStreamRef);
-   });
-   localStreamRef.getVideoTracks().forEach(track => {
-     peer.addTrack(track, localStreamRef);
-   });
- };
   const HandleNewUser =async (userId) => {
     if (!peersRef.current[userId]) {
       const peer = createPeer(userId);
@@ -102,40 +90,34 @@ export const MainScreen = ({address, userData }) => {
       socket.emit('signal', { to: userId, data: peer.localDescription });
     }
   }
-  const HandleSignal = async ({ from, data }) => {
-   let peer = peersRef.current[from];
+  const HandleSignal=async ({ from, data }) => {
+    let peer = peersRef.current[from];
+    if (!peer) {
+      peer = createPeer(from);
+      peersRef.current[from] = peer;
+    }
 
-   if (data.type === 'offer') {
-     if (peer && peer.remoteDescription) {
-       peer.close();
-       delete peersRef.current[from];
-       peer = createPeer(from);
-       peersRef.current[from] = peer;
-     } else if (!peer) {
-       peer = createPeer(from);
-       peersRef.current[from] = peer;
-     }
+    if (data.type === 'offer') {
+      await peer.setRemoteDescription(new RTCSessionDescription(data));
+      const answer = await peer.createAnswer();
+      await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
+      socket.emit('signal', { to: from, data: peer.localDescription });
 
-     await peer.setRemoteDescription(new RTCSessionDescription(data));
-     const answer = await peer.createAnswer();
-     await peer.setLocalDescription({ type: 'answer', sdp: answer.sdp });
-     socket.emit('signal', { to: from, data: peer.localDescription });
-
-     (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
-     pendingCandidates.current[from] = [];
-   } else if (data.type === 'answer') {
-     if (!peer.remoteDescription) {
-       await peer.setRemoteDescription(new RTCSessionDescription(data));
-     }
-   } else if (data.candidate) {
-     const candidate = new RTCIceCandidate(data.candidate);
-     if (peer.remoteDescription?.type) {
-       await peer.addIceCandidate(candidate);
-     } else {
-       (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
-     }
-   }
- };
+      (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+      pendingCandidates.current[from] = [];
+    } else if (data.type === 'answer') {
+      if (!peer.remoteDescription) {
+        await peer.setRemoteDescription(new RTCSessionDescription(data));
+      }
+    } else if (data.candidate) {
+      const candidate = new RTCIceCandidate(data.candidate);
+      if (peer.remoteDescription?.type) {
+        await peer.addIceCandidate(candidate);
+      } else {
+        (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
+      }
+    }
+  }
   const HandleNewMessage =({ userName, message, id })=>{
     console.log('New message received');
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
@@ -161,20 +143,20 @@ export const MainScreen = ({address, userData }) => {
     }
   }
   const HandleApprovedStream = async () => {
-   await startLocalStream();
-   for (const userId in peersRef.current) {
-     const peer = peersRef.current[userId];
-     peer.getSenders().forEach(sender => {
-       if (sender.track) {
-         peer.removeTrack(sender);
-       }
-     });
-     addLocalTracks(peer, localStreamRef.current);
-     const offer = await peer.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
-     await peer.setLocalDescription({ type: 'offer', sdp: offer.sdp });
-     socket.emit('signal', { to: userId, data: peer.localDescription });
-   }
- };
+    await startLocalStream();
+    // Add tracks to existing peer connections
+    for (const userId in peersRef.current) {
+      const peer = peersRef.current[userId];
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+          // Renegotiate by sending a new offer
+  const offer = await peer.createOffer();
+  await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+  socket.emit('signal', { to: userId, data: peer.localDescription });
+    }
+  }
   const HandleStreamReject = (Name) => {
     setHasRequestedStream(false);
     Alert.alert(
@@ -183,19 +165,18 @@ export const MainScreen = ({address, userData }) => {
       [{ text: 'OK' }]
     );
   }
-  const HandlereconnectWithNewPeer = async (newUserId) => {
-   const peer = peersRef.current[newUserId];
-   if (!peer || !localStreamRef.current) return;
-   peer.getSenders().forEach(sender => {
-     if (sender.track) {
-       peer.removeTrack(sender);
-     }
-   });
-   addLocalTracks(peer, localStreamRef.current);
-   const offer = await peer.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
-   await peer.setLocalDescription({ type: 'offer', sdp: offer.sdp });
-   socket.emit('signal', { to: newUserId, data: peer.localDescription });
- };
+  const HandlereconnectWithNewPeer =async (newUserId) => {
+    const peer = peersRef.current[newUserId];
+    if (!peer || !localStreamRef.current) return;
+  
+    localStreamRef.current.getTracks().forEach(track =>
+      peer.addTrack(track, localStreamRef.current)
+    );
+  
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+    socket.emit('signal', { to: newUserId, data: peer.localDescription });
+  }
   const HandleUserLeft = socketId => {
     console.log(`User left: ${socketId}`);
     if (peersRef.current[socketId]) {
@@ -278,56 +259,45 @@ export const MainScreen = ({address, userData }) => {
       socket.off('Hostleft',HandleHostLeft)
     }
   }, [isHost]);
+  const createPeer = (socketId) => {
+    const peer = new RTCPeerConnection({
+      iceServers: [{
+        urls: ['turn:coturn.streamalong.live:3478'],
+        username: 'webrtcuser',
+        credential: 'Test@1234'
+      }],
+      iceTransportPolicy: 'all',
+      sdpSemantics: 'unified-plan'
+    });
 
-  useEffect(() => {
-   // Force speaker output on mobile
-   InCallManager.start({ media: 'audio' });
-   InCallManager.setForceSpeakerphoneOn(true);
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+    }
+    peer.ontrack = (event) => {
+        console.log(`Received track from ${socketId}`, event);
+      const stream = event.streams[0];
+      if (!stream || !stream.getVideoTracks().length) return;
+      setRemoteStreams(prev => {
+        const exists = prev.some(s => s.id === socketId);
+        if (exists) return prev;
+        return [...prev, { id: socketId, stream }];
+      });
+    };
+    peer.onaddstream = (event) => {
+      console.log(`Received remote stream from ${socketId}`, event.stream);
+    };
+    
 
-   // return () => {
-   //   InCallManager.stop();
-   // };
- }, []);
+    peer.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+      }
+    };
 
- const createPeer = (socketId) => {
-   const peer = new RTCPeerConnection({
-     iceServers: [
-       {
-         urls: ['turn:coturn.streamalong.live:3478'],
-         username: 'webrtcuser',
-         credential: 'Test@1234',
-       },
-     ],
-     iceTransportPolicy: 'all',
-     sdpSemantics: 'unified-plan',
-   });
-
-   addLocalTracks(peer, localStreamRef.current);
-
-   peer.ontrack = (event) => {
-     const stream = event.streams[0];
-     if (!stream || (!stream.getVideoTracks().length && !stream.getAudioTracks().length)) return;
-
-     console.log('ontrack received stream:', stream);
-     stream.getAudioTracks().forEach(track => {
-       console.log(`[REMOTE-AUDIO] Track ID: ${track.id}, enabled: ${track.enabled}, muted: ${track.muted}, readyState: ${track.readyState}`);
-     });
-
-     setRemoteStreams(prev => {
-       const exists = prev.some(s => s.id === socketId);
-       if (exists) return prev;
-       return [...prev, { id: socketId, stream }];
-     });
-   };
-
-   peer.onicecandidate = (event) => {
-     if (event.candidate) {
-       socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
-     }
-   };
-
-   return peer;
- };
+    return peer;
+  };
   const requestPermissions = async () => {
     if (Platform.OS === 'android') {
       await PermissionsAndroid.requestMultiple([
