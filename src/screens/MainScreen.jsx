@@ -44,14 +44,20 @@ export const MainScreen = ({address, userData }) => {
   };
 
   const HandleJoined =async ({users }) => {
-    setIsLoading(false);
-    setJoined(true);
+
     // If no one else, you're host
     if (users.length === 0) {
+      setJoined(true);
+      setIsLoading(false);
       setIsHost(true);
       await startLocalStream();
       socket.emit('assignHost');
     }else{
+      setIsLoading(true);
+      setTimeout(() => {
+         setJoined(true);
+         setIsLoading(false);
+       }, 2000);
       setIsStreaming(true);
     }
   
@@ -303,9 +309,6 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = async (roomID,RoomInfo) => {
     try {
-      if(!isHost){
-        setIsLoading(true);
-      }
       setStreamInfo(RoomInfo);
       console.log(userData.userid);
       const IsHost=RoomInfo?.hostID===userData?.userid
@@ -395,9 +398,10 @@ export const MainScreen = ({address, userData }) => {
         backgroundColor="#fff"
       />
       <View style={[styles.container]}>
+      {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={joinRoom} userData={userData} address={address} />
-        ) : (isloading ?(<Loader LoaderImage={chatimage}/>):<StreamRoom
+        ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}
         isStreaming={isStreaming}

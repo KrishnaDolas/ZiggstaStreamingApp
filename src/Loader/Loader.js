@@ -34,7 +34,7 @@ const Loader = ({ LoaderImage }) => {
       <BlurView
         style={StyleSheet.absoluteFill}
         blurType="light" // or "dark", "extraLight"
-        blurAmount={6}
+        blurAmount={9}
         reducedTransparencyFallbackColor="white" // for Android fallback
       />
       <View style={styles.centerContent}>
@@ -49,12 +49,16 @@ const Loader = ({ LoaderImage }) => {
 
 const styles = StyleSheet.create({
   container: {
+    position: 'absolute',
+    height: height,
+    width: width,
     flex: 1,
   },
   backgroundImage: {
     position: 'absolute',
-    width,
-    height,
+    width: width,
+    height: height,
+    zIndex:100
   },
   centerContent: {
     flex: 1,
@@ -69,7 +73,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 2, // Bring image above spinner
+    zIndex: 101, // Bring image above spinner
   },
 
   logo: {
