@@ -109,12 +109,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-        // ✅ This block renames your APK
-    applicationVariants.all { variant ->
-        variant.outputs.all {
-            outputFileName = new File(outputFile.parent, "ZIGGSTA.apk")
-        }
-    }
+    //     // ✅ This block renames your APK
+    // applicationVariants.all { variant ->
+    //     variant.outputs.all {
+    //         outputFileName = new File(outputFile.parent, "ZIGGSTA.apk")
+    //     }
+    // }
 }
 
 dependencies {
