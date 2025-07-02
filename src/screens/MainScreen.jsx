@@ -4,6 +4,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext,useEffect, useRef, } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
@@ -65,7 +66,6 @@ export const MainScreen = ({address, userData }) => {
       await startLocalStream();
     }
   
-    setViewerCount(users.length);
     console.log('Users in room:', users);
     users.forEach(userId => {
       if (!peersRef.current[userId]) {
@@ -84,7 +84,6 @@ export const MainScreen = ({address, userData }) => {
       const peer = createPeer(userId);
       peersRef.current[userId] = peer;
       //viewer count increment
-      setViewerCount(prevCount => prevCount + 1);
       const offer = await peer.createOffer();
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
       socket.emit('signal', { to: userId, data: peer.localDescription });
@@ -185,8 +184,6 @@ export const MainScreen = ({address, userData }) => {
       delete peersRef.current[socketId];
       setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
     }
-    if(viewerCount <0) return;
-    setViewerCount(prevCount => prevCount - 1);
   }
   const HandleHostLeft = () => {
     console.log('Host left, leaving room...');
@@ -225,6 +222,10 @@ export const MainScreen = ({address, userData }) => {
       setHasRequestedStream(true);
     }
   };
+  const HandleViewerCount=(count)=>{
+      console.log(`Viewer count updated: ${count}`);
+      setViewerCount(count);
+  }
   useEffect(() => {
     // Handles socket events
     console.log('Connecting to socket server...');
@@ -239,6 +240,7 @@ export const MainScreen = ({address, userData }) => {
     socket.on('streamRejected',HandleStreamReject)
     socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
     socket.on('host-action', HandleHostAction);
+    socket.on('viewerCount', HandleViewerCount);
     socket.on('userLeft',HandleUserLeft);
     socket.on('Hostleft',HandleHostLeft)
 
@@ -255,10 +257,24 @@ export const MainScreen = ({address, userData }) => {
       socket.off('streamApproved',HandleApprovedStream);
       socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
       socket.off('host-action', HandleHostAction);
+      socket.on('viewerCount', HandleViewerCount);
       socket.off('userLeft',HandleUserLeft);
       socket.off('Hostleft',HandleHostLeft)
     }
   }, [isHost]);
+
+  useEffect(() => {
+   // Start audio focus
+   InCallManager.start({ media: 'audio' });
+ 
+   // ✅ Force audio to speaker
+   InCallManager.setForceSpeakerphoneOn(true);
+ 
+   // return () => {
+   //   InCallManager.setForceSpeakerphoneOn(false);
+   //   InCallManager.stop();
+   // };
+ }, []);
   const createPeer = (socketId) => {
     const peer = new RTCPeerConnection({
       iceServers: [{
@@ -341,6 +357,8 @@ export const MainScreen = ({address, userData }) => {
       setLocalStream(null);
       setRemoteStreams([]);
     }
+   InCallManager.setForceSpeakerphoneOn(false);
+   InCallManager.stop();
    if(isHost){
     HandleSetLivestatus(streamInfo?.roomID);
    }
