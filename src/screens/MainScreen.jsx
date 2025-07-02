@@ -4,6 +4,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext,useEffect, useRef, } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
