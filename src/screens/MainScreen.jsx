@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { preferVP8, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
+import Loader from '../Loader/Loader';
 export const MainScreen = ({address, userData }) => {
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -44,7 +45,7 @@ export const MainScreen = ({address, userData }) => {
 
   const HandleJoined =async ({users }) => {
     setIsLoading(false);
-
+    setJoined(true);
     // If no one else, you're host
     if (users.length === 0) {
       setIsHost(true);
@@ -172,13 +173,14 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleUserLeft = socketId => {
     console.log(`User left: ${socketId}`);
-    setViewerCount(prevCount => prevCount - 1);
     if (peersRef.current[socketId]) {
       console.log(`Closing peer connection for ${socketId}`);
       peersRef.current[socketId].close();
       delete peersRef.current[socketId];
       setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
     }
+    if(viewerCount <0) return;
+    setViewerCount(prevCount => prevCount - 1);
   }
   const HandleHostLeft = () => {
     console.log('Host left, leaving room...');
@@ -301,8 +303,9 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = async (roomID,RoomInfo) => {
     try {
-      setIsLoading(true);
-      setJoined(true);
+      if(!isHost){
+        setIsLoading(true);
+      }
       setStreamInfo(RoomInfo);
       console.log(userData.userid);
       const IsHost=RoomInfo?.hostID===userData?.userid
@@ -394,25 +397,22 @@ export const MainScreen = ({address, userData }) => {
       <View style={[styles.container]}>
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={joinRoom} userData={userData} address={address} />
-        ) : (
-          <StreamRoom
-            remoteStreams={remoteStreams}
-            localStream={localStream}
-            isStreaming={isStreaming}
-            requestStreamPermission={requestStreamPermission}
-            isFrontCamera={isFrontCamera}
-            viewerCount={viewerCount}
-            toggleMute={toggleMute}
-            switchCamera={switchCamera}
-            leaveRoom={leaveRoom}
-            isMuted={isMuted}
-            isHost={isHost}
-            HandleChatmessages={HandleChatmessages}
-            roomchat={roomchat}
-            streamInfo={streamInfo}
-            isloading={isloading}
-          />
-        )}
+        ) : (isloading ?(<Loader LoaderImage={chatimage}/>):<StreamRoom
+        remoteStreams={remoteStreams}
+        localStream={localStream}
+        isStreaming={isStreaming}
+        requestStreamPermission={requestStreamPermission}
+        isFrontCamera={isFrontCamera}
+        viewerCount={viewerCount}
+        toggleMute={toggleMute}
+        switchCamera={switchCamera}
+        leaveRoom={leaveRoom}
+        isMuted={isMuted}
+        isHost={isHost}
+        HandleChatmessages={HandleChatmessages}
+        roomchat={roomchat}
+        streamInfo={streamInfo}
+      />)}
       </View>
     </LinearGradient>
   );
