@@ -79,6 +79,17 @@ export const MainScreen = ({address, userData }) => {
       [{ text: 'OK' }]
     );
   }
+  const addLocalTracks = (peer, localStreamRef) => {
+   console.log(localStreamRef);
+   console.log(localStream);
+   if (!localStreamRef) return;
+   localStreamRef.getAudioTracks().forEach(track => {
+     peer.addTrack(track, localStreamRef);
+   });
+   localStreamRef.getVideoTracks().forEach(track => {
+     peer.addTrack(track, localStreamRef);
+   });
+ };
   const HandleNewUser =async (userId) => {
     if (!peersRef.current[userId]) {
       const peer = createPeer(userId);
@@ -147,15 +158,23 @@ export const MainScreen = ({address, userData }) => {
     // Add tracks to existing peer connections
     for (const userId in peersRef.current) {
       const peer = peersRef.current[userId];
-      localStreamRef.current.getTracks().forEach(track =>
-        peer.addTrack(track, localStreamRef.current)
-      );
-          // Renegotiate by sending a new offer
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-
-  socket.emit('signal', { to: userId, data: peer.localDescription });
-    }
+    
+      // Remove all existing senders first (cleanup)
+      peer.getSenders().forEach(sender => {
+        if (sender.track) {
+          peer.removeTrack(sender);
+        }
+      });
+    
+      // Re-add tracks freshly
+      addLocalTracks(peer, localStreamRef.current);
+    
+      // Renegotiate
+      const offer = await peer.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+      await peer.setLocalDescription({ type: 'offer', sdp: offer.sdp });
+    
+      socket.emit('signal', { to: userId, data: peer.localDescription });
+    }    
   }
   const HandleStreamReject = (Name) => {
     setHasRequestedStream(false);
@@ -259,36 +278,37 @@ export const MainScreen = ({address, userData }) => {
       socket.off('Hostleft',HandleHostLeft)
     }
   }, [isHost]);
+
   const createPeer = (socketId) => {
     const peer = new RTCPeerConnection({
-      iceServers: [{
-        urls: ['turn:coturn.streamalong.live:3478'],
-        username: 'webrtcuser',
-        credential: 'Test@1234'
-      }],
+      iceServers: [
+        {
+          urls: ['turn:coturn.streamalong.live:3478'],
+          username: 'webrtcuser',
+          credential: 'Test@1234',
+        },
+      ],
       iceTransportPolicy: 'all',
-      sdpSemantics: 'unified-plan'
+      sdpSemantics: 'unified-plan',
     });
 
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track =>
-        peer.addTrack(track, localStreamRef.current)
-      );
-    }
+    addLocalTracks(peer, localStreamRef.current);
+
     peer.ontrack = (event) => {
-        console.log(`Received track from ${socketId}`, event);
       const stream = event.streams[0];
-      if (!stream || !stream.getVideoTracks().length) return;
+      if (!stream || (!stream.getVideoTracks().length && !stream.getAudioTracks().length)) return;
+
+      console.log('ontrack received stream:', stream);
+      stream.getAudioTracks().forEach(track => {
+        console.log(`[REMOTE-AUDIO] Track ID: ${track.id}, enabled: ${track.enabled}, muted: ${track.muted}, readyState: ${track.readyState}`);
+      });
+
       setRemoteStreams(prev => {
         const exists = prev.some(s => s.id === socketId);
         if (exists) return prev;
         return [...prev, { id: socketId, stream }];
       });
     };
-    peer.onaddstream = (event) => {
-      console.log(`Received remote stream from ${socketId}`, event.stream);
-    };
-    
 
     peer.onicecandidate = (event) => {
       if (event.candidate) {
