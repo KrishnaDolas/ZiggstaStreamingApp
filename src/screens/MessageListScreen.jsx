@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
@@ -10,6 +10,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import FriendActionsModal from '../modals/FriendActionsModal';
 import { useAppContext } from '../context/AppContext';
+import Apiclient from '../utils/Apiclient';
+import { ActivityIndicator } from 'react-native';
 
 
 const messages = [
@@ -99,7 +101,37 @@ export const MessageListScreen = ({ userData }) => {
     const [menuVisible, setMenuVisible] = useState(false);
     const { friendListType, setFriendListType } = useAppContext();
     const [friendInfo, setFriendInfo] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [friendsData, setFriendsData] = useState([]);
 
+    // Function to fetch social data from the API
+    useEffect(() => {
+        const getFriendsData = async () => {
+            if (!userData.userid) return
+            setLoading(true);
+            try {
+
+                const postData = {
+                    userId: userData.userid,
+                    isBlocked: friendListType === 'blocked' ? 1 : 0,
+                };
+
+                console.log('postData', postData);
+                const response = await Apiclient.post('/getFriendsList', postData);
+                if (response.status === 200) {
+                    const data = response.data?.friends || [];
+                    setFriendsData(data);
+                }
+            } catch (error) {
+                console.error('Error fetching bank list:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (friendListType !== 'requests') {
+            getFriendsData();
+        }
+    }, [friendListType, userData.userid]);
 
     const handleConfirm = (id) => {
         alert(`Friend request from ${id} confirmed`);
@@ -140,22 +172,22 @@ export const MessageListScreen = ({ userData }) => {
         return (
             <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer]}>
                 <TouchableOpacity onPress={() => alert(`Profile Open`)}>
-                    <Image source={item.avatar} style={styles.messageListAvatar} />
+                    <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => alert(`chat open`)} style={styles.messageListContent}>
                     <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
-                        {item.name}
+                        {item.username}
                     </Text>
                     <Text numberOfLines={1} style={[styles.meListMessage, themeStyles[theme].meListMessage]}>
-                        {item.message}
+                        {item.message || 'Absolutely love this stream'}
                     </Text>
                     {friendListType === 'friends' && (
-                        <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.time}</Text>
+                        <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.created_date || '2:57 PM'}</Text>
                     )}
                 </TouchableOpacity>
                 {friendListType === 'blocked' ? (
                     <TouchableOpacity
-                        onPress={() => alert(`Unblocked ${item.name}`)}
+                        onPress={() => alert(`Unblocked ${item.username}`)}
                         style={{
                             paddingVertical: 6,
                             paddingHorizontal: 12,
@@ -263,17 +295,27 @@ export const MessageListScreen = ({ userData }) => {
                             {getTitle()}
                         </Text>
                     </View>
-                    <FlatList
-                        data={friendListType === 'requests' ? friendRequests : messages}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderItem}
-                        contentContainerStyle={styles.messageListLayout}
-                        initialNumToRender={10}
-                    />
+                    {loading ? (
+                        <View style={{ flex: 1, justifyContent: 'start', alignItems: 'center', paddingVertical: 40 }}>
+                            <ActivityIndicator size="large" color="#d93a63" />
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={friendListType === 'requests' ? friendRequests : friendsData}
+                            keyExtractor={(item, index) => index}
+                            renderItem={renderItem}
+                            contentContainerStyle={styles.messageListLayout}
+                            initialNumToRender={10}
+                        />)}
                 </View>
                 <Footer />
                 {visibleModal === 'friend-action' && (
-                    <FriendActionsModal visible="true" onClose={() => setVisibleModal(null)} friendInfo={friendInfo} />
+                    <FriendActionsModal
+                        visible="true"
+                        onClose={() => setVisibleModal(null)}
+                        userData={userData}
+                        friendInfo={friendInfo}
+                    />
                 )}
             </SafeAreaView>
         </LinearGradient>

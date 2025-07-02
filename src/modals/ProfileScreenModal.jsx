@@ -190,7 +190,7 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                         </TouchableOpacity>
                                     </View>
                                     {/* Top Gifters */}
-                                    {/* <View style={styles.psmTopGiftersContainer}>
+                                    <View style={styles.psmTopGiftersContainer}>
                                         <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
                                         <LinearGradient
                                             colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
@@ -232,7 +232,7 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                                 </View>
                                             ))}
                                         </View>
-                                    </View> */}
+                                    </View>
                                 </View>
                             </ScrollView>
                         }

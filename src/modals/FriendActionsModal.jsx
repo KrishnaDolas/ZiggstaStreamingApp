@@ -8,7 +8,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { ScrollView } from 'react-native';
 
-const FriendActionsModal = ({ visible, onClose, friendInfo }) => {
+const FriendActionsModal = ({ visible, onClose, userData, friendInfo }) => {
 
     const [isModalRendered, setIsModalRendered] = useState(false);
 
@@ -28,11 +28,11 @@ const FriendActionsModal = ({ visible, onClose, friendInfo }) => {
             icon: 'remove-circle-outline', // Better for "block"
             lib: 'ionicons',
         },
-        {
-            label: `Unfriend ${friendInfo.name?.split(' ')[0]}`,
-            icon: 'person-remove', // Solid unfriend icon
-            lib: 'ionicons',
-        },
+        // {
+        //     label: `Unfriend ${friendInfo.name?.split(' ')[0]}`,
+        //     icon: 'person-remove', // Solid unfriend icon
+        //     lib: 'ionicons',
+        // },
     ];
 
 
