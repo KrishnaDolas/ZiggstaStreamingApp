@@ -1885,25 +1885,40 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   psmProfileContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    // flex: 1,
+    // alignItems: 'center',
+    marginHorizontal: 10,
   },
   psmProfileTopCard: {
-    flex: 1,
     alignItems: 'center',
-    shadowColor: '#000',
+    // paddingHorizontal: 20,
+    backgroundColor: '#fff', // required for Android elevation
+    borderRadius: 10,
+    paddingTop: 140,
+    // iOS Shadow
+    shadowColor: '#d9d9d9',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 20, // maps to second value in CSS (vertical offset)
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.08, // similar to rgba alpha
+    shadowRadius: 20, // blur radius like the 3rd value in CSS
+
+    // Android Shadow
+    elevation: 10, // approximate effect, tweak as needed
+    borderTopWidth: 0, // helps avoid shadow overlap on top
+    position: 'relative',
   },
+
   psmProfileImageContainer: {
-    marginTop: 20,
-    marginBottom: 20,
+    width: screenWidth,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: -10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    paddingVertical: 20,
   },
   psmProfileImage: {
     width: 120,
@@ -1935,19 +1950,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    backgroundColor: '#fff',
     borderRadius: 15,
-    paddingVertical: 20,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    marginBottom: 40,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    // marginBottom: 40,
   },
   psmStatItem: {
     alignItems: 'center',
@@ -1963,12 +1969,13 @@ export const styles = StyleSheet.create({
   psmStatValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#e74c3c',
+    color: '#d93a63',
   },
   psmSocialContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
+    marginTop: 40,
   },
   psmSocialButton: {
     padding: 5,
@@ -1976,24 +1983,24 @@ export const styles = StyleSheet.create({
   psmInstagramIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: '#E4405F',
+    // borderRadius: 25,
+    // backgroundColor: '#E4405F',
     justifyContent: 'center',
     alignItems: 'center',
   },
   psmFacebookIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: '#1877F2',
+    // borderRadius: 25,
+    // backgroundColor: '#1877F2',
     justifyContent: 'center',
     alignItems: 'center',
   },
   psmTwitterIcon: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: '#000',
+    // borderRadius: 25,
+    // backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -2002,6 +2009,124 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+
+  // Top Gifters Container
+  psmTopGiftersContainer: {
+    paddingVertical: 15,
+    backgroundColor: '#fff',
+  },
+
+  // Title
+  psmTopGiftersTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#d93a63',
+    marginBottom: 15,
+  },
+
+  // Main Top Gifter Card
+  psmTopGifterMainCard: {
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+    // marginBottom: 15,
+    minHeight: 120,
+    position: 'relative',
+    // For React Native, use a solid color or implement gradient library
+  },
+
+  // Top Gifter Image Container
+  psmTopGifterImageContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+
+  // Top Gifter Main Image
+  psmTopGifterMainImage: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+  },
+
+  // Top Gifter Name
+  psmTopGifterMainName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+
+  // Top Gifter Amount
+  psmTopGifterMainAmount: {
+    fontSize: 14,
+    color: '#fff',
+    marginLeft: 5,
+  },
+
+  // Other Gifters Container
+  psmOtherGiftersContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  // Other Gifter Card
+  psmOtherGifterCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    alignItems: 'center',
+    flex: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    borderRightWidth: 1,
+    borderRightColor: '#f0f0f0',
+  },
+
+  // Other Gifter Image Container
+  psmOtherGifterImageContainer: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: '#f8f8f8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
+  // Other Gifter Image
+  psmOtherGifterImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+
+  // Other Gifter Name
+  psmOtherGifterName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  // Other Gifter Amount
+  psmOtherGifterAmount: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+    marginLeft: 5,
+  },
+
 });
 
 // Theme Styles

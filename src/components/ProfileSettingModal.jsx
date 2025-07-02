@@ -83,27 +83,26 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
 
     return (
         <>
-            {layoutReady &&
-                <Modal
-                    isVisible={visible}
-                    onBackdropPress={onClose}
-                    animationIn="slideInUp"
-                    animationOut="slideOutDown"
-                    animationInTiming={300}
-                    animationOutTiming={200}
-                    useNativeDriver={true}
-                    avoidKeyboard={false}
-                    backdropOpacity={0}
-                    style={[styles.profileModalMain]}
-                // backdropOpacity={0}
-                // backdropColor='#fafafa'
-                >
-                    <View style={[styles.profileModalOverlay]}>
-                        {/* close modal */}
-                        <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                            <Ionicons name="close" size={23} color="#333" />
-                        </TouchableOpacity>
-                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.3 + 20 }]}>
+
+            <Modal
+                isVisible={visible}
+                onBackdropPress={onClose}
+                animationIn="slideInUp"
+                animationOut="slideOutDown"
+                animationInTiming={300}
+                animationOutTiming={200}
+                useNativeDriver={true}
+                avoidKeyboard={false}
+                backdropOpacity={0}
+                style={[styles.profileModalMain]}
+            >
+                <View style={[styles.profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
+                    {/* close modal */}
+                    <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
+                        <Ionicons name="close" size={23} color="#333" />
+                    </TouchableOpacity>
+                    {layoutReady &&
+                        <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
                             <ScrollView
                                 // contentContainerStyle={{ paddingBottom: 20 }}
                                 showsVerticalScrollIndicator={true}
@@ -146,13 +145,10 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>
-
                         </View>
-
-                    </View>
-                </Modal>
-            }
-
+                    }
+                </View>
+            </Modal>
             {visibleModal && (
                 <MySettingSubModal
                     visible="true"
@@ -161,7 +157,7 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                     onLogout={onLogout}
                     userData={userData}
                     address={address}
-                     />
+                />
             )
             }
 
