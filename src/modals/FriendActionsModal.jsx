@@ -15,25 +15,26 @@ const FriendActionsModal = ({ visible, onClose, friendInfo }) => {
     const menuItems = [
         {
             label: `Message  ${friendInfo.name?.split(' ')[0]}`,
-            icon: 'chatbubble-ellipses-outline', // Ionicons
+            icon: 'chatbox-outline', // Better match for Facebook
             lib: 'ionicons',
         },
         {
             label: `Unfollow ${friendInfo.name?.split(' ')[0]}`,
-            icon: 'person-remove-outline', // Ionicons
+            icon: 'person-remove-outline', // Still good
             lib: 'ionicons',
         },
         {
             label: `Block ${friendInfo.name?.split(' ')[0]}'s Profile`,
-            icon: 'hand-left-outline', // Ionicons
+            icon: 'remove-circle-outline', // Better for "block"
             lib: 'ionicons',
         },
         {
             label: `Unfriend ${friendInfo.name?.split(' ')[0]}`,
-            icon: 'person-remove-outline', // Ionicons
+            icon: 'person-remove', // Solid unfriend icon
             lib: 'ionicons',
         },
     ];
+
 
 
     return (

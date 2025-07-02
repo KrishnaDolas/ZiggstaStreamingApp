@@ -150,7 +150,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  StreamLoader:{
+  StreamLoader: {
     width: '100%',
     height: '100%',
     flex: 1,
@@ -1863,6 +1863,144 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 10,
     color: '#414141',
+  },
+
+  // profile screen modal main
+
+  psmHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  psmReportButton: {
+    backgroundColor: '#e6f0ff',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  psmReportButtonText: {
+    color: '#004080',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  psmProfileContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  psmProfileTopCard: {
+    flex: 1,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  psmProfileImageContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  psmProfileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  psmProfileName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  psmProfileId: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 30,
+  },
+  psmStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    marginBottom: 40,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  psmStatItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  psmStatLabel: {
+    fontSize: 12,
+    color: '#999',
+    fontWeight: '500',
+    marginBottom: 5,
+    letterSpacing: 0.5,
+  },
+  psmStatValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#e74c3c',
+  },
+  psmSocialContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+  },
+  psmSocialButton: {
+    padding: 5,
+  },
+  psmInstagramIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#E4405F',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  psmFacebookIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#1877F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  psmTwitterIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  psmSocialIconText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
 });
 
