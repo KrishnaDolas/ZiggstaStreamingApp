@@ -239,7 +239,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         const roomId = item.roomID.toString();
         const hostID = item.hostID.toString();
         if (item.hostID === userData.userid) {
-            createRoom(roomId, item);
+            joinRoom(roomId, item);
         } else {
             joinRoom(roomId, item);
         }

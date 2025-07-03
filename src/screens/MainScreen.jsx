@@ -323,7 +323,7 @@ export const MainScreen = ({address, userData }) => {
     }
   };
 
-  const joinRoom = async (roomID,RoomInfo) => {
+  const joinRoom = (roomID,RoomInfo) => {
     try {
       if(RoomInfo?.isLive.data[0]===0){
         Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
@@ -331,17 +331,28 @@ export const MainScreen = ({address, userData }) => {
         );
         return;
       }
-      const IsHost=RoomInfo?.hostID===userData?.userid;
       setStreamInfo(RoomInfo);
-      console.log(userData.userid);
-      await requestPermissions();
-      socket.emit('joinRoom',IsHost, roomID, userData?.userid, userData?.screenName);
+      socket.emit('joinRoom',false, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
-      Alert.alert("Camera/Mic permission denied");
+      console.log(err);
+      Alert.alert("Room not available or permission denied");
     }
   };
-  const requestStreamPermission = () => {
+  const CreateRoom= async (roomID,RoomInfo) => {
+    try {
+      setStreamInfo(RoomInfo);
+      const isaccepted=await requestPermissions();
+      console.log(`Permissions granted: ${isaccepted}`);
+
+      socket.emit('joinRoom',true, roomID, userData?.userid, userData?.screenName);
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Camera/Mic permission denied");
+    }
+  }
+  const requestStreamPermission = async() => {
     if (!hasRequestedStream) {
+      await requestPermissions();
       socket.emit('requestStream');
       setHasRequestedStream(true);
     }
@@ -424,7 +435,7 @@ export const MainScreen = ({address, userData }) => {
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={joinRoom} userData={userData} address={address} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}
