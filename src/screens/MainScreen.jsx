@@ -325,9 +325,15 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = async (roomID,RoomInfo) => {
     try {
+      if(RoomInfo?.isLive.data[0]===0){
+        Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+      const IsHost=RoomInfo?.hostID===userData?.userid;
       setStreamInfo(RoomInfo);
       console.log(userData.userid);
-      const IsHost=RoomInfo?.hostID===userData?.userid
       await requestPermissions();
       socket.emit('joinRoom',IsHost, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
