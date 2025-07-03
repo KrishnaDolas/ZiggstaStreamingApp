@@ -53,7 +53,7 @@ const SearchModal = ({ visible, onClose,
 
 
         // Construct query parameters
-        let queryParams = `Categories=${filteredCategories}&username=${searchText.trim()}&isVerified=${isVerifiedValue}`;
+        let queryParams = `isLive=1&Categories=${filteredCategories}&username=${searchText.trim()}&isVerified=${isVerifiedValue}`;
 
         // if (checkLocationPermission === 'granted') {
         //     queryParams += `&maxDistance=${Number(getMaxDistance)}&userLocation=${userLocation}`;
