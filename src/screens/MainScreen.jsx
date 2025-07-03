@@ -206,6 +206,9 @@ export const MainScreen = ({address, userData }) => {
     setJoined(false);
     setIsHost(false);
   }
+  const HandleRoomInfo=(info)=>{
+    console.log(info);
+  }
   const HandleHostAction = ({ action }) => {
     if (!localStreamRef.current) return;
   
@@ -244,6 +247,7 @@ export const MainScreen = ({address, userData }) => {
     socket.on('viewerCount', HandleViewerCount);
     socket.on('userLeft',HandleUserLeft);
     socket.on('Hostleft',HandleHostLeft)
+    socket.on('roomInfo',HandleRoomInfo)
 
     return () => {
       // Cleanup socket listeners
@@ -261,6 +265,7 @@ export const MainScreen = ({address, userData }) => {
       socket.on('viewerCount', HandleViewerCount);
       socket.off('userLeft',HandleUserLeft);
       socket.off('Hostleft',HandleHostLeft)
+      socket.off('roomInfo',HandleRoomInfo)
     }
   }, [isHost]);
 
