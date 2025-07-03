@@ -1,13 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert, Dimensions } from 'react-native';
-import { styles } from '../../assets/styles/ThemeStyles';
-import { globalStyles } from '../../assets/styles/GlobalStyles';
+import React, {useState, useRef, useEffect} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Dimensions,
+} from 'react-native';
+import {styles} from '../../assets/styles/ThemeStyles';
+import {globalStyles} from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { formatISO } from 'date-fns';
+import {formatISO} from 'date-fns';
 import WebView from 'react-native-webview';
 import DropDownPicker from 'react-native-dropdown-picker';
-
 
 const screenHeight = Dimensions.get('window').height;
 const questions = [
@@ -26,9 +33,9 @@ const questions = [
     field: 'location',
     placeholder: 'Enter your location',
   },
-  { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
-  { label: 'Gender', field: 'gender' },
-  { label: 'Choose your Interests (Any 2)', field: 'interests' },
+  {label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD'},
+  {label: 'Gender', field: 'gender'},
+  {label: 'Choose your Interests (Any 2)', field: 'interests'},
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -57,13 +64,20 @@ const getDefaultDOB = () => {
   return `${year}-${month}-${day}`;
 };
 
-export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onLogin }) => {
+export const RegisterForm = ({
+  userData,
+  theme,
+  userAddress,
+  setUserAddress,
+  onLogin,
+}) => {
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
   const webViewRef = useRef(null);
   const [errors, setErrors] = useState({});
   const [isValidStep, setIsValidStep] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -78,7 +92,6 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     zipcode: '',
   });
 
-
   const [openYear, setOpenYear] = useState(false);
   const [openMonth, setOpenMonth] = useState(false);
   const [openDay, setOpenDay] = useState(false);
@@ -89,7 +102,6 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
   const [yearDropdownY, setYearDropdownY] = useState(0);
   const [monthDropdownY, setMonthDropdownY] = useState(0);
   const [dayDropdownY, setDayDropdownY] = useState(0);
-
 
   useEffect(() => {
     if (formData.dob) {
@@ -113,9 +125,8 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
   }, [formData, step]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({...prev, [field]: value}));
   };
-
 
   useEffect(() => {
     console.log('address:', userAddress);
@@ -135,12 +146,10 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         // zipcode: '',
       };
 
-
       setFormData(prev => ({
         ...prev,
         ...updatedForm,
       }));
-
     }
   }, [userData, userAddress]);
 
@@ -161,15 +170,13 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     });
   };
 
-
   // Callback for map taps returned via WebView message
   // const onMapMessage = city => {
   //   console.log('city', city);
   //   handleChange('location', city);
   // };
 
-
-  const updateMapLocation = (cityName) => {
+  const updateMapLocation = cityName => {
     if (webViewRef.current && cityName.length > 2) {
       const escapedCity = cityName.replace(/'/g, "\\'");
       const jsCode = `
@@ -179,15 +186,14 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     }
   };
 
-
-  const onMapMessage = (message) => {
+  const onMapMessage = message => {
     try {
       const address = JSON.parse(message);
       console.log('📍 Address from map:', address);
 
       setFormData(prev => ({
         ...prev,
-        location: address.source === 'tap' ? (address.city || '') : prev.location,
+        location: address.source === 'tap' ? address.city || '' : prev.location,
         city: address.city || '',
         state: address.state || '',
         country: address.country || '',
@@ -202,7 +208,6 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     }
   };
 
-
   const renderStepContent = question => {
     if (question.field === 'gender') {
       return (
@@ -216,12 +221,12 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                   styles.btnGender,
                   formData.gender === gender && styles.btnGenderActive,
                 ]}>
-                <Text style={{ color: 'white' }}>{gender}</Text>
+                <Text style={{color: 'white'}}>{gender}</Text>
               </TouchableOpacity>
             ))}
           </View>
           {errors[question.field] ? (
-            <Text style={{ color: 'red', marginTop: 5 }}>
+            <Text style={{color: 'red', marginTop: 5}}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -246,14 +251,14 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                 style={[
                   styles.btnInterest,
                   formData.interests.includes(interest) &&
-                  styles.btnInterestActive,
+                    styles.btnInterestActive,
                 ]}>
-                <Text style={{ color: 'white' }}>{interest}</Text>
+                <Text style={{color: 'white'}}>{interest}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
           {errors[question.field] ? (
-            <Text style={{ color: 'red', marginTop: 5 }}>
+            <Text style={{color: 'red', marginTop: 5}}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -263,19 +268,19 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
 
     // dob input
     if (question.field === 'dob') {
-      const years = Array.from({ length: 50 }, (_, i) => {
+      const years = Array.from({length: 50}, (_, i) => {
         const year = new Date().getFullYear() - i;
-        return { label: `${year}`, value: `${year}` };
+        return {label: `${year}`, value: `${year}`};
       });
 
-      const months = Array.from({ length: 12 }, (_, i) => {
+      const months = Array.from({length: 12}, (_, i) => {
         const month = String(i + 1).padStart(2, '0');
-        return { label: month, value: month };
+        return {label: month, value: month};
       });
 
-      const days = Array.from({ length: 31 }, (_, i) => {
+      const days = Array.from({length: 31}, (_, i) => {
         const day = String(i + 1).padStart(2, '0');
-        return { label: day, value: day };
+        return {label: day, value: day};
       });
 
       const dropdownStyle = {
@@ -295,7 +300,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         borderColor: '#ddd',
         borderWidth: 1,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.2,
         shadowRadius: 5,
         elevation: 5,
@@ -318,73 +323,20 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
       };
 
       return (
-        <View style={{ zIndex: 5000, pointerEvents: 'box-none' }}>
-          <View style={[containerStyle, { pointerEvents: 'auto' }]}>
+        <View style={{zIndex: 5000, pointerEvents: 'box-none'}}>
+          <View style={[containerStyle, {pointerEvents: 'auto'}]}>
+            {/* day */}
             <View
-              style={{ flex: 1, zIndex: 4000 }}
-              onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}
-            >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Year</Text>
-              <DropDownPicker
-                open={openYear}
-                value={selectedYear}
-                items={years}
-                setOpen={setOpenYear}
-                setValue={setSelectedYear}
-                placeholder="YYYY"
-                style={dropdownStyle}
-                listMode="MODAL"
-                dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(yearDropdownY)}
-                textStyle={itemTextStyle}
-                modalProps={{
-                  animationType: 'fade',
-                  transparent: true,
-                  presentationStyle: 'overFullScreen',
-                }}
-                modalTitle="Select Year"
-                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
-                showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
-                zIndex={4000}
-              />
-            </View>
-            <View
-              style={{ flex: 1, zIndex: 3000 }}
-              onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}
-            >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Month</Text>
-              <DropDownPicker
-                open={openMonth}
-                value={selectedMonth}
-                items={months}
-                setOpen={setOpenMonth}
-                setValue={setSelectedMonth}
-                placeholder="MM"
-                style={dropdownStyle}
-                listMode="MODAL"
-                dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(monthDropdownY)}
-                textStyle={itemTextStyle}
-                modalProps={{
-                  animationType: 'fade',
-                  transparent: true,
-                  presentationStyle: 'overFullScreen',
-                }}
-                modalTitle="Select Month"
-                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
-                showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
-                zIndex={3000}
-              />
-            </View>
-            <View
-              style={{ flex: 1, zIndex: 2000 }}
-              onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}
-            >
-              <Text style={{ marginBottom: 5, fontSize: 16, color: theme === 'dark' ? '#fff' : '#333' }}>Day</Text>
+              style={{flex: 1, zIndex: 2000}}
+              onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}>
+              <Text
+                style={{
+                  marginBottom: 5,
+                  fontSize: 16,
+                  color: theme === 'dark' ? '#fff' : '#333',
+                }}>
+                Day
+              </Text>
               <DropDownPicker
                 open={openDay}
                 value={selectedDay}
@@ -395,7 +347,9 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                 style={dropdownStyle}
                 listMode="MODAL"
                 dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(dayDropdownY)}
+                modalContentContainerStyle={getModalContainerStyle(
+                  dayDropdownY,
+                )}
                 textStyle={itemTextStyle}
                 modalProps={{
                   animationType: 'fade',
@@ -403,21 +357,115 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                   presentationStyle: 'overFullScreen',
                 }}
                 modalTitle="Select Day"
-                modalTitleStyle={{ fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center' }}
+                modalTitleStyle={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#333',
+                  textAlign: 'center',
+                }}
                 showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
+                closeButtonStyle={{padding: 10}}
+                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
                 zIndex={2000}
+              />
+            </View>
+            {/* month */}
+            <View
+              style={{flex: 1, zIndex: 3000}}
+              onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}>
+              <Text
+                style={{
+                  marginBottom: 5,
+                  fontSize: 16,
+                  color: theme === 'dark' ? '#fff' : '#333',
+                }}>
+                Month
+              </Text>
+              <DropDownPicker
+                open={openMonth}
+                value={selectedMonth}
+                items={months}
+                setOpen={setOpenMonth}
+                setValue={setSelectedMonth}
+                placeholder="MM"
+                style={dropdownStyle}
+                listMode="MODAL"
+                dropDownDirection="BOTTOM"
+                modalContentContainerStyle={getModalContainerStyle(
+                  monthDropdownY,
+                )}
+                textStyle={itemTextStyle}
+                modalProps={{
+                  animationType: 'fade',
+                  transparent: true,
+                  presentationStyle: 'overFullScreen',
+                }}
+                modalTitle="Select Month"
+                modalTitleStyle={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#333',
+                  textAlign: 'center',
+                }}
+                showCloseButton={true}
+                closeButtonStyle={{padding: 10}}
+                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
+                zIndex={3000}
+              />
+            </View>
+            {/* year */}
+            <View
+              style={{flex: 1, zIndex: 4000}}
+              onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}>
+              <Text
+                style={{
+                  marginBottom: 5,
+                  fontSize: 16,
+                  color: theme === 'dark' ? '#fff' : '#333',
+                }}>
+                Year
+              </Text>
+              <DropDownPicker
+                open={openYear}
+                value={selectedYear}
+                items={years}
+                setOpen={setOpenYear}
+                setValue={setSelectedYear}
+                placeholder="YYYY"
+                style={dropdownStyle}
+                listMode="MODAL"
+                dropDownDirection="BOTTOM"
+                modalContentContainerStyle={getModalContainerStyle(
+                  yearDropdownY,
+                )}
+                textStyle={itemTextStyle}
+                modalProps={{
+                  animationType: 'fade',
+                  transparent: true,
+                  presentationStyle: 'overFullScreen',
+                }}
+                modalTitle="Select Year"
+                modalTitleStyle={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#333',
+                  textAlign: 'center',
+                }}
+                showCloseButton={true}
+                closeButtonStyle={{padding: 10}}
+                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
+                zIndex={4000}
               />
             </View>
           </View>
           {errors[question.field] ? (
-            <Text style={{ color: 'red', marginTop: 5 }}>{errors[question.field]}</Text>
+            <Text style={{color: 'red', marginTop: 5}}>
+              {errors[question.field]}
+            </Text>
           ) : null}
         </View>
       );
     }
-
 
     if (question.field === 'location') {
       return (
@@ -433,16 +481,17 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             }}
           />
           {errors.location && (
-            <Text style={{ color: 'red' }}>{errors.location}</Text>
+            <Text style={{color: 'red'}}>{errors.location}</Text>
           )}
 
-          <View style={{
-            height: screenHeight * 0.5 + 60,
-            marginTop: 20,
-            backgroundColor: '#fff',
-            padding: 5,
-            borderRadius: 10
-          }}>
+          <View
+            style={{
+              height: screenHeight * 0.5 + 60,
+              marginTop: 20,
+              backgroundColor: '#fff',
+              padding: 5,
+              borderRadius: 10,
+            }}>
             <WebView
               ref={webViewRef}
               originWhitelist={['*']}
@@ -501,7 +550,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                   });
                 </script>
               </body></html>
-            `
+            `,
               }}
               onMessage={e => onMapMessage(e.nativeEvent.data)}
             />
@@ -518,10 +567,10 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
           placeholderTextColor="#9d9d9d"
           value={formData[question.field]}
           onChangeText={text => handleChange(question.field, text)}
-        // editable={question.field === 'location' ? false : true}
+          // editable={question.field === 'location' ? false : true}
         />
         {errors[question.field] ? (
-          <Text style={{ color: 'red', marginTop: 5 }}>
+          <Text style={{color: 'red', marginTop: 5}}>
             {errors[question.field]}
           </Text>
         ) : null}
@@ -536,18 +585,21 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     if (step < questions.length - 1) {
       const newStep = step + 1;
       setStep(newStep);
-      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
+      setIsScrolling(true);
+      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     } else {
       const interestIndexes = formData.interests.map(interest =>
         interestOptions.indexOf(interest),
       );
       // Build final payload object
       const finalData = {
-        username: userData?.username,
-        password: userData?.password,
-        email: formData.email,
-        screenName: formData.screenname,
-        dob: formData.dob ? formatISO(formData.dob) : null,
+        username: userData?.username.trim(),
+        password: userData?.password.trim(),
+        email: formData.email.trim(),
+        screenName: formData.screenname.trim(),
+        // dob: formData.dob ? formatISO(formData.dob) : null,
+        dob: formData.dob,
         // dob: formData.dob,
         gender: formData.gender,
         city: formData.city || formData.location,
@@ -574,7 +626,6 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         .then(data => {
           if (data.message === 'User registered successfully') {
             userLogedIn();
-            // Alert.alert('RUser registered successfully', data.message);
           } else {
             setErrors(data.message || 'Registration failed');
             Alert.alert('Registration failed', data.message);
@@ -599,7 +650,9 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
       },
     );
     if (res.data.message === 'Login successful') {
-      Alert.alert('Welcome!', 'You’ve successfully logged in.', [{ text: 'Continue' }]);
+      Alert.alert('Welcome!', 'You’ve successfully logged in.', [
+        {text: 'Continue'},
+      ]);
       onLogin();
       console.log(res.data.user);
       await AsyncStorage.setItem('token', res.data.token);
@@ -613,35 +666,76 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     if (step > 0) {
       const newStep = step - 1;
       setStep(newStep);
-      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
+      setIsScrolling(true);
+      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     }
   };
 
-  const onScrollEnd = e => {
+  const onScroll = e => {
+    if (isScrolling) return; // Ignore scroll events during programmatic scrolling
+
     const offsetX = e.nativeEvent.contentOffset.x;
     const calculatedStep = Math.round(offsetX / layoutWidth);
     let newStep = calculatedStep;
 
-    // Restrict step change to +1 or -1
+    // Restrict step to current, previous, or next step only
     if (calculatedStep > step + 1) {
-      newStep = step + 1; // Limit forward scroll to one step
+      newStep = step + 1;
     } else if (calculatedStep < step - 1) {
-      newStep = step - 1; // Limit backward scroll to one step
+      newStep = step - 1;
     }
 
-    // Prevent scrolling forward if step is invalid or field is 'location'
-    if (newStep > step && (!isValidStep || questions[step]?.field === 'location')) {
-      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
+    // Prevent forward scrolling if step is invalid or field is 'location'
+    if (
+      newStep > step &&
+      (!isValidStep || questions[step]?.field === 'location')
+    ) {
+      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: false});
       return;
     }
 
-    // Ensure newStep is within bounds
+    // Snap to the nearest valid step
+    if (newStep >= 0 && newStep < questions.length && newStep !== step) {
+      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: false});
+    } else if (newStep !== step) {
+      // Revert to current step if out of bounds
+      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: false});
+    }
+  };
+
+  const onScrollEnd = e => {
+    if (isScrolling) return; // Ignore momentum scroll end during programmatic scrolling
+
+    const offsetX = e.nativeEvent.contentOffset.x;
+    const calculatedStep = Math.round(offsetX / layoutWidth);
+    let newStep = calculatedStep;
+
+    // Restrict step to current, previous, or next step only
+    if (calculatedStep > step + 1) {
+      newStep = step + 1;
+    } else if (calculatedStep < step - 1) {
+      newStep = step - 1;
+    }
+
+    // Prevent forward scrolling if step is invalid or field is 'location'
+    if (
+      newStep > step &&
+      (!isValidStep || questions[step]?.field === 'location')
+    ) {
+      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: true});
+      return;
+    }
+
+    // Update step if within bounds and different from current step
     if (newStep >= 0 && newStep < questions.length && newStep !== step) {
       setStep(newStep);
-      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
+      setIsScrolling(true);
+      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     } else {
       // Revert to current step if out of bounds or no change
-      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
+      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: true});
     }
   };
 
@@ -685,16 +779,16 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         break;
     }
 
-    setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
+    setErrors(prev => ({...prev, [currentQuestion.field]: error}));
     setIsValidStep(!error);
     return !error;
   };
 
   return (
     <View
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       onLayout={event => {
-        const { width } = event.nativeEvent.layout;
+        const {width} = event.nativeEvent.layout;
         setLayoutWidth(width);
       }}>
       {
@@ -706,15 +800,16 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             snapToInterval={layoutWidth}
             decelerationRate="fast"
             showsHorizontalScrollIndicator={false}
+            onScroll={onScroll}
             onMomentumScrollEnd={onScrollEnd}
             scrollEventThrottle={16}
             nestedScrollEnabled={true}
             scrollEnabled={isValidStep && questions[step]?.field !== 'location'}
             // scrollEnabled={questions[step]?.field !== 'location'}
-            style={{ flex: 1 }}>
+            style={{flex: 1}}>
             {questions.map((questionItem, index) => (
-              <View key={index} style={{ width: layoutWidth }}>
-                <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
+              <View key={index} style={{width: layoutWidth}}>
+                <View style={[styles.qAWrapper, {paddingHorizontal: 20}]}>
                   <Text style={styles.question}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>
@@ -726,15 +821,14 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
           <View style={styles.buttons}>
             {step > 0 && (
               <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
-                <Text style={{ color: 'white' }}>Previous</Text>
+                <Text style={{color: 'white'}}>Previous</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
               onPress={handleNext}
-              style={[styles.btnNav, !isValidStep && { opacity: 0.5 }]}
-              disabled={!isValidStep}
-            >
-              <Text style={{ color: 'white' }}>
+              style={[styles.btnNav, !isValidStep && {opacity: 0.5}]}
+              disabled={!isValidStep}>
+              <Text style={{color: 'white'}}>
                 {step === questions.length - 1 ? 'Finish' : 'Next'}
               </Text>
             </TouchableOpacity>
