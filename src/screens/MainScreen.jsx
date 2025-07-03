@@ -122,24 +122,25 @@ export const MainScreen = ({address, userData }) => {
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleStreamRequest =(requesterId,name) => {
-    if (isHost) {
-      Alert.alert(
-        'Stream Request',
-        `User ${name} wants to stream.`,
-        [
-          {
-            text: 'Approve',
-            onPress: () => socket.emit('approveStream', requesterId)
-          },
-          {
-            text: 'Reject',
-            onPress: () => socket.emit('rejectStream', requesterId),
-            style: 'cancel'
-          }
-        ]
-      );
-    }
+  const HandleStreamRequest =(streamrequsts) => {
+    console.log(streamrequsts);
+    // if (isHost) {
+    //   Alert.alert(
+    //     'Stream Request',
+    //     `User ${name} wants to stream.`,
+    //     [
+    //       {
+    //         text: 'Approve',
+    //         onPress: () => socket.emit('approveStream', requesterId)
+    //       },
+    //       {
+    //         text: 'Reject',
+    //         onPress: () => socket.emit('rejectStream', requesterId),
+    //         style: 'cancel'
+    //       }
+    //     ]
+    //   );
+    // }
   }
   const HandleApprovedStream = async () => {
     await startLocalStream();
