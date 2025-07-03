@@ -109,7 +109,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     const getRooms = async () => {
         try {
             setIsInitialLoading(true);
-            const response = await Apiclient.get('/rooms/getrooms');
+            const response = await Apiclient.get('/rooms/getrooms?isLive=1');
             if (response) {
                 setApiRooms(response.data.data || []);
             }
@@ -127,8 +127,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             setIsInitialLoading(true);
             const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.lat},${address.lon}`);
             if (response) {
-                setApiRooms(response.data.data || []);
-                setNearByRoomData(response.data.data || []);
+                const livestreamlist= response.data.data.filter(item => item.isLive === 1);
+                setApiRooms(livestreamlist || []);
+                setNearByRoomData(livestreamlist || []);
             }
         } catch (error) {
             console.error('Error fetching rooms:', error);
@@ -146,8 +147,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             setIsFiltering(true);
             const response = await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`);
             if (response) {
+                const livestreamlist= response.data.data.filter(item => item.isLive === 1);
                 console.log('Filtered Rooms:', response.data.data);
-                const filtered = response.data.data || [];
+                const filtered = livestreamlist || [];
 
                 let combinedRooms = filtered;
 
@@ -294,14 +296,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             getInterestData();
         }
     }, [route?.name]);
-
-    useEffect(() => {
-        console.log('searchFilteredData', searchFilteredData);
-    }, [searchFilteredData]);
-
-    useEffect(() => {
-        console.log('apiRooms', apiRooms);
-    }, [apiRooms]);
 
     useEffect(() => {
         if (searchFilteredData?.length > 0) {

@@ -331,7 +331,7 @@ export const MainScreen = ({address, userData }) => {
 
   const joinRoom = (roomID,RoomInfo) => {
     try {
-      if(RoomInfo?.isLive.data[0]===0){
+      if(RoomInfo?.isLive===0){
         Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
           [{ text: 'OK' }]
         );
