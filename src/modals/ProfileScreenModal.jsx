@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, Animated, Image, Linking } from 'react-native';
 import Modal from 'react-native-modal';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -7,10 +7,16 @@ import { Dimensions, ScrollView } from 'react-native';
 import { PanResponder } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Apiclient from '../utils/Apiclient';
+
 
 const ProfileScreenModal = ({ visible, onClose }) => {
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
+    const [isUserLoading, setIsUserLoading] = useState(false);
+    const [isUserError, setIsUserError] = useState(null);
+    const [profileData, setProfileData] = useState({});
     const panY = useRef(new Animated.Value(0)).current;
 
     const panResponder = useRef(
@@ -75,6 +81,35 @@ const ProfileScreenModal = ({ visible, onClose }) => {
     const facebookUrl = 'https://www.facebook.com/yourprofile';
     const twitterUrl = 'https://twitter.com/yourprofile'; // or X link
 
+
+    // get profile details from API
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            setIsUserLoading(false);
+            setIsUserError('');
+            try {
+                const formData = {
+                    userid: 23,
+                };
+                const response = await Apiclient.post('/getUserDetails', formData);
+                console.log('response user profile data', response.data.user);
+
+                if (response.status === 200) {
+                    setProfileData(response.data.user || {});
+                } else {
+                    setIsUserError('Failed to fetch user profile details');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching user profile details: ' + err.message);
+            } finally {
+                setIsUserLoading(false);
+            }
+        };
+        fetchProfileDetails();
+    }, []);
+
+
+
     return (
         <>
             <Modal
@@ -98,58 +133,52 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                     {...panResponder.panHandlers}
                 >
                     {/* close modal */}
-                    {/* <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                            <Ionicons name="close" size={23} color="#333" />
-                        </TouchableOpacity> */}
+                    <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10 }]}>
+                        <Ionicons name="close" size={23} color="#333" />
+                    </TouchableOpacity>
                     <View style={[{ marginHorizontal: 0, flex: 1 }]}>
-                        {/* Header with Report button */}
-                        <View style={styles.psmHeader}>
-                            <TouchableOpacity style={styles.psmReportButton}>
-                                <Text style={styles.psmReportButtonText}>Report</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {layoutReady && (
-                            <View style={styles.psmProfileContainer}>
-                                {/* Profile Content */}
-                                <View style={styles.psmProfileTopCard}>
-                                    {/* Profile Image */}
-                                    <View style={[styles.psmProfileImageContainer]}>
-                                        <Image
-                                            source={require('../../assets/images/LS-3.jpg')}
-                                            style={styles.psmProfileImage}
-                                        />
-                                    </View>
-
-                                    {/* Name and ID */}
-                                    <Text style={styles.psmProfileName}>Katherine Ziggler</Text>
-                                    <Text style={styles.psmProfileId}>ID: 1298786</Text>
-
-                                    {/* Stats Section */}
-                                    <View style={styles.psmStatsContainer}>
-                                        <View style={styles.psmStatItem}>
-                                            <Text style={styles.psmStatLabel}>FRIENDS</Text>
-                                            <Text style={styles.psmStatValue}>4k1</Text>
-                                        </View>
-                                        <View style={styles.psmStatItem}>
-                                            <Text style={styles.psmStatLabel}>FOLLOWING</Text>
-                                            <Text style={styles.psmStatValue}>1K2</Text>
-                                        </View>
-                                        <View style={styles.psmStatItem}>
-                                            <Text style={styles.psmStatLabel}>FANS</Text>
-                                            <Text style={styles.psmStatValue}>800</Text>
-                                        </View>
-                                    </View>
-                                </View>
-                            </View>
-                        )}
-
                         {layoutReady &&
                             <ScrollView
                                 contentContainerStyle={{ paddingBottom: 40 }}
                                 showsVerticalScrollIndicator={true}
                             >
+                                {/* Header with Report button */}
+                                <View style={styles.psmHeader}>
+                                    <TouchableOpacity style={styles.psmReportButton}>
+                                        <Text style={styles.psmReportButtonText}>Report</Text>
+                                    </TouchableOpacity>
+                                </View>
                                 <View style={styles.psmProfileContainer}>
+                                    {/* Profile Content */}
+                                    <View style={styles.psmProfileTopCard}>
+                                        {/* Profile Image */}
+                                        <View style={[styles.psmProfileImageContainer]}>
+                                            <Image
+                                                source={require('../../assets/images/LS-3.jpg')}
+                                                style={styles.psmProfileImage}
+                                            />
+                                        </View>
+
+                                        {/* Name and ID */}
+                                        <Text style={styles.psmProfileName}>{profileData?.screenName}</Text>
+                                        <Text style={styles.psmProfileId}>ID: {profileData?.userid}</Text>
+
+                                        {/* Stats Section */}
+                                        <View style={styles.psmStatsContainer}>
+                                            <View style={styles.psmStatItem}>
+                                                <Text style={styles.psmStatLabel}>FRIENDS</Text>
+                                                <Text style={styles.psmStatValue}>4k1</Text>
+                                            </View>
+                                            <View style={styles.psmStatItem}>
+                                                <Text style={styles.psmStatLabel}>FOLLOWING</Text>
+                                                <Text style={styles.psmStatValue}>1K2</Text>
+                                            </View>
+                                            <View style={styles.psmStatItem}>
+                                                <Text style={styles.psmStatLabel}>FANS</Text>
+                                                <Text style={styles.psmStatValue}>800</Text>
+                                            </View>
+                                        </View>
+                                    </View>
                                     {/* Social Media Icons */}
                                     <View style={styles.psmSocialContainer}>
                                         <TouchableOpacity

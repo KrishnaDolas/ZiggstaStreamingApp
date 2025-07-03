@@ -62,8 +62,8 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
   const webViewRef = useRef(null);
-
   const [errors, setErrors] = useState({});
+  const [isValidStep, setIsValidStep] = useState(false);
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -107,19 +107,22 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
     }
   }, [selectedYear, selectedMonth, selectedDay]);
 
+  useEffect(() => {
+    // Validate current step whenever formData changes
+    validateStep();
+  }, [formData, step]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  useEffect(() => {
-    // console.log('userData:', userData);
-    console.log('address:', userAddress);
 
+  useEffect(() => {
+    console.log('address:', userAddress);
     if (userData || userAddress) {
       const updatedForm = {
         screenname: userData?.username || '',
-        email: '',
+        // email: '',
         // location: userAddress?.city || '', // Set location to city from userAddress
         // city: userAddress?.city || '',
         // state: userAddress?.state_code || '',
@@ -433,7 +436,13 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             <Text style={{ color: 'red' }}>{errors.location}</Text>
           )}
 
-          <View style={{ height: screenHeight * 0.5 + 60, marginTop: 20, backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
+          <View style={{
+            height: screenHeight * 0.5 + 60,
+            marginTop: 20,
+            backgroundColor: '#fff',
+            padding: 5,
+            borderRadius: 10
+          }}>
             <WebView
               ref={webViewRef}
               originWhitelist={['*']}
@@ -548,7 +557,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         interests: interestIndexes.join(','),
       };
 
-      // console.log('✅ Final Payload to POST:', finalData);
+      console.log('✅ Final Payload to POST:', finalData);
 
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
@@ -610,9 +619,30 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
 
   const onScrollEnd = e => {
     const offsetX = e.nativeEvent.contentOffset.x;
-    const index = Math.round(offsetX / layoutWidth);
-    // console.log('Scrolled to index:', index, 'offsetX:', offsetX);
-    setStep(index);
+    const calculatedStep = Math.round(offsetX / layoutWidth);
+    let newStep = calculatedStep;
+
+    // Restrict step change to +1 or -1
+    if (calculatedStep > step + 1) {
+      newStep = step + 1; // Limit forward scroll to one step
+    } else if (calculatedStep < step - 1) {
+      newStep = step - 1; // Limit backward scroll to one step
+    }
+
+    // Prevent scrolling forward if step is invalid or field is 'location'
+    if (newStep > step && (!isValidStep || questions[step]?.field === 'location')) {
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
+      return;
+    }
+
+    // Ensure newStep is within bounds
+    if (newStep >= 0 && newStep < questions.length && newStep !== step) {
+      setStep(newStep);
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
+    } else {
+      // Revert to current step if out of bounds or no change
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
+    }
   };
 
   const validateStep = () => {
@@ -655,14 +685,9 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
         break;
     }
 
-    if (error) {
-      setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
-      return false;
-    }
-
-    // Clear previous error if validation passed
-    setErrors(prev => ({ ...prev, [currentQuestion.field]: '' }));
-    return true;
+    setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
+    setIsValidStep(!error);
+    return !error;
   };
 
   return (
@@ -684,7 +709,8 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
             onMomentumScrollEnd={onScrollEnd}
             scrollEventThrottle={16}
             nestedScrollEnabled={true}
-            scrollEnabled={questions[step]?.field !== 'location'}
+            scrollEnabled={isValidStep && questions[step]?.field !== 'location'}
+            // scrollEnabled={questions[step]?.field !== 'location'}
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
@@ -703,7 +729,11 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
                 <Text style={{ color: 'white' }}>Previous</Text>
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={handleNext} style={styles.btnNav}>
+            <TouchableOpacity
+              onPress={handleNext}
+              style={[styles.btnNav, !isValidStep && { opacity: 0.5 }]}
+              disabled={!isValidStep}
+            >
               <Text style={{ color: 'white' }}>
                 {step === questions.length - 1 ? 'Finish' : 'Next'}
               </Text>
@@ -711,7 +741,7 @@ export const RegisterForm = ({ userData, theme, userAddress, setUserAddress, onL
           </View>
 
           {/* Progress Dots */}
-          {questions[step]?.field !== 'location' && (
+          {questions[step]?.field !== 'location' && isValidStep && (
             <View style={styles.dotsContainer}>
               {questions.map((_, idx) => (
                 <View

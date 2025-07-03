@@ -13,87 +13,6 @@ import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { ActivityIndicator } from 'react-native';
 
-
-const messages = [
-    {
-        id: '1',
-        name: 'Harry Styles',
-        message: 'Absolutely love this stream Absolute! Absolutely',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-1.jpg'),
-    },
-    {
-        id: '2',
-        name: 'Emma Watson',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-2.jpg'),
-    },
-    {
-        id: '3',
-        name: 'Chris Evans',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-3.jpg'),
-    },
-    {
-        id: '4',
-        name: 'Zendaya Coleman',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-4.jpg'),
-    },
-    {
-        id: '5',
-        name: 'Robert Downey',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-5.jpg'),
-    },
-    {
-        id: '6',
-        name: 'Scarlett Johansson',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-6.jpg'),
-    },
-    {
-        id: '7',
-        name: 'Tom Holland',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-1.jpg'),
-    },
-    {
-        id: '8',
-        name: 'Natalie Portman',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-6.jpg'),
-    },
-    {
-        id: '9',
-        name: 'Chris Hemsworth',
-        message: 'Absolutely love this stream',
-        time: '2:57 PM',
-        avatar: require('../../assets/images/LS-1.jpg'),
-    },
-];
-
-
-const friendRequests = [
-    {
-        id: '101',
-        name: 'Olivia Rodrigo',
-        avatar: require('../../assets/images/LS-3.jpg'),
-    },
-    {
-        id: '102',
-        name: 'Zayn Malik',
-        avatar: require('../../assets/images/LS-4.jpg'),
-    },
-];
-
 export const MessageListScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
@@ -103,8 +22,9 @@ export const MessageListScreen = ({ userData }) => {
     const [friendInfo, setFriendInfo] = useState({});
     const [loading, setLoading] = useState(false);
     const [friendsData, setFriendsData] = useState([]);
+    const [friendRequestsData, setFriendRequestsData] = useState([]);
 
-    // Function to fetch social data from the API
+    // Function to fetch friends data blocked/unblocked user from the API
     useEffect(() => {
         const getFriendsData = async () => {
             if (!userData.userid) return
@@ -123,7 +43,7 @@ export const MessageListScreen = ({ userData }) => {
                     setFriendsData(data);
                 }
             } catch (error) {
-                console.error('Error fetching bank list:', error);
+                console.error('Error fetching friends data list:', error);
             } finally {
                 setLoading(false);
             }
@@ -132,6 +52,31 @@ export const MessageListScreen = ({ userData }) => {
             getFriendsData();
         }
     }, [friendListType, userData.userid]);
+
+
+    // Function to fetch friends request user from the API
+    useEffect(() => {
+        const getFriendRequestData = async () => {
+            if (!userData.userid) return
+            setLoading(true);
+            try {
+                const response = await Apiclient.get(`/friends/requests/${userData.userid}`);
+                console.log('response friends requests data', response);
+                if (response.status === 200) {
+                    const data = response.data || [];
+                    setFriendRequestsData(data);
+                }
+            } catch (error) {
+                console.error('Error fetching friends request data list:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (friendListType === 'requests') {
+            getFriendRequestData();
+        }
+    }, [friendListType, userData.userid]);
+
 
     const handleConfirm = (id) => {
         alert(`Friend request from ${id} confirmed`);
@@ -300,13 +245,30 @@ export const MessageListScreen = ({ userData }) => {
                             <ActivityIndicator size="large" color="#d93a63" />
                         </View>
                     ) : (
-                        <FlatList
-                            data={friendListType === 'requests' ? friendRequests : friendsData}
-                            keyExtractor={(item, index) => index}
-                            renderItem={renderItem}
-                            contentContainerStyle={styles.messageListLayout}
-                            initialNumToRender={10}
-                        />)}
+                        <>
+                            {(friendListType === 'requests' ? friendRequestsData.length === 0 : friendsData.length === 0) ? (
+                                <View style={{ alignItems: 'center', paddingTop: 50 }}>
+                                    <Image
+                                        source={require('../../assets/images/friends-no-data-found.jpg')} // <- Replace with your static "no data" image
+                                        style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                                    />
+                                    <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>
+                                        {friendListType === 'friends' && 'No friends found'}
+                                        {friendListType === 'blocked' && 'No blocked users'}
+                                        {friendListType === 'requests' && 'No friend requests'}
+                                    </Text>
+                                </View>
+                            ) : (
+                                <FlatList
+                                    data={friendListType === 'requests' ? friendRequestsData : friendsData}
+                                    keyExtractor={(item, index) => index.toString()}
+                                    renderItem={renderItem}
+                                    contentContainerStyle={styles.messageListLayout}
+                                    initialNumToRender={10}
+                                />
+                            )}
+                        </>
+                    )}
                 </View>
                 <Footer />
                 {visibleModal === 'friend-action' && (

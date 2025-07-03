@@ -3,7 +3,16 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-nativ
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import LinearGradient from 'react-native-linear-gradient';
-export const Signup = ({ userData, setUserData, ShowloginForm, onToggleForm, SigninWithApple, SigninWithFacebook, SigninWithGoogle, theme }) => {
+export const Signup = ({
+  userData,
+  setUserData,
+  ShowloginForm,
+  onToggleForm,
+  SigninWithApple,
+  SigninWithFacebook,
+  SigninWithGoogle,
+  theme
+}) => {
   const [username, setUsername] = useState(userData.username || '');
   const [password, setPassword] = useState(userData.password || '');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -11,31 +20,58 @@ export const Signup = ({ userData, setUserData, ShowloginForm, onToggleForm, Sig
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
 
+
+  const isValidUsername = name =>
+    /^[a-zA-Z0-9_]+$/.test(name) && name.length >= 6 && !/\s/.test(name);
+
+  const blacklistedUsernames = ['admin', 'root', 'test'];
+
   const handleSignUp = async () => {
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
     try {
-      if (!username || !password) {
-        setError('Please fill in all fields');
-        return;
-      } else if (username.length < 6) {
-        setError('Username must be at least 6 characters long');
-        return;
-      } else if (password.length < 6) {
-        setError('Password must be at least 6 characters long');
-        return;
-      } else if (password.includes(' ')) {
-        setError('Password cannot contain spaces');
-        return;
-      } else if (!confirmPassword) {
-        setError('Please confirm your password.');
-        return;
-      } else if (password !== confirmPassword) {
-        setError('Passwords do not match.');
+      // if (!username || !password || !confirmPassword) {
+      //   setError('Please fill in all fields');
+      //   return;
+      // }
+      if (username !== trimmedUsername) {
+        setError('Username should not start or end with spaces');
         return;
       }
-      setUserData({ username: username, password: confirmPassword });
-      onToggleForm();
-      console.log(`Username: ${username}, Password: ${password}`);
+      if (!isValidUsername(trimmedUsername)) {
+        setError('Username must be at least 6 characters with only letters, numbers, or _');
+        return;
+      }
+      if (blacklistedUsernames.includes(trimmedUsername.toLowerCase())) {
+        setError('This username is not allowed');
+        return;
+      }
+      if (password !== trimmedPassword) {
+        setError('Password should not start or end with spaces');
+        return;
+      }
+      if (trimmedPassword.length < 6 || trimmedPassword.length > 12) {
+        setError('Password must be between 6 and 12 characters long');
+        return;
+      }
+      if (/\s/.test(trimmedPassword)) {
+        setError('Password cannot contain spaces');
+        return;
+      }
+      if (confirmPassword !== trimmedConfirmPassword) {
+        setError('Confirm Password should not start or end with spaces');
+        return;
+      }
+      if (trimmedPassword !== trimmedConfirmPassword) {
+        setError('Passwords do not match');
+        return;
+      }
 
+      setUserData({ username: trimmedUsername, password: trimmedPassword });
+      onToggleForm();
+      console.log(`Username: ${trimmedUsername}, Password: ${trimmedPassword}`);
     } catch (err) {
       console.log(err);
       setError(err?.response?.data?.error || 'Something went wrong');
@@ -60,7 +96,6 @@ export const Signup = ({ userData, setUserData, ShowloginForm, onToggleForm, Sig
               value={username}
               onChangeText={setUsername}
               style={[styles.input, themeStyles[theme].input]}
-              keyboardType="email-address"
               autoCapitalize="none"
               placeholderTextColor={themeStyles[theme].placeholder.color}
             />
