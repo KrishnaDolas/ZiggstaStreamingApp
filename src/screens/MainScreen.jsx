@@ -208,6 +208,7 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleRoomInfo=(info)=>{
     console.log(info);
+    setViewerCount(info?.viewerCount || 0);
   }
   const HandleHostAction = ({ action }) => {
     if (!localStreamRef.current) return;
@@ -228,7 +229,6 @@ export const MainScreen = ({address, userData }) => {
   };
   const HandleViewerCount=(count)=>{
       console.log(`Viewer count updated: ${count}`);
-      setViewerCount(count);
   }
   useEffect(() => {
     // Handles socket events
@@ -275,11 +275,7 @@ export const MainScreen = ({address, userData }) => {
  
    // ✅ Force audio to speaker
    InCallManager.setForceSpeakerphoneOn(true);
- 
-   // return () => {
-   //   InCallManager.setForceSpeakerphoneOn(false);
-   //   InCallManager.stop();
-   // };
+
  }, []);
   const createPeer = (socketId) => {
     const peer = new RTCPeerConnection({
