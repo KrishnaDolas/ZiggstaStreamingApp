@@ -210,7 +210,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
     const callapiforcreateroom = async () => {
         try {
             //7 character room ID
-            const roomId = Math.random().toString(36).substring(2, 4);
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
             const roomData = {
                 RoomName: roomIdInput,
@@ -229,7 +228,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
             console.log(response);
             if (response.data.roomID) {
                 console.log('Room created successfully:', response);
-                createRoom(response.data.roomID.toString(),roomData);
+                const roominfo={...roomData,roomID: response.data.roomID};
+                createRoom(roominfo);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
             }

@@ -122,25 +122,25 @@ export const MainScreen = ({address, userData }) => {
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleStreamRequest =(streamrequsts) => {
+  const HandleStreamRequest =(streamrequsts,requesterId,name) => {
     console.log(streamrequsts);
-    // if (isHost) {
-    //   Alert.alert(
-    //     'Stream Request',
-    //     `User ${name} wants to stream.`,
-    //     [
-    //       {
-    //         text: 'Approve',
-    //         onPress: () => socket.emit('approveStream', requesterId)
-    //       },
-    //       {
-    //         text: 'Reject',
-    //         onPress: () => socket.emit('rejectStream', requesterId),
-    //         style: 'cancel'
-    //       }
-    //     ]
-    //   );
-    // }
+    if (isHost) {
+      Alert.alert(
+        'Stream Request',
+        `User ${name} wants to stream.`,
+        [
+          {
+            text: 'Approve',
+            onPress: () => socket.emit('approveStream', requesterId)
+          },
+          {
+            text: 'Reject',
+            onPress: () => socket.emit('rejectStream', requesterId),
+            style: 'cancel'
+          }
+        ]
+      );
+    }
   }
   const HandleApprovedStream = async () => {
     await startLocalStream();
@@ -344,8 +344,9 @@ export const MainScreen = ({address, userData }) => {
       Alert.alert("Room not available or permission denied");
     }
   };
-  const CreateRoom= async (roomID,RoomInfo) => {
+  const CreateRoom= async (RoomInfo) => {
     try {
+      const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const isaccepted=await requestPermissions();
       console.log(`Permissions granted: ${isaccepted}`);
