@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,18 @@ import {
   ScrollView,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
-import {styles} from '../../assets/styles/ThemeStyles';
-import {globalStyles} from '../../assets/styles/GlobalStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
+import { globalStyles } from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {formatISO} from 'date-fns';
+import { formatISO } from 'date-fns';
 import WebView from 'react-native-webview';
 import DropDownPicker from 'react-native-dropdown-picker';
+import Geolocation from 'react-native-geolocation-service';
+import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const screenHeight = Dimensions.get('window').height;
 const questions = [
@@ -33,9 +37,9 @@ const questions = [
     field: 'location',
     placeholder: 'Enter your location',
   },
-  {label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD'},
-  {label: 'Gender', field: 'gender'},
-  {label: 'Choose your Interests (Any 2)', field: 'interests'},
+  { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
+  { label: 'Gender', field: 'gender' },
+  { label: 'Choose your Interests (Any 2)', field: 'interests' },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -78,6 +82,7 @@ export const RegisterForm = ({
   const [errors, setErrors] = useState({});
   const [isValidStep, setIsValidStep] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [locationPermission, setLocationPermission] = useState(null);
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -103,6 +108,164 @@ export const RegisterForm = ({
   const [monthDropdownY, setMonthDropdownY] = useState(0);
   const [dayDropdownY, setDayDropdownY] = useState(0);
 
+
+  // Request location permission and get current location on mount
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      try {
+        const platformPermission =
+          Platform.OS === 'ios'
+            ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+            : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+
+        let status = await check(platformPermission);
+        if (status === RESULTS.DENIED) {
+          status = await request(platformPermission);
+        }
+        setLocationPermission(status);
+
+        if (status === RESULTS.GRANTED) {
+          Geolocation.getCurrentPosition(
+            async position => {
+              const { latitude, longitude } = position.coords;
+              try {
+                const response = await fetch(
+                  `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+                );
+                const json = await response.json();
+                const address = json.features?.[0]?.properties || {};
+                setUserAddress({
+                  ...address,
+                  lat: latitude,
+                  lon: longitude,
+                  source: 'current',
+                });
+                setFormData(prev => ({
+                  ...prev,
+                  location: address.city || '',
+                  city: address.city || '',
+                  state: address.state || '',
+                  country: address.country || '',
+                  zipcode: address.postcode || '',
+                }));
+                updateMapLocationByCoords(latitude, longitude);
+              } catch (err) {
+                console.error('Error fetching address:', err);
+              }
+            },
+            error => {
+              console.error('Error getting location:', error);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+          );
+        }
+      } catch (err) {
+        console.error('Permission check error:', err);
+      }
+    };
+
+    requestLocationPermission();
+  }, []);
+
+  // Function to update map to specific coordinates
+  const updateMapLocationByCoords = (lat, lon) => {
+    if (webViewRef.current) {
+      const jsCode = `
+        map.setView([${lat}, ${lon}], 13);
+        marker.setLatLng([${lat}, ${lon}]);
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CURRENT_LOCATION', lat: ${lat}, lon: ${lon} }));
+      `;
+      webViewRef.current.injectJavaScript(jsCode);
+    }
+  };
+
+  // Function to request current location when button is pressed
+  const requestCurrentLocation = async () => {
+    try {
+      const platformPermission =
+        Platform.OS === 'ios'
+          ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+          : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+
+      let status = await check(platformPermission);
+      if (status === RESULTS.DENIED) {
+        // Permission not yet requested, prompt the user
+        status = await request(platformPermission);
+      }
+      setLocationPermission(status);
+
+      if (status === RESULTS.GRANTED) {
+        // Permission granted, get current location
+        Geolocation.getCurrentPosition(
+          async position => {
+            const { latitude, longitude } = position.coords;
+            try {
+              const response = await fetch(
+                `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+              );
+              const json = await response.json();
+              const address = json.features?.[0]?.properties || {};
+              setUserAddress({
+                ...address,
+                lat: latitude,
+                lon: longitude,
+                source: 'current',
+              });
+              setFormData(prev => ({
+                ...prev,
+                location: address.city || '',
+                city: address.city || '',
+                state: address.state || '',
+                country: address.country || '',
+                zipcode: address.postcode || '',
+              }));
+              updateMapLocationByCoords(latitude, longitude);
+            } catch (err) {
+              console.error('Error fetching address:', err);
+              Alert.alert('Error', 'Unable to get current location.');
+            }
+          },
+          error => {
+            console.error('Error getting location:', error);
+            Alert.alert('Error', 'Unable to get current location.');
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+      } else if (status === RESULTS.BLOCKED) {
+        // Permission permanently denied, prompt to open settings
+        Alert.alert(
+          'Permission Denied',
+          'Location access is required to get your current location. Please enable location permissions in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: async () => {
+                try {
+                  await openSettings();
+                } catch (err) {
+                  console.error('Error opening settings:', err);
+                  Alert.alert('Error', 'Unable to open settings.');
+                }
+              },
+            },
+          ]
+        );
+      } else {
+        // Permission denied (but not blocked)
+        Alert.alert(
+          'Permission Denied',
+          'Location permission is required to get your current location.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (err) {
+      console.error('Permission request error:', err);
+      Alert.alert('Error', 'Unable to request location permission.');
+    }
+  };
+
+
   useEffect(() => {
     if (formData.dob) {
       const [y, m, d] = formData.dob.split('-');
@@ -125,7 +288,7 @@ export const RegisterForm = ({
   }, [formData, step]);
 
   const handleChange = (field, value) => {
-    setFormData(prev => ({...prev, [field]: value}));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   useEffect(() => {
@@ -135,10 +298,10 @@ export const RegisterForm = ({
         screenname: userData?.username || '',
         // email: '',
         // location: userAddress?.city || '', // Set location to city from userAddress
-        // city: userAddress?.city || '',
-        // state: userAddress?.state_code || '',
-        // country: userAddress?.country || '',
-        // zipcode: userAddress?.postcode || '',
+        city: userAddress?.city || '',
+        state: userAddress?.state_code || '',
+        country: userAddress?.country || '',
+        zipcode: userAddress?.postcode || '',
         // location: '', // Set location to city from userAddress
         // city: '',
         // state: '',
@@ -177,8 +340,10 @@ export const RegisterForm = ({
   // };
 
   const updateMapLocation = cityName => {
-    if (webViewRef.current && cityName.length > 2) {
-      const escapedCity = cityName.replace(/'/g, "\\'");
+    if (webViewRef.current && cityName && cityName.length > 2) {
+      const trimmedCity = cityName.trim();
+      console.log('trimmedCity', `'${trimmedCity}'`);
+      const escapedCity = trimmedCity.replace(/'/g, "\\'");
       const jsCode = `
       window.postMessage(JSON.stringify({ type: 'SEARCH_CITY', payload: '${escapedCity}' }), '*');
     `;
@@ -190,18 +355,18 @@ export const RegisterForm = ({
     try {
       const address = JSON.parse(message);
       console.log('📍 Address from map:', address);
-
-      setFormData(prev => ({
-        ...prev,
-        location: address.source === 'tap' ? address.city || '' : prev.location,
-        city: address.city || '',
-        state: address.state || '',
-        country: address.country || '',
-        zipcode: address.postcode || '',
-      }));
-
-      if (typeof setUserAddress === 'function') {
-        setUserAddress(address);
+      if (address.type !== 'CURRENT_LOCATION') {
+        setFormData(prev => ({
+          ...prev,
+          location: address.source === 'tap' ? address.city || '' : prev.location,
+          city: address.city || '',
+          state: address.state || '',
+          country: address.country || '',
+          zipcode: address.postcode || '',
+        }));
+        if (typeof setUserAddress === 'function') {
+          setUserAddress(address);
+        }
       }
     } catch (err) {
       console.error('Failed to parse map address:', err);
@@ -221,12 +386,12 @@ export const RegisterForm = ({
                   styles.btnGender,
                   formData.gender === gender && styles.btnGenderActive,
                 ]}>
-                <Text style={{color: 'white'}}>{gender}</Text>
+                <Text style={{ color: 'white' }}>{gender}</Text>
               </TouchableOpacity>
             ))}
           </View>
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -251,14 +416,14 @@ export const RegisterForm = ({
                 style={[
                   styles.btnInterest,
                   formData.interests.includes(interest) &&
-                    styles.btnInterestActive,
+                  styles.btnInterestActive,
                 ]}>
-                <Text style={{color: 'white'}}>{interest}</Text>
+                <Text style={{ color: 'white' }}>{interest}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -268,19 +433,19 @@ export const RegisterForm = ({
 
     // dob input
     if (question.field === 'dob') {
-      const years = Array.from({length: 50}, (_, i) => {
+      const years = Array.from({ length: 50 }, (_, i) => {
         const year = new Date().getFullYear() - i;
-        return {label: `${year}`, value: `${year}`};
+        return { label: `${year}`, value: `${year}` };
       });
 
-      const months = Array.from({length: 12}, (_, i) => {
+      const months = Array.from({ length: 12 }, (_, i) => {
         const month = String(i + 1).padStart(2, '0');
-        return {label: month, value: month};
+        return { label: month, value: month };
       });
 
-      const days = Array.from({length: 31}, (_, i) => {
+      const days = Array.from({ length: 31 }, (_, i) => {
         const day = String(i + 1).padStart(2, '0');
-        return {label: day, value: day};
+        return { label: day, value: day };
       });
 
       const dropdownStyle = {
@@ -300,7 +465,7 @@ export const RegisterForm = ({
         borderColor: '#ddd',
         borderWidth: 1,
         shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 5,
         elevation: 5,
@@ -323,11 +488,11 @@ export const RegisterForm = ({
       };
 
       return (
-        <View style={{zIndex: 5000, pointerEvents: 'box-none'}}>
-          <View style={[containerStyle, {pointerEvents: 'auto'}]}>
+        <View style={{ zIndex: 5000, pointerEvents: 'box-none' }}>
+          <View style={[containerStyle, { pointerEvents: 'auto' }]}>
             {/* day */}
             <View
-              style={{flex: 1, zIndex: 2000}}
+              style={{ flex: 1, zIndex: 2000 }}
               onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}>
               <Text
                 style={{
@@ -364,14 +529,14 @@ export const RegisterForm = ({
                   textAlign: 'center',
                 }}
                 showCloseButton={true}
-                closeButtonStyle={{padding: 10}}
-                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
                 zIndex={2000}
               />
             </View>
             {/* month */}
             <View
-              style={{flex: 1, zIndex: 3000}}
+              style={{ flex: 1, zIndex: 3000 }}
               onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}>
               <Text
                 style={{
@@ -408,14 +573,14 @@ export const RegisterForm = ({
                   textAlign: 'center',
                 }}
                 showCloseButton={true}
-                closeButtonStyle={{padding: 10}}
-                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
                 zIndex={3000}
               />
             </View>
             {/* year */}
             <View
-              style={{flex: 1, zIndex: 4000}}
+              style={{ flex: 1, zIndex: 4000 }}
               onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}>
               <Text
                 style={{
@@ -452,14 +617,14 @@ export const RegisterForm = ({
                   textAlign: 'center',
                 }}
                 showCloseButton={true}
-                closeButtonStyle={{padding: 10}}
-                closeButtonTextStyle={{color: '#007AFF', fontSize: 16}}
+                closeButtonStyle={{ padding: 10 }}
+                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
                 zIndex={4000}
               />
             </View>
           </View>
           {errors[question.field] ? (
-            <Text style={{color: 'red', marginTop: 5}}>
+            <Text style={{ color: 'red', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
           ) : null}
@@ -471,7 +636,7 @@ export const RegisterForm = ({
       return (
         <View>
           <TextInput
-            style={globalStyles.input}
+            style={[globalStyles.input]}
             placeholder={question.placeholder}
             placeholderTextColor="#9d9d9d"
             value={formData.location}
@@ -479,15 +644,29 @@ export const RegisterForm = ({
               handleChange('location', text);
               updateMapLocation(text); // 🔄 Pan map to city
             }}
+          // onChangeText={text => {
+          //   const trimmedText = text.trim();
+          //   handleChange('location', trimmedText);
+          //   updateMapLocation(trimmedText);
+          // }}
           />
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "flex-end" }}>
+            <TouchableOpacity
+              onPress={requestCurrentLocation}
+              style={globalStyles.getCurrentLocationBtn}>
+              <Icon name="location-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={{ color: 'white', fontWeight: '600' }}>Use My Location</Text>
+            </TouchableOpacity>
+          </View>
+
           {errors.location && (
-            <Text style={{color: 'red'}}>{errors.location}</Text>
+            <Text style={{ color: 'red' }}>{errors.location}</Text>
           )}
 
           <View
             style={{
               height: screenHeight * 0.5 + 60,
-              marginTop: 20,
+              marginTop: 10,
               backgroundColor: '#fff',
               padding: 5,
               borderRadius: 10,
@@ -567,10 +746,10 @@ export const RegisterForm = ({
           placeholderTextColor="#9d9d9d"
           value={formData[question.field]}
           onChangeText={text => handleChange(question.field, text)}
-          // editable={question.field === 'location' ? false : true}
+        // editable={question.field === 'location' ? false : true}
         />
         {errors[question.field] ? (
-          <Text style={{color: 'red', marginTop: 5}}>
+          <Text style={{ color: 'red', marginTop: 5 }}>
             {errors[question.field]}
           </Text>
         ) : null}
@@ -586,7 +765,7 @@ export const RegisterForm = ({
       const newStep = step + 1;
       setStep(newStep);
       setIsScrolling(true);
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
       setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     } else {
       const interestIndexes = formData.interests.map(interest =>
@@ -651,7 +830,7 @@ export const RegisterForm = ({
     );
     if (res.data.message === 'Login successful') {
       Alert.alert('Welcome!', 'You’ve successfully logged in.', [
-        {text: 'Continue'},
+        { text: 'Continue' },
       ]);
       onLogin();
       console.log(res.data.user);
@@ -667,7 +846,7 @@ export const RegisterForm = ({
       const newStep = step - 1;
       setStep(newStep);
       setIsScrolling(true);
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
       setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     }
   };
@@ -691,16 +870,16 @@ export const RegisterForm = ({
       newStep > step &&
       (!isValidStep || questions[step]?.field === 'location')
     ) {
-      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: false});
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: false });
       return;
     }
 
     // Snap to the nearest valid step
     if (newStep >= 0 && newStep < questions.length && newStep !== step) {
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: false});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: false });
     } else if (newStep !== step) {
       // Revert to current step if out of bounds
-      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: false});
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: false });
     }
   };
 
@@ -723,7 +902,7 @@ export const RegisterForm = ({
       newStep > step &&
       (!isValidStep || questions[step]?.field === 'location')
     ) {
-      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
       return;
     }
 
@@ -731,11 +910,11 @@ export const RegisterForm = ({
     if (newStep >= 0 && newStep < questions.length && newStep !== step) {
       setStep(newStep);
       setIsScrolling(true);
-      scrollRef.current?.scrollTo({x: newStep * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
       setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     } else {
       // Revert to current step if out of bounds or no change
-      scrollRef.current?.scrollTo({x: step * layoutWidth, animated: true});
+      scrollRef.current?.scrollTo({ x: step * layoutWidth, animated: true });
     }
   };
 
@@ -779,16 +958,16 @@ export const RegisterForm = ({
         break;
     }
 
-    setErrors(prev => ({...prev, [currentQuestion.field]: error}));
+    setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
     setIsValidStep(!error);
     return !error;
   };
 
   return (
     <View
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       onLayout={event => {
-        const {width} = event.nativeEvent.layout;
+        const { width } = event.nativeEvent.layout;
         setLayoutWidth(width);
       }}>
       {
@@ -806,10 +985,10 @@ export const RegisterForm = ({
             nestedScrollEnabled={true}
             scrollEnabled={isValidStep && questions[step]?.field !== 'location'}
             // scrollEnabled={questions[step]?.field !== 'location'}
-            style={{flex: 1}}>
+            style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
-              <View key={index} style={{width: layoutWidth}}>
-                <View style={[styles.qAWrapper, {paddingHorizontal: 20}]}>
+              <View key={index} style={{ width: layoutWidth }}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
                   <Text style={styles.question}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>
@@ -818,17 +997,17 @@ export const RegisterForm = ({
           </ScrollView>
 
           {/* Navigation Buttons */}
-          <View style={styles.buttons}>
+          <View style={[styles.buttons, { justifyContent: step > 0 ? 'space-between' : 'flex-end' }]}>
             {step > 0 && (
               <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
-                <Text style={{color: 'white'}}>Previous</Text>
+                <Text style={{ color: 'white' }}>Previous</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
               onPress={handleNext}
-              style={[styles.btnNav, !isValidStep && {opacity: 0.5}]}
+              style={[styles.btnNav, !isValidStep && { opacity: 0.5 }]}
               disabled={!isValidStep}>
-              <Text style={{color: 'white'}}>
+              <Text style={{ color: 'white' }}>
                 {step === questions.length - 1 ? 'Finish' : 'Next'}
               </Text>
             </TouchableOpacity>
