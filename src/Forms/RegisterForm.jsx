@@ -83,6 +83,7 @@ export const RegisterForm = ({
   const [isValidStep, setIsValidStep] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const [locationPermission, setLocationPermission] = useState(null);
+  const [mapInitialized, setMapInitialized] = useState(false);
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -102,9 +103,9 @@ export const RegisterForm = ({
   const [selectedDay, setSelectedDay] = useState('');
 
 
-  // Request location permission and get current location on mount
+  // Request location permission on mount
   useEffect(() => {
-    const requestLocationPermission = async () => {
+    const checkLocationPermission = async () => {
       try {
         const platformPermission =
           Platform.OS === 'ios'
@@ -112,67 +113,74 @@ export const RegisterForm = ({
             : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
 
         let status = await check(platformPermission);
-        if (status === RESULTS.DENIED) {
-          status = await request(platformPermission);
-        }
         setLocationPermission(status);
 
         if (status === RESULTS.GRANTED) {
-          Geolocation.getCurrentPosition(
-            async position => {
-              const { latitude, longitude } = position.coords;
-              try {
-                const response = await fetch(
-                  `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
-                );
-                const json = await response.json();
-                const address = json.features?.[0]?.properties || {};
-                setUserAddress({
-                  ...address,
-                  lat: latitude,
-                  lon: longitude,
-                  source: 'current',
-                });
-                setFormData(prev => ({
-                  ...prev,
-                  location: address.city || '',
-                  city: address.city || '',
-                  state: address.state || '',
-                  country: address.country || '',
-                  zipcode: address.postcode || '',
-                }));
-                updateMapLocationByCoords(latitude, longitude);
-              } catch (err) {
-                console.error('Error fetching address:', err);
-              }
-            },
-            error => {
-              console.error('Error getting location:', error);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-          );
+          getCurrentLocation();
+        } else {
+          // Clear location fields if permission is denied
+          setFormData(prev => ({
+            ...prev,
+            location: '',
+            city: '',
+            state: '',
+            country: '',
+            zipcode: '',
+          }));
         }
       } catch (err) {
         console.error('Permission check error:', err);
       }
     };
 
-    requestLocationPermission();
+    checkLocationPermission();
   }, []);
 
-  // Function to update map to specific coordinates
-  const updateMapLocationByCoords = (lat, lon) => {
-    if (webViewRef.current) {
-      const jsCode = `
-        map.setView([${lat}, ${lon}], 13);
-        marker.setLatLng([${lat}, ${lon}]);
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CURRENT_LOCATION', lat: ${lat}, lon: ${lon} }));
-      `;
-      webViewRef.current.injectJavaScript(jsCode);
+  // Function to get current location
+  const getCurrentLocation = async () => {
+    try {
+      Geolocation.getCurrentPosition(
+        async position => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(
+              `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+            );
+            const json = await response.json();
+            const address = json.features?.[0]?.properties || {};
+            setUserAddress({
+              ...address,
+              lat: latitude,
+              lon: longitude,
+              source: 'current',
+            });
+            setFormData(prev => ({
+              ...prev,
+              location: address.city || '',
+              city: address.city || '',
+              state: address.state || '',
+              country: address.country || '',
+              zipcode: address.postcode || '',
+            }));
+            updateMapLocationByCoords(latitude, longitude);
+            setMapInitialized(true);
+          } catch (err) {
+            console.error('Error fetching address:', err);
+            Alert.alert('Error', 'Unable to get current location.');
+          }
+        },
+        error => {
+          console.error('Error getting location:', error);
+          Alert.alert('Error', 'Unable to get current location.');
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      );
+    } catch (err) {
+      console.error('Geolocation error:', err);
     }
   };
 
-  // Function to request current location when button is pressed
+  // Function to handle location permission request and get current location
   const requestCurrentLocation = async () => {
     try {
       const platformPermission =
@@ -182,50 +190,13 @@ export const RegisterForm = ({
 
       let status = await check(platformPermission);
       if (status === RESULTS.DENIED) {
-        // Permission not yet requested, prompt the user
         status = await request(platformPermission);
       }
       setLocationPermission(status);
 
       if (status === RESULTS.GRANTED) {
-        // Permission granted, get current location
-        Geolocation.getCurrentPosition(
-          async position => {
-            const { latitude, longitude } = position.coords;
-            try {
-              const response = await fetch(
-                `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
-              );
-              const json = await response.json();
-              const address = json.features?.[0]?.properties || {};
-              setUserAddress({
-                ...address,
-                lat: latitude,
-                lon: longitude,
-                source: 'current',
-              });
-              setFormData(prev => ({
-                ...prev,
-                location: address.city || '',
-                city: address.city || '',
-                state: address.state || '',
-                country: address.country || '',
-                zipcode: address.postcode || '',
-              }));
-              updateMapLocationByCoords(latitude, longitude);
-            } catch (err) {
-              console.error('Error fetching address:', err);
-              Alert.alert('Error', 'Unable to get current location.');
-            }
-          },
-          error => {
-            console.error('Error getting location:', error);
-            Alert.alert('Error', 'Unable to get current location.');
-          },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-        );
+        getCurrentLocation();
       } else if (status === RESULTS.BLOCKED) {
-        // Permission permanently denied, prompt to open settings
         Alert.alert(
           'Permission Denied',
           'Location access is required to get your current location. Please enable location permissions in your device settings.',
@@ -245,7 +216,6 @@ export const RegisterForm = ({
           ]
         );
       } else {
-        // Permission denied (but not blocked)
         Alert.alert(
           'Permission Denied',
           'Location permission is required to get your current location.',
@@ -257,6 +227,19 @@ export const RegisterForm = ({
       Alert.alert('Error', 'Unable to request location permission.');
     }
   };
+
+  // Function to update map to specific coordinates
+  const updateMapLocationByCoords = (lat, lon) => {
+    if (webViewRef.current) {
+      const jsCode = `
+        map.setView([${lat}, ${lon}], 13);
+        marker.setLatLng([${lat}, ${lon}]);
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CURRENT_LOCATION', lat: ${lat}, lon: ${lon} }));
+      `;
+      webViewRef.current.injectJavaScript(jsCode);
+    }
+  };
+
 
 
   useEffect(() => {
@@ -284,6 +267,18 @@ export const RegisterForm = ({
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'location') {
+      updateMapLocation(value);
+      // Clear other address fields when user types manually
+      setFormData(prev => ({
+        ...prev,
+        city: '',
+        state: '',
+        country: '',
+        zipcode: '',
+      }));
+      setUserAddress({});
+    }
   };
 
   useEffect(() => {
@@ -362,6 +357,7 @@ export const RegisterForm = ({
         if (typeof setUserAddress === 'function') {
           setUserAddress(address);
         }
+        setMapInitialized(true);
       }
     } catch (err) {
       console.error('Failed to parse map address:', err);
@@ -595,12 +591,19 @@ export const RegisterForm = ({
               onPress={requestCurrentLocation}
               style={globalStyles.getCurrentLocationBtn}>
               <Icon name="location-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-              <Text style={{ color: 'white', fontWeight: '600' }}>Use My Location</Text>
+              <Text style={{ color: 'white', fontWeight: '600' }}>
+                {locationPermission === RESULTS.GRANTED ? 'Show My Current Location' : 'Allow Permission'}
+              </Text>
             </TouchableOpacity>
           </View>
 
           {errors.location && (
             <Text style={{ color: 'red' }}>{errors.location}</Text>
+          )}
+          {locationPermission !== RESULTS.GRANTED && (
+            <Text style={{ color: '#555', marginTop: 5, fontSize: 14 }}>
+              Please allow location permission to auto-detect your location, or type your city above.
+            </Text>
           )}
 
           <View
@@ -629,25 +632,26 @@ export const RegisterForm = ({
                 <div id="map"></div>
                 <script>
                   const key = "25127ca1c55f48909b03f43048040037";
-                  const map = L.map('map').setView([18.5204, 73.8567], 13);
+                  const map = L.map('map').setView([0, 0], 1); // Initialize with world view
                   L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
                     maxZoom: 18
                   }).addTo(map);
-                  const marker = L.marker([18.5204, 73.8567]).addTo(map);
-
+                  let marker = null; // Marker is null until a location is set
                   async function rev(lat, lon, source = 'tap') {
                     const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
                     const json = await res.json();
                     const address = json.features?.[0]?.properties || {};
                     window.ReactNativeWebView.postMessage(JSON.stringify({ ...address, source }));
                   }
-
                   map.on('click', e => {
                     const { lat, lng } = e.latlng;
-                    marker.setLatLng([lat, lng]);
+                    if (marker) {
+                      marker.setLatLng([lat, lng]);
+                    } else {
+                      marker = L.marker([lat, lng]).addTo(map);
+                    }
                     rev(lat, lng, 'tap');
                   });
-
                   window.addEventListener('message', async (event) => {
                     try {
                       const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
@@ -659,9 +663,22 @@ export const RegisterForm = ({
                         if (location) {
                           const [lon, lat] = location;
                           map.setView([lat, lon], 13);
-                          marker.setLatLng([lat, lon]);
+                          if (marker) {
+                            marker.setLatLng([lat, lon]);
+                          } else {
+                            marker = L.marker([lat, lon]).addTo(map);
+                          }
                           rev(lat, lon, 'search');
                         }
+                      } else if (msg.type === 'CURRENT_LOCATION') {
+                        const { lat, lon } = msg;
+                        map.setView([lat, lon], 13);
+                        if (marker) {
+                          marker.setLatLng([lat, lon]);
+                        } else {
+                          marker = L.marker([lat, lon]).addTo(map);
+                        }
+                        rev(lat, lon, 'current');
                       }
                     } catch (err) {
                       console.error('Map message error:', err);
