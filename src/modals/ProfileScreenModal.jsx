@@ -83,30 +83,30 @@ const ProfileScreenModal = ({ visible, onClose }) => {
 
 
     // get profile details from API
-    useEffect(() => {
-        const fetchProfileDetails = async () => {
-            setIsUserLoading(false);
-            setIsUserError('');
-            try {
-                const formData = {
-                    userid: 23,
-                };
-                const response = await Apiclient.post('/getUserDetails', formData);
-                console.log('response user profile data', response.data.user);
+    // useEffect(() => {
+    //     const fetchProfileDetails = async () => {
+    //         setIsUserLoading(false);
+    //         setIsUserError('');
+    //         try {
+    //             const formData = {
+    //                 userid: 23,
+    //             };
+    //             const response = await Apiclient.post('/getUserDetails', formData);
+    //             console.log('response user profile data', response.data.user);
 
-                if (response.status === 200) {
-                    setProfileData(response.data.user || {});
-                } else {
-                    setIsUserError('Failed to fetch user profile details');
-                }
-            } catch (err) {
-                setIsUserError('Error fetching user profile details: ' + err.message);
-            } finally {
-                setIsUserLoading(false);
-            }
-        };
-        fetchProfileDetails();
-    }, []);
+    //             if (response.status === 200) {
+    //                 setProfileData(response.data.user || {});
+    //             } else {
+    //                 setIsUserError('Failed to fetch user profile details');
+    //             }
+    //         } catch (err) {
+    //             setIsUserError('Error fetching user profile details: ' + err.message);
+    //         } finally {
+    //             setIsUserLoading(false);
+    //         }
+    //     };
+    //     fetchProfileDetails();
+    // }, []);
 
 
 
@@ -160,14 +160,14 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                         </View>
 
                                         {/* Name and ID */}
-                                        <Text style={styles.psmProfileName}>{profileData?.screenName}</Text>
-                                        <Text style={styles.psmProfileId}>ID: {profileData?.userid}</Text>
+                                        <Text style={styles.psmProfileName}>Katherine Ziggler</Text>
+                                        <Text style={styles.psmProfileId}>ID: 1234567</Text>
 
                                         {/* Stats Section */}
                                         <View style={styles.psmStatsContainer}>
                                             <View style={styles.psmStatItem}>
                                                 <Text style={styles.psmStatLabel}>FRIENDS</Text>
-                                                <Text style={styles.psmStatValue}>4k1</Text>
+                                                <Text style={styles.psmStatValue}>4K1</Text>
                                             </View>
                                             <View style={styles.psmStatItem}>
                                                 <Text style={styles.psmStatLabel}>FOLLOWING</Text>
