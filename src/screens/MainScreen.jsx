@@ -205,6 +205,7 @@ export const MainScreen = ({address, userData }) => {
     Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
     // Stop local stream if exists
     setRoomchat([])
+    setHasRequestedStream(false);
     disconnectSocket(); // Disconnect from socket server
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -404,6 +405,7 @@ export const MainScreen = ({address, userData }) => {
       setRemoteStreams([]);
     }
     setRoomchat([])
+    setHasRequestedStream(false);
    InCallManager.setForceSpeakerphoneOn(false);
    InCallManager.stop();
    disconnectSocket()
