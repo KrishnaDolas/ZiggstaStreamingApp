@@ -36,7 +36,20 @@ export const MainScreen = ({address, userData }) => {
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
 
+  const connectSocket = () => {
+    console.log('Connecting to socket server...');
+    // Connect logic
+    socket.connect();
+    setIsSocketConnected(true); // Update connection status
+  };
+  const disconnectSocket = () => {
+    console.log('Disconnecting from socket server...');
+    // Disconnect logic
+    socket.disconnect();
+    setIsSocketConnected(false); // Update connection status
+  };
   //Handle socket functions 
   const HandleAssignHost= async () => {
     console.log('Assigning host...');
@@ -232,22 +245,24 @@ export const MainScreen = ({address, userData }) => {
   }
   useEffect(() => {
     // Handles socket events
-    console.log('Connecting to socket server...');
-    socket.on('assignHost', HandleAssignHost);
-    socket.on('joined',HandleJoined);
-    socket.on('StreamNotAvailable',HandleStreamNotAvailable)
-    socket.on('newUser', HandleNewUser);
-    socket.on('signal', HandleSignal);
-    socket.on('new-message',HandleNewMessage)
-    socket.on('streamRequest', HandleStreamRequest);
-    socket.on('streamApproved',HandleApprovedStream);
-    socket.on('streamRejected',HandleStreamReject)
-    socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
-    socket.on('host-action', HandleHostAction);
-    socket.on('viewerCount', HandleViewerCount);
-    socket.on('userLeft',HandleUserLeft);
-    socket.on('Hostleft',HandleHostLeft)
-    socket.on('roomInfo',HandleRoomInfo)
+    if(isSocketConnected) {
+      console.log('Connecting to socket server...');
+      socket.on('assignHost', HandleAssignHost);
+      socket.on('joined',HandleJoined);
+      socket.on('StreamNotAvailable',HandleStreamNotAvailable)
+      socket.on('newUser', HandleNewUser);
+      socket.on('signal', HandleSignal);
+      socket.on('new-message',HandleNewMessage)
+      socket.on('streamRequest', HandleStreamRequest);
+      socket.on('streamApproved',HandleApprovedStream);
+      socket.on('streamRejected',HandleStreamReject)
+      socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+      socket.on('host-action', HandleHostAction);
+      socket.on('viewerCount', HandleViewerCount);
+      socket.on('userLeft',HandleUserLeft);
+      socket.on('Hostleft',HandleHostLeft)
+      socket.on('roomInfo',HandleRoomInfo)
+    }
 
     return () => {
       // Cleanup socket listeners
@@ -267,16 +282,15 @@ export const MainScreen = ({address, userData }) => {
       socket.off('Hostleft',HandleHostLeft)
       socket.off('roomInfo',HandleRoomInfo)
     }
-  }, [isHost]);
+  }, [isHost,isSocketConnected]);
 
   useEffect(() => {
-   // Start audio focus
-   InCallManager.start({ media: 'audio' });
- 
-   // ✅ Force audio to speaker
-   InCallManager.setForceSpeakerphoneOn(true);
+    // Connect to socket server when component mounts
+    if (!isSocketConnected) {
+      connectSocket();
+    }
 
- }, []);
+  }, [isSocketConnected]);
   const createPeer = (socketId) => {
     const peer = new RTCPeerConnection({
       iceServers: [{
@@ -377,12 +391,16 @@ export const MainScreen = ({address, userData }) => {
     // Stop local stream if exists
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
+      // remote streams close 
+      Object.values(peersRef.current).forEach(peer => peer.close());
+      peersRef.current = {};
       localStreamRef.current = null;
       setLocalStream(null);
       setRemoteStreams([]);
     }
    InCallManager.setForceSpeakerphoneOn(false);
    InCallManager.stop();
+   disconnectSocket()
    if(isHost){
     HandleSetLivestatus(streamInfo?.roomID);
    }
