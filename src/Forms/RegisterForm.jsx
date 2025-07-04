@@ -13,12 +13,12 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { formatISO } from 'date-fns';
+// import { formatISO } from 'date-fns';
 import WebView from 'react-native-webview';
-import DropDownPicker from 'react-native-dropdown-picker';
 import Geolocation from 'react-native-geolocation-service';
 import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Dropdown } from 'react-native-element-dropdown';
 
 const screenHeight = Dimensions.get('window').height;
 const questions = [
@@ -97,16 +97,9 @@ export const RegisterForm = ({
     zipcode: '',
   });
 
-  const [openYear, setOpenYear] = useState(false);
-  const [openMonth, setOpenMonth] = useState(false);
-  const [openDay, setOpenDay] = useState(false);
-
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
-  const [yearDropdownY, setYearDropdownY] = useState(0);
-  const [monthDropdownY, setMonthDropdownY] = useState(0);
-  const [dayDropdownY, setDayDropdownY] = useState(0);
 
 
   // Request location permission and get current location on mount
@@ -280,7 +273,9 @@ export const RegisterForm = ({
       const dobValue = `${selectedYear}-${selectedMonth}-${selectedDay}`;
       handleChange('dob', dobValue);
     }
+    validateStep();
   }, [selectedYear, selectedMonth, selectedDay]);
+
 
   useEffect(() => {
     // Validate current step whenever formData changes
@@ -451,28 +446,17 @@ export const RegisterForm = ({
       const dropdownStyle = {
         backgroundColor: '#fff',
         borderColor: '#ccc',
-        borderRadius: 10,
+        borderWidth: 1,
+        borderRadius: 8,
         height: 50,
-        marginBottom: 10,
         paddingHorizontal: 10,
+        marginBottom: 10,
       };
 
-      const getModalContainerStyle = dropdownY => ({
-        width: Dimensions.get('window').width * 0.5,
-        maxHeight: Dimensions.get('window').height * 0.4,
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        borderColor: '#ddd',
-        borderWidth: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 5,
-        elevation: 5,
-        position: 'absolute',
-        top: Dimensions.get('window').height * 0.3 - 40 - dropdownY,
-        left: Dimensions.get('window').width * 0.25,
-      });
+      const itemTextStyle = {
+        fontSize: 16,
+        color: '#333',
+      };
 
       const containerStyle = {
         flexDirection: 'row',
@@ -481,19 +465,11 @@ export const RegisterForm = ({
         zIndex: 5000,
       };
 
-      const itemTextStyle = {
-        fontSize: 16,
-        color: '#333',
-        fontWeight: '500',
-      };
-
       return (
-        <View style={{ zIndex: 5000, pointerEvents: 'box-none' }}>
-          <View style={[containerStyle, { pointerEvents: 'auto' }]}>
-            {/* day */}
-            <View
-              style={{ flex: 1, zIndex: 2000 }}
-              onLayout={event => setDayDropdownY(event.nativeEvent.layout.y)}>
+        <View style={{ zIndex: 5000 }}>
+          <View style={containerStyle}>
+            {/* Day Dropdown */}
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   marginBottom: 5,
@@ -502,42 +478,29 @@ export const RegisterForm = ({
                 }}>
                 Day
               </Text>
-              <DropDownPicker
-                open={openDay}
-                value={selectedDay}
-                items={days}
-                setOpen={setOpenDay}
-                setValue={setSelectedDay}
-                placeholder="DD"
+              <Dropdown
                 style={dropdownStyle}
-                listMode="MODAL"
-                dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(
-                  dayDropdownY,
-                )}
-                textStyle={itemTextStyle}
-                modalProps={{
-                  animationType: 'fade',
-                  transparent: true,
-                  presentationStyle: 'overFullScreen',
+                data={days}
+                labelField="label"
+                valueField="value"
+                placeholder="DD"
+                value={selectedDay}
+                onChange={item => setSelectedDay(item.value)}
+                containerStyle={{
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  backgroundColor: '#fff',
+                  maxHeight: Dimensions.get('window').height * 0.4,
                 }}
-                modalTitle="Select Day"
-                modalTitleStyle={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#333',
-                  textAlign: 'center',
-                }}
-                showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
-                zIndex={2000}
+                itemTextStyle={itemTextStyle}
+                selectedTextStyle={itemTextStyle}
+                placeholderStyle={itemTextStyle}
+                dropdownPosition="auto"
               />
             </View>
-            {/* month */}
-            <View
-              style={{ flex: 1, zIndex: 3000 }}
-              onLayout={event => setMonthDropdownY(event.nativeEvent.layout.y)}>
+            {/* Month Dropdown */}
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   marginBottom: 5,
@@ -546,42 +509,29 @@ export const RegisterForm = ({
                 }}>
                 Month
               </Text>
-              <DropDownPicker
-                open={openMonth}
-                value={selectedMonth}
-                items={months}
-                setOpen={setOpenMonth}
-                setValue={setSelectedMonth}
-                placeholder="MM"
+              <Dropdown
                 style={dropdownStyle}
-                listMode="MODAL"
-                dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(
-                  monthDropdownY,
-                )}
-                textStyle={itemTextStyle}
-                modalProps={{
-                  animationType: 'fade',
-                  transparent: true,
-                  presentationStyle: 'overFullScreen',
+                data={months}
+                labelField="label"
+                valueField="value"
+                placeholder="MM"
+                value={selectedMonth}
+                onChange={item => setSelectedMonth(item.value)}
+                containerStyle={{
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  backgroundColor: '#fff',
+                  maxHeight: Dimensions.get('window').height * 0.4,
                 }}
-                modalTitle="Select Month"
-                modalTitleStyle={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#333',
-                  textAlign: 'center',
-                }}
-                showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
-                zIndex={3000}
+                itemTextStyle={itemTextStyle}
+                selectedTextStyle={itemTextStyle}
+                placeholderStyle={itemTextStyle}
+                dropdownPosition="auto"
               />
             </View>
-            {/* year */}
-            <View
-              style={{ flex: 1, zIndex: 4000 }}
-              onLayout={event => setYearDropdownY(event.nativeEvent.layout.y)}>
+            {/* Year Dropdown */}
+            <View style={{ flex: 1 }}>
               <Text
                 style={{
                   marginBottom: 5,
@@ -590,36 +540,25 @@ export const RegisterForm = ({
                 }}>
                 Year
               </Text>
-              <DropDownPicker
-                open={openYear}
-                value={selectedYear}
-                items={years}
-                setOpen={setOpenYear}
-                setValue={setSelectedYear}
-                placeholder="YYYY"
+              <Dropdown
                 style={dropdownStyle}
-                listMode="MODAL"
-                dropDownDirection="BOTTOM"
-                modalContentContainerStyle={getModalContainerStyle(
-                  yearDropdownY,
-                )}
-                textStyle={itemTextStyle}
-                modalProps={{
-                  animationType: 'fade',
-                  transparent: true,
-                  presentationStyle: 'overFullScreen',
+                data={years}
+                labelField="label"
+                valueField="value"
+                placeholder="YYYY"
+                value={selectedYear}
+                onChange={item => setSelectedYear(item.value)}
+                containerStyle={{
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  backgroundColor: '#fff',
+                  maxHeight: Dimensions.get('window').height * 0.4,
                 }}
-                modalTitle="Select Year"
-                modalTitleStyle={{
-                  fontSize: 18,
-                  fontWeight: 'bold',
-                  color: '#333',
-                  textAlign: 'center',
-                }}
-                showCloseButton={true}
-                closeButtonStyle={{ padding: 10 }}
-                closeButtonTextStyle={{ color: '#007AFF', fontSize: 16 }}
-                zIndex={4000}
+                itemTextStyle={itemTextStyle}
+                selectedTextStyle={itemTextStyle}
+                placeholderStyle={itemTextStyle}
+                dropdownPosition="auto"
               />
             </View>
           </View>
@@ -631,6 +570,7 @@ export const RegisterForm = ({
         </View>
       );
     }
+
 
     if (question.field === 'location') {
       return (
