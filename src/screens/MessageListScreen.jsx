@@ -36,8 +36,8 @@ export const MessageListScreen = ({ userData }) => {
                     isBlocked: friendListType === 'blocked' ? 1 : 0,
                 };
 
-                console.log('postData', postData);
                 const response = await Apiclient.post('/getFriendsList', postData);
+                console.log('response getFriendsList', response.data);
                 if (response.status === 200) {
                     const data = response.data?.friends || [];
                     setFriendsData(data);
@@ -91,21 +91,21 @@ export const MessageListScreen = ({ userData }) => {
             return (
                 <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer, { alignItems: 'center' }]}>
                     <TouchableOpacity onPress={() => alert(`Profile Open`)}>
-                        <Image source={item.avatar} style={styles.messageListAvatar} />
+                        <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => alert(`chat open`)} style={{ flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
-                            {item.name}
+                            {item.Username}
                         </Text>
                     </TouchableOpacity>
                     <View style={{ flexDirection: 'row', gap: 5 }}>
                         <TouchableOpacity
-                            onPress={() => handleConfirm(item.name)}
+                            onPress={() => handleConfirm(item.Username)}
                             style={{ backgroundColor: '#d93a63', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
                             <Text style={{ color: '#fff', fontWeight: '500', fontSize: 14 }}>Confirm</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => handleDelete(item.name)}
+                            onPress={() => handleDelete(item.Username)}
                             style={{ backgroundColor: '#f1f1f1', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
                             <Text style={{ color: '#111', fontWeight: '500', fontSize: 14 }}>Delete</Text>
                         </TouchableOpacity>

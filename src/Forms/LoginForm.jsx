@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import {styles, themeStyles} from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
@@ -37,18 +37,20 @@ export const LoginForm = ({
       };
 
       const res = await Apiclient.post('/login', parameter);
-      if (res.data.message === 'Login successful') {
+      console.log('res', res);
+      if (res.status === 200) {
         onLogin();
         console.log(res.data.user);
         await AsyncStorage.setItem('token', res.data.token);
 
         const userDataString = JSON.stringify(res.data.user);
         await AsyncStorage.setItem('UserData', userDataString);
-        Alert.alert('Success', `LogIn Success.`, [{text: 'OK'}]);
+        Alert.alert('Success', `LogIn Success.`, [{ text: 'OK' }]);
+      } else {
+        setError(res.data.message);
       }
     } catch (err) {
-      console.log(err);
-      setError(err?.response?.data?.error || 'Something went wrong');
+      setError(err?.response?.data?.error || 'Invalid credentials');
     }
   };
 
@@ -88,7 +90,7 @@ export const LoginForm = ({
           <Text style={[styles.formTitle, themeStyles[theme].text]}>
             Sign In
           </Text>
-          <View style={[{width: '100%', padding: '7'}]}>
+          <View style={[{ width: '100%', padding: '7' }]}>
             <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>
               User Name
             </Text>
@@ -101,11 +103,11 @@ export const LoginForm = ({
               placeholderTextColor={themeStyles[theme].placeholder.color}
             />
           </View>
-          <View style={[{width: '100%', padding: '7'}]}>
+          <View style={[{ width: '100%', padding: '7' }]}>
             <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>
               Password
             </Text>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -115,7 +117,7 @@ export const LoginForm = ({
               />
               <TouchableOpacity
                 onPress={togglePasswordVisibility}
-                style={{padding: 10, position: 'absolute', right: 15, top: 10}}>
+                style={{ padding: 10, position: 'absolute', right: 15, top: 10 }}>
                 <Icon
                   name={showPassword ? 'eye' : 'eye-slash'}
                   size={20}
@@ -136,15 +138,15 @@ export const LoginForm = ({
             onPress={handleLogin}>
             <LinearGradient
               colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
-              start={{x: 1, y: 0}}
-              end={{x: 0, y: 1}}
+              start={{ x: 1, y: 0 }}
+              end={{ x: 0, y: 1 }}
               style={styles.button}>
               <Text style={styles.buttonText}>Sign In</Text>
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => ShowloginForm()}
-            style={{alignItems: 'center', marginTop: 20}}>
+            style={{ alignItems: 'center', marginTop: 20 }}>
             <Text
               style={{
                 color: theme === 'dark' ? '#fff' : 'blue',
@@ -154,7 +156,7 @@ export const LoginForm = ({
               Don't have an account? Sign Up
             </Text>
           </TouchableOpacity>
-          <View style={[styles.Othersinginoption, {marginBottom: 80}]}>
+          <View style={[styles.Othersinginoption, { marginBottom: 80 }]}>
             <View style={styles.Loginoption}>
               <TouchableOpacity
                 style={[styles.Loginoptionbtn, styles.Applebtn]}
