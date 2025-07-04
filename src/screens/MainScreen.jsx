@@ -227,6 +227,9 @@ export const MainScreen = ({address, userData }) => {
     console.log(info);
     setViewerCount(info?.viewerCount || 0);
   }
+  const HandleNewStream = () => {
+    console.log('New stream received:');
+  }
   const HandleHostAction = ({ action }) => {
     if (!localStreamRef.current) return;
   
@@ -266,6 +269,7 @@ export const MainScreen = ({address, userData }) => {
       socket.on('userLeft',HandleUserLeft);
       socket.on('Hostleft',HandleHostLeft)
       socket.on('roomInfo',HandleRoomInfo)
+      socket.on('new_stream',HandleNewStream)
     }
 
     return () => {
@@ -286,6 +290,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
         socket.off('roomInfo', HandleRoomInfo)
+        socket.on('new_stream',HandleNewStream)
       }
     }
   }, [isHost,isSocketConnected]);
