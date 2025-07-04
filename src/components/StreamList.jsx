@@ -145,7 +145,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
         try {
             console.log(selecteddata);
             setIsFiltering(true);
-            const response = await Apiclient.get(`/rooms/getrooms?Categories=${selecteddata}`);
+            const response = await Apiclient.get(`/rooms/getrooms?isLive=1&Categories=${selecteddata}`);
             if (response) {
                 const livestreamlist= response.data.data.filter(item => item.isLive === 1);
                 console.log('Filtered Rooms:', response.data.data);

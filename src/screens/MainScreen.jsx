@@ -367,6 +367,7 @@ export const MainScreen = ({address, userData }) => {
     localStreamRef.current = stream;
     setLocalStream(stream);
     setIsStreaming(true);
+    mediaDevices.setAudioOutput('speaker');
   };
 
   const leaveRoom=()=>{
