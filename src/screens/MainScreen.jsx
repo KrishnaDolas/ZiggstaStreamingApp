@@ -367,7 +367,10 @@ export const MainScreen = ({address, userData }) => {
     localStreamRef.current = stream;
     setLocalStream(stream);
     setIsStreaming(true);
-    mediaDevices.setAudioOutput('speaker');
+    // ✅ Start InCallManager and route audio to speaker
+    InCallManager.start({ media: 'audio' }); // or 'video' if you have both
+    InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
+    InCallManager.setSpeakerphoneOn(true);      // For Android
   };
 
   const leaveRoom=()=>{
