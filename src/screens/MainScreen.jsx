@@ -278,7 +278,6 @@ export const MainScreen = ({address, userData }) => {
       socket.on('roomInfo',HandleRoomInfo)
       socket.on('new_stream',HandleNewStream)
       socket.on('Close_stream',HandleLeaveStream)
-
     }
 
     return () => {
