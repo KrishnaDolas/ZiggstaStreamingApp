@@ -37,7 +37,7 @@ export const MainScreen = ({address, userData }) => {
   const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
-
+  const [refreshlobby, setRefreshLobby] = useState(false); // For refreshing lobby
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -228,6 +228,7 @@ export const MainScreen = ({address, userData }) => {
     setViewerCount(info?.viewerCount || 0);
   }
   const HandleNewStream = () => {
+    setRefreshLobby(!refreshlobby); // Toggle refresh state
     console.log('New stream received:');
   }
   const HandleHostAction = ({ action }) => {
@@ -473,7 +474,7 @@ export const MainScreen = ({address, userData }) => {
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} refreshlobby={refreshlobby} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}

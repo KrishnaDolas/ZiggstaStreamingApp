@@ -23,7 +23,7 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
+const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobby }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
@@ -192,7 +192,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
                 }
             }
         }
-    }, [filteredRooms, isNearBy]);
+    }, [filteredRooms, isNearBy,refreshlobby]);
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
