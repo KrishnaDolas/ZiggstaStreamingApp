@@ -265,22 +265,24 @@ export const MainScreen = ({address, userData }) => {
     }
 
     return () => {
-      // Cleanup socket listeners
-      console.log('Disconnecting from socket server...');
-      socket.off('assignHost', HandleAssignHost);
-      socket.off('joined',HandleJoined);
-      socket.on('StreamNotAvailable',HandleStreamNotAvailable)
-      socket.off('newUser', HandleNewUser);
-      socket.off('signal', HandleSignal);
-      socket.off('new-message',HandleNewMessage);
-      socket.off('streamRequest', HandleStreamRequest);
-      socket.off('streamApproved',HandleApprovedStream);
-      socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
-      socket.off('host-action', HandleHostAction);
-      socket.on('viewerCount', HandleViewerCount);
-      socket.off('userLeft',HandleUserLeft);
-      socket.off('Hostleft',HandleHostLeft)
-      socket.off('roomInfo',HandleRoomInfo)
+      if (isSocketConnected) {
+        // Cleanup socket listeners
+        console.log('Disconnecting from socket server...');
+        socket.off('assignHost', HandleAssignHost);
+        socket.off('joined', HandleJoined);
+        socket.on('StreamNotAvailable', HandleStreamNotAvailable)
+        socket.off('newUser', HandleNewUser);
+        socket.off('signal', HandleSignal);
+        socket.off('new-message', HandleNewMessage);
+        socket.off('streamRequest', HandleStreamRequest);
+        socket.off('streamApproved', HandleApprovedStream);
+        socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+        socket.off('host-action', HandleHostAction);
+        socket.on('viewerCount', HandleViewerCount);
+        socket.off('userLeft', HandleUserLeft);
+        socket.off('Hostleft', HandleHostLeft)
+        socket.off('roomInfo', HandleRoomInfo)
+      }
     }
   }, [isHost,isSocketConnected]);
 
