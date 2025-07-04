@@ -192,6 +192,7 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleUserLeft = socketId => {
     console.log(`User left: ${socketId}`);
+    setRoomchat([])
     if (peersRef.current[socketId]) {
       console.log(`Closing peer connection for ${socketId}`);
       peersRef.current[socketId].close();
@@ -203,6 +204,7 @@ export const MainScreen = ({address, userData }) => {
     console.log('Host left, leaving room...');
     Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
     // Stop local stream if exists
+    setRoomchat([])
     disconnectSocket(); // Disconnect from socket server
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -401,6 +403,7 @@ export const MainScreen = ({address, userData }) => {
       setLocalStream(null);
       setRemoteStreams([]);
     }
+    setRoomchat([])
    InCallManager.setForceSpeakerphoneOn(false);
    InCallManager.stop();
    disconnectSocket()
