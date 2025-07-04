@@ -278,13 +278,13 @@ export const MainScreen = ({address, userData }) => {
         socket.off('streamApproved', HandleApprovedStream);
         socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
         socket.off('host-action', HandleHostAction);
-        socket.on('viewerCount', HandleViewerCount);
+        socket.off('viewerCount', HandleViewerCount);
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
         socket.off('roomInfo', HandleRoomInfo)
       }
     }
-  }, [isHost,isSocketConnected]);
+  }, [isSocketConnected]);
 
   useEffect(() => {
     // Connect to socket server when component mounts
