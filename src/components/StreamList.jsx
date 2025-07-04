@@ -383,20 +383,12 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address }) => {
                         padding: 20,
                     }}>
                         <Image
-                            source={require('../../assets/images/default-streamer.jpg')}
+                            source={require('../../assets/images/NoStreamAvailable.png')}
                             style={[
                                 styles.streamListImage,
                                 { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
                             ]}
                         />
-                        <Text style={{
-                            marginTop: 16,
-                            fontSize: 16,
-                            color: '#666',
-                            textAlign: 'center'
-                        }}>
-                            No stream rooms available at the moment.
-                        </Text>
                     </View>
                 ) : (
                     <FlatList
