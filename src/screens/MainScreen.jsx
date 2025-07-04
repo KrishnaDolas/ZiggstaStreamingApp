@@ -228,6 +228,7 @@ export const MainScreen = ({address, userData }) => {
     setViewerCount(info?.viewerCount || 0);
   }
   const HandleNewStream = () => {
+    console.log(refreshlobby);
     setRefreshLobby(!refreshlobby); // Toggle refresh state
     console.log('New stream received:');
   }
