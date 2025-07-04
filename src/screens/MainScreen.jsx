@@ -203,6 +203,7 @@ export const MainScreen = ({address, userData }) => {
     console.log('Host left, leaving room...');
     Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
     // Stop local stream if exists
+    disconnectSocket(); // Disconnect from socket server
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       localStreamRef.current = null;
@@ -284,7 +285,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('roomInfo', HandleRoomInfo)
       }
     }
-  }, [isSocketConnected]);
+  }, [isHost,isSocketConnected]);
 
   useEffect(() => {
     // Connect to socket server when component mounts
