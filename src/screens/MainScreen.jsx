@@ -290,7 +290,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
         socket.off('roomInfo', HandleRoomInfo)
-        socket.on('new_stream',HandleNewStream)
+        socket.off('new_stream',HandleNewStream)
       }
     }
   }, [isHost,isSocketConnected]);
