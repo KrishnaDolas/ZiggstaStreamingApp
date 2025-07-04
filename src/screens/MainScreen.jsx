@@ -38,6 +38,7 @@ export const MainScreen = ({address, userData }) => {
   const { theme } = useContext(ThemeContext);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [refreshlobby, setRefreshLobby] = useState(false); // For refreshing lobby
+  const [leaveroomrefresh, setLeaveRoomRefresh] = useState(false); // For refreshing after leaving room
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -232,6 +233,10 @@ export const MainScreen = ({address, userData }) => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
     console.log('New stream received:');
   }
+  const HandleLeaveStream = () => {
+    console.log('Leave stream event received');
+    setLeaveRoomRefresh(!leaveroomrefresh); // Toggle leave room refresh state
+  }
   const HandleHostAction = ({ action }) => {
     if (!localStreamRef.current) return;
   
@@ -272,6 +277,8 @@ export const MainScreen = ({address, userData }) => {
       socket.on('Hostleft',HandleHostLeft)
       socket.on('roomInfo',HandleRoomInfo)
       socket.on('new_stream',HandleNewStream)
+      socket.on('Close_stream',HandleLeaveStream)
+
     }
 
     return () => {
@@ -293,6 +300,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('Hostleft', HandleHostLeft)
         socket.off('roomInfo', HandleRoomInfo)
         socket.off('new_stream',HandleNewStream)
+        socket.off('Close_stream',HandleLeaveStream)
       }
     }
   }, [isHost,isSocketConnected]);
@@ -475,7 +483,7 @@ export const MainScreen = ({address, userData }) => {
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} refreshlobby={refreshlobby} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}
