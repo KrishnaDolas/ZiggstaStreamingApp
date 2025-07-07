@@ -228,6 +228,9 @@ export const MainScreen = ({address, userData }) => {
     console.log('Leave stream event received');
     setLeaveRoomRefresh(!leaveroomrefresh); // Toggle leave room refresh state
   }
+  const HandleRoomFull = (msg) => {
+    Alert.alert('Room Full', msg, [{ text: 'OK' }]);
+  }
   const HandleHostAction = ({ action }) => {
     if (!localStreamRef.current) return;
   
@@ -242,7 +245,7 @@ export const MainScreen = ({address, userData }) => {
       localStreamRef.current = null;
       setLocalStream(null);
       setIsStreaming(false);
-      setHasRequestedStream(true);
+      setHasRequestedStream(false);
     }
   };
   const HandleUserStreamStoped = (userId) => {
@@ -286,6 +289,7 @@ export const MainScreen = ({address, userData }) => {
       socket.on('roomInfo',HandleRoomInfo)
       socket.on('new_stream',HandleNewStream)
       socket.on('Close_stream',HandleLeaveStream)
+      socket.on('roomFull', HandleRoomFull)
     }
 
     return () => {
@@ -294,7 +298,7 @@ export const MainScreen = ({address, userData }) => {
         console.log('Disconnecting from socket server...');
         socket.off('assignHost', HandleAssignHost);
         socket.off('joined', HandleJoined);
-        socket.on('StreamNotAvailable', HandleStreamNotAvailable)
+        socket.off('StreamNotAvailable', HandleStreamNotAvailable)
         socket.off('newUser', HandleNewUser);
         socket.off('signal', HandleSignal);
         socket.off('new-message', HandleNewMessage);
@@ -310,6 +314,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('roomInfo', HandleRoomInfo)
         socket.off('new_stream',HandleNewStream)
         socket.off('Close_stream',HandleLeaveStream)
+        socket.off('roomFull', HandleRoomFull)
       }
     }
   }, [isHost,isSocketConnected]);
