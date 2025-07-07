@@ -8,6 +8,7 @@ import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+import { Dropdown } from 'react-native-element-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
@@ -144,36 +145,39 @@ export const WalletDashboardScreen = ({ userData }) => {
                             {/* if tab is deposit */}
                             {activeTab === 'Deposit' ? (
                                 <View style={styles.wdPickerWrapper}>
-                                    <Picker
-                                        selectedValue={paymentMethod}
-                                        onValueChange={(itemValue) => setPaymentMethod(itemValue)}
-                                        style={styles.wdPicker}
-                                        dropdownIconColor="#414141" // For Android
-                                        mode="dropdown"
-                                    >
-                                        <Picker.Item label="Select Deposit method" value="" color="#999999" />
-                                        {methods.map((method, index) => (
-                                            <Picker.Item key={index} label={method} value={method} color="#41414" />
-                                        ))}
-                                    </Picker>
+                                    <Dropdown
+                                        style={styles.wdDropdown}
+                                        data={methods.map((item) => ({ label: item, value: item }))}
+                                        labelField="label"
+                                        valueField="value"
+                                        placeholder="Select Deposit method"
+                                        value={paymentMethod}
+                                        onChange={(item) => setPaymentMethod(item.value)}
+                                        // search
+                                        placeholderStyle={{ color: '#858585' }}
+                                        selectedTextStyle={{ color: '#414141' }}
+                                        iconColor="#414141"
+                                    />
                                 </View>
 
                             ) : activeTab === 'Withdraw' ? (
                                 <>
                                     {/* if tab is withdraw */}
                                     <View style={styles.wdPickerWrapper}>
-                                        <Picker
-                                            selectedValue={selectBankName}
-                                            onValueChange={(itemValue) => setSelectBankName(itemValue)}
-                                            style={styles.wdPicker}
-                                            dropdownIconColor="#414141" // For Android
-                                            mode="dropdown"
-                                        >
-                                            <Picker.Item label="Select Bank" value="" color="#999999" />
-                                            {bankName.map((method, index) => (
-                                                <Picker.Item key={index} label={method} value={method} color="#41414" />
-                                            ))}
-                                        </Picker>
+                                        <Dropdown
+                                            style={styles.wdDropdown}
+                                            data={bankName.map((item) => ({ label: item, value: item }))}
+                                            labelField="label"
+                                            valueField="value"
+                                            placeholder="Select Bank"
+                                            value={selectBankName}
+                                            onChange={(item) => {
+                                                setSelectBankName(item.value);
+                                            }}
+                                            placeholderStyle={{ color: '#858585' }}
+                                            selectedTextStyle={{ color: '#414141' }}
+                                            iconColor="#414141"
+                                        />
                                     </View>
                                 </>
                             ) : <>

@@ -154,18 +154,16 @@ export const Signup = ({
           <TouchableOpacity onPress={() => ShowloginForm()} style={{ alignItems: 'center', marginTop: 20 }}>
             <Text style={{ color: theme === 'dark' ? '#fff' : 'blue', textDecorationLine: 'underline', fontSize: 16 }}>Already have an account? Sign In</Text>
           </TouchableOpacity>
-          <View style={styles.Othersinginoption}>
-            <View style={styles.Loginoption}>
-              <TouchableOpacity style={[styles.Loginoptionbtn, styles.Applebtn]} onPress={() => SigninWithApple()}>
-                <Icon name="apple" size={24} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.Loginoptionbtn, styles.Facebookbtn]} onPress={() => SigninWithFacebook()}>
-                <Icon name="facebook" size={24} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.Loginoptionbtn, styles.Googlebtn]} onPress={() => SigninWithGoogle()}>
-                <Icon name="google" size={24} color="#fff" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.Loginoption}>
+            <TouchableOpacity style={[styles.Loginoptionbtn, styles.Applebtn]} onPress={() => SigninWithApple()}>
+              <Icon name="apple" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.Loginoptionbtn, styles.Facebookbtn]} onPress={() => SigninWithFacebook()}>
+              <Icon name="facebook" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.Loginoptionbtn, styles.Googlebtn]} onPress={() => SigninWithGoogle()}>
+              <Icon name="google" size={24} color="#fff" />
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

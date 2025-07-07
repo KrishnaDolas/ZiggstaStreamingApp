@@ -43,7 +43,7 @@ export const styles = StyleSheet.create({
   },
   SingInlabel: {
     fontSize: 16,
-    marginBottom: 10,
+    // marginBottom: 0,
     float: 'left',
   },
   Loginerror: {
@@ -73,10 +73,12 @@ export const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   Loginoption: {
+    marginVertical: 40,
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    width: '50%',
+    justifyContent: 'center',
+    width: '100%',
     position: 'relative',
+    gap: 25,
   },
   Applebtn: {
     backgroundColor: '#000000',
@@ -884,13 +886,15 @@ export const styles = StyleSheet.create({
   streamHeaderCountBox: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:'flex-end',
     marginRight: 12,
     backgroundColor: '#d93a63',
     borderRadius: 30,
     // padding: 5,
     paddingLeft: 8,
     paddingRight: 5,
-    paddingVertical: 3
+    paddingVertical: 3,
+    minWidth: 65,
   },
 
   streamHeaderCountTitle: {
@@ -1004,20 +1008,31 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     left: 10,
+    right: 10,
+    zIndex: 9,
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60, // adjust based on how much fade you want
+    zIndex: 1,
   },
   streamListName: {
     fontWeight: 'bold',
     fontSize: 16,
-    maxWidth: 'auto',
+    color: '#fff',
+    maxWidth: '100%',
   },
   streamListStatus: {
+    fontSize: 12,
     color: '#fff',
-    fontSize: 14,
-    maxWidth: '90%',
+    maxWidth: '100%',
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '8.4%',
+    bottom: '9.4%',
     left: '50%',
     transform: [{ translateX: -0.475 * screenWidth }],
     flexDirection: 'row',
@@ -1136,7 +1151,7 @@ export const styles = StyleSheet.create({
   },
   strHedSearchModalSearchBtn: {
     height: 40,
-    paddingHorizontal: 25,
+    paddingHorizontal: 12,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1270,15 +1285,13 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
+    gap: 8,
   },
-
-
   modalCategoryButton: {
     backgroundColor: 'rgba(184, 58, 243, 1)',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    margin: 5,
   },
   modalCategoryButtonActive: {
     backgroundColor: '#6a0dad',
@@ -1370,7 +1383,47 @@ export const styles = StyleSheet.create({
   messageListTime: {
     fontSize: 12,
   },
-
+  frActionBox: {
+    flexDirection: 'row',
+    gap: 5,
+  },
+  frActionConfirmBtn: {
+    backgroundColor: '#d93a63',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+  },
+  frActionBtnText: {
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  frActionDeleteBtn: {
+    backgroundColor: '#f1f1f1',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+  },
+  flUserModalBtn: {
+    height: 30,
+    width: 30,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 30,
+  },
+  messListFilterTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginTop: 10,
+    flexWrap: 'wrap',
+  },
+  messListFilterTabBTn: {
+    paddingVertical: 6,
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    marginRight: 8,
+  },
   // stream room
 
   strRoomHeader: {
@@ -1734,6 +1787,13 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     paddingLeft: 4,
+  },
+  wdDropdown: {
+    height: 52,
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    backgroundColor: '#f7f7f7',
+    color: '#414141',
   },
   wdPicker: {
     height: 52,
@@ -2230,6 +2290,7 @@ export const themeStyles = {
     messageListTime: {
       color: '#74858a',
     },
+
   },
   dark: {
     container: { backgroundColor: '#121212' },
