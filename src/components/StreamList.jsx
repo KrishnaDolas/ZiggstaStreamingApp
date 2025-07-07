@@ -23,7 +23,7 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobby,leaveroomrefresh }) => {
+const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlobby, leaveroomrefresh }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
@@ -127,7 +127,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
             setIsInitialLoading(true);
             const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.lat},${address.lon}`);
             if (response) {
-                const livestreamlist= response.data.data.filter(item => item.isLive === 1);
+                const livestreamlist = response.data.data.filter(item => item.isLive === 1);
                 setApiRooms(livestreamlist || []);
                 setNearByRoomData(livestreamlist || []);
             }
@@ -147,7 +147,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
             setIsFiltering(true);
             const response = await Apiclient.get(`/rooms/getrooms?isLive=1&Categories=${selecteddata}`);
             if (response) {
-                const livestreamlist= response.data.data.filter(item => item.isLive === 1);
+                const livestreamlist = response.data.data.filter(item => item.isLive === 1);
                 console.log('Filtered Rooms:', response.data.data);
                 const filtered = livestreamlist || [];
 
@@ -192,7 +192,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
                 }
             }
         }
-    }, [filteredRooms, isNearBy,refreshlobby,leaveroomrefresh]);
+    }, [filteredRooms, isNearBy, refreshlobby, leaveroomrefresh]);
 
     // Function to create a room
     const submitroomnameandcreateroom = () => {
@@ -228,7 +228,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
             console.log(response);
             if (response.data.roomID) {
                 console.log('Room created successfully:', response);
-                const roominfo={...roomData,roomID: response.data.roomID};
+                const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
@@ -261,15 +261,26 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
                     source={image}
                     style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]}
                 />
+                {/* Bottom gradient overlay */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.7)']}
+                    style={styles.gradientOverlay}
+                />
                 <View style={[styles.streamListEyeCountContainer, themeStyles[theme].streamListEyeCountContainer]}>
                     <Text style={[styles.streamListEyeCount, themeStyles[theme].streamListEyeCount]}>{item.viewerCount || 0}</Text>
                     <Ionicons name="eye-outline" size={14} color={theme === 'light' ? '#fff' : '#fff'} />
                 </View>
                 <View style={styles.streamListOverlay}>
-                    <Text style={[styles.streamListName, themeStyles[theme].streamListName]} numberOfLines={1}>
-                        {item.RoomName}
+                    <Text
+                        style={[styles.streamListName, themeStyles[theme].streamListName]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                    >
+                        {item.screenName}
                     </Text>
-                    {/* <Text style={styles.streamListStatus} numberOfLines={1}>Hosted by ID: {item.hostID}</Text> */}
+                    <Text style={styles.streamListStatus}
+                        numberOfLines={1}
+                        ellipsizeMode="tail">{item.RoomName}</Text>
                 </View>
             </TouchableOpacity>
         );
@@ -285,7 +296,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
                 setCategoryData(response.data.categories);
             }
         } catch (error) {
-            console.error('Error fetching interest:', error);
+            console.error('Error fetching get categories:', error);
         } finally {
             setIsInterestLoading(false);
         }
@@ -431,9 +442,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
                     style={[styles.halfScreenModalMain]}
                     useNativeDriver={true}
                 >
-                    <View style={[styles.halfScreenModalOverlay]}>
+                    <View style={[styles.halfScreenModalOverlay, { paddingHorizontal: 4 }]}>
 
-                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.5 }]}>
+                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.6 }]}>
                             <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
                                     onPress={() => setOpenStreamInputModal(false)}
@@ -444,21 +455,21 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address,refreshlobb
                             </View>
                             <View style={styles.strHedSearchModalForm}>
                                 <TextInput
-                                    placeholder="Enter Room Name/Topic"
+                                    placeholder="Enter Stream Description"
                                     placeholderTextColor="#888"
                                     value={roomIdInput}
                                     onChangeText={setRoomIdInput}
-                                    style={[styles.strHedSearchModalInput, { flex: 1 }]}
+                                    style={[styles.strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
                                 />
                                 <TouchableOpacity onPress={submitroomnameandcreateroom}>
                                     <LinearGradient
-                                        colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                        colors={['#de0037', '#de0037']}
                                         start={{ x: 0.15, y: 1 }}
                                         end={{ x: 1, y: 0 }}
                                         style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
                                         <Text
                                             style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                            Start Room
+                                            Start Stream
                                         </Text>
                                     </LinearGradient>
                                 </TouchableOpacity>

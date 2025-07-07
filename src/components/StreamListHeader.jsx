@@ -98,9 +98,9 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                     }}>
                         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                             {isFavourite ? (
-                                <Ionicons name="heart-sharp" size={22} color="#d93a63" />
+                                <Ionicons name="heart-sharp" size={22} color="red" />
                             ) : (
-                                <Ionicons name="heart-outline" size={22} color="#d93a63" />
+                                <Ionicons name="heart-outline" size={22} color="red" />
                             )}
                         </Animated.View>
                     </TouchableOpacity>

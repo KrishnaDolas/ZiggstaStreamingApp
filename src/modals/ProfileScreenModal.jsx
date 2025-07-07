@@ -9,15 +9,45 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Apiclient from '../utils/Apiclient';
+import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
+// top gifters
+const topGifters = [
+    {
+        id: 1,
+        name: 'Name 1',
+        amount: '$2,500',
+        image: require('../../assets/images/LS-12.jpg'), // Replace with actual image
+        isTop: true,
+    },
+    {
+        id: 2,
+        name: 'Name 2',
+        amount: '$1,200',
+        image: require('../../assets/images/LS-8.jpg'), // Replace with actual image
+        isTop: false,
+    },
+    {
+        id: 3,
+        name: 'Name 3',
+        amount: '$950',
+        image: require('../../assets/images/LS-9.jpg'), // Replace with actual image
+        isTop: false,
+    },
+];
 
-
-const ProfileScreenModal = ({ visible, onClose }) => {
+const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
-    const [profileData, setProfileData] = useState({});
+    const [userProfileDatails, setUserProfileDetails] = useState({});
+    const [socialLinks, setSocialLinks] = useState({});
+    const [socialError, setSocialError] = useState('');
+    const [showWarning, setShowWarning] = useState(false);
+
     const panY = useRef(new Animated.Value(0)).current;
+    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
+
 
     const panResponder = useRef(
         PanResponder.create({
@@ -50,64 +80,94 @@ const ProfileScreenModal = ({ visible, onClose }) => {
         }
     }, [visible]);
 
-
-    // top gifters
-    const topGifters = [
-        {
-            id: 1,
-            name: 'Name 1',
-            amount: '$2,500',
-            image: require('../../assets/images/LS-3.jpg'), // Replace with actual image
-            isTop: true,
-        },
-        {
-            id: 2,
-            name: 'Name 2',
-            amount: '$1,200',
-            image: require('../../assets/images/LS-3.jpg'), // Replace with actual image
-            isTop: false,
-        },
-        {
-            id: 3,
-            name: 'Name 3',
-            amount: '$950',
-            image: require('../../assets/images/LS-3.jpg'), // Replace with actual image
-            isTop: false,
-        },
-    ];
-
-    // Example URLs — replace with the actual profile links
-    const instagramUrl = 'https://www.instagram.com/yourprofile';
-    const facebookUrl = 'https://www.facebook.com/yourprofile';
-    const twitterUrl = 'https://twitter.com/yourprofile'; // or X link
-
-
     // get profile details from API
-    // useEffect(() => {
-    //     const fetchProfileDetails = async () => {
-    //         setIsUserLoading(false);
-    //         setIsUserError('');
-    //         try {
-    //             const formData = {
-    //                 userid: 23,
-    //             };
-    //             const response = await Apiclient.post('/getUserDetails', formData);
-    //             console.log('response user profile data', response.data.user);
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            setIsUserLoading(true);
+            setIsUserError('');
+            try {
+                const formData = {
+                    userid: profileUserId,
+                };
+                const response = await Apiclient.post('/getUserDetails', formData);
+                console.log('response user profile data', response.data.user);
 
-    //             if (response.status === 200) {
-    //                 setProfileData(response.data.user || {});
-    //             } else {
-    //                 setIsUserError('Failed to fetch user profile details');
-    //             }
-    //         } catch (err) {
-    //             setIsUserError('Error fetching user profile details: ' + err.message);
-    //         } finally {
-    //             setIsUserLoading(false);
-    //         }
-    //     };
-    //     fetchProfileDetails();
-    // }, []);
+                if (response.status === 200) {
+                    setUserProfileDetails(response.data.user || {});
+                } else {
+                    setIsUserError('Failed to fetch user profile details');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching user profile details: ' + err.message);
+            } finally {
+                setIsUserLoading(false);
+            }
+        };
+        fetchProfileDetails();
+    }, [profileUserId]);
 
+
+    // Function to fetch social data from the API
+    useEffect(() => {
+        const getSocialsData = async () => {
+            try {
+                const response = await Apiclient.get(`/userSocials/getUserSocials?userid=${profileUserId}`);
+
+                if (response.status === 200 && Array.isArray(response.data.socials)) {
+                    const formatted = {};
+                    response.data.socials.forEach(item => {
+                        if (item.platform && item.handle_or_url) {
+                            formatted[item.platform.toLowerCase()] = item.handle_or_url;
+                        }
+                    });
+                    setSocialLinks(formatted);
+                    setSocialError(Object.keys(formatted).length === 0 ? 'No social media accounts available.' : '');
+                } else {
+                    setSocialLinks({});
+                    setSocialError('No social media accounts available.');
+                }
+            } catch (error) {
+                if (error.response?.status === 404) {
+                    setSocialLinks({});
+                    setSocialError('No social media accounts available.');
+                } else {
+                    setSocialError('Failed to fetch social media information.');
+                    console.error('Error fetching socials:', error.message);
+                }
+            }
+        };
+
+        if (profileUserId) {
+            getSocialsData();
+        }
+    }, [profileUserId]);
+
+    const handleSocialPress = (platform) => {
+        const handle = socialLinks?.[platform.toLowerCase()];
+        if (!handle) {
+            return alert(`No ${platform} profile linked.`);
+        }
+
+        let url = '';
+
+        switch (platform.toLowerCase()) {
+            case 'facebook':
+                url = handle.startsWith('http') ? handle : `https://facebook.com/${handle}`;
+                break;
+            case 'instagram':
+                url = handle.startsWith('http') ? handle : `https://instagram.com/${handle}`;
+                break;
+            case 'twitter':
+                url = handle.startsWith('http') ? handle : `https://twitter.com/${handle}`;
+                break;
+            default:
+                url = handle;
+        }
+
+        Linking.openURL(url).catch(() => {
+            alert('Unable to open the URL.');
+        });
+    };
 
 
     return (
@@ -133,8 +193,8 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                     {...panResponder.panHandlers}
                 >
                     {/* close modal */}
-                    <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10 }]}>
-                        <Ionicons name="close" size={23} color="#333" />
+                    <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10, marginRight: 5 }]}>
+                        <Ionicons name="close" size={28} color="#333" />
                     </TouchableOpacity>
                     <View style={[{ marginHorizontal: 0, flex: 1 }]}>
                         {layoutReady &&
@@ -142,127 +202,181 @@ const ProfileScreenModal = ({ visible, onClose }) => {
                                 contentContainerStyle={{ paddingBottom: 40 }}
                                 showsVerticalScrollIndicator={true}
                             >
-                                {/* Header with Report button */}
-                                <View style={styles.psmHeader}>
-                                    <TouchableOpacity style={styles.psmReportButton}>
-                                        <Text style={styles.psmReportButtonText}>Report</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                <View style={styles.psmProfileContainer}>
-                                    {/* Profile Content */}
-                                    <View style={styles.psmProfileTopCard}>
-                                        {/* Profile Image */}
-                                        <View style={[styles.psmProfileImageContainer]}>
-                                            <Image
-                                                source={require('../../assets/images/LS-3.jpg')}
-                                                style={styles.psmProfileImage}
-                                            />
-                                        </View>
-
-                                        {/* Name and ID */}
-                                        <Text style={styles.psmProfileName}>Katherine Ziggler</Text>
-                                        <Text style={styles.psmProfileId}>ID: 1234567</Text>
-
-                                        {/* Stats Section */}
-                                        <View style={styles.psmStatsContainer}>
-                                            <View style={styles.psmStatItem}>
-                                                <Text style={styles.psmStatLabel}>FRIENDS</Text>
-                                                <Text style={styles.psmStatValue}>4K1</Text>
-                                            </View>
-                                            <View style={styles.psmStatItem}>
-                                                <Text style={styles.psmStatLabel}>FOLLOWING</Text>
-                                                <Text style={styles.psmStatValue}>1K2</Text>
-                                            </View>
-                                            <View style={styles.psmStatItem}>
-                                                <Text style={styles.psmStatLabel}>FANS</Text>
-                                                <Text style={styles.psmStatValue}>800</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    {/* Social Media Icons */}
-                                    <View style={styles.psmSocialContainer}>
-                                        <TouchableOpacity
-                                            onPress={() => Linking.openURL(instagramUrl)}
-                                            style={styles.psmSocialButton}
-                                        >
-                                            <View style={styles.psmInstagramIcon}>
-                                                {/* <Text style={styles.psmSocialIconText}>📷</Text> */}
-                                                <FontAwesome name="instagram" size={34} color="#833ab4" />
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            onPress={() => Linking.openURL(facebookUrl)}
-                                            style={styles.psmSocialButton}
-                                        >
-                                            <View style={styles.psmFacebookIcon}>
-                                                {/* <Text style={styles.psmSocialIconText}>f</Text> */}
-                                                <FontAwesome name="facebook" size={34} color="#445fed" />
-                                            </View>
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            onPress={() => Linking.openURL(twitterUrl)}
-                                            style={styles.psmSocialButton}
-                                        >
-                                            <View style={styles.psmTwitterIcon}>
-                                                {/* <Text style={styles.psmSocialIconText}>𝕏</Text> */}
-                                                <Image
-                                                    source={require('../../assets/images/tx-logo-black.png')}
-                                                    resizeMode="contain"
-                                                    style={{
-                                                        width: 26,
-                                                        height: 26,
-                                                    }}
-                                                />
-                                            </View>
+                                <>
+                                    {/* Header with Report button */}
+                                    <View style={styles.psmHeader}>
+                                        <TouchableOpacity style={styles.psmReportButton}>
+                                            <Text style={styles.psmReportButtonText}>Report</Text>
                                         </TouchableOpacity>
                                     </View>
-                                    {/* Top Gifters */}
-                                    <View style={styles.psmTopGiftersContainer}>
-                                        <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
-                                        <LinearGradient
-                                            colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
-                                            start={{ x: 0, y: 1 }}
-                                            end={{ x: 0.8, y: 0.2 }}
-                                            style={styles.psmTopGifterMainCard}
-                                        >
-                                            <View style={styles.psmTopGifterImageContainer}>
-                                                <Image
-                                                    source={topGifters[0].image}
-                                                    style={styles.psmTopGifterMainImage}
+                                    {isUserLoading ? (
+                                        // Skeleton while loading
+                                        <View style={styles.psmProfileContainer}>
+                                            <View style={[styles.psmProfileTopCard, { paddingTop: 10 }]}>
+                                                <ShimmerPlaceHolder
+                                                    LinearGradient={LinearGradient}
+                                                    style={[styles.psmProfileImage, { borderRadius: 50 }]}
+                                                    shimmerStyle={{ width: 100, height: 100 }}
                                                 />
+
+                                                <ShimmerPlaceHolder
+                                                    LinearGradient={LinearGradient}
+                                                    style={{ width: 140, height: 20, marginTop: 10, borderRadius: 4 }}
+                                                />
+                                                <ShimmerPlaceHolder
+                                                    LinearGradient={LinearGradient}
+                                                    style={{ width: 100, height: 14, marginTop: 6, borderRadius: 4 }}
+                                                />
+
+                                                <View style={[styles.psmStatsContainer, { marginTop: 20 }]}>
+                                                    {[...Array(3)].map((_, i) => (
+                                                        <ShimmerPlaceHolder
+                                                            key={i}
+                                                            LinearGradient={LinearGradient}
+                                                            style={{ width: 60, height: 40, borderRadius: 8, marginHorizontal: 10 }}
+                                                        />
+                                                    ))}
+                                                </View>
                                             </View>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <Text style={styles.psmTopGifterMainName}>{topGifters[0].name}</Text>
-                                                <Text style={styles.psmTopGifterMainAmount}>{topGifters[0].amount}</Text>
-                                            </View>
-                                        </LinearGradient>
-                                        <View style={styles.psmOtherGiftersContainer}>
-                                            {topGifters.slice(1).map((gifter, index) => (
-                                                <View
-                                                    key={gifter.id}
-                                                    style={[styles.psmOtherGifterCard,
-                                                    {
-                                                        borderLeftWidth: index === 0 ? 1 : 0,
-                                                        borderLeftColor: '#f0f0f0',
-                                                    }]}
-                                                >
-                                                    <View style={styles.psmOtherGifterImageContainer}>
+                                        </View>
+                                    ) : (
+                                        <>
+
+                                            <View style={styles.psmProfileContainer}>
+                                                {/* Profile Content */}
+                                                <View style={styles.psmProfileTopCard}>
+                                                    {/* Profile Image */}
+                                                    <View style={[styles.psmProfileImageContainer]}>
                                                         <Image
-                                                            source={gifter.image}
-                                                            style={styles.psmOtherGifterImage}
+                                                            source={require('../../assets/images/LS-3.jpg')}
+                                                            style={styles.psmProfileImage}
                                                         />
                                                     </View>
-                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                        <Text style={styles.psmOtherGifterName}>{gifter.name}</Text>
-                                                        <Text style={styles.psmOtherGifterAmount}>{gifter.amount}</Text>
+
+                                                    {/* Name and ID */}
+                                                    <Text style={styles.psmProfileName}>{userProfileDatails?.screenName}</Text>
+                                                    <Text style={styles.psmProfileId}>ID: {userProfileDatails?.userid}</Text>
+
+                                                    {/* Stats Section */}
+                                                    <View style={styles.psmStatsContainer}>
+                                                        <View style={styles.psmStatItem}>
+                                                            <Text style={styles.psmStatLabel}>STREAMS</Text>
+                                                            <Text style={styles.psmStatValue}>1K</Text>
+                                                        </View>
+                                                        <View style={styles.psmStatItem}>
+                                                            <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
+                                                            <Text style={styles.psmStatValue}>2K3</Text>
+                                                        </View>
+                                                        <View style={styles.psmStatItem}>
+                                                            <Text style={styles.psmStatLabel}>FOLLOWING</Text>
+                                                            <Text style={styles.psmStatValue}>800</Text>
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            ))}
-                                        </View>
-                                    </View>
-                                </View>
+                                                {/* Social Media Icons */}
+                                                <View style={styles.psmSocialContainer}>
+                                                    <TouchableOpacity
+                                                        onPress={() => handleSocialPress('Instagram')}
+                                                        style={styles.psmSocialButton}
+                                                        disabled={!socialLinks?.instagram}
+                                                    >
+                                                        <View style={styles.psmInstagramIcon}>
+                                                            <FontAwesome
+                                                                name="instagram"
+                                                                size={34}
+                                                                color={socialLinks?.instagram ? '#833ab4' : '#A9A9A9'} // Gray when disabled
+                                                                style={!socialLinks?.instagram ? { opacity: 0.5 } : {}}
+                                                            />
+                                                        </View>
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity
+                                                        onPress={() => handleSocialPress('Facebook')}
+                                                        style={styles.psmSocialButton}
+                                                        disabled={!socialLinks?.facebook}
+                                                    >
+                                                        <View style={styles.psmFacebookIcon}>
+                                                            <FontAwesome
+                                                                name="facebook"
+                                                                size={34}
+                                                                color={socialLinks?.facebook ? '#445fed' : '#A9A9A9'}
+                                                                style={!socialLinks?.facebook ? { opacity: 0.5 } : {}}
+                                                            />
+                                                        </View>
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity
+                                                        onPress={() => handleSocialPress('Twitter')}
+                                                        style={styles.psmSocialButton}
+                                                        disabled={!socialLinks?.twitter}
+                                                    >
+                                                        <View style={styles.psmTwitterIcon}>
+                                                            <Image
+                                                                source={require('../../assets/images/tx-logo-black.png')}
+                                                                resizeMode="contain"
+                                                                style={{
+                                                                    width: 26,
+                                                                    height: 26,
+                                                                    tintColor: socialLinks?.twitter ? '#000' : '#A9A9A9',
+                                                                    opacity: socialLinks?.twitter ? 1 : 0.5,
+                                                                }}
+                                                            />
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                </View>
+                                                {socialError !== '' && (
+                                                    <Text style={{ textAlign: 'center', marginTop: 8, color: 'red', fontSize: 13 }}>
+                                                        {socialError}
+                                                    </Text>
+                                                )}
+                                                {/* Top Gifters */}
+                                                <View style={styles.psmTopGiftersContainer}>
+                                                    <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
+                                                    <LinearGradient
+                                                        colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
+                                                        start={{ x: 0, y: 1 }}
+                                                        end={{ x: 0.8, y: 0.2 }}
+                                                        style={styles.psmTopGifterMainCard}
+                                                    >
+                                                        <View style={styles.psmTopGifterImageContainer}>
+                                                            <Image
+                                                                source={topGifters[0].image}
+                                                                style={styles.psmTopGifterMainImage}
+                                                            />
+                                                        </View>
+                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                            <Text style={styles.psmTopGifterMainName}>{topGifters[0].name}</Text>
+                                                            <Text style={styles.psmTopGifterMainAmount}>{topGifters[0].amount}</Text>
+                                                        </View>
+                                                    </LinearGradient>
+                                                    <View style={styles.psmOtherGiftersContainer}>
+                                                        {topGifters.slice(1).map((gifter, index) => (
+                                                            <View
+                                                                key={gifter.id}
+                                                                style={[styles.psmOtherGifterCard,
+                                                                {
+                                                                    borderLeftWidth: index === 0 ? 1 : 0,
+                                                                    borderLeftColor: '#f0f0f0',
+                                                                }]}
+                                                            >
+                                                                <View style={styles.psmOtherGifterImageContainer}>
+                                                                    <Image
+                                                                        source={gifter.image}
+                                                                        style={styles.psmOtherGifterImage}
+                                                                    />
+                                                                </View>
+                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                    <Text style={styles.psmOtherGifterName}>{gifter.name}</Text>
+                                                                    <Text style={styles.psmOtherGifterAmount}>{gifter.amount}</Text>
+                                                                </View>
+                                                            </View>
+                                                        ))}
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </>
+                                    )}
+                                </>
                             </ScrollView>
                         }
 

@@ -6,10 +6,13 @@ const AppContext = createContext();
 // 4️⃣ Provider component
 export const AppProvider = ({ children }) => {
     const [friendListType, setFriendListType] = useState('friends'); // 'friends' or 'blocked'
+    const [userData, setUserData] = useState({});
     return (
         <AppContext.Provider value={{
             friendListType,
             setFriendListType,
+            userData,
+            setUserData,
         }}>
             {children}
         </AppContext.Provider>

@@ -7,6 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
+import { useAppContext } from '../context/AppContext';
 
 
 const Footer = () => {
@@ -15,7 +16,7 @@ const Footer = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const [visibleModal, setVisibleModal] = useState(null);
-
+  const { userData } = useAppContext();
   // Automatically determine the active tab based on current route name
   const getActiveTab = () => {
     switch (route.name) {
@@ -128,7 +129,7 @@ const Footer = () => {
       </View>
       {/* Bottom Modal */}
       {visibleModal === 'profile-screen-modal' && (
-        <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} />
+        <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={userData} />
       )}
 
     </>

@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -12,6 +13,7 @@ import FriendActionsModal from '../modals/FriendActionsModal';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { ActivityIndicator } from 'react-native';
+import ProfileScreenModal from '../modals/ProfileScreenModal';
 
 export const MessageListScreen = ({ userData }) => {
     const insetsTop = useSafeAreaInsets();
@@ -23,6 +25,7 @@ export const MessageListScreen = ({ userData }) => {
     const [loading, setLoading] = useState(false);
     const [friendsData, setFriendsData] = useState([]);
     const [friendRequestsData, setFriendRequestsData] = useState([]);
+    const [profileUserData, setProfileUserData] = useState({});
 
     // Function to fetch friends data blocked/unblocked user from the API
     useEffect(() => {
@@ -86,11 +89,16 @@ export const MessageListScreen = ({ userData }) => {
         alert(`Friend request from ${id} deleted`);
     };
 
+    const handleProfileOpen = (item) => {
+        setProfileUserData(item);
+        setVisibleModal('profile-screen-modal');
+    };
+
     const renderItem = ({ item }) => {
         if (friendListType === 'requests') {
             return (
                 <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer, { alignItems: 'center' }]}>
-                    <TouchableOpacity onPress={() => alert(`Profile Open`)}>
+                    <TouchableOpacity onPress={() => handleProfileOpen(item)}>
                         <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => alert(`chat open`)} style={{ flex: 1, marginRight: 10 }}>
@@ -98,16 +106,16 @@ export const MessageListScreen = ({ userData }) => {
                             {item.Username}
                         </Text>
                     </TouchableOpacity>
-                    <View style={{ flexDirection: 'row', gap: 5 }}>
+                    <View style={styles.frActionBox}>
                         <TouchableOpacity
                             onPress={() => handleConfirm(item.Username)}
-                            style={{ backgroundColor: '#d93a63', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-                            <Text style={{ color: '#fff', fontWeight: '500', fontSize: 14 }}>Confirm</Text>
+                            style={styles.frActionConfirmBtn}>
+                            <Text style={[styles.frActionBtnText, { color: '#fff' }]}>Confirm</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => handleDelete(item.Username)}
-                            style={{ backgroundColor: '#f1f1f1', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 }}>
-                            <Text style={{ color: '#111', fontWeight: '500', fontSize: 14 }}>Delete</Text>
+                            style={styles.frActionDeleteBtn}>
+                            <Text style={[styles.frActionBtnText, { color: '#111' }]}>Delete</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -116,7 +124,7 @@ export const MessageListScreen = ({ userData }) => {
 
         return (
             <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer]}>
-                <TouchableOpacity onPress={() => alert(`Profile Open`)}>
+                <TouchableOpacity onPress={() => handleProfileOpen(item)}>
                     <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => alert(`chat open`)} style={styles.messageListContent}>
@@ -133,27 +141,17 @@ export const MessageListScreen = ({ userData }) => {
                 {friendListType === 'blocked' ? (
                     <TouchableOpacity
                         onPress={() => alert(`Unblocked ${item.username}`)}
-                        style={{
-                            paddingVertical: 6,
-                            paddingHorizontal: 12,
-                            backgroundColor: '#f3f3f3',
-                            borderRadius: 6,
-                        }}>
-                        <Text style={{ color: '#000', fontWeight: '500', fontSize: 14 }}>Unblock</Text>
+                        style={styles.frActionDeleteBtn}>
+                        <Text style={[styles.frActionBtnText, { color: '#111' }]}>Unblock</Text>
                     </TouchableOpacity>
                 ) : (
                     <>
                         <TouchableOpacity
                             onPress={() => { setVisibleModal('friend-action'); setFriendInfo(item); }}
-                            style={{
+                            style={[styles.flUserModalBtn, {
                                 backgroundColor: theme === 'dark' ? '#1e1e1e' : '#fafafa',
-                                height: 30,
-                                width: 30,
-                                flexDirection: 'row',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderRadius: 30,
-                            }}
+
+                            }]}
                         >
                             <Feather
                                 name="more-horizontal"
@@ -193,13 +191,7 @@ export const MessageListScreen = ({ userData }) => {
                     ]}>
                     {/* filter */}
                     <View
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginHorizontal: 10,
-                            marginTop: 10,
-                            flexWrap: 'wrap'
-                        }}
+                        style={styles.messListFilterTab}
                     >
                         {['friends', 'blocked', 'requests'].map((type) => (
                             <TouchableOpacity
@@ -208,14 +200,9 @@ export const MessageListScreen = ({ userData }) => {
                                     setFriendListType(type);
                                     setMenuVisible(false);
                                 }}
-                                style={{
-                                    paddingVertical: 6,
+                                style={[styles.messListFilterTabBTn, {
                                     backgroundColor: friendListType === type ? '#d93a63' : '#f3f3f3',
-                                    borderRadius: 4,
-                                    paddingHorizontal: 10,
-                                    // marginBottom: 4,
-                                    marginRight: 8,
-                                }}
+                                }]}
                             >
                                 <Text
                                     style={{
@@ -278,6 +265,9 @@ export const MessageListScreen = ({ userData }) => {
                         userData={userData}
                         friendInfo={friendInfo}
                     />
+                )}
+                {visibleModal === 'profile-screen-modal' && (
+                    <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
                 )}
             </SafeAreaView>
         </LinearGradient>
