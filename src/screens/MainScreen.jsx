@@ -39,6 +39,8 @@ export const MainScreen = ({address, userData }) => {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [refreshlobby, setRefreshLobby] = useState(false); // For refreshing lobby
   const [leaveroomrefresh, setLeaveRoomRefresh] = useState(false); // For refreshing after leaving room
+  const [streamrequestlist, setStreamRequestList] = useState([]);
+  const [streamGuest, setStreamGuest] = useState([]);
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -136,24 +138,17 @@ export const MainScreen = ({address, userData }) => {
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleStreamRequest =(streamrequsts,requesterId,name) => {
+  const HandleStreamRequest =(streamrequsts) => {
+    setStreamRequestList(streamrequsts);
     console.log(streamrequsts);
-    if (isHost) {
-      Alert.alert(
-        'Stream Request',
-        `User ${name} wants to stream.`,
-        [
-          {
-            text: 'Approve',
-            onPress: () => socket.emit('approveStream', requesterId)
-          },
-          {
-            text: 'Reject',
-            onPress: () => socket.emit('rejectStream', requesterId),
-            style: 'cancel'
-          }
-        ]
-      );
+  }
+  const AcceptStream=(action,requesterId)=>{
+    console.log(`Action: ${action}, Requester ID: ${requesterId}`);
+    if(action === 'approve') {
+    socket.emit('approveStream', requesterId)
+    }
+    if( action === 'reject') {
+      socket.emit('rejectStream', requesterId)
     }
   }
   const HandleApprovedStream = async () => {
@@ -190,6 +185,10 @@ export const MainScreen = ({address, userData }) => {
     const offer = await peer.createOffer();
     await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
     socket.emit('signal', { to: newUserId, data: peer.localDescription });
+  }
+  const HandleGetListStreamers = (streamers) => {
+    console.log('Approved streamers:', streamers);
+    setStreamGuest(streamers);
   }
   const HandleUserLeft = socketId => {
     console.log(`User left: ${socketId}`);
@@ -271,6 +270,7 @@ export const MainScreen = ({address, userData }) => {
       socket.on('streamApproved',HandleApprovedStream);
       socket.on('streamRejected',HandleStreamReject)
       socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+      socket.on('approvedStreamers', HandleGetListStreamers);
       socket.on('host-action', HandleHostAction);
       socket.on('viewerCount', HandleViewerCount);
       socket.on('userLeft',HandleUserLeft);
@@ -293,6 +293,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('streamRequest', HandleStreamRequest);
         socket.off('streamApproved', HandleApprovedStream);
         socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
+        socket.off('approvedStreamers', HandleGetListStreamers);
         socket.off('host-action', HandleHostAction);
         socket.off('viewerCount', HandleViewerCount);
         socket.off('userLeft', HandleUserLeft);
@@ -498,6 +499,9 @@ export const MainScreen = ({address, userData }) => {
         HandleChatmessages={HandleChatmessages}
         roomchat={roomchat}
         streamInfo={streamInfo}
+        streamrequestlist={streamrequestlist}
+        AcceptStream={AcceptStream}
+        streamGuest={streamGuest}
       />)}
       </View>
     </LinearGradient>

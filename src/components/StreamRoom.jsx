@@ -16,6 +16,7 @@ import FastImage from 'react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
+import RequestModal from '../modals/RequestModal';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -68,7 +69,10 @@ const StreamRoom = ({
     isHost,
     HandleChatmessages,
     roomchat,
-    streamInfo
+    streamInfo,
+    streamrequestlist,
+    AcceptStream,
+    streamGuest
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -93,6 +97,7 @@ const StreamRoom = ({
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
     const [userDetails, setUserDetails] = useState({});
+    const[togglerequest, setTogglerequest] = useState(false);
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
@@ -196,7 +201,7 @@ const StreamRoom = ({
             GetUserDetails(streamInfo?.hostID)
         }
     //    }
-        console.log(streamInfo.hostID);
+        console.log(streamInfo?.hostID);
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
         });
@@ -464,7 +469,9 @@ const StreamRoom = ({
                                 {!openMoreSettingList && (
                                     <>
                                         <View style={styles.strLiveStats}>
-                                            <Text style={styles.strTitle}>{streamInfo?.RoomName}</Text>
+                                            <Text style={styles.strTitle}>
+                                                {/* {streamInfo?.RoomName} */}
+                                                </Text>
                                             <View style={styles.streamViewerCount}>
                                                 <Ionicons name="eye-outline" size={18} color="#ffea23" />
                                                 <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
@@ -491,7 +498,7 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>setTogglerequest(!togglerequest)}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
@@ -672,7 +679,8 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-
+                                borderColor: '#ccc',
+            {<RequestModal visible={togglerequest} onClose={()=>setTogglerequest(false)} StreamRequestList={streamrequestlist} onAcceptStream={AcceptStream}  streamGuest={streamGuest}  />}
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
