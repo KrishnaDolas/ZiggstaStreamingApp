@@ -142,15 +142,7 @@ export const MainScreen = ({address, userData }) => {
     setStreamRequestList(streamrequsts);
     console.log(streamrequsts);
   }
-  const AcceptStream=(action,requesterId)=>{
-    console.log(`Action: ${action}, Requester ID: ${requesterId}`);
-    if(action === 'approve') {
-    socket.emit('approveStream', requesterId)
-    }
-    if( action === 'reject') {
-      socket.emit('rejectStream', requesterId)
-    }
-  }
+  
   const HandleApprovedStream = async () => {
     await startLocalStream();
     // Add tracks to existing peer connections
@@ -253,6 +245,21 @@ export const MainScreen = ({address, userData }) => {
       setHasRequestedStream(true);
     }
   };
+  const HandleUserStreamStoped = (userId) => {
+    console.log(`User ${userId} stopped streaming`);
+    if(socket.id !== userId){
+      if (peersRef.current[userId]) {
+        console.log(`Closing peer connection for ${userId}`);
+        peersRef.current[userId].close();
+        delete peersRef.current[userId];
+        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+      }else{
+        console.log(`No peer connection found for ${userId}`);
+      }
+    }else{
+      console.log(`You stopped streaming`);
+    }
+  }
   const HandleViewerCount=(count)=>{
       console.log(`Viewer count updated: ${count}`);
   }
@@ -272,6 +279,7 @@ export const MainScreen = ({address, userData }) => {
       socket.on('reconnectWithNewPeer', HandlereconnectWithNewPeer);
       socket.on('approvedStreamers', HandleGetListStreamers);
       socket.on('host-action', HandleHostAction);
+      socket.on('User-streamStopped',HandleUserStreamStoped)
       socket.on('viewerCount', HandleViewerCount);
       socket.on('userLeft',HandleUserLeft);
       socket.on('Hostleft',HandleHostLeft)
@@ -295,6 +303,7 @@ export const MainScreen = ({address, userData }) => {
         socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
         socket.off('approvedStreamers', HandleGetListStreamers);
         socket.off('host-action', HandleHostAction);
+        socket.off('User-streamStopped',HandleUserStreamStoped)
         socket.off('viewerCount', HandleViewerCount);
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
@@ -500,8 +509,8 @@ export const MainScreen = ({address, userData }) => {
         roomchat={roomchat}
         streamInfo={streamInfo}
         streamrequestlist={streamrequestlist}
-        AcceptStream={AcceptStream}
         streamGuest={streamGuest}
+        socket={socket}
       />)}
       </View>
     </LinearGradient>

@@ -71,8 +71,8 @@ const StreamRoom = ({
     roomchat,
     streamInfo,
     streamrequestlist,
-    AcceptStream,
-    streamGuest
+    streamGuest,
+    socket
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -679,8 +679,7 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-                                borderColor: '#ccc',
-            {<RequestModal visible={togglerequest} onClose={()=>setTogglerequest(false)} StreamRequestList={streamrequestlist} onAcceptStream={AcceptStream}  streamGuest={streamGuest}  />}
+            {<RequestModal visible={togglerequest} onClose={()=>setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket}/>}
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />

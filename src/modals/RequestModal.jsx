@@ -8,10 +8,23 @@ const RequestModal = ({
     onClose,
     StreamRequestList = [],
     streamGuest = [],
-    onAcceptStream,
-    onMuteToggle,
-    onRemoveStreamGuest
+    socket
 }) => {
+    const GetAction=(targetId,action)=>{
+        console.log(`Action: ${action} on Target ID: ${targetId}`);
+       console.log( socket.id);
+       socket.emit('host-control', {action: action,targetId: targetId}
+       )
+    }
+    const AcceptStream=(action,requesterId)=>{
+        console.log(`Action: ${action}, Requester ID: ${requesterId}`);
+        if(action === 'approve') {
+        socket.emit('approveStream', requesterId)
+        }
+        if( action === 'reject') {
+          socket.emit('rejectStream', requesterId)
+        }
+      }
     return (
         <Modal
             isVisible={visible}
@@ -43,18 +56,16 @@ const RequestModal = ({
                             }}>
                                 <Text style={{ fontSize: 16 }}>{item.Name}</Text>
                                 <TouchableOpacity
-                                    onPress={() => onAcceptStream("approve", item.ID)}
-                                    style={{
-                                        backgroundColor: 'black',
-                                        olor:'red',
-                                        paddingVertical: 4,
-                                        paddingHorizontal: 9,
-                                        borderRadius: 6,
-                                    }}
+                                onPress={() => AcceptStream("approve", item.ID)}
+                                style={{
+                                    backgroundColor: 'black',
+                                    paddingVertical: 4,
+                                    paddingHorizontal: 9,
+                                    borderRadius: 6,
+                                }}
                                 >
                                 <View style={{ position: 'relative', marginRight: 6 }}>
                                     <Ionicons name="videocam-outline" size={22} color="#fff" />
-                                    
                                     <Ionicons
                                     name="add-circle"
                                     size={10}
@@ -87,9 +98,6 @@ const RequestModal = ({
                         keyExtractor={(item) => item.CustomID}
                         renderItem={({ item }) => (
                             <View style={{
-                                borderWidth: 1,
-                                borderColor: '#ccc',
-                                borderRadius: 8,
                                 padding: 10,
                                 marginBottom: 12
                             }}>
@@ -97,7 +105,7 @@ const RequestModal = ({
                                 <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
                                     {/* Mute/Unmute Button with Icon */}
                                     <TouchableOpacity
-                                        onPress={() => onMuteToggle(item.ID)}
+                                        onPress={() => GetAction(item.ID, item.muted ? 'unmute' : 'mute')}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
@@ -113,12 +121,11 @@ const RequestModal = ({
                                             color="#fff"
                                             style={{ marginRight: 6 }}
                                         />
-                                        <Text style={{ color: '#fff' }}>{item.muted ? 'Unmute' : 'Mute'}</Text>
                                     </TouchableOpacity>
 
                                     {/* Remove Button with Icon */}
                                     <TouchableOpacity
-                                        onPress={() => onRemoveStreamGuest(item.ID)}
+                                        onPress={() => GetAction(item.ID,'stop-stream')}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
@@ -134,7 +141,6 @@ const RequestModal = ({
                                             color="#fff"
                                             style={{ marginRight: 6 }}
                                         />
-                                        <Text style={{ color: '#fff' }}>Remove</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
