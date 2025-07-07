@@ -261,6 +261,13 @@ export const MainScreen = ({address, userData }) => {
       }
     }else{
       console.log(`You stopped streaming`);
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+      }
+      setLocalStream(null);
+      setIsStreaming(false);
+      setHasRequestedStream(false);
     }
   }
   const HandleViewerCount=(count)=>{
