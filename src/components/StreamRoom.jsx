@@ -104,7 +104,6 @@ const StreamRoom = ({
             const response = await Apiclient.get('/getgifts');
             if (response) {
                 setGiftCategoryItems(response.data.data || []);
-                console.log('giftCategories', response.data.data);
             }
         } catch (error) {
             console.error('Error fetching gifts:', error);
@@ -115,9 +114,6 @@ const StreamRoom = ({
         getGiftsCategory();
     }, [giftModalVisible])
 
-    useEffect(() => {
-        console.log('selectedGiftCategory', selectedGiftCategory)
-    }, [selectedGiftCategory])
 
     // Function to fetch gifts from the API
     const getGifts = async () => {
@@ -126,7 +122,6 @@ const StreamRoom = ({
             const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
             if (response) {
                 setGiftItems(response.data.data || []);
-                console.log('gift data', response.data.data)
             }
         } catch (error) {
             console.error('Error fetching gifts:', error);
@@ -160,22 +155,13 @@ const StreamRoom = ({
         // Add remote streams (assume remoteStreams is an array of { id, stream })
         remoteStreams.forEach(({ id, stream,name }) => {
           if (stream && typeof stream.toURL === 'function') {
-            console.log(name);
-            console.log(`Adding remote stream for user ${id}`, stream.toURL());
             streams.push({ type: 'remote', stream, userId: id });
           } else {
             console.warn('⚠️ Invalid remote stream:', stream);
           }
         });
       
-        setStreamLayout(streams);
-        console.log('StreamLayout:', streams.map(s => ({
-            type: s.type,
-            hasVideo: s.stream?.getVideoTracks?.().length,
-            videoMuted: s.stream?.getVideoTracks?.()[0]?.muted,
-            readyState: s.stream?.getVideoTracks?.()[0]?.readyState,
-          })));
-          
+        setStreamLayout(streams);          
       }, [localStream, remoteStreams, isStreaming, viewerCount]);
       
     const getVideoTileStyle = (count) => {
@@ -201,7 +187,6 @@ const StreamRoom = ({
             GetUserDetails(streamInfo?.hostID)
         }
     //    }
-        console.log(streamInfo?.hostID);
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
         });
@@ -330,7 +315,6 @@ const StreamRoom = ({
         if (response) {
         const user = response.data.user;
         setUserDetails(user);
-        console.log(user);
        }
      } catch (error) {
         console.log(error);
