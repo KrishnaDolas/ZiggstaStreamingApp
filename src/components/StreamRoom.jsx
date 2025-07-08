@@ -538,7 +538,7 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                         {!isHost && (
                                             <TouchableOpacity onPress={requestStreamPermission} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Guest</Text>
+                                                <Text style={styles.strMoreSettingListItemText}>Join As a Guest</Text>
                                                 <MaterialCommunityIcons name="video-plus" size={21} color="#fff" />
                                             </TouchableOpacity>
                                         )}
