@@ -41,6 +41,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
     const [userDetails, setUserDetails] = useState([]);
     const [isFavourite, setIsFavourite] = useState(false);
     const [searchFilteredData, setSearchFilteredData] = useState([]);
+    const [isdisable, setIsDisable] = useState(false); // for disabling the button when creating room
 
     // Function to fetch user details from the API
     const getUserDetails = async () => {
@@ -215,12 +216,14 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
 
             const response = await Apiclient.post('/rooms', roomData);
             if (response.data.roomID) {
+                setIsDisable(true); // Disable button after room creation
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
             }
         } catch (error) {
+            setIsDisable(false); // Disable button after room creation
             console.log(error);
         }
     };
@@ -445,7 +448,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
                                     onChangeText={setRoomIdInput}
                                     style={[styles.strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
                                 />
-                                <TouchableOpacity onPress={submitroomnameandcreateroom}>
+                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
                                     <LinearGradient
                                         colors={['#de0037', '#de0037']}
                                         start={{ x: 0.15, y: 1 }}
