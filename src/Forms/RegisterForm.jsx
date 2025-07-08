@@ -17,6 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebView from 'react-native-webview';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useAppContext } from '../context/AppContext';
+import Apiclient from '../utils/Apiclient';
 // import { NetworkInfo } from 'react-native-network-info';
 
 const screenHeight = Dimensions.get('window').height;
@@ -42,20 +43,6 @@ const questions = [
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
-
-const interestOptions = [
-  'Art & Music',
-  'Entertainment & Gaming',
-  'Family & Parenting',
-  'Fashion & Shopping',
-  'Food & Cooking',
-  'Health & Fitness',
-  'Hobbies & Activities',
-  'News & Politics',
-  'Religion & Spiritual',
-  'Sports & Adventure',
-  'Travel & Holidays',
-];
 
 // Helper: return date 18 years ago from today in YYYY-MM-DD
 const getDefaultDOB = () => {
@@ -87,6 +74,8 @@ export const RegisterForm = ({
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [interestOptions, setInterestOptions] = useState([]); // Dynamic interest options
+  const [categories, setCategories] = useState([]); // Store full categories data for categoryID mapping
 
 
   const [formData, setFormData] = useState({
@@ -107,6 +96,29 @@ export const RegisterForm = ({
   // NetworkInfo.getIPV4Address().then(ipv4 => {
   //   console.log('IPv4 Address:', ipv4); // Expected: something like 192.168.x.x or 10.x.x.x
   // });
+
+
+
+  // Function to fetch user interest from the API
+
+  useEffect(() => {
+    const getInterestData = async () => {
+      try {
+        const response = await Apiclient.post('/getcategories');
+        // console.log('response getcategories', response);
+        if (response?.data?.categories) {
+          const categoriesData = response.data.categories;
+          setCategories(categoriesData); // Store full categories data
+          setInterestOptions(categoriesData.map(cat => cat.categoryName)); // Set interest options
+        }
+      } catch (error) {
+        console.error('Error fetching get categories:', error);
+      }
+    };
+    getInterestData();
+  }, []);
+
+
 
   // Unified function to update location data
   const updateLocationData = (address, source = 'ip') => {
@@ -155,7 +167,7 @@ export const RegisterForm = ({
           `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`
         );
         const json = await response.json();
-        console.log('ip info api call', json);
+        // console.log('ip info api call', json);
 
         // Step 3: Extract address details from the full response
         const address = {
@@ -167,7 +179,7 @@ export const RegisterForm = ({
           longitude: json.location?.longitude || null,
           ip,
         };
-        console.log('ip info address', address);
+        // console.log('ip info address', address);
 
         // Step 3: If state or zipcode is missing, perform reverse geocoding
         if (!address.postcode && address.latitude && address.longitude) {
@@ -176,7 +188,7 @@ export const RegisterForm = ({
           );
           const reverseJson = await reverseResponse.json();
           const reverseAddress = reverseJson.features?.[0]?.properties || {};
-          console.log('reverse api call', reverseAddress);
+          // console.log('reverse api call', reverseAddress);
           updateLocationData(
             {
               ...address,
@@ -233,7 +245,7 @@ export const RegisterForm = ({
         );
         const reverseJson = await reverseResponse.json();
         const reverseAddress = reverseJson.features?.[0]?.properties || {};
-        console.log('reverse api call (search)', reverseAddress);
+        // console.log('reverse api call (search)', reverseAddress);
         updateLocationData(
           {
             ...item,
@@ -348,9 +360,9 @@ export const RegisterForm = ({
   //   }
   // };
 
-  useEffect(() => {
-    console.log('address', userAddress);
-  }, [userAddress]);
+  // useEffect(() => {
+  //   console.log('address', userAddress);
+  // }, [userAddress]);
 
   const onMapMessage = message => {
     try {
@@ -738,9 +750,19 @@ export const RegisterForm = ({
 
       if (isSubmitting) return; // Prevent duplicate submission
 
-      const interestIndexes = formData.interests.map(interest =>
-        interestOptions.indexOf(interest),
-      );
+      // const interestIndexes = formData.interests.map(interest =>
+      //   interestOptions.indexOf(interest),
+      // );
+
+      // Map selected interest names to their categoryIDs and sort in ascending order
+      const interestIds = formData.interests
+        .map(interest => {
+          const category = categories.find(cat => cat.categoryName === interest);
+          return category ? category.categoryID : null;
+        })
+        .filter(id => id !== null)
+        .sort((a, b) => a - b); // Sort numerically in ascending order
+
       // Build final payload object
       const finalData = {
         username: userData?.username.trim(),
@@ -754,7 +776,7 @@ export const RegisterForm = ({
         state: formData.state || userAddress?.state || '',
         country: formData.country || userAddress?.country || '',
         zipcode: userAddress?.zipcode || '',
-        interests: interestIndexes.join(','),
+        interests: interestIds.join(','),
       };
 
       console.log('✅ Final Payload to POST:', finalData);
@@ -807,7 +829,7 @@ export const RegisterForm = ({
         { text: 'Continue' },
       ]);
       onLogin();
-      console.log(res.data.user);
+      // console.log(res.data.user);
       await AsyncStorage.setItem('token', res.data.token);
 
       const userDataString = JSON.stringify(res.data.user);

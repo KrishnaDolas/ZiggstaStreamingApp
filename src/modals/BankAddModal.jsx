@@ -225,7 +225,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
     const handleSubmit = async () => {
         if (!validateFields()) return;
 
-        // setLoading(true);
+        setLoading(true);
 
         // Get formatted data with uppercase fields
         const formattedData = getFormattedFormData();
