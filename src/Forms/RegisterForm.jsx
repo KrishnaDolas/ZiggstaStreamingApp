@@ -7,17 +7,13 @@ import {
   ScrollView,
   Alert,
   Dimensions,
-  Platform,
+  FlatList,
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { formatISO } from 'date-fns';
 import WebView from 'react-native-webview';
-import Geolocation from 'react-native-geolocation-service';
-import { check, request, PERMISSIONS, RESULTS, openSettings } from 'react-native-permissions';
-import Icon from 'react-native-vector-icons/Ionicons';
 import { Dropdown } from 'react-native-element-dropdown';
 
 const screenHeight = Dimensions.get('window').height;
@@ -82,8 +78,14 @@ export const RegisterForm = ({
   const [errors, setErrors] = useState({});
   const [isValidStep, setIsValidStep] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
-  const [locationPermission, setLocationPermission] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [mapReady, setMapReady] = useState(false); // NEW
+
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -98,149 +100,117 @@ export const RegisterForm = ({
     zipcode: '',
   });
 
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedDay, setSelectedDay] = useState('');
 
-
-  // Request location permission on mount
+  // Get initial location using IP info
   useEffect(() => {
-    const checkLocationPermission = async () => {
+    const getIPLocation = async () => {
       try {
-        const platformPermission =
-          Platform.OS === 'ios'
-            ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
-            : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
-
-        let status = await check(platformPermission);
-        setLocationPermission(status);
-
-        if (status === RESULTS.GRANTED) {
-          getCurrentLocation();
-        } else {
-          // Clear location fields if permission is denied
-          setFormData(prev => ({
-            ...prev,
-            location: '',
-            city: '',
-            state: '',
-            country: '',
-            zipcode: '',
-          }));
+        // Step 1: Get public IP of the device
+        const ipRes = await fetch('https://api64.ipify.org?format=json');
+        const ipData = await ipRes.json();
+        const ip = ipData.ip;
+        console.log('ip', ip);
+        // Step 2: Use IP to get location info
+        const response = await fetch(
+          `https://api.geoapify.com/v1/ipinfo?ip=${ip}&apiKey=25127ca1c55f48909b03f43048040037`
+        );
+        const json = await response.json();
+        console.log('json', json);
+        const address = json.location || {};
+        setUserAddress({
+          ...address,
+          lat: json.latitude,
+          lon: json.longitude,
+          source: 'ip',
+        });
+        setFormData(prev => ({
+          ...prev,
+          location: address.city?.name || address.formatted || '',
+          city: address.city?.name || '',
+          state: address.state?.name || '',
+          country: address.country || '',
+          zipcode: address.postcode || '',
+        }));
+        if (json.latitude && json.longitude) {
+          const tryUpdateMap = () => {
+            if (mapReady && webViewRef.current) {
+              updateMapLocationByCoords(json.latitude, json.longitude);
+              setMapInitialized(true);
+            } else {
+              setTimeout(tryUpdateMap, 200);
+            }
+          };
+          tryUpdateMap();
         }
       } catch (err) {
-        console.error('Permission check error:', err);
+        console.error('Error fetching IP location:', err);
+        Alert.alert('Error', 'Unable to get IP-based location.');
       }
     };
 
-    checkLocationPermission();
+    getIPLocation();
   }, []);
 
-  // Function to get current location
-  const getCurrentLocation = async () => {
+  // Handle location search with autocomplete
+  const handleLocationSearch = async text => {
+    if (text.length < 3) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
     try {
-      Geolocation.getCurrentPosition(
-        async position => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const response = await fetch(
-              `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
-            );
-            const json = await response.json();
-            const address = json.features?.[0]?.properties || {};
-            setUserAddress({
-              ...address,
-              lat: latitude,
-              lon: longitude,
-              source: 'current',
-            });
-            setFormData(prev => ({
-              ...prev,
-              location: address.city || '',
-              city: address.city || '',
-              state: address.state || '',
-              country: address.country || '',
-              zipcode: address.postcode || '',
-            }));
-            updateMapLocationByCoords(latitude, longitude);
-            setMapInitialized(true);
-          } catch (err) {
-            console.error('Error fetching address:', err);
-            Alert.alert('Error', 'Unable to get current location.');
-          }
-        },
-        error => {
-          console.error('Error getting location:', error);
-          Alert.alert('Error', 'Unable to get current location.');
-        },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+          text
+        )}&format=json&apiKey=25127ca1c55f48909b03f43048040037`
       );
+      const json = await response.json();
+      setSearchResults(json.results || []);
     } catch (err) {
-      console.error('Geolocation error:', err);
+      console.error('Error fetching autocomplete results:', err);
+      setSearchResults([]);
     }
   };
 
-  // Function to handle location permission request and get current location
-  const requestCurrentLocation = async () => {
-    try {
-      const platformPermission =
-        Platform.OS === 'ios'
-          ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
-          : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
-
-      let status = await check(platformPermission);
-      if (status === RESULTS.DENIED) {
-        status = await request(platformPermission);
-      }
-      setLocationPermission(status);
-
-      if (status === RESULTS.GRANTED) {
-        getCurrentLocation();
-      } else if (status === RESULTS.BLOCKED) {
-        Alert.alert(
-          'Permission Denied',
-          'Location access is required to get your current location. Please enable location permissions in your device settings.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Open Settings',
-              onPress: async () => {
-                try {
-                  await openSettings();
-                } catch (err) {
-                  console.error('Error opening settings:', err);
-                  Alert.alert('Error', 'Unable to open settings.');
-                }
-              },
-            },
-          ]
-        );
-      } else {
-        Alert.alert(
-          'Permission Denied',
-          'Location permission is required to get your current location.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (err) {
-      console.error('Permission request error:', err);
-      Alert.alert('Error', 'Unable to request location permission.');
-    }
+  // Handle selection from autocomplete results
+  const handleSelectLocation = item => {
+    setFormData(prev => ({
+      ...prev,
+      location: item.city || item.formatted || '',
+      city: item.city || '',
+      state: item.state || '',
+      country: item.country || '',
+      zipcode: item.postcode || '',
+    }));
+    setUserAddress({
+      ...item,
+      lat: item.lat,
+      lon: item.lon,
+      source: 'search',
+    });
+    updateMapLocationByCoords(item.lat, item.lon);
+    setSearchResults([]);
+    setIsSearching(false);
+    setMapInitialized(true);
   };
 
-  // Function to update map to specific coordinates
+  // Update map to specific coordinates
   const updateMapLocationByCoords = (lat, lon) => {
-    if (webViewRef.current) {
+    if (webViewRef.current && lat && lon) {
       const jsCode = `
         map.setView([${lat}, ${lon}], 13);
-        marker.setLatLng([${lat}, ${lon}]);
+        if (marker) {
+          marker.setLatLng([${lat}, ${lon}]);
+        } else {
+          marker = L.marker([${lat}, ${lon}]).addTo(map);
+        }
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'CURRENT_LOCATION', lat: ${lat}, lon: ${lon} }));
       `;
       webViewRef.current.injectJavaScript(jsCode);
     }
   };
-
-
 
   useEffect(() => {
     if (formData.dob) {
@@ -268,37 +238,20 @@ export const RegisterForm = ({
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (field === 'location') {
-      updateMapLocation(value);
-      // Clear other address fields when user types manually
-      setFormData(prev => ({
-        ...prev,
-        city: '',
-        state: '',
-        country: '',
-        zipcode: '',
-      }));
-      setUserAddress({});
+      handleLocationSearch(value);
     }
   };
 
+
   useEffect(() => {
-    console.log('address:', userAddress);
     if (userData || userAddress) {
       const updatedForm = {
         screenname: userData?.username || '',
-        // email: '',
-        // location: userAddress?.city || '', // Set location to city from userAddress
         city: userAddress?.city || '',
-        state: userAddress?.state_code || '',
+        state: userAddress?.state || '',
         country: userAddress?.country || '',
         zipcode: userAddress?.postcode || '',
-        // location: '', // Set location to city from userAddress
-        // city: '',
-        // state: '',
-        // country: '',
-        // zipcode: '',
       };
-
       setFormData(prev => ({
         ...prev,
         ...updatedForm,
@@ -323,46 +276,47 @@ export const RegisterForm = ({
     });
   };
 
-  // Callback for map taps returned via WebView message
-  // const onMapMessage = city => {
-  //   console.log('city', city);
-  //   handleChange('location', city);
+  // const updateMapLocation = cityName => {
+  //   if (webViewRef.current && cityName && cityName.length > 2) {
+  //     const trimmedCity = cityName.trim();
+  //     console.log('trimmedCity', `'${trimmedCity}'`);
+  //     const escapedCity = trimmedCity.replace(/'/g, "\\'");
+  //     const jsCode = `
+  //     window.postMessage(JSON.stringify({ type: 'SEARCH_CITY', payload: '${escapedCity}' }), '*');
+  //   `;
+  //     webViewRef.current.injectJavaScript(jsCode);
+  //   }
   // };
 
-  const updateMapLocation = cityName => {
-    if (webViewRef.current && cityName && cityName.length > 2) {
-      const trimmedCity = cityName.trim();
-      console.log('trimmedCity', `'${trimmedCity}'`);
-      const escapedCity = trimmedCity.replace(/'/g, "\\'");
-      const jsCode = `
-      window.postMessage(JSON.stringify({ type: 'SEARCH_CITY', payload: '${escapedCity}' }), '*');
-    `;
-      webViewRef.current.injectJavaScript(jsCode);
-    }
-  };
+  useEffect(() => {
+    console.log('address', userAddress);
+  }, [userAddress])
 
   const onMapMessage = message => {
     try {
       const address = JSON.parse(message);
-      console.log('📍 Address from map:', address);
       if (address.type !== 'CURRENT_LOCATION') {
         setFormData(prev => ({
           ...prev,
-          location: address.source === 'tap' ? address.city || '' : prev.location,
+          location: address.city || address.formatted || '',
           city: address.city || '',
           state: address.state || '',
           country: address.country || '',
           zipcode: address.postcode || '',
         }));
-        if (typeof setUserAddress === 'function') {
-          setUserAddress(address);
-        }
+        setUserAddress({
+          ...address,
+          lat: address.lat,
+          lon: address.lon,
+          source: 'tap',
+        });
         setMapInitialized(true);
       }
     } catch (err) {
       console.error('Failed to parse map address:', err);
     }
   };
+
 
   const renderStepContent = question => {
     if (question.field === 'gender') {
@@ -576,36 +530,37 @@ export const RegisterForm = ({
             placeholder={question.placeholder}
             placeholderTextColor="#9d9d9d"
             value={formData.location}
-            onChangeText={text => {
-              handleChange('location', text);
-              updateMapLocation(text); // 🔄 Pan map to city
-            }}
-          // onChangeText={text => {
-          //   const trimmedText = text.trim();
-          //   handleChange('location', trimmedText);
-          //   updateMapLocation(trimmedText);
-          // }}
+            onChangeText={text => handleChange('location', text)}
           />
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: "flex-end" }}>
-            <TouchableOpacity
-              onPress={requestCurrentLocation}
-              style={globalStyles.getCurrentLocationBtn}>
-              <Icon name="location-outline" size={16} color="#fff" style={{ marginRight: 6 }} />
-              <Text style={{ color: 'white', fontWeight: '600' }}>
-                {locationPermission === RESULTS.GRANTED ? 'Show My Current Location' : 'Allow Permission'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           {errors.location && (
             <Text style={{ color: 'red' }}>{errors.location}</Text>
           )}
-          {locationPermission !== RESULTS.GRANTED && (
-            <Text style={{ color: '#555', marginTop: 5, fontSize: 14 }}>
-              Please allow location permission to auto-detect your location, or type your city above.
-            </Text>
+          {isSearching && searchResults.length > 0 && (
+            <FlatList
+              data={searchResults}
+              keyExtractor={item => item.place_id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    padding: 10,
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#ddd',
+                    backgroundColor: theme === 'dark' ? '#333' : '#fff',
+                  }}
+                  onPress={() => handleSelectLocation(item)}>
+                  <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>
+                    {item.formatted}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              style={{
+                maxHeight: 150,
+                marginTop: 5,
+                backgroundColor: theme === 'dark' ? '#333' : '#fff',
+                borderRadius: 8,
+              }}
+            />
           )}
-
           <View
             style={{
               height: screenHeight * 0.5 + 60,
@@ -618,75 +573,76 @@ export const RegisterForm = ({
               ref={webViewRef}
               originWhitelist={['*']}
               javaScriptEnabled
+              onLoadEnd={() => setMapReady(true)} // NEW
               source={{
                 html: `
-              <!DOCTYPE html><html><head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                <style>
-                  html, body, #map { margin: 0; height: 100%; width: 100%; }
-                  .leaflet-control-attribution { display: none !important; }
-                </style>
-              </head><body>
-                <div id="map"></div>
-                <script>
-                  const key = "25127ca1c55f48909b03f43048040037";
-                  const map = L.map('map').setView([0, 0], 1); // Initialize with world view
-                  L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
-                    maxZoom: 18
-                  }).addTo(map);
-                  let marker = null; // Marker is null until a location is set
-                  async function rev(lat, lon, source = 'tap') {
-                    const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
-                    const json = await res.json();
-                    const address = json.features?.[0]?.properties || {};
-                    window.ReactNativeWebView.postMessage(JSON.stringify({ ...address, source }));
-                  }
-                  map.on('click', e => {
-                    const { lat, lng } = e.latlng;
-                    if (marker) {
-                      marker.setLatLng([lat, lng]);
-                    } else {
-                      marker = L.marker([lat, lng]).addTo(map);
+                <!DOCTYPE html><html><head>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+                  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+                  <style>
+                    html, body, #map { margin: 0; height: 100%; width: 100%; }
+                    .leaflet-control-attribution { display: none !important; }
+                  </style>
+                </head><body>
+                  <div id="map"></div>
+                  <script>
+                    const key = "25127ca1c55f48909b03f43048040037";
+                    const map = L.map('map').setView([0, 0], 1);
+                    L.tileLayer(\`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=\${key}\`, {
+                      maxZoom: 18
+                    }).addTo(map);
+                    let marker = null;
+                    async function rev(lat, lon, source = 'tap') {
+                      const res = await fetch(\`https://api.geoapify.com/v1/geocode/reverse?lat=\${lat}&lon=\${lon}&apiKey=\${key}\`);
+                      const json = await res.json();
+                      const address = json.features?.[0]?.properties || {};
+                      window.ReactNativeWebView.postMessage(JSON.stringify({ ...address, lat, lon, source }));
                     }
-                    rev(lat, lng, 'tap');
-                  });
-                  window.addEventListener('message', async (event) => {
-                    try {
-                      const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
-                      if (msg.type === 'SEARCH_CITY') {
-                        const city = msg.payload;
-                        const res = await fetch(\`https://api.geoapify.com/v1/geocode/search?text=\${encodeURIComponent(city)}&limit=1&apiKey=\${key}\`);
-                        const json = await res.json();
-                        const location = json.features?.[0]?.geometry?.coordinates;
-                        if (location) {
-                          const [lon, lat] = location;
+                    map.on('click', e => {
+                      const { lat, lng } = e.latlng;
+                      if (marker) {
+                        marker.setLatLng([lat, lng]);
+                      } else {
+                        marker = L.marker([lat, lng]).addTo(map);
+                      }
+                      rev(lat, lng, 'tap');
+                    });
+                    window.addEventListener('message', async (event) => {
+                      try {
+                        const msg = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                        if (msg.type === 'SEARCH_CITY') {
+                          const city = msg.payload;
+                          const res = await fetch(\`https://api.geoapify.com/v1/geocode/autocomplete?text=\${encodeURIComponent(city)}&format=json&apiKey=\${key}\`);
+                          const json = await res.json();
+                          const location = json.results?.[0]?.geometry?.coordinates;
+                          if (location) {
+                            const [lon, lat] = location;
+                            map.setView([lat, lon], 13);
+                            if (marker) {
+                              marker.setLatLng([lat, lon]);
+                            } else {
+                              marker = L.marker([lat, lon]).addTo(map);
+                            }
+                            rev(lat, lon, 'search');
+                          }
+                        } else if (msg.type === 'CURRENT_LOCATION') {
+                          const { lat, lon } = msg;
                           map.setView([lat, lon], 13);
                           if (marker) {
                             marker.setLatLng([lat, lon]);
                           } else {
                             marker = L.marker([lat, lon]).addTo(map);
                           }
-                          rev(lat, lon, 'search');
+                          rev(lat, lon, 'current');
                         }
-                      } else if (msg.type === 'CURRENT_LOCATION') {
-                        const { lat, lon } = msg;
-                        map.setView([lat, lon], 13);
-                        if (marker) {
-                          marker.setLatLng([lat, lon]);
-                        } else {
-                          marker = L.marker([lat, lon]).addTo(map);
-                        }
-                        rev(lat, lon, 'current');
+                      } catch (err) {
+                        console.error('Map message error:', err);
                       }
-                    } catch (err) {
-                      console.error('Map message error:', err);
-                    }
-                  });
-                </script>
-              </body></html>
-            `,
+                    });
+                  </script>
+                </body></html>
+              `,
               }}
               onMessage={e => onMapMessage(e.nativeEvent.data)}
             />
@@ -736,7 +692,6 @@ export const RegisterForm = ({
         screenName: formData.screenname.trim(),
         // dob: formData.dob ? formatISO(formData.dob) : null,
         dob: formData.dob,
-        // dob: formData.dob,
         gender: formData.gender,
         city: formData.city || formData.location,
         state: formData.state,
@@ -750,24 +705,24 @@ export const RegisterForm = ({
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
       //  send to API here using fetch()
-      fetch('https://api.streamalong.live/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-        },
-        body: JSON.stringify(finalData),
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.message === 'User registered successfully') {
-            userLogedIn();
-          } else {
-            setErrors(data.message || 'Registration failed');
-            Alert.alert('Registration failed', data.message);
-          }
-        })
-        .catch(err => console.error('API Error:', err));
+      // fetch('https://api.streamalong.live/register', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+      //   },
+      //   body: JSON.stringify(finalData),
+      // })
+      //   .then(res => res.json())
+      //   .then(data => {
+      //     if (data.message === 'User registered successfully') {
+      //       userLogedIn();
+      //     } else {
+      //       setErrors(data.message || 'Registration failed');
+      //       Alert.alert('Registration failed', data.message);
+      //     }
+      //   })
+      //   .catch(err => console.error('API Error:', err));
     }
   };
 
