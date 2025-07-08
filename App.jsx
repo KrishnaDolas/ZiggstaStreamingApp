@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  PermissionsAndroid,
-  Platform,
   ActivityIndicator,
   View,
   Text,
   StyleSheet,
   AppState,
-  Alert,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Geolocation from 'react-native-geolocation-service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import { ThemeProvider } from './src/context/ThemeProvider';
@@ -40,7 +36,6 @@ const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
   const [userAddress, setUserAddress] = useState('');
-  // const [userData, setUserData] = useState({});
   const { userData, setUserData } = useAppContext();
 
   const handleLogin = () => setIsAuthenticated(true);
@@ -52,98 +47,32 @@ const App = () => {
     setIsAuthenticated(false);
   };
 
-  // const handleLogout = async () => {
-  //   Alert.alert(
-  //     'Confirm Logout',
-  //     'Are you sure you want to log out?',
-  //     [
-  //       {
-  //         text: 'Cancel',
-  //         style: 'cancel',
-  //       },
-  //       {
-  //         text: 'Logout',
-  //         style: 'destructive',
-  //         onPress: async () => {
-  //           try {
-  //             await AsyncStorage.clear();
-  //             setIsAuthenticated(false);
-  //             Alert.alert('Success', 'You have been logged out successfully.');
-  //           } catch (error) {
-  //             Alert.alert('Error', 'Failed to log out. Please try again.');
-  //             console.error('Logout error:', error);
-  //           }
-  //         },
-  //       },
-  //     ],
-  //     { cancelable: true }
-  //   );
+  // const fetchAddressFromIP = async () => {
+  //   try {
+  //     // Step 1: Get public IP of the device
+  //     const ipRes = await fetch('https://api64.ipify.org?format=json');
+  //     const ipData = await ipRes.json();
+  //     const ip = ipData.ip;
+  //     console.log('ip', ip);
+
+  //     // Step 2: Use IP to get location info
+  //     const response = await fetch(
+  //       `https://api.geoapify.com/v1/ipinfo?ip=${ip}&apiKey=25127ca1c55f48909b03f43048040037`
+  //     );
+  //     const data = await response.json();
+  //     console.log('address data', data);
+
+  //     if (data && data.location) {
+  //       setUserAddress(data || {});
+
+  //     } else {
+  //       console.log('No location data from Geoapify');
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to get IP/location:', error);
+  //   }
   // };
 
-  const requestLocationPermission = async () => {
-    try {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Permission',
-            message: 'This app needs access to your location.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission granted');
-          await AsyncStorage.setItem('locationPermission', 'granted');
-
-          Geolocation.getCurrentPosition(
-            position => {
-              const { latitude, longitude } = position.coords;
-              fetchAddress(latitude, longitude);
-            },
-            error => {
-              console.error('Location error:', error.code, error.message);
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 15000,
-              maximumAge: 10000,
-              forceRequestLocation: true,
-            }
-          );
-        } else {
-          console.log('Location permission denied');
-          await AsyncStorage.setItem('locationPermission', 'denied');
-        }
-      } else {
-        // iOS logic (optional, assuming permission is granted for now)
-        await AsyncStorage.setItem('locationPermission', 'granted');
-      }
-    } catch (error) {
-      console.error('Permission request error:', error);
-      await AsyncStorage.setItem('locationPermission', 'denied');
-    }
-  };
-
-  const fetchAddress = async (latitude, longitude) => {
-    try {
-      const response = await fetch(
-        `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
-      );
-      const data = await response.json();
-
-      if (data.features && data.features.length > 0) {
-        const address = data.features[0].properties;
-        setUserAddress(address);
-      } else {
-        console.log('No address found from Geoapify');
-      }
-    } catch (error) {
-      console.error('Geoapify reverse geocoding error:', error);
-    }
-  };
 
   useEffect(() => {
     const init = async () => {
@@ -158,9 +87,9 @@ const App = () => {
           setUserData(JSON.parse(userDataStored));
         }
 
-        if (isConnected && !userAddress && !isAuthenticated) {
-          await requestLocationPermission();
-        }
+        // if (isConnected && !userAddress) {
+        //   await fetchAddressFromIP();
+        // }
 
         // Simulate splash delay
         setTimeout(() => {
