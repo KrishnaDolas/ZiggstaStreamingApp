@@ -1579,7 +1579,7 @@ export const styles = StyleSheet.create({
   strRoomBottomBoxInput: {
     flex: 1,
     backgroundColor: '#f7f7f7',
-    height: 50,
+    height: 40,
     borderRadius: 25,
     paddingHorizontal: 16,
     borderColor: '#eaeaeb',
