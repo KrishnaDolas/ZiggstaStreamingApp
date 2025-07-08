@@ -15,6 +15,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebView from 'react-native-webview';
 import { Dropdown } from 'react-native-element-dropdown';
+// import { NetworkInfo } from 'react-native-network-info';
 
 const screenHeight = Dimensions.get('window').height;
 const questions = [
@@ -81,11 +82,11 @@ export const RegisterForm = ({
   const [mapInitialized, setMapInitialized] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [mapReady, setMapReady] = useState(false); // NEW
-
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
+  const [ipAddress, setIpAddress] = useState(''); // New state for IP address
+
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -101,46 +102,92 @@ export const RegisterForm = ({
   });
 
 
-  // Get initial location using IP info
+  // This gets only the IPv4 address
+  // NetworkInfo.getIPV4Address().then(ipv4 => {
+  //   console.log('IPv4 Address:', ipv4); // Expected: something like 192.168.x.x or 10.x.x.x
+  // });
+
+  // Unified function to update location data
+  const updateLocationData = (address, source = 'ip') => {
+    const newAddress = {
+      city: address.city?.name || address.city || '',
+      state: address.state?.name || address.state || '',
+      country: address.country?.name || address.country || '',
+      zipcode: address.postcode || '',
+      lat: address.latitude || address.lat || null,
+      lon: address.longitude || address.lon || null,
+      ip: ipAddress || address.ip || '', // Use stored ipAddress
+      source,
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      location: newAddress.city || address.formatted || '',
+      city: newAddress.city,
+      state: newAddress.state,
+      country: newAddress.country,
+      zipcode: newAddress.zipcode,
+    }));
+
+    setUserAddress(prev => ({
+      ...prev,
+      ...newAddress,
+    }));
+
+    if (newAddress.lat && newAddress.lon) {
+      updateMapLocationByCoords(newAddress.lat, newAddress.lon);
+      setMapInitialized(true);
+    }
+  };
+
+  // Fetch IP-based location and perform reverse geocoding if needed
   useEffect(() => {
     const getIPLocation = async () => {
       try {
-        // Step 1: Get public IP of the device
+        // Step 1: Get public IP
         const ipRes = await fetch('https://api64.ipify.org?format=json');
         const ipData = await ipRes.json();
         const ip = ipData.ip;
-        console.log('ip', ip);
-        // Step 2: Use IP to get location info
+        setIpAddress(ip); // Store IP address
+        // Step 2: Get location info from IP
         const response = await fetch(
-          `https://api.geoapify.com/v1/ipinfo?ip=${ip}&apiKey=25127ca1c55f48909b03f43048040037`
+          `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`
         );
         const json = await response.json();
-        console.log('json', json);
-        const address = json.location || {};
-        setUserAddress({
-          ...address,
-          lat: json.latitude,
-          lon: json.longitude,
-          source: 'ip',
-        });
-        setFormData(prev => ({
-          ...prev,
-          location: address.city?.name || address.formatted || '',
-          city: address.city?.name || '',
-          state: address.state?.name || '',
-          country: address.country || '',
-          zipcode: address.postcode || '',
-        }));
-        if (json.latitude && json.longitude) {
-          const tryUpdateMap = () => {
-            if (mapReady && webViewRef.current) {
-              updateMapLocationByCoords(json.latitude, json.longitude);
-              setMapInitialized(true);
-            } else {
-              setTimeout(tryUpdateMap, 200);
-            }
-          };
-          tryUpdateMap();
+        console.log('ip info api call', json);
+
+        // Step 3: Extract address details from the full response
+        const address = {
+          city: json.city?.name || '',
+          state: json.state?.name || '',
+          country: json.country?.name || '',
+          postcode: json.postcode || '',
+          latitude: json.location?.latitude || null,
+          longitude: json.location?.longitude || null,
+          ip,
+        };
+        console.log('ip info address', address);
+
+        // Step 3: If state or zipcode is missing, perform reverse geocoding
+        if (!address.postcode && address.latitude && address.longitude) {
+          const reverseResponse = await fetch(
+            `https://api.geoapify.com/v1/geocode/reverse?lat=${address.latitude}&lon=${address.longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+          );
+          const reverseJson = await reverseResponse.json();
+          const reverseAddress = reverseJson.features?.[0]?.properties || {};
+          console.log('reverse api call', reverseAddress);
+          updateLocationData(
+            {
+              ...address,
+              city: reverseAddress.city || address.city,
+              state: reverseAddress.state || address.state,
+              country: reverseAddress.country || address.country,
+              postcode: reverseAddress.postcode || '',
+            },
+            'ip'
+          );
+        } else {
+          updateLocationData(address, 'ip');
         }
       } catch (err) {
         console.error('Error fetching IP location:', err);
@@ -150,6 +197,7 @@ export const RegisterForm = ({
 
     getIPLocation();
   }, []);
+
 
   // Handle location search with autocomplete
   const handleLocationSearch = async text => {
@@ -175,26 +223,37 @@ export const RegisterForm = ({
   };
 
   // Handle selection from autocomplete results
-  const handleSelectLocation = item => {
-    setFormData(prev => ({
-      ...prev,
-      location: item.city || item.formatted || '',
-      city: item.city || '',
-      state: item.state || '',
-      country: item.country || '',
-      zipcode: item.postcode || '',
-    }));
-    setUserAddress({
-      ...item,
-      lat: item.lat,
-      lon: item.lon,
-      source: 'search',
-    });
-    updateMapLocationByCoords(item.lat, item.lon);
+  const handleSelectLocation = async item => {
+    // Check if postcode is missing and coordinates are available
+    if (!item.postcode && item.lat && item.lon) {
+      try {
+        const reverseResponse = await fetch(
+          `https://api.geoapify.com/v1/geocode/reverse?lat=${item.lat}&lon=${item.lon}&apiKey=25127ca1c55f48909b03f43048040037`
+        );
+        const reverseJson = await reverseResponse.json();
+        const reverseAddress = reverseJson.features?.[0]?.properties || {};
+        console.log('reverse api call (search)', reverseAddress);
+        updateLocationData(
+          {
+            ...item,
+            city: reverseAddress.city || item.city,
+            state: reverseAddress.state || item.state,
+            country: reverseAddress.country || item.country,
+            postcode: reverseAddress.postcode || '',
+          },
+          'search'
+        );
+      } catch (err) {
+        console.error('Error fetching reverse geocoding for search:', err);
+        updateLocationData(item, 'search'); // Fallback to item if reverse geocoding fails
+      }
+    } else {
+      updateLocationData(item, 'search');
+    }
     setSearchResults([]);
     setIsSearching(false);
-    setMapInitialized(true);
   };
+
 
   // Update map to specific coordinates
   const updateMapLocationByCoords = (lat, lon) => {
@@ -290,33 +349,18 @@ export const RegisterForm = ({
 
   useEffect(() => {
     console.log('address', userAddress);
-  }, [userAddress])
+  }, [userAddress]);
 
   const onMapMessage = message => {
     try {
       const address = JSON.parse(message);
       if (address.type !== 'CURRENT_LOCATION') {
-        setFormData(prev => ({
-          ...prev,
-          location: address.city || address.formatted || '',
-          city: address.city || '',
-          state: address.state || '',
-          country: address.country || '',
-          zipcode: address.postcode || '',
-        }));
-        setUserAddress({
-          ...address,
-          lat: address.lat,
-          lon: address.lon,
-          source: 'tap',
-        });
-        setMapInitialized(true);
+        updateLocationData(address, 'tap');
       }
     } catch (err) {
       console.error('Failed to parse map address:', err);
     }
   };
-
 
   const renderStepContent = question => {
     if (question.field === 'gender') {
@@ -573,7 +617,6 @@ export const RegisterForm = ({
               ref={webViewRef}
               originWhitelist={['*']}
               javaScriptEnabled
-              onLoadEnd={() => setMapReady(true)} // NEW
               source={{
                 html: `
                 <!DOCTYPE html><html><head>
@@ -693,10 +736,10 @@ export const RegisterForm = ({
         // dob: formData.dob ? formatISO(formData.dob) : null,
         dob: formData.dob,
         gender: formData.gender,
-        city: formData.city || formData.location,
-        state: formData.state,
-        country: formData.country,
-        zipcode: formData.zipcode,
+        city: formData.city || userAddress?.city || formData.location || '',
+        state: formData.state || userAddress?.state || '',
+        country: formData.country || userAddress?.country || '',
+        zipcode: formData.zipcode || userAddress?.zipcode || '',
         interests: interestIndexes.join(','),
       };
 
@@ -705,24 +748,24 @@ export const RegisterForm = ({
       // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
 
       //  send to API here using fetch()
-      // fetch('https://api.streamalong.live/register', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-      //   },
-      //   body: JSON.stringify(finalData),
-      // })
-      //   .then(res => res.json())
-      //   .then(data => {
-      //     if (data.message === 'User registered successfully') {
-      //       userLogedIn();
-      //     } else {
-      //       setErrors(data.message || 'Registration failed');
-      //       Alert.alert('Registration failed', data.message);
-      //     }
-      //   })
-      //   .catch(err => console.error('API Error:', err));
+      fetch('https://api.streamalong.live/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+        },
+        body: JSON.stringify(finalData),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.message === 'User registered successfully') {
+            userLogedIn();
+          } else {
+            setErrors(data.message || 'Registration failed');
+            Alert.alert('Registration failed', data.message);
+          }
+        })
+        .catch(err => console.error('API Error:', err));
     }
   };
 
