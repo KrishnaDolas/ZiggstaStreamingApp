@@ -52,4 +52,13 @@ export const globalStyles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 30,
   },
+  notificationDot: {
+    position: 'absolute',
+    top: 1,
+    right: 12,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'green',
+  },
 });
