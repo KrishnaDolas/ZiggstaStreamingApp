@@ -5,6 +5,7 @@
     <uses-feature android:name="android.hardware.audio.output" />
     <uses-feature android:name="android.hardware.microphone" />
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -20,28 +21,43 @@
 
 
     <application
-      android:name=".MainApplication"
-      android:label="ZIGGSTA"
-      android:icon="@mipmap/livestreaming"
-      android:roundIcon="@mipmap/livestreaming"
-      android:allowBackup="false"
-      android:theme="@style/AppTheme"
-      android:supportsRtl="true">
-      <activity
-        android:name=".MainActivity"
+        android:name=".MainApplication"
         android:label="ZIGGSTA"
-        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
-        android:launchMode="singleTask"
-        android:windowSoftInputMode="adjustResize"
-        android:exported="true">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-      </activity>
-      <service android:name="com.doublesymmetry.trackplayer.service.MusicService"
-      android:exported="true"
-      android:foregroundServiceType="mediaPlayback">
-      </service>
+        android:icon="@mipmap/livestreaming"
+        android:roundIcon="@mipmap/livestreaming"
+        android:allowBackup="false"
+        android:theme="@style/AppTheme"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:label="ZIGGSTA"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 🔊 Required for react-native-track-player or any background audio -->
+        <service
+            android:name="com.doublesymmetry.trackplayer.service.MusicService"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <!-- ✅ ✅ Add this service for react-native-incall-manager (background audio control) -->
+        <service
+            android:name="com.zxcpoiu.incallmanager.InCallService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_INCALL_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.InCallService" />
+            </intent-filter>
+        </service>
+
     </application>
 </manifest>
