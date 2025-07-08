@@ -29,7 +29,7 @@ export const MainScreen = ({address, userData }) => {
   const insetsTop = useSafeAreaInsets();
   const [joined, setJoined] = useState(false);
   const [roomchat, setRoomchat] = useState([]);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState({HostControl: false, muted: false});
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
@@ -55,7 +55,6 @@ export const MainScreen = ({address, userData }) => {
   };
   //Handle socket functions 
   const HandleAssignHost= async () => {
-    console.log('Assigning host...');
     setIsHost(true);
     await startLocalStream();
   };
@@ -82,7 +81,6 @@ export const MainScreen = ({address, userData }) => {
       await startLocalStream();
     }
   
-    console.log('Users in room:', users);
     users.forEach(userId => {
       if (!peersRef.current[userId]) {
         const peer = createPeer(userId);
@@ -134,13 +132,11 @@ export const MainScreen = ({address, userData }) => {
     }
   }
   const HandleNewMessage =({ userName, message, id })=>{
-    console.log('New message received');
     const data={id: id,userProfile: chatimage,userName: userName,message: message}
     setRoomchat(prev => [...prev, data]);
   }
   const HandleStreamRequest =(streamrequsts) => {
     setStreamRequestList(streamrequsts);
-    console.log(streamrequsts);
   }
   
   const HandleApprovedStream = async () => {
@@ -179,21 +175,17 @@ export const MainScreen = ({address, userData }) => {
     socket.emit('signal', { to: newUserId, data: peer.localDescription });
   }
   const HandleGetListStreamers = (streamers) => {
-    console.log('Approved streamers:', streamers);
     setStreamGuest(streamers);
   }
   const HandleUserLeft = socketId => {
-    console.log(`User left: ${socketId}`);
     setRoomchat([])
     if (peersRef.current[socketId]) {
-      console.log(`Closing peer connection for ${socketId}`);
       peersRef.current[socketId].close();
       delete peersRef.current[socketId];
       setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
     }
   }
   const HandleHostLeft = () => {
-    console.log('Host left, leaving room...');
     Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
     // Stop local stream if exists
     setRoomchat([])
@@ -216,16 +208,12 @@ export const MainScreen = ({address, userData }) => {
     setIsHost(false);
   }
   const HandleRoomInfo=(info)=>{
-    console.log(info);
-    setViewerCount(info?.viewerCount || 0);
+    setViewerCount(info?.viewerCount-1 || 0);
   }
   const HandleNewStream = () => {
-    console.log(refreshlobby);
     setRefreshLobby(!refreshlobby); // Toggle refresh state
-    console.log('New stream received:');
   }
   const HandleLeaveStream = () => {
-    console.log('Leave stream event received');
     setLeaveRoomRefresh(!leaveroomrefresh); // Toggle leave room refresh state
   }
   const HandleRoomFull = (msg) => {
@@ -236,10 +224,10 @@ export const MainScreen = ({address, userData }) => {
   
     if (action === 'mute') {
       localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = false));
-      setIsMuted(true);
+      setIsMuted({HostControl: true, muted: true});
     } else if (action === 'unmute') {
       localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
-      setIsMuted(false);
+      setIsMuted({HostControl: false, muted: false});
     } else if (action === 'stop-stream') {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       localStreamRef.current = null;
@@ -249,10 +237,8 @@ export const MainScreen = ({address, userData }) => {
     }
   };
   const HandleUserStreamStoped = (userId) => {
-    console.log(`User ${userId} stopped streaming`);
     if(socket.id !== userId){
       if (peersRef.current[userId]) {
-        console.log(`Closing peer connection for ${userId}`);
         peersRef.current[userId].close();
         delete peersRef.current[userId];
         setRemoteStreams(prev => prev.filter(s => s.id !== userId));
@@ -270,9 +256,7 @@ export const MainScreen = ({address, userData }) => {
       setHasRequestedStream(false);
     }
   }
-  const HandleViewerCount=(count)=>{
-      console.log(`Viewer count updated: ${count}`);
-  }
+
   useEffect(() => {
     // Handles socket events
     if(isSocketConnected) {
@@ -290,7 +274,6 @@ export const MainScreen = ({address, userData }) => {
       socket.on('approvedStreamers', HandleGetListStreamers);
       socket.on('host-action', HandleHostAction);
       socket.on('User-streamStopped',HandleUserStreamStoped)
-      socket.on('viewerCount', HandleViewerCount);
       socket.on('userLeft',HandleUserLeft);
       socket.on('Hostleft',HandleHostLeft)
       socket.on('roomInfo',HandleRoomInfo)
@@ -315,7 +298,6 @@ export const MainScreen = ({address, userData }) => {
         socket.off('approvedStreamers', HandleGetListStreamers);
         socket.off('host-action', HandleHostAction);
         socket.off('User-streamStopped',HandleUserStreamStoped)
-        socket.off('viewerCount', HandleViewerCount);
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
         socket.off('roomInfo', HandleRoomInfo)
@@ -350,7 +332,6 @@ export const MainScreen = ({address, userData }) => {
       );
     }
     peer.ontrack = (event) => {
-        console.log(`Received track from ${socketId}`, event);
       const stream = event.streams[0];
       if (!stream || !stream.getVideoTracks().length) return;
       setRemoteStreams(prev => {
@@ -359,11 +340,7 @@ export const MainScreen = ({address, userData }) => {
         return [...prev, { id: socketId, stream }];
       });
     };
-    peer.onaddstream = (event) => {
-      console.log(`Received remote stream from ${socketId}`, event.stream);
-    };
-    
-
+   
     peer.onicecandidate = (event) => {
       if (event.candidate) {
         socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
@@ -454,10 +431,14 @@ export const MainScreen = ({address, userData }) => {
   }
   const toggleMute = () => {
     if (localStreamRef.current) {
-      localStreamRef.current.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
-      setIsMuted(!isMuted);
+      if (!isMuted.HostControl) {
+        localStreamRef.current.getAudioTracks().forEach(track => {track.enabled = !track.enabled});
+        // send mute/unmute action to host
+        socket.emit('IsMuted',!isMuted.muted)
+        setIsMuted({ HostControl: false, muted: !isMuted.muted });
+      }else{
+        Alert.alert('Host Control', 'You cannot unmute yourself as the host has muted you.');
+      }
     }
   }
   const switchCamera = () => {
@@ -481,12 +462,10 @@ export const MainScreen = ({address, userData }) => {
   }
   const HandleSetLivestatus=async(roomID)=>{
     try {
-      console.log(`Updating live status for room ${roomID}`);
       const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
       if(response.status === 200) {
         console.log('Live status updated successfully');
       }else{
-       console.log(response);
          Alert.alert('Error', 'Failed to update live status. Please try again later.');
       }
     } catch (error) {

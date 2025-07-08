@@ -107,14 +107,14 @@ const RequestModal = ({
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
-                                            backgroundColor: item.IsMuted ? '#28a745' : '#ffc107',
+                                            backgroundColor: !item.IsMuted ? '#28a745' : '#ffc107',
                                             paddingVertical: 6,
                                             paddingHorizontal: 10,
                                             borderRadius: 6,
                                         }}
                                     >
                                         <Ionicons
-                                            name={item.IsMuted ? 'mic-outline' : 'mic-off-outline'}
+                                            name={!item.IsMuted ? 'mic-outline' : 'mic-off-outline'}
                                             size={18}
                                             color="#fff"
                                             style={{ marginRight: 6 }}

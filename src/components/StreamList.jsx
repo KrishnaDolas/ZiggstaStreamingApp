@@ -143,12 +143,10 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
 
     const filterroomdata = async (selecteddata) => {
         try {
-            console.log(selecteddata);
             setIsFiltering(true);
             const response = await Apiclient.get(`/rooms/getrooms?isLive=1&Categories=${selecteddata}`);
             if (response) {
                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
-                console.log('Filtered Rooms:', response.data.data);
                 const filtered = livestreamlist || [];
 
                 let combinedRooms = filtered;
@@ -163,19 +161,11 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
                 setApiRooms(combinedRooms);
             }
         } catch (error) {
-            console.log(error);
         } finally {
             setIsFiltering(false);
         }
     };
 
-    useEffect(() => {
-        if (selectedCategoryIndices.length > 0) {
-            console.log('Selected category indices:', selectedCategoryIndices.join(','));
-        } else {
-            console.log('No categories selected');
-        }
-    }, [selectedCategoryIndices]);
 
 
     useEffect(() => {
@@ -222,12 +212,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
                 Categories: sortcategories.join(','),
                 geoLocation: `${address.lat},${address.lon}`,
             };
-            console.log('created roomData', roomData);
 
             const response = await Apiclient.post('/rooms', roomData);
-            console.log(response);
             if (response.data.roomID) {
-                console.log('Room created successfully:', response);
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
@@ -239,7 +226,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
     };
     const viewerjoinedroom = (item) => {
         const roomId = item.roomID.toString();
-        const hostID = item.hostID.toString();
         if (item.hostID === userData.userid) {
             joinRoom(roomId, item);
         } else {
@@ -312,11 +298,9 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
         if (searchFilteredData?.length > 0) {
             // Update apiRooms with search results
             setApiRooms(searchFilteredData);
-            console.log('Updated apiRooms with search results:', searchFilteredData);
         } else {
             // Clear apiRooms when searchFilteredData is empty
             setApiRooms([]);
-            console.log('searchFilteredData is empty, cleared apiRooms');
         }
     }, [searchFilteredData]);
 

@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
+import { globalStyles } from '../../assets/styles/GlobalStyles';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -97,14 +98,15 @@ const StreamRoom = ({
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
     const [userDetails, setUserDetails] = useState({});
-    const[togglerequest, setTogglerequest] = useState(false);
+    const [togglerequest, setTogglerequest] = useState(false);
+    const blinkingAnim = useRef(new Animated.Value(1)).current;
+
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
             const response = await Apiclient.get('/getgifts');
             if (response) {
                 setGiftCategoryItems(response.data.data || []);
-                console.log('giftCategories', response.data.data);
             }
         } catch (error) {
             console.error('Error fetching gifts:', error);
@@ -115,9 +117,6 @@ const StreamRoom = ({
         getGiftsCategory();
     }, [giftModalVisible])
 
-    useEffect(() => {
-        console.log('selectedGiftCategory', selectedGiftCategory)
-    }, [selectedGiftCategory])
 
     // Function to fetch gifts from the API
     const getGifts = async () => {
@@ -126,7 +125,6 @@ const StreamRoom = ({
             const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
             if (response) {
                 setGiftItems(response.data.data || []);
-                console.log('gift data', response.data.data)
             }
         } catch (error) {
             console.error('Error fetching gifts:', error);
@@ -155,29 +153,18 @@ const StreamRoom = ({
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
             streams.push({ type: 'local', stream: localStream });
-        }
-      
-        // Add remote streams (assume remoteStreams is an array of { id, stream })
-        remoteStreams.forEach(({ id, stream,name }) => {
-          if (stream && typeof stream.toURL === 'function') {
-            console.log(name);
-            console.log(`Adding remote stream for user ${id}`, stream.toURL());
-            streams.push({ type: 'remote', stream, userId: id });
-          } else {
-            console.warn('⚠️ Invalid remote stream:', stream);
-          }
+        }        // Add remote streams (assume remoteStreams is an array of { id, stream })
+        remoteStreams.forEach(({ id, stream, name }) => {
+            if (stream && typeof stream.toURL === 'function') {
+                streams.push({ type: 'remote', stream, userId: id });
+            } else {
+                console.warn('⚠️ Invalid remote stream:', stream);
+            }
         });
-      
+
         setStreamLayout(streams);
-        console.log('StreamLayout:', streams.map(s => ({
-            type: s.type,
-            hasVideo: s.stream?.getVideoTracks?.().length,
-            videoMuted: s.stream?.getVideoTracks?.()[0]?.muted,
-            readyState: s.stream?.getVideoTracks?.()[0]?.readyState,
-          })));
-          
-      }, [localStream, remoteStreams, isStreaming, viewerCount]);
-      
+    }, [localStream, remoteStreams, isStreaming, viewerCount]);
+
     const getVideoTileStyle = (count) => {
         if (count === 1) {
             return { width: '100%', height: '100%' };
@@ -196,12 +183,11 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
-    //    if(!isHost){
-        if(streamInfo){
+        //    if(!isHost){
+        if (streamInfo) {
             GetUserDetails(streamInfo?.hostID)
         }
-    //    }
-        console.log(streamInfo?.hostID);
+        //    }
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             setKeyboardOffset(e.endCoordinates.height);
         });
@@ -292,7 +278,7 @@ const StreamRoom = ({
 
     // Mic icon animation
     useEffect(() => {
-        if (!isMuted) {
+        if (!isMuted?.muted) {
             setShowMicIcon(true);
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -312,10 +298,10 @@ const StreamRoom = ({
 
             return () => clearTimeout(timeout);
         }
-    }, [isMuted, fadeAnim]);
+    }, [isMuted?.muted, fadeAnim]);
 
     const HadleSendChat = () => {
-        if(!userChatInput.trim()) {
+        if (!userChatInput.trim()) {
             Alert.alert('Please enter a message before sending.');
             return;
         }
@@ -323,19 +309,42 @@ const StreamRoom = ({
         setUserChatInput('');
     }
 
-    const GetUserDetails=async(userid)=>{
-     try {
-        const formData = {userid:userid };
-        const response = await Apiclient.post('/getUserDetails', formData);
-        if (response) {
-        const user = response.data.user;
-        setUserDetails(user);
-        console.log(user);
-       }
-     } catch (error) {
-        console.log(error);
-     }
+    const GetUserDetails = async (userid) => {
+        try {
+            const formData = { userid: userid };
+            const response = await Apiclient.post('/getUserDetails', formData);
+            if (response) {
+                const user = response.data.user;
+                setUserDetails(user);
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
+
+    useEffect(() => {
+    if (streamrequestlist.length > 0) {
+        Animated.loop(
+        Animated.sequence([
+            Animated.timing(blinkingAnim, {
+            toValue: 0,
+            duration: 500,
+            easing: Easing.linear,
+            useNativeDriver: true,
+            }),
+            Animated.timing(blinkingAnim, {
+            toValue: 1,
+            duration: 500,
+            easing: Easing.linear,
+            useNativeDriver: true,
+            }),
+        ])
+        ).start();
+    } else {
+        blinkingAnim.setValue(1); // reset if no requests
+    }
+    }, [streamrequestlist.length]);
+
 
     return (
         <View style={[styles.roomInfo]}>
@@ -439,7 +448,7 @@ const StreamRoom = ({
                                     <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
                                     <View style={styles.strRoomHeaderLeftProfileInfo}>
                                         <Text style={[styles.strRoomHeaderLeftProfileName]}>
-                                            {userDetails?.screenName }
+                                            {userDetails?.screenName}
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="heart" solid size={14} color="#fff" />
@@ -471,7 +480,7 @@ const StreamRoom = ({
                                         <View style={styles.strLiveStats}>
                                             <Text style={styles.strTitle}>
                                                 {/* {streamInfo?.RoomName} */}
-                                                </Text>
+                                            </Text>
                                             <View style={styles.streamViewerCount}>
                                                 <Ionicons name="eye-outline" size={18} color="#ffea23" />
                                                 <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
@@ -482,7 +491,7 @@ const StreamRoom = ({
                                                 <ScrollView
                                                     showsVerticalScrollIndicator={false}
                                                 >
-                                                    {roomchat.map((chat,ind) => (
+                                                    {roomchat.map((chat, ind) => (
                                                         <View key={ind} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
@@ -498,7 +507,7 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>setTogglerequest(!togglerequest)}>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={() => setTogglerequest(!togglerequest)}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
@@ -529,13 +538,13 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                         {!isHost && (
                                             <TouchableOpacity onPress={requestStreamPermission} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Guest</Text>
+                                                <Text style={styles.strMoreSettingListItemText}>Join As a Guest</Text>
                                                 <MaterialCommunityIcons name="video-plus" size={21} color="#fff" />
                                             </TouchableOpacity>
                                         )}
                                         <TouchableOpacity onPress={() => toggleMute()} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Mute {isMuted ? 'OFF' : 'ON'}</Text>
-                                            {isMuted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                            <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
+                                            {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
@@ -563,12 +572,22 @@ const StreamRoom = ({
                                                     {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Ionicons name="add-outline" size={30} color="#fff" />}
                                                 </Animated.View>
                                             </TouchableOpacity>
-                                            <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
-                                                <Ionicons name="gift" size={30} color="#FF00FF" />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
-                                                <Ionicons name="cart" size={30} color="#fff" />
-                                            </TouchableOpacity>
+                                            {!isHost && (<>
+                                                <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
+                                                    <Ionicons name="gift" size={30} color="#FF00FF" />
+                                                </TouchableOpacity>
+                                                <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
+                                                    <Ionicons name="cart" size={30} color="#fff" />
+                                                </TouchableOpacity>
+                                            </>)}
+                                            {isHost && (
+                                                <TouchableOpacity onPress={() => setTogglerequest(!togglerequest)} style={styles.strRoomBottomBoxIconBox}>
+                                                    <Ionicons name="people" size={30} color="#fff" />
+                                                    {streamrequestlist.length > 0 && (
+                                                    <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
+                                                    )}
+                                                </TouchableOpacity>
+                                            )}
                                         </>
                                     )}
                                 </View>
@@ -577,7 +596,7 @@ const StreamRoom = ({
                     </>
                 )}
             </View>
-            {giftModalVisible && (
+            {giftModalVisible && !isHost && (
                 <Modal
                     isVisible={giftModalVisible}
                     animationIn="slideInUp"
@@ -679,7 +698,7 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-            {<RequestModal visible={togglerequest} onClose={()=>setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket}/>}
+            {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
