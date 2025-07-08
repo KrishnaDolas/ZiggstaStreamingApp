@@ -278,7 +278,7 @@ const StreamRoom = ({
 
     // Mic icon animation
     useEffect(() => {
-        if (!isMuted) {
+        if (!isMuted?.muted) {
             setShowMicIcon(true);
             Animated.timing(fadeAnim, {
                 toValue: 1,
@@ -298,7 +298,7 @@ const StreamRoom = ({
 
             return () => clearTimeout(timeout);
         }
-    }, [isMuted, fadeAnim]);
+    }, [isMuted?.muted, fadeAnim]);
 
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
@@ -543,8 +543,8 @@ const StreamRoom = ({
                                             </TouchableOpacity>
                                         )}
                                         <TouchableOpacity onPress={() => toggleMute()} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Mute {isMuted ? 'OFF' : 'ON'}</Text>
-                                            {isMuted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                            <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
+                                            {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}

@@ -29,7 +29,7 @@ export const MainScreen = ({address, userData }) => {
   const insetsTop = useSafeAreaInsets();
   const [joined, setJoined] = useState(false);
   const [roomchat, setRoomchat] = useState([]);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState({HostControl: false, muted: false});
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
@@ -208,7 +208,7 @@ export const MainScreen = ({address, userData }) => {
     setIsHost(false);
   }
   const HandleRoomInfo=(info)=>{
-    setViewerCount(info?.viewerCount || 0);
+    setViewerCount(info?.viewerCount-1 || 0);
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -224,10 +224,10 @@ export const MainScreen = ({address, userData }) => {
   
     if (action === 'mute') {
       localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = false));
-      setIsMuted(true);
+      setIsMuted({HostControl: true, muted: true});
     } else if (action === 'unmute') {
       localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
-      setIsMuted(false);
+      setIsMuted({HostControl: false, muted: false});
     } else if (action === 'stop-stream') {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       localStreamRef.current = null;
@@ -431,10 +431,14 @@ export const MainScreen = ({address, userData }) => {
   }
   const toggleMute = () => {
     if (localStreamRef.current) {
-      localStreamRef.current.getAudioTracks().forEach(track => {
-        track.enabled = !track.enabled;
-      });
-      setIsMuted(!isMuted);
+      if (!isMuted.HostControl) {
+        localStreamRef.current.getAudioTracks().forEach(track => {track.enabled = !track.enabled});
+        // send mute/unmute action to host
+        socket.emit('IsMuted',!isMuted.muted)
+        setIsMuted({ HostControl: false, muted: !isMuted.muted });
+      }else{
+        Alert.alert('Host Control', 'You cannot unmute yourself as the host has muted you.');
+      }
     }
   }
   const switchCamera = () => {

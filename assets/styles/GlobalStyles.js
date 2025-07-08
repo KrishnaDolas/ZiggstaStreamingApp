@@ -59,6 +59,6 @@ export const globalStyles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: 'green',
+    backgroundColor: 'red',
   },
 });
