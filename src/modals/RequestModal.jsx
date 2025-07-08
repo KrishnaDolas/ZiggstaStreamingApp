@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -11,8 +11,6 @@ const RequestModal = ({
     socket
 }) => {
     const GetAction=(targetId,action)=>{
-        console.log(`Action: ${action} on Target ID: ${targetId}`);
-       console.log( socket.id);
        socket.emit('host-control', {action: action,targetId: targetId}
        )
     }
@@ -105,18 +103,18 @@ const RequestModal = ({
                                 <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
                                     {/* Mute/Unmute Button with Icon */}
                                     <TouchableOpacity
-                                        onPress={() => GetAction(item.ID, item.muted ? 'unmute' : 'mute')}
+                                        onPress={() => GetAction(item.ID, item.IsMuted ? 'unmute' : 'mute')}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
-                                            backgroundColor: item.muted ? '#28a745' : '#ffc107',
+                                            backgroundColor: item.IsMuted ? '#28a745' : '#ffc107',
                                             paddingVertical: 6,
                                             paddingHorizontal: 10,
                                             borderRadius: 6,
                                         }}
                                     >
                                         <Ionicons
-                                            name={item.muted ? 'mic-outline' : 'mic-off-outline'}
+                                            name={item.IsMuted ? 'mic-outline' : 'mic-off-outline'}
                                             size={18}
                                             color="#fff"
                                             style={{ marginRight: 6 }}
@@ -152,4 +150,4 @@ const RequestModal = ({
     );
 };
 
-export default RequestModal;
+export default memo(RequestModal);
