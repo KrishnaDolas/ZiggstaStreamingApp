@@ -459,11 +459,11 @@ const StreamRoom = ({
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
                                         <Ionicons name="diamond" solid size={14} color="#ffea23" />
-                                        <Text style={styles.strRoomHeaderRWalletInfoText}>1023.250</Text>
+                                        <Text style={styles.strRoomHeaderRWalletInfoText}>1023</Text>
                                     </View>
-                                    <TouchableOpacity style={styles.strRoomHeaderRIconBox}>
+                                    {/* <TouchableOpacity style={styles.strRoomHeaderRIconBox}>
                                         <Ionicons name="flag" size={28} color="#dc3131" />
-                                    </TouchableOpacity>
+                                    </TouchableOpacity> */}
                                     <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                         <Ionicons name="close" size={30} color="#fff" />
                                     </TouchableOpacity>

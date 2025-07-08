@@ -200,6 +200,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
 
     const callapiforcreateroom = async () => {
         try {
+            setIsDisable(true); // Disable button after room creation
             //7 character room ID
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
             const roomData = {
@@ -216,7 +217,6 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
 
             const response = await Apiclient.post('/rooms', roomData);
             if (response.data.roomID) {
-                setIsDisable(true); // Disable button after room creation
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
