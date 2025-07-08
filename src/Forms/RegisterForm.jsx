@@ -8,6 +8,7 @@ import {
   Alert,
   Dimensions,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
@@ -15,6 +16,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebView from 'react-native-webview';
 import { Dropdown } from 'react-native-element-dropdown';
+import { useAppContext } from '../context/AppContext';
 // import { NetworkInfo } from 'react-native-network-info';
 
 const screenHeight = Dimensions.get('window').height;
@@ -68,10 +70,9 @@ const getDefaultDOB = () => {
 export const RegisterForm = ({
   userData,
   theme,
-  userAddress,
-  setUserAddress,
   onLogin,
 }) => {
+  const { userAddress, setUserAddress, ipAddress, setIpAddress } = useAppContext();
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(0);
   const scrollRef = useRef(null);
@@ -85,7 +86,7 @@ export const RegisterForm = ({
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
-  const [ipAddress, setIpAddress] = useState(''); // New state for IP address
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
   const [formData, setFormData] = useState({
@@ -576,6 +577,16 @@ export const RegisterForm = ({
             value={formData.location}
             onChangeText={text => handleChange('location', text)}
           />
+          <Text
+            style={{
+              fontSize: 14,
+              color: theme === 'dark' ? '#ccc' : '#666',
+              marginTop: 8,
+              marginLeft: 4,
+              textAlign: 'left',
+            }}>
+            Enter city name for best search results
+          </Text>
           {errors.location && (
             <Text style={{ color: 'red' }}>{errors.location}</Text>
           )}
@@ -724,6 +735,9 @@ export const RegisterForm = ({
       scrollRef.current?.scrollTo({ x: newStep * layoutWidth, animated: true });
       setTimeout(() => setIsScrolling(false), 500); // Reset scrolling flag after animation
     } else {
+
+      if (isSubmitting) return; // Prevent duplicate submission
+
       const interestIndexes = formData.interests.map(interest =>
         interestOptions.indexOf(interest),
       );
@@ -739,13 +753,13 @@ export const RegisterForm = ({
         city: formData.city || userAddress?.city || formData.location || '',
         state: formData.state || userAddress?.state || '',
         country: formData.country || userAddress?.country || '',
-        zipcode: formData.zipcode || userAddress?.zipcode || '',
+        zipcode: userAddress?.zipcode || '',
         interests: interestIndexes.join(','),
       };
 
       console.log('✅ Final Payload to POST:', finalData);
 
-      // Alert.alert('Registration Complete', JSON.stringify(formData, null, 2));
+      setIsSubmitting(true); // Start loader
 
       //  send to API here using fetch()
       fetch('https://api.streamalong.live/register', {
@@ -757,15 +771,20 @@ export const RegisterForm = ({
         body: JSON.stringify(finalData),
       })
         .then(res => res.json())
-        .then(data => {
+        .then(async data => {
           if (data.message === 'User registered successfully') {
-            userLogedIn();
+            await userLogedIn();
           } else {
             setErrors(data.message || 'Registration failed');
             Alert.alert('Registration failed', data.message);
           }
         })
-        .catch(err => console.error('API Error:', err));
+        .catch(err => {
+          console.error('API Error:', err);
+        })
+        .finally(() => {
+          setIsSubmitting(false); // Stop loader
+        });
     }
   };
 
@@ -960,11 +979,15 @@ export const RegisterForm = ({
             )}
             <TouchableOpacity
               onPress={handleNext}
-              style={[styles.btnNav, !isValidStep && { opacity: 0.5 }]}
-              disabled={!isValidStep}>
-              <Text style={{ color: 'white' }}>
-                {step === questions.length - 1 ? 'Finish' : 'Next'}
-              </Text>
+              style={[styles.btnNav, (!isValidStep || isSubmitting) && { opacity: 0.5 }]}
+              disabled={!isValidStep || isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={{ color: 'white' }}>
+                  {step === questions.length - 1 ? 'Finish' : 'Next'}
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
 
