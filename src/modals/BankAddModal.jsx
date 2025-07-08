@@ -31,45 +31,12 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
-
-    // const handleInputChange = (field, value) => {
-    //     const trimmedValue = value.trimStart(); // Trim only start to allow typing with space later
-    //     setFormData(prev => ({ ...prev, [field]: trimmedValue }));
-    //     setErrors(prev => ({ ...prev, [field]: '' }));
-    // };
     // Modified handleInputChange - no uppercase conversion here
     const handleInputChange = (field, value) => {
         const trimmedValue = value.trimStart(); // Trim only start to allow typing with space later
         setFormData(prev => ({ ...prev, [field]: trimmedValue }));
         setErrors(prev => ({ ...prev, [field]: '' }));
     };
-
-    // const handleInputChange = (field, value) => {
-    //     const trimmedValue = value.trimStart();
-    //     let finalValue = trimmedValue;
-
-    //     // Apply uppercase for specific banking codes
-    //     switch (field) {
-    //         case 'ifscCode':
-    //         case 'bicSwiftCode':
-    //         case 'swiftCode':
-    //         case 'iban':
-    //         case 'bsbCode':
-    //             finalValue = trimmedValue.toUpperCase();
-    //             break;
-    //         case 'accountNumber':
-    //             // For international region, treat as IBAN (uppercase)
-    //             if (selectedRegion === 'intl') {
-    //                 finalValue = trimmedValue.toUpperCase();
-    //             }
-    //             break;
-    //         default:
-    //             finalValue = trimmedValue;
-    //     }
-
-    //     setFormData(prev => ({ ...prev, [field]: finalValue }));
-    //     setErrors(prev => ({ ...prev, [field]: '' }));
-    // };
 
     // Helper function to get autoCapitalize value for each field
     const getAutoCapitalize = (field) => {
@@ -324,6 +291,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
                             keyboardType="numeric"
+                            maxLength={20}
+                            minLength={8}
                         />
                         <ErrorText field="accountNumber" />
 
@@ -334,6 +303,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('routingNumber', text)}
                             autoCapitalize="none"
                             keyboardType="numeric"
+                            maxLength={9}
+                            minLength={9}
                         />
                         <ErrorText field="routingNumber" />
                     </>
@@ -347,6 +318,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.iban}
                             onChangeText={(text) => handleInputChange('iban', text)}
                             autoCapitalize={getAutoCapitalize('iban')}
+                            maxLength={34}
+                            minLength={14}
                         />
                         <ErrorText field="iban" />
 
@@ -356,6 +329,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
+                            maxLength={11}
+                            minLength={8}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -370,6 +345,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('sortCode', text)}
                             autoCapitalize="none"
                             keyboardType="numeric"
+                            maxLength={6}
+                            minLength={6}
                         />
                         <ErrorText field="sortCode" />
 
@@ -380,6 +357,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
                             keyboardType="numeric"
+                            maxLength={20}
+                            minLength={8}
                         />
                         <ErrorText field="accountNumber" />
                     </>
@@ -394,6 +373,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
                             keyboardType="numeric"
+                            maxLength={20}
+                            minLength={8}
                         />
                         <ErrorText field="accountNumber" />
 
@@ -403,6 +384,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.ifscCode}
                             onChangeText={(text) => handleInputChange('ifscCode', text)}
                             autoCapitalize={getAutoCapitalize('ifscCode')}
+                            maxLength={11}
+                            minLength={11}
                         />
                         <ErrorText field="ifscCode" />
                     </>
@@ -418,6 +401,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.bsbCode}
                             onChangeText={(text) => handleInputChange('bsbCode', text)}
                             autoCapitalize={getAutoCapitalize('bsbCode')}
+                            maxLength={6}
+                            minLength={3}
                         />
                         <ErrorText field="bsbCode" />
 
@@ -428,6 +413,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
                             keyboardType="numeric"
+                            maxLength={20}
+                            minLength={8}
                         />
                         <ErrorText field="accountNumber" />
                     </>
@@ -442,6 +429,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
                             keyboardType="numeric"
+                            maxLength={20}
+                            minLength={8}
                         />
                         <ErrorText field="accountNumber" />
 
@@ -453,6 +442,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.bsbCode}
                             onChangeText={(text) => handleInputChange('bsbCode', text)}
                             autoCapitalize={getAutoCapitalize('bsbCode')}
+                            maxLength={6}
+                            minLength={3}
                         />
                         <ErrorText field="bsbCode" />
 
@@ -462,6 +453,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
+                            maxLength={11}
+                            minLength={8}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -475,6 +468,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
+                            maxLength={34}
+                            minLength={16}
                         />
                         <ErrorText field="accountNumber" />
 
@@ -484,6 +479,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
+                            maxLength={11}
+                            minLength={8}
                         />
                         <ErrorText field="bicSwiftCode" />
                     </>
@@ -557,6 +554,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 value={formData.accountHolder}
                                 onChangeText={(text) => handleInputChange('accountHolder', text)}
                                 autoCapitalize="words"
+                                maxLength={50} // Reasonable limit for names
+                                minLength={2}  // Minimum for a valid name
                             />
                             <ErrorText field="accountHolder" />
 
@@ -566,6 +565,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 value={formData.bankName}
                                 onChangeText={(text) => handleInputChange('bankName', text)}
                                 autoCapitalize="words"
+                                maxLength={50} // Reasonable limit for bank names
+                                minLength={2}  // Minimum for a valid bank name
                             />
                             <ErrorText field="bankName" />
                             <Text style={styles.bdLabel}>Bank Address:</Text>
@@ -576,6 +577,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 autoCapitalize="words"
                                 multiline={true}
                                 numberOfLines={2}
+                                maxLength={100} // Reasonable limit for addresses
+                                minLength={5}   // Minimum for a valid address
                             />
                             <ErrorText field="bankAddress" />
 

@@ -126,7 +126,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
     const getRoomsByLocation = async () => {
         try {
             setIsInitialLoading(true);
-            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.lat},${address.lon}`);
+            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.latitude},${address.longitude}`);
             if (response) {
                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
                 setApiRooms(livestreamlist || []);
@@ -211,7 +211,7 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
                 thumbNail: 'dummyimg.jpg',
                 physicalLocation: 'pune',
                 Categories: sortcategories.join(','),
-                geoLocation: `${address.lat},${address.lon}`,
+                geoLocation: `${address.latitude},${address.longitude}`,
             };
 
             const response = await Apiclient.post('/rooms', roomData);

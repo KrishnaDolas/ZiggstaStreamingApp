@@ -25,75 +25,22 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
     const { setFriendListType } = useAppContext();
     const navigation = useNavigation();
 
-    const checkLocationPermission = async () => {
-        const status = await AsyncStorage.getItem('locationPermission');
-        if (status === 'granted') {
-            console.log('User has granted location permission');
-        } else if (status === 'denied') {
-            console.log('User has denied location permission');
-        } else {
-            console.log('Permission not yet requested');
-        }
-    };
 
-
-    useEffect(() => {
-        checkLocationPermission();
-    }, [isLocationTrackingEnabled]);
-
-    // Check current system permission status
-    const checkSystemLocationPermission = async () => {
-        if (Platform.OS === 'android') {
-            try {
-                const granted = await PermissionsAndroid.check(
-                    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-                );
-                return granted;
-            } catch (error) {
-                console.error('Error checking location permission:', error);
-                return false;
-            }
-        }
-        // For iOS, you would need to use react-native-permissions
-        return true; // Fallback for iOS
-    };
-
-    // Initialize state from AsyncStorage and system permission
+    // Load preferences from AsyncStorage
     useEffect(() => {
         const initToggleStates = async () => {
             try {
-                // Get user preference from AsyncStorage
-                const userPreference = await AsyncStorage.getItem('locationPermission');
-
-                // Check actual system permission
-                const hasSystemPermission = await checkSystemLocationPermission();
-
-                // Location is enabled only if user wants it AND has system permission
-                const isEnabled = userPreference === 'granted' && hasSystemPermission;
-                setIsLocationTrackingEnabled(isEnabled);
-
-                // If user preference is enabled but no system permission, 
-                // reset the preference to disabled
-                if (userPreference === 'granted' && !hasSystemPermission) {
-                    await AsyncStorage.setItem('locationPermission', 'denied');
-                    setIsLocationTrackingEnabled(false);
-                }
-
-
-                // Load other preferences
-                // const adultContent = await AsyncStorage.getItem('adultContentEnabled');
+                const locationTracking = await AsyncStorage.getItem('locationTrackingEnabled');
                 const profileVerified = await AsyncStorage.getItem('onlyProfileVerified');
-                // const notifications = await AsyncStorage.getItem('allowNotification');
+                const notifications = await AsyncStorage.getItem('allowNotification');
                 const distance = await AsyncStorage.getItem('distanceRange');
 
-                // if (adultContent !== null) setIsAdultContentEnabled(adultContent === 'true');
+                if (locationTracking !== null) setIsLocationTrackingEnabled(locationTracking === 'true');
                 if (profileVerified !== null) setOnlyProfileVerified(profileVerified === 'true');
-                // if (notifications !== null) setAllowNotification(notifications === 'true');
+                if (notifications !== null) setAllowNotification(notifications === 'true');
                 if (distance !== null) setDistanceRange(parseInt(distance));
-
             } catch (error) {
-                console.error('Error initializing location state:', error);
-                setIsLocationTrackingEnabled(false);
+                console.error('Error loading preferences:', error);
             }
         };
 
@@ -102,79 +49,12 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
         }
     }, [visible]);
 
-    // Handle location tracking toggle
+    // ✅ Simple toggle for location tracking
     const handleToggleLocationTracking = async (value) => {
-        try {
-            if (value) {
-                // User wants to enable location tracking
-                if (Platform.OS === 'android') {
-                    const granted = await PermissionsAndroid.request(
-                        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-                        {
-                            title: 'Location Permission',
-                            message: 'We need your location to show nearby users and provide better recommendations.',
-                            buttonPositive: 'Allow',
-                            buttonNegative: 'Deny',
-                        }
-                    );
-
-                    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                        // Permission granted
-                        await AsyncStorage.setItem('locationPermission', 'granted');
-                        setIsLocationTrackingEnabled(true);
-                        console.log('Location permission granted');
-                    } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-                        // User selected "Don't ask again"
-                        await AsyncStorage.setItem('locationPermission', 'denied');
-                        setIsLocationTrackingEnabled(false);
-
-                        // Show alert to go to settings
-                        Alert.alert(
-                            'Permission Required',
-                            'Location permission is required to show nearby users. Please enable it in app settings.',
-                            [
-                                { text: 'Cancel', style: 'cancel' },
-                                {
-                                    text: 'Open Settings',
-                                    onPress: () => Linking.openSettings()
-                                }
-                            ]
-                        );
-                    } else {
-                        // Permission denied
-                        await AsyncStorage.setItem('locationPermission', 'denied');
-                        setIsLocationTrackingEnabled(false);
-                        console.log('Location permission denied');
-                    }
-                } else {
-                    // For iOS - you would handle iOS permissions here
-                    // For now, just enabling for iOS
-                    await AsyncStorage.setItem('locationPermission', 'granted');
-                    setIsLocationTrackingEnabled(true);
-                }
-            } else {
-                // User wants to disable location tracking
-                await AsyncStorage.setItem('locationPermission', 'denied');
-                setIsLocationTrackingEnabled(false);
-
-                // Show info about completely disabling permission
-                Alert.alert(
-                    'Location Tracking Denied',
-                    'Location tracking has been Disabled in the app. To completely revoke location permission, please go to your device settings.',
-                    [
-                        { text: 'OK', style: 'default' },
-                        {
-                            text: 'Open Settings',
-                            onPress: () => Linking.openSettings()
-                        }
-                    ]
-                );
-            }
-        } catch (error) {
-            console.error('Error handling location permission:', error);
-            setIsLocationTrackingEnabled(false);
-        }
+        setIsLocationTrackingEnabled(value);
+        await AsyncStorage.setItem('locationTrackingEnabled', JSON.stringify(value));
     };
+
 
     // Handle other toggle changes with persistence
     // const handleAdultContentToggle = async (value) => {
@@ -215,22 +95,6 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
     //     checkDistanceStatus();
     // }, [distanceRange]);
 
-
-
-    // Check if user has system permission but app preference is disabled
-    useEffect(() => {
-        if (visible) {
-            const recheckLocationStatus = async () => {
-                const hasSystemPermission = await checkSystemLocationPermission();
-                const userPreference = await AsyncStorage.getItem('locationPermission');
-
-                // If system permission exists but user preference is disabled, 
-                // the toggle should remain off
-                setIsLocationTrackingEnabled(userPreference === 'granted' && hasSystemPermission);
-            };
-            recheckLocationStatus();
-        }
-    }, [visible]);
 
     const getMenuItems = () => {
         switch (modalLabelName) {
