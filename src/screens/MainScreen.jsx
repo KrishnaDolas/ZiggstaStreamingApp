@@ -229,11 +229,12 @@ export const MainScreen = ({address, userData }) => {
       localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
       setIsMuted({HostControl: false, muted: false});
     } else if (action === 'stop-stream') {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-      setLocalStream(null);
-      setIsStreaming(false);
-      setHasRequestedStream(false);
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+        setLocalStream(null);
+        setRemoteStreams(prev => [...prev]);
+      }
     }
   };
   const HandleUserStreamStoped = (userId) => {
@@ -247,13 +248,7 @@ export const MainScreen = ({address, userData }) => {
       }
     }else{
       console.log(`You stopped streaming`);
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-        localStreamRef.current = null;
-      }
-      setLocalStream(null);
-      setIsStreaming(false);
-      setHasRequestedStream(false);
+
     }
   }
 
