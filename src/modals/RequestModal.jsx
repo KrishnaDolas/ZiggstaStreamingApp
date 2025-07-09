@@ -1,7 +1,8 @@
 import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { styles } from '../../assets/styles/ThemeStyles';
 
 const RequestModal = ({
     visible,
@@ -52,7 +53,13 @@ const RequestModal = ({
                                 marginBottom: 12,
                                 padding: 10,
                             }}>
+                                <View style={{position:'relative'}}>
+                                <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                </View>
+                                <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
                                 <Text style={{ fontSize: 16 }}>{item.Name}</Text>
+                                <Text>{`${item?.country} (${item?.city})`}</Text>
+                                </View>
                                 <TouchableOpacity
                                 onPress={() => AcceptStream("approve", item.ID)}
                                 style={{

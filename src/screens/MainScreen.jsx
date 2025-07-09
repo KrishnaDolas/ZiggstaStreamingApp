@@ -22,7 +22,7 @@ import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import ConnectingPanel from '../modals/CoonectingPanel';
 export const MainScreen = () => {
-  const {userData}=useAppContext()
+  const {userData,userAddress}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -48,11 +48,13 @@ export const MainScreen = () => {
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [socketisconnected, setSocketIsConnected] = useState(true); // Track socket connection status
   const IsIdentify=useRef(false)
+
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`App state changed to: ${nextAppState}`);
       try {
-        if (nextAppState === 'active' && isStreaming && isuserstreaming) {
+        const IsValid=isuserstreaming || isHost
+        if (nextAppState === 'active' && isStreaming && IsValid) {
           console.log('🔄 Restarting host stream...');
           // Stop old stream if exists
           if (localStreamRef.current) {
@@ -106,7 +108,7 @@ export const MainScreen = () => {
     };
     AppState.addEventListener('change', handleAppStateChange);
     // return () => subscription.remove();
-  }, [isStreaming]);
+  }, [isStreaming,isHost,isuserstreaming]);
   
   const connectSocket = () => {
     console.log('Connecting to socket server...');
@@ -381,12 +383,17 @@ export const MainScreen = () => {
     setIsSocketConnected(false)
     setSocketIsConnected(false); // Update connection status
   }
+
+  useEffect(()=>{
+    HandleConnect()
+  },[])
+
+
   useEffect(() => {
     // Handles socket events
     if(isSocketConnected) {
       console.log('Connecting to socket server...');
       socket.on('connect',HandleConnect);
-      socket.emit('identity', userData?.userid, userData?.screenName);
       socket.on('assignHost', HandleAssignHost);
       socket.on('joined',HandleJoined);
       socket.on('StreamNotAvailable',HandleStreamNotAvailable)
@@ -519,7 +526,8 @@ export const MainScreen = () => {
     try {
       if (!hasRequestedStream) {
         await requestPermissions();
-        socket.emit('requestStream');
+        const Address=userAddress ?{country:userAddress?.country,city:userAddress?.city} : {country:'India',city:'Pune'}
+        socket.emit('requestStream',Address);
         setHasRequestedStream(true);
       }
     } catch (error) {
@@ -634,7 +642,7 @@ export const MainScreen = () => {
         backgroundColor="#fff"
       />
       <View style={[styles.container]}>
-        {!socketisconnected && !joined && <ConnectingPanel isVisible={!socketisconnected} onRetry={()=>{}}  />}
+        {/* {!socketisconnected && !joined && <ConnectingPanel isVisible={!socketisconnected} onRetry={()=>{}}  />} */}
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
