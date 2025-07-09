@@ -43,8 +43,8 @@ export const MainScreen = () => {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [refreshlobby, setRefreshLobby] = useState(false); // For refreshing lobby
   const [leaveroomrefresh, setLeaveRoomRefresh] = useState(false); // For refreshing after leaving room
-  const [streamrequestlist, setStreamRequestList] = useState([]);
-  const [streamGuest, setStreamGuest] = useState([]);
+  const [streamrequestlist, setStreamRequestList] = useState([]); //{CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
+  const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const IsIdentify=useRef(false)
 

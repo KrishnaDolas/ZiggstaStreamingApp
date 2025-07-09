@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
-
+import { useAppContext } from '../context/AppContext';
 const RequestModal = ({
     visible,
     onClose,
@@ -11,6 +11,7 @@ const RequestModal = ({
     streamGuest = [],
     socket
 }) => {
+    const {userAddress}= useAppContext();
     const GetAction=(targetId,action)=>{
        socket.emit('host-control', {action: action,targetId: targetId}
        )
@@ -18,7 +19,9 @@ const RequestModal = ({
     const AcceptStream=(action,requesterId)=>{
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
         if(action === 'approve') {
-        socket.emit('approveStream', requesterId)
+            const Address=userAddress ?{country:userAddress?.country,city:userAddress?.city} : {country:'India',city:'Pune'}
+            console.log(Address);
+        socket.emit('approveStream', requesterId,Address)
         }
         if( action === 'reject') {
           socket.emit('rejectStream', requesterId)
@@ -103,10 +106,20 @@ const RequestModal = ({
                         keyExtractor={(item) => item.CustomID}
                         renderItem={({ item }) => (
                             <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 12,
                                 padding: 10,
-                                marginBottom: 12
                             }}>
-                                <Text style={{ fontSize: 16, marginBottom: 8 }}>{item.Name}</Text>
+                                <View style={{position:'relative'}}>
+                                <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                </View>
+                                <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
+                                <Text style={{ fontSize: 16 }}>{item.Name}</Text>
+                                <Text>{`${item?.country} (${item?.city})`}</Text>
+                                </View>
+                                {/* <Text style={{ fontSize: 16, marginBottom: 8 }}>{item.Name}</Text> */}
                                 <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
                                     {/* Mute/Unmute Button with Icon */}
                                     <TouchableOpacity
