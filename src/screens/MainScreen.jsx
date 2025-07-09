@@ -4,6 +4,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { AppState } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext,useEffect, useRef, } from 'react';
@@ -43,6 +44,68 @@ export const MainScreen = () => {
   const [leaveroomrefresh, setLeaveRoomRefresh] = useState(false); // For refreshing after leaving room
   const [streamrequestlist, setStreamRequestList] = useState([]);
   const [streamGuest, setStreamGuest] = useState([]);
+  const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
+
+  useEffect(() => {
+    const handleAppStateChange = async (nextAppState) => {
+      console.log(`App state changed to: ${nextAppState}`);
+      try {
+        if (nextAppState === 'active' && isStreaming && isuserstreaming) {
+          console.log('🔄 Restarting host stream...');
+          // Stop old stream if exists
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+          }
+
+          // Re-acquire media
+          const newStream = await mediaDevices.getUserMedia({
+            video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
+            audio: true,
+          });
+
+          localStreamRef.current = newStream;
+          setLocalStream(newStream);
+          setIsStreaming(true);
+
+          InCallManager.start({ media: 'audio' });
+          InCallManager.setForceSpeakerphoneOn(true);
+          InCallManager.setSpeakerphoneOn(true);
+
+          // Re-attach new tracks to existing peer connections
+          for (const [userId, peer] of Object.entries(peersRef.current)) {
+            // Remove old senders (cleaner renegotiation)
+            const senders = peer.getSenders();
+            senders.forEach(sender => {
+              if (sender.track?.kind === 'video' || sender.track?.kind === 'audio') {
+                peer.removeTrack(sender);
+              }
+            });
+            // Add new tracks
+            newStream.getTracks().forEach(track => {
+              peer.addTrack(track, newStream);
+            });
+            // Renegotiate by sending a new offer
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+            socket.emit('signal', { to: userId, data: peer.localDescription });
+          }
+          console.log('✅ Host stream restarted and renegotiated');
+        }
+      } catch (error) {
+        SendErrorTotheServer(error, 'handleHostStreamRestart');
+        Alert.alert('Error', 'Failed to restart stream. Please try again.');
+      }
+
+
+      if (nextAppState === 'background') {
+        console.log('App has gone to background.');
+      }
+    };
+    AppState.addEventListener('change', handleAppStateChange);
+    // return () => subscription.remove();
+  }, [isStreaming]);
+  
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -178,6 +241,7 @@ export const MainScreen = () => {
     await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
   
     socket.emit('signal', { to: userId, data: peer.localDescription });
+    setIsUserStreaming(true); // Set user as streaming
       }
     } catch (error) {
       SendErrorTotheServer(error,'HandleApprovedStream');
@@ -204,7 +268,7 @@ export const MainScreen = () => {
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
       socket.emit('signal', { to: newUserId, data: peer.localDescription });
     } catch (error) {
-      SendErrorTotheServer(error,'HandlereconnectWithNewPeer');
+      console.log(error);
     }
   }
   const HandleGetListStreamers = (streamers) => {
@@ -305,6 +369,7 @@ export const MainScreen = () => {
     // Handles socket events
     if(isSocketConnected) {
       console.log('Connecting to socket server...');
+      socket.emit('identity', userData?.userid, userData?.screenName);
       socket.on('assignHost', HandleAssignHost);
       socket.on('joined',HandleJoined);
       socket.on('StreamNotAvailable',HandleStreamNotAvailable)
@@ -373,7 +438,9 @@ export const MainScreen = () => {
         if (!stream || !stream.getVideoTracks().length) return;
         setRemoteStreams(prev => {
           const exists = prev.some(s => s.id === socketId);
-          if (exists) return prev;
+          if (exists) {
+            return prev.map(s => s.id === socketId ? { id: socketId, stream } : s);
+          }
           return [...prev, { id: socketId, stream }];
         });
       };

@@ -65,7 +65,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         if (userData?.userid) {
             getUserDetails();
         }
-        console.log('User Data:', userData);
     }, [userData?.userid]);
 
     useEffect(() => {
