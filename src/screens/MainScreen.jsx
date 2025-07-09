@@ -46,7 +46,7 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]);
   const [streamGuest, setStreamGuest] = useState([]);
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
-  const [socketisconnected, setSocketIsConnected] = useState(false); // Track socket connection status
+  const [socketisconnected, setSocketIsConnected] = useState(true); // Track socket connection status
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`App state changed to: ${nextAppState}`);
