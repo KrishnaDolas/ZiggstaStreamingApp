@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -15,7 +15,8 @@ import Apiclient from '../utils/Apiclient';
 import { ActivityIndicator } from 'react-native';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 
-export const MessageListScreen = ({ userData }) => {
+export const MessageListScreen = () => {
+    const { userData } = useAppContext();
     const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
@@ -28,29 +29,31 @@ export const MessageListScreen = ({ userData }) => {
     const [profileUserData, setProfileUserData] = useState({});
 
     // Function to fetch friends data blocked/unblocked user from the API
-    useEffect(() => {
-        const getFriendsData = async () => {
-            if (!userData.userid) return
-            setLoading(true);
-            try {
 
-                const postData = {
-                    userId: userData.userid,
-                    isBlocked: friendListType === 'blocked' ? 1 : 0,
-                };
+    const getFriendsData = async () => {
+        if (!userData.userid) return
+        setLoading(true);
+        try {
 
-                const response = await Apiclient.post('/getFriendsList', postData);
-                console.log('response getFriendsList', response.data);
-                if (response.status === 200) {
-                    const data = response.data?.friends || [];
-                    setFriendsData(data);
-                }
-            } catch (error) {
-                console.error('Error fetching friends data list:', error);
-            } finally {
-                setLoading(false);
+            const postData = {
+                userId: userData.userid,
+                isBlocked: friendListType === 'blocked' ? 1 : 0,
+            };
+
+            const response = await Apiclient.post('/getFriendsList', postData);
+            console.log('response getFriendsList', response.data);
+            if (response.status === 200) {
+                const data = response.data?.friends || [];
+                setFriendsData(data);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching friends data list:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (friendListType !== 'requests') {
             getFriendsData();
         }
@@ -58,36 +61,95 @@ export const MessageListScreen = ({ userData }) => {
 
 
     // Function to fetch friends request user from the API
-    useEffect(() => {
-        const getFriendRequestData = async () => {
-            if (!userData.userid) return
-            setLoading(true);
-            try {
-                const response = await Apiclient.get(`/friends/requests/${userData.userid}`);
-                console.log('response friends requests data', response);
-                if (response.status === 200) {
-                    const data = response.data || [];
-                    setFriendRequestsData(data);
-                }
-            } catch (error) {
-                console.error('Error fetching friends request data list:', error);
-            } finally {
-                setLoading(false);
+
+    const getFriendRequestData = async () => {
+        if (!userData.userid) return
+        setLoading(true);
+        try {
+            const response = await Apiclient.get(`/friends/requests/${userData.userid}`);
+            console.log('response friends requests data', response);
+            if (response.status === 200) {
+                const data = response.data || [];
+                setFriendRequestsData(data);
             }
-        };
+        } catch (error) {
+            console.error('Error fetching friends request data list:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         if (friendListType === 'requests') {
             getFriendRequestData();
         }
     }, [friendListType, userData.userid]);
 
 
-    const handleConfirm = (id) => {
-        alert(`Friend request from ${id} confirmed`);
+
+    // manage friend request actions
+
+    const handleFriendRequestResponse = async (receiverID, responseType) => {
+        if (!userData.userid || !receiverID) return;
+
+        const payload = {
+            requesterID: receiverID,
+            receiverID: userData.userid,
+            response: responseType, // 'accepted' or 'declined'
+        };
+        console.log('payload /friends/respond :', payload);
+
+        try {
+            const response = await Apiclient.post('/friends/respond', payload); // Replace with your actual endpoint
+            console.log(`Friend request ${responseType}`, response.data);
+
+            if (response.status === 200 && response.data?.message) {
+                alert(response.data.message);
+            } else {
+                alert(`Friend request ${responseType}`);
+            }
+
+            // Refresh request list after short delay
+            setTimeout(() => {
+                getFriendRequestData(); // Assuming this is accessible here
+            }, 1000);
+        } catch (error) {
+            console.error(`Error ${responseType} friend request:`, error);
+        }
     };
 
-    const handleDelete = (id) => {
-        alert(`Friend request from ${id} deleted`);
+    const handleConfirm = (receiverID) => {
+        handleFriendRequestResponse(receiverID, 'accepted');
     };
+
+    const handleDelete = (receiverID) => {
+        handleFriendRequestResponse(receiverID, 'rejected');
+    };
+
+
+    // un-block friend
+
+    const handleUnBlock = async (blockedID) => {
+        try {
+            const payload = {
+                blockerID: userData?.userid,
+                blockedID: blockedID,
+                action: 'unblock',
+            };
+            console.log('payload /friends/block :', payload);
+            const response = await Apiclient.post('/friends/block', payload); // Replace with your actual endpoint
+            console.log(`unblock user response`, response.data);
+
+            if (response.status === 200 && response.data?.message) {
+                alert(response.data.message);
+                await getFriendsData();
+            }
+
+        } catch (error) {
+            console.error(`Error getting when unblock user:`, error);
+        }
+    };
+
 
     const handleProfileOpen = (item) => {
         setProfileUserData(item);
@@ -108,12 +170,12 @@ export const MessageListScreen = ({ userData }) => {
                     </TouchableOpacity>
                     <View style={styles.frActionBox}>
                         <TouchableOpacity
-                            onPress={() => handleConfirm(item.Username)}
+                            onPress={() => handleConfirm(item.RequesterID)}
                             style={styles.frActionConfirmBtn}>
                             <Text style={[styles.frActionBtnText, { color: '#fff' }]}>Confirm</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={() => handleDelete(item.Username)}
+                            onPress={() => handleDelete(item.RequesterID)}
                             style={styles.frActionDeleteBtn}>
                             <Text style={[styles.frActionBtnText, { color: '#111' }]}>Delete</Text>
                         </TouchableOpacity>
@@ -140,7 +202,7 @@ export const MessageListScreen = ({ userData }) => {
                 </TouchableOpacity>
                 {friendListType === 'blocked' ? (
                     <TouchableOpacity
-                        onPress={() => alert(`Unblocked ${item.username}`)}
+                        onPress={() => handleUnBlock(item.userid)}
                         style={styles.frActionDeleteBtn}>
                         <Text style={[styles.frActionBtnText, { color: '#111' }]}>Unblock</Text>
                     </TouchableOpacity>
@@ -264,6 +326,7 @@ export const MessageListScreen = ({ userData }) => {
                         onClose={() => setVisibleModal(null)}
                         userData={userData}
                         friendInfo={friendInfo}
+                        getFriendsData={getFriendsData}
                     />
                 )}
                 {visibleModal === 'profile-screen-modal' && (
