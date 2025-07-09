@@ -46,7 +46,6 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]);
   const [streamGuest, setStreamGuest] = useState([]);
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
-  const [socketisconnected, setSocketIsConnected] = useState(true); // Track socket connection status
   const IsIdentify=useRef(false)
 
   useEffect(() => {
@@ -126,7 +125,6 @@ export const MainScreen = () => {
   const HandleConnect=()=>{
     console.log('✅ Connected to Socket.IO server');
     setIsSocketConnected(true); // Update connection status
-    setSocketIsConnected(true); // Track socket connection status
     if(!IsIdentify.current){
       socket.emit('identity', userData?.userid, userData?.screenName);
       IsIdentify.current = true; // Set identify flag to true
@@ -381,7 +379,6 @@ export const MainScreen = () => {
   const HandleDisconnected=()=>{
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
-    setSocketIsConnected(false); // Update connection status
     IsIdentify.current= false; // Reset identify flag
   }
 
@@ -643,7 +640,6 @@ export const MainScreen = () => {
         backgroundColor="#fff"
       />
       <View style={[styles.container]}>
-        {/* {!socketisconnected && !joined && <ConnectingPanel isVisible={!socketisconnected} onRetry={()=>{}}  />} */}
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
