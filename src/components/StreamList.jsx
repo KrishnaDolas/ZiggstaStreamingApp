@@ -12,6 +12,7 @@ import StreamListSkeleton from './StreamListSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
+import { useAppContext } from '../context/AppContext';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -23,9 +24,10 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlobby, leaveroomrefresh }) => {
+const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaveroomrefresh }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
+      const {userData}=useAppContext()
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -63,11 +65,8 @@ const StreamList = ({ theme, joinRoom, createRoom, userData, address, refreshlob
         if (userData?.userid) {
             getUserDetails();
         }
+        console.log('User Data:', userData);
     }, [userData?.userid]);
-
-
-    // console.log('address', address);
-
 
     useEffect(() => {
         if (

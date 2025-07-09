@@ -18,7 +18,9 @@ import { iceServers, preferVP8, SendErrorTotheServer, socket } from '../utils/co
 import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
-export const MainScreen = ({address, userData }) => {
+import { useAppContext } from '../context/AppContext';
+export const MainScreen = ({address }) => {
+  const {userData}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -547,7 +549,7 @@ export const MainScreen = ({address, userData }) => {
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} userData={userData} address={address} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} address={address} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}
