@@ -204,7 +204,7 @@ export const MainScreen = () => {
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
       socket.emit('signal', { to: newUserId, data: peer.localDescription });
     } catch (error) {
-      SendErrorTotheServer(error,'HandlereconnectWithNewPeer');
+      console.log(error);
     }
   }
   const HandleGetListStreamers = (streamers) => {
@@ -305,6 +305,7 @@ export const MainScreen = () => {
     // Handles socket events
     if(isSocketConnected) {
       console.log('Connecting to socket server...');
+      socket.emit('identity', userData?.userid, userData?.screenName);
       socket.on('assignHost', HandleAssignHost);
       socket.on('joined',HandleJoined);
       socket.on('StreamNotAvailable',HandleStreamNotAvailable)
