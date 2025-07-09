@@ -1,11 +1,10 @@
 // Socket.IO client initialization
+import { Alert } from 'react-native';
 import { io } from 'socket.io-client';
-// function connectUser(userId) { socket = io({ transports: ['polling', 'websocket'], // ✅ include both for fallback testing reconnection: true, // Enable automatic reconnection //forceNew: true, //autoConnect: false, //Prevents automatic connection; you call .connect() manually reconnectionAttempts: Infinity, // Keep trying forever reconnectionDelay: 5000, // Wait 15 seconds between attempts timeout: 15000 // (Optional) Fail a connection attempt after 20 seconds });
-// Exporting the socket instance for use in other parts of the application
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-  export const socket = io('https://streamalong.live', {
+  export const socket = io('http://192.168.0.18:5000', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
@@ -25,16 +24,11 @@ import { io } from 'socket.io-client';
   
   // WebRTC ICE configuration with STUN and TURN servers
   export const iceServers = {
-    iceServers: [
-      {
-        urls: 'stun:coturn.streamalong.live:3478'
-      },
-      {
-        urls: 'turn:coturn.streamalong.live:3478?transport=udp',
-        username: 'vikram',
-        credential: 'vikram'
-      }
-    ],
+    iceServers: [{
+      urls: ['turn:coturn.streamalong.live:3478'],
+      username: 'webrtcuser',
+      credential: 'Test@1234'
+    }],
     iceTransportPolicy: 'all',
     sdpSemantics: 'unified-plan'
   };

@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { preferVP8, SendErrorTotheServer, socket } from '../utils/constant';
+import { iceServers, preferVP8, SendErrorTotheServer, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
@@ -359,15 +359,7 @@ export const MainScreen = ({address, userData }) => {
   }, [isSocketConnected]);
   const createPeer = (socketId) => {
     try {
-      const peer = new RTCPeerConnection({
-        iceServers: [{
-          urls: ['turn:coturn.streamalong.live:3478'],
-          username: 'webrtcuser',
-          credential: 'Test@1234'
-        }],
-        iceTransportPolicy: 'all',
-        sdpSemantics: 'unified-plan'
-      });
+      const peer = new RTCPeerConnection(iceServers);
   
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track =>
