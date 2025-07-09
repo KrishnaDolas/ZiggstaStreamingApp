@@ -382,6 +382,7 @@ export const MainScreen = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
     setSocketIsConnected(false); // Update connection status
+    IsIdentify.current= false; // Reset identify flag
   }
 
   useEffect(()=>{
