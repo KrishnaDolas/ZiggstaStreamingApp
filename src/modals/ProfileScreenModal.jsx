@@ -10,30 +10,31 @@ import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
+import { SendErrorTotheServer } from '../utils/constant';
 // top gifters
-const topGifters = [
-    {
-        id: 1,
-        name: 'Name 1',
-        amount: '$2,500',
-        image: require('../../assets/images/LS-12.jpg'), // Replace with actual image
-        isTop: true,
-    },
-    {
-        id: 2,
-        name: 'Name 2',
-        amount: '$1,200',
-        image: require('../../assets/images/LS-8.jpg'), // Replace with actual image
-        isTop: false,
-    },
-    {
-        id: 3,
-        name: 'Name 3',
-        amount: '$950',
-        image: require('../../assets/images/LS-9.jpg'), // Replace with actual image
-        isTop: false,
-    },
-];
+// const topGifters = [
+//     {
+//         id: 1,
+//         name: 'Name 1',
+//         amount: '$2,500',
+//         image: require('../../assets/images/LS-12.jpg'), // Replace with actual image
+//         isTop: true,
+//     },
+//     {
+//         id: 2,
+//         name: 'Name 2',
+//         amount: '$1,200',
+//         image: require('../../assets/images/LS-8.jpg'), // Replace with actual image
+//         isTop: false,
+//     },
+//     {
+//         id: 3,
+//         name: 'Name 3',
+//         amount: '$950',
+//         image: require('../../assets/images/LS-9.jpg'), // Replace with actual image
+//         isTop: false,
+//     },
+// ];
 
 const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const screenHeight = Dimensions.get('window').height;
@@ -44,6 +45,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [socialLinks, setSocialLinks] = useState({});
     const [socialError, setSocialError] = useState('');
     const [showWarning, setShowWarning] = useState(false);
+    const [topGiftersData, setTopGiftersData] = useState([]);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -99,6 +101,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 }
             } catch (err) {
                 setIsUserError('Error fetching user profile details: ' + err.message);
+                SendErrorTotheServer(err, 'fetchProfileDetails');
             } finally {
                 setIsUserLoading(false);
             }
@@ -133,6 +136,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 } else {
                     setSocialError('Failed to fetch social media information.');
                     console.error('Error fetching socials:', error.message);
+                    SendErrorTotheServer(error, 'getSocialsData');
+
                 }
             }
         };
@@ -142,6 +147,31 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         }
     }, [profileUserId]);
 
+    // to get top gifters
+    useEffect(() => {
+        const getTopGifters = async () => {
+            const formData = {
+                toUserId: profileUserId,
+                gifterCount: 25,
+            };
+            try {
+                const response = await Apiclient.post('/topgifters', formData);
+                console.log('topgifters response', response.data);
+                if (response) {
+                    setTopGiftersData(response.data || []);
+                } else {
+                    setIsUserError('Failed to fetch top gifters data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching top gifters data: ' + err.message);
+                SendErrorTotheServer(err, 'getTopGifters in profile modal');
+
+            }
+        };
+        getTopGifters();
+    }, [profileUserId]);
+
+    // handle social media press
     const handleSocialPress = (platform) => {
         const handle = socialLinks?.[platform.toLowerCase()];
         if (!handle) {
@@ -168,6 +198,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
             alert('Unable to open the URL.');
         });
     };
+
+
 
 
     return (
@@ -332,46 +364,62 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                 {/* Top Gifters */}
                                                 <View style={styles.psmTopGiftersContainer}>
                                                     <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
-                                                    <LinearGradient
-                                                        colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
-                                                        start={{ x: 0, y: 1 }}
-                                                        end={{ x: 0.8, y: 0.2 }}
-                                                        style={styles.psmTopGifterMainCard}
-                                                    >
-                                                        <View style={styles.psmTopGifterImageContainer}>
-                                                            <Image
-                                                                source={topGifters[0].image}
-                                                                style={styles.psmTopGifterMainImage}
-                                                            />
+                                                    {topGiftersData.length === 0 ? (
+                                                        <View style={{ alignItems: 'center', marginTop: 20 }}>
+                                                            <Ionicons name="gift-outline" size={50} color="#ccc" />
+                                                            <Text
+                                                                style={{
+                                                                    marginTop: 10,
+                                                                    color: '#999',
+                                                                    fontSize: 16,
+                                                                    textAlign: 'center',
+                                                                }}>
+                                                                This user hasn’t received any gifts during their streams yet.
+                                                            </Text>
                                                         </View>
-                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                            <Text style={styles.psmTopGifterMainName}>{topGifters[0].name}</Text>
-                                                            <Text style={styles.psmTopGifterMainAmount}>{topGifters[0].amount}</Text>
-                                                        </View>
-                                                    </LinearGradient>
-                                                    <View style={styles.psmOtherGiftersContainer}>
-                                                        {topGifters.slice(1).map((gifter, index) => (
-                                                            <View
-                                                                key={gifter.id}
-                                                                style={[styles.psmOtherGifterCard,
-                                                                {
-                                                                    borderLeftWidth: index === 0 ? 1 : 0,
-                                                                    borderLeftColor: '#f0f0f0',
-                                                                }]}
+                                                    ) : (
+                                                        <>
+                                                            <LinearGradient
+                                                                colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
+                                                                start={{ x: 0, y: 1 }}
+                                                                end={{ x: 0.8, y: 0.2 }}
+                                                                style={styles.psmTopGifterMainCard}
                                                             >
-                                                                <View style={styles.psmOtherGifterImageContainer}>
+                                                                <View style={styles.psmTopGifterImageContainer}>
                                                                     <Image
-                                                                        source={gifter.image}
-                                                                        style={styles.psmOtherGifterImage}
+                                                                        source={topGiftersData[0]?.image}
+                                                                        style={styles.psmTopGifterMainImage}
                                                                     />
                                                                 </View>
                                                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                    <Text style={styles.psmOtherGifterName}>{gifter.name}</Text>
-                                                                    <Text style={styles.psmOtherGifterAmount}>{gifter.amount}</Text>
+                                                                    <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.ScreenName}</Text>
+                                                                    <Text style={styles.psmTopGifterMainAmount}>{topGiftersData[0]?.Amount}</Text>
                                                                 </View>
+                                                            </LinearGradient>
+                                                            <View style={styles.psmOtherGiftersContainer}>
+                                                                {topGiftersData?.slice(1).map((gifter, index) => (
+                                                                    <View
+                                                                        key={gifter.id}
+                                                                        style={[styles.psmOtherGifterCard,
+                                                                        {
+                                                                            borderLeftWidth: index === 0 ? 1 : 0,
+                                                                            borderLeftColor: '#f0f0f0',
+                                                                        }]}
+                                                                    >
+                                                                        <View style={styles.psmOtherGifterImageContainer}>
+                                                                            <Image
+                                                                                source={gifter.image}
+                                                                                style={styles.psmOtherGifterImage}
+                                                                            />
+                                                                        </View>
+                                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                            <Text style={styles.psmOtherGifterName}>{gifter?.ScreenName}</Text>
+                                                                            <Text style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
+                                                                        </View>
+                                                                    </View>
+                                                                ))}
                                                             </View>
-                                                        ))}
-                                                    </View>
+                                                        </>)}
                                                 </View>
                                             </View>
                                         </>
@@ -379,7 +427,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                 </>
                             </ScrollView>
                         }
-
                     </View>
                 </Animated.View>
             </Modal>

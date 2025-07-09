@@ -46,9 +46,9 @@ const SearchModal = ({ visible, onClose,
 
         const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',');
         const getIsVerified = await AsyncStorage.getItem('onlyProfileVerified');
-        const getMaxDistance = await AsyncStorage.getItem('distanceRange');
-        const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
-        const userLocation = `${address.lat},${address.lon}`;
+        // const getMaxDistance = await AsyncStorage.getItem('distanceRange');
+        // const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
+        // const userLocation = `${address.lat},${address.lon}`;
         const isVerifiedValue = getIsVerified === 'true' ? 1 : 0;
 
 
