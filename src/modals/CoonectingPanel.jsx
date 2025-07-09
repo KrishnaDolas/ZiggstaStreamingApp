@@ -6,6 +6,7 @@ import {
   Animated,
   Dimensions,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -15,6 +16,7 @@ const ConnectingPanel = ({ isVisible, onRetry }) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    console.log(`ConnectingPanel isVisible: ${isVisible}`);
     if (isVisible) {
       // Fade in animation
       Animated.timing(fadeAnim, {
@@ -74,12 +76,12 @@ const ConnectingPanel = ({ isVisible, onRetry }) => {
         <View style={styles.dotsContainer}>
           <LoadingDots />
         </View>
-        
+{/*         
         {onRetry && (
           <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
             <Text style={styles.retryButtonText}>Retry Connection</Text>
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
     </Animated.View>
   );

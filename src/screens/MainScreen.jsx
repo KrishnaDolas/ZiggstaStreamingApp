@@ -4,6 +4,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import { AppState } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext,useEffect, useRef, } from 'react';
@@ -19,7 +20,8 @@ import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
-export const MainScreen = ({address }) => {
+import ConnectingPanel from '../modals/CoonectingPanel';
+export const MainScreen = () => {
   const {userData}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -43,6 +45,68 @@ export const MainScreen = ({address }) => {
   const [leaveroomrefresh, setLeaveRoomRefresh] = useState(false); // For refreshing after leaving room
   const [streamrequestlist, setStreamRequestList] = useState([]);
   const [streamGuest, setStreamGuest] = useState([]);
+  const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
+  const [socketisconnected, setSocketIsConnected] = useState(false); // Track socket connection status
+  useEffect(() => {
+    const handleAppStateChange = async (nextAppState) => {
+      console.log(`App state changed to: ${nextAppState}`);
+      try {
+        if (nextAppState === 'active' && isStreaming && isuserstreaming) {
+          console.log('🔄 Restarting host stream...');
+          // Stop old stream if exists
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+          }
+
+          // Re-acquire media
+          const newStream = await mediaDevices.getUserMedia({
+            video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
+            audio: true,
+          });
+
+          localStreamRef.current = newStream;
+          setLocalStream(newStream);
+          setIsStreaming(true);
+
+          InCallManager.start({ media: 'audio' });
+          InCallManager.setForceSpeakerphoneOn(true);
+          InCallManager.setSpeakerphoneOn(true);
+
+          // Re-attach new tracks to existing peer connections
+          for (const [userId, peer] of Object.entries(peersRef.current)) {
+            // Remove old senders (cleaner renegotiation)
+            const senders = peer.getSenders();
+            senders.forEach(sender => {
+              if (sender.track?.kind === 'video' || sender.track?.kind === 'audio') {
+                peer.removeTrack(sender);
+              }
+            });
+            // Add new tracks
+            newStream.getTracks().forEach(track => {
+              peer.addTrack(track, newStream);
+            });
+            // Renegotiate by sending a new offer
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+            socket.emit('signal', { to: userId, data: peer.localDescription });
+          }
+          console.log('✅ Host stream restarted and renegotiated');
+        }
+      } catch (error) {
+        SendErrorTotheServer(error, 'handleHostStreamRestart');
+        Alert.alert('Error', 'Failed to restart stream. Please try again.');
+      }
+
+
+      if (nextAppState === 'background') {
+        console.log('App has gone to background.');
+      }
+    };
+    AppState.addEventListener('change', handleAppStateChange);
+    // return () => subscription.remove();
+  }, [isStreaming]);
+  
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -55,6 +119,12 @@ export const MainScreen = ({address }) => {
     socket.disconnect();
     setIsSocketConnected(false); // Update connection status
   };
+  const HandleConnect=()=>{
+    console.log('✅ Connected to Socket.IO server');
+    setIsSocketConnected(true); // Update connection status
+    setSocketIsConnected(true); // Track socket connection status
+    socket.emit('identity', userData?.userid, userData?.screenName);
+  }
   //Handle socket functions 
   const HandleAssignHost= async () => {
    try {
@@ -178,6 +248,7 @@ export const MainScreen = ({address }) => {
     await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
   
     socket.emit('signal', { to: userId, data: peer.localDescription });
+    setIsUserStreaming(true); // Set user as streaming
       }
     } catch (error) {
       SendErrorTotheServer(error,'HandleApprovedStream');
@@ -204,7 +275,7 @@ export const MainScreen = ({address }) => {
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
       socket.emit('signal', { to: newUserId, data: peer.localDescription });
     } catch (error) {
-      SendErrorTotheServer(error,'HandlereconnectWithNewPeer');
+      console.log(error);
     }
   }
   const HandleGetListStreamers = (streamers) => {
@@ -300,11 +371,17 @@ export const MainScreen = ({address }) => {
       SendErrorTotheServer(error,'HandleUserStreamStoped');
     }
   }
-
+  const HandleDisconnected=()=>{
+    console.log('❌ Disconnected from socket server');
+    setIsSocketConnected(false)
+    setSocketIsConnected(false); // Update connection status
+  }
   useEffect(() => {
     // Handles socket events
     if(isSocketConnected) {
       console.log('Connecting to socket server...');
+      socket.on('connect',HandleConnect);
+      socket.emit('identity', userData?.userid, userData?.screenName);
       socket.on('assignHost', HandleAssignHost);
       socket.on('joined',HandleJoined);
       socket.on('StreamNotAvailable',HandleStreamNotAvailable)
@@ -324,12 +401,14 @@ export const MainScreen = ({address }) => {
       socket.on('new_stream',HandleNewStream)
       socket.on('Close_stream',HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
+      socket.on('disconnect', HandleDisconnected);
     }
 
     return () => {
       if (isSocketConnected) {
         // Cleanup socket listeners
         console.log('Disconnecting from socket server...');
+        socket.off('connect',HandleConnect);
         socket.off('assignHost', HandleAssignHost);
         socket.off('joined', HandleJoined);
         socket.off('StreamNotAvailable', HandleStreamNotAvailable)
@@ -348,6 +427,7 @@ export const MainScreen = ({address }) => {
         socket.off('new_stream',HandleNewStream)
         socket.off('Close_stream',HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
+        socket.off('disconnect', HandleDisconnected);
       }
     }
   }, [isHost,isSocketConnected]);
@@ -373,7 +453,9 @@ export const MainScreen = ({address }) => {
         if (!stream || !stream.getVideoTracks().length) return;
         setRemoteStreams(prev => {
           const exists = prev.some(s => s.id === socketId);
-          if (exists) return prev;
+          if (exists) {
+            return prev.map(s => s.id === socketId ? { id: socketId, stream } : s);
+          }
           return [...prev, { id: socketId, stream }];
         });
       };
@@ -547,9 +629,10 @@ export const MainScreen = ({address }) => {
         backgroundColor="#fff"
       />
       <View style={[styles.container]}>
+        {!socketisconnected && !joined && <ConnectingPanel isVisible={!socketisconnected} onRetry={()=>{}}  />}
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} address={address} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}

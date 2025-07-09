@@ -9,10 +9,12 @@ import { Dimensions, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppContext } from '../context/AppContext';
 
 const SearchModal = ({ visible, onClose,
-    setSearchFilteredData, categoryData, address }) => {
+    setSearchFilteredData, categoryData }) => {
     const screenHeight = Dimensions.get('window').height;
+    const {userAddress}=useAppContext()
     const [searchText, setSearchText] = useState('');
     const [searchBy, setSearchBy] = useState('user');
     const [layoutReady, setLayoutReady] = useState(false);
@@ -46,9 +48,9 @@ const SearchModal = ({ visible, onClose,
 
         const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',');
         const getIsVerified = await AsyncStorage.getItem('onlyProfileVerified');
-        // const getMaxDistance = await AsyncStorage.getItem('distanceRange');
-        // const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
-        // const userLocation = `${address.lat},${address.lon}`;
+        const getMaxDistance = await AsyncStorage.getItem('distanceRange');
+        const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
+        const userLocation =`${userAddress.latitude},${userAddress.longitude}`;
         const isVerifiedValue = getIsVerified === 'true' ? 1 : 0;
 
 

@@ -100,7 +100,7 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
-
+    const scrollViewRef = useRef();
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
@@ -117,6 +117,12 @@ const StreamRoom = ({
         getGiftsCategory();
     }, [giftModalVisible])
 
+    useEffect(() => {
+        // Scroll to the bottom when roomchat updates
+        if (scrollViewRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+      }, [roomchat]);
 
     // Function to fetch gifts from the API
     const getGifts = async () => {
@@ -489,6 +495,7 @@ const StreamRoom = ({
                                         <View style={styles.strRoomFooterChatOrActionsBox}>
                                             <View style={[styles.streamChatContainer]}>
                                                 <ScrollView
+                                                ref={scrollViewRef}
                                                     showsVerticalScrollIndicator={false}
                                                 >
                                                     {roomchat.map((chat, ind) => (
