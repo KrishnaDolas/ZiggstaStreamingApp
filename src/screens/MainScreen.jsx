@@ -47,6 +47,7 @@ export const MainScreen = () => {
   const [streamGuest, setStreamGuest] = useState([]);
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [socketisconnected, setSocketIsConnected] = useState(true); // Track socket connection status
+  const IsIdentify=useRef(false)
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`App state changed to: ${nextAppState}`);
@@ -117,13 +118,17 @@ export const MainScreen = () => {
     console.log('Disconnecting from socket server...');
     // Disconnect logic
     socket.disconnect();
+    IsIdentify.current = false;
     setIsSocketConnected(false); // Update connection status
   };
   const HandleConnect=()=>{
     console.log('✅ Connected to Socket.IO server');
     setIsSocketConnected(true); // Update connection status
     setSocketIsConnected(true); // Track socket connection status
-    socket.emit('identity', userData?.userid, userData?.screenName);
+    if(!IsIdentify.current){
+      socket.emit('identity', userData?.userid, userData?.screenName);
+      IsIdentify.current = true; // Set identify flag to true
+    }
   }
   //Handle socket functions 
   const HandleAssignHost= async () => {
