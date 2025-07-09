@@ -46,6 +46,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [socialError, setSocialError] = useState('');
     const [showWarning, setShowWarning] = useState(false);
     const [topGiftersData, setTopGiftersData] = useState([]);
+    const [followersCountData, setFollowersCountData] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -92,7 +93,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                     userid: profileUserId,
                 };
                 const response = await Apiclient.post('/getUserDetails', formData);
-                console.log('response user profile data', response.data.user);
+                // console.log('response user profile data', response.data.user);
 
                 if (response.status === 200) {
                     setUserProfileDetails(response.data.user || {});
@@ -156,8 +157,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
             };
             try {
                 const response = await Apiclient.post('/topgifters', formData);
-                console.log('topgifters response', response.data);
-                if (response) {
+                // console.log('topgifters response', response.data);
+                if (response.status === 200) {
                     setTopGiftersData(response.data || []);
                 } else {
                     setIsUserError('Failed to fetch top gifters data');
@@ -169,6 +170,27 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
             }
         };
         getTopGifters();
+    }, [profileUserId]);
+
+
+    // to get followers count
+    useEffect(() => {
+        const getFollowersCount = async () => {
+            try {
+                const response = await Apiclient.get(`/followers/count/${profileUserId}`);
+                // console.log('followers response', response.data);
+                if (response.status === 200) {
+                    setFollowersCountData(response.data || []);
+                } else {
+                    setIsUserError('Failed to fetch followers count data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetching followers count data: ' + err.message);
+                SendErrorTotheServer(err, 'getFollowersCount');
+
+            }
+        };
+        getFollowersCount();
     }, [profileUserId]);
 
     // handle social media press
@@ -198,9 +220,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
             alert('Unable to open the URL.');
         });
     };
-
-
-
 
     return (
         <>
@@ -297,11 +316,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                         </View>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
-                                                            <Text style={styles.psmStatValue}>2K3</Text>
+                                                            <Text style={styles.psmStatValue}>{followersCountData?.followerCount}</Text>
                                                         </View>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>FOLLOWING</Text>
-                                                            <Text style={styles.psmStatValue}>800</Text>
+                                                            <Text style={styles.psmStatValue}>{followersCountData?.followingCount}</Text>
                                                         </View>
                                                     </View>
                                                 </View>
@@ -371,10 +390,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                                 style={{
                                                                     marginTop: 10,
                                                                     color: '#999',
-                                                                    fontSize: 16,
+                                                                    fontSize: 14,
                                                                     textAlign: 'center',
                                                                 }}>
-                                                                This user hasn’t received any gifts during their streams yet.
+                                                                You haven’t received any gifts during your streams yet. Start streaming and connect with your audience to receive your first gift!
                                                             </Text>
                                                         </View>
                                                     ) : (

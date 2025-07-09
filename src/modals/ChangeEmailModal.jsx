@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, TextInput } from 'react-native';
+import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -14,6 +14,7 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
     const [newEmail, setNewEmail] = useState('');
     const [errors, setErrors] = useState({});
     const [successMessage, setSuccessMessage] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     // get profile details from API
     useEffect(() => {
@@ -59,7 +60,9 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
 
 
     const handleSave = async () => {
+        if (submitting) return;
         if (validate()) {
+            setSubmitting(true);
             try {
                 const formData = {
                     userid: userData.userid,
@@ -82,6 +85,8 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
                 }
             } catch (err) {
                 setErrors({ apiError: 'Error updating email: ' + err.message });
+            } finally {
+                setSubmitting(false);
             }
         }
     };
@@ -166,8 +171,16 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
                             </Text>
                         )}
                         <View style={{ marginVertical: 10 }}>
-                            <TouchableOpacity style={styles.btnNav} onPress={handleSave}>
-                                <Text style={{ color: 'white' }}>Save</Text>
+                            <TouchableOpacity
+                                style={[styles.btnNav, submitting && { opacity: 0.7 }]}
+                                onPress={handleSave}
+                                disabled={submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator color="#fff" />
+                                ) : (
+                                    <Text style={{ color: 'white' }}>Save</Text>
+                                )}
                             </TouchableOpacity>
                         </View>
                     </ScrollView>

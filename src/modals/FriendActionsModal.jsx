@@ -1,16 +1,50 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { ScrollView } from 'react-native';
+import { useAppContext } from '../context/AppContext';
+import Apiclient from '../utils/Apiclient';
 
-const FriendActionsModal = ({ visible, onClose, userData, friendInfo }) => {
-
+const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
+    const { userData } = useAppContext();
     const [isModalRendered, setIsModalRendered] = useState(false);
+
+    useEffect(() => {
+        console.log('friendInfo', friendInfo);
+    }, [friendInfo]);
+
+    // block friend
+
+    const handleBlock = async () => {
+        try {
+            const payload = {
+                blockerID: userData?.userid,
+                blockedID: friendInfo?.userid,
+                action: 'block',
+            };
+            console.log('payload /friends/block :', payload);
+            const response = await Apiclient.post('/friends/block', payload); // Replace with your actual endpoint
+            console.log(`block user response`, response.data);
+
+            if (response.status === 200 && response.data?.message) {
+                alert(response.data.message);
+                await getFriendsData();
+                // Refresh request list after short delay
+                setTimeout(() => {
+                    onClose();
+                }, 1000);
+            }
+
+        } catch (error) {
+            console.error(`Error getting when block user:`, error);
+        }
+    };
+
 
     const menuItems = [
         {
@@ -27,6 +61,7 @@ const FriendActionsModal = ({ visible, onClose, userData, friendInfo }) => {
             label: `Block ${friendInfo.username?.split(' ')[0]}'s Profile`,
             icon: 'remove-circle-outline', // Better for "block"
             lib: 'ionicons',
+            onPress: handleBlock,
         },
         // {
         //     label: `Unfriend ${friendInfo.username?.split(' ')[0]}`,
@@ -34,6 +69,8 @@ const FriendActionsModal = ({ visible, onClose, userData, friendInfo }) => {
         //     lib: 'ionicons',
         // },
     ];
+
+
 
 
 

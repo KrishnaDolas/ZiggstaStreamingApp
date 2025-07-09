@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { ActivityIndicator } from 'react-native';
@@ -13,8 +13,7 @@ import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-
+const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
     const insetsTop = useSafeAreaInsets();
@@ -157,14 +156,30 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
                                 <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
                             </View>
-                            <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ maxHeight: 205 }}>
+                            <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
                                 {topGiftersData.length === 0 ? <>
-                                    <View style={styles.profileTableRow}>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>No Data Found</Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
-                                    </View>
-
+                                    <>
+                                        <View style={styles.profileTableRow}>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                        </View>
+                                        <View style={styles.profileTableRow}>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                        </View>
+                                        <View style={styles.profileTableRow}>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>No Data Found</Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                        </View>
+                                        <View style={styles.profileTableRow}>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}></Text>
+                                        </View>
+                                    </>
                                 </> : topGiftersData.map((item, index) => {
                                     return (
                                         <View key={index} style={styles.profileTableRow}>

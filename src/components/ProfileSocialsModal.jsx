@@ -6,9 +6,13 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import Apiclient from '../utils/Apiclient';
+import { useAppContext } from '../context/AppContext';
+import { SendErrorTotheServer } from '../utils/constant';
 
 
-const ProfileSocialsModal = ({ visible, onClose, userData }) => {
+const ProfileSocialsModal = ({ visible, onClose }) => {
+    const { userData } = useAppContext();
+    const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         instagramUrl: '',
         twitterUrl: '',
@@ -35,46 +39,51 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
     };
 
     // Function to fetch social data from the API
-    const getSocialsData = async () => {
-        setLoading(true);
-        try {
-            const response = await Apiclient.get(`/userSocials/getUserSocials?userid=${userData.userid}`);
-            const socialsData = response.data.socials;
-            // console.log('socialsData', socialsData);
-
-            const updatedFormData = { ...formData };
-
-            socialsData.forEach(item => {
-                const key = platformKeyMap[item.platform.toLowerCase()];
-                if (key) {
-                    updatedFormData[key] = item.handle_or_url;
-                }
-            });
-            console.log('updatedFormData', updatedFormData);
-
-            setFormData(updatedFormData);
-        } catch (error) {
-            console.error('Error fetching socials:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        if (userData?.userid) {
+        const getSocialsData = async () => {
             setSaveMessage('');
+            setLoading(true);
+            try {
+                const response = await Apiclient.get(`/userSocials/getUserSocials?userid=${userData.userid}`);
+                if (response.status === 200 && response.data?.socials?.length) {
+                    const socialsData = response.data.socials;
+                    // console.log('socialsData', socialsData);
+                    const updatedFormData = { ...formData };
+                    socialsData.forEach(item => {
+                        const key = platformKeyMap[item.platform.toLowerCase()];
+                        if (key) {
+                            updatedFormData[key] = item.handle_or_url;
+                        }
+                    });
+                    console.log('updatedFormData', updatedFormData);
+                    setFormData(updatedFormData);
+                } else {
+                    console.log("No socials found for user:", userData.userid);
+                    setFormData([]);
+                }
+            } catch (error) {
+                const message = error?.response?.data?.message || error.message;
+                console.error('Error fetching socials:', message);
+                setFormData([]);
+                // SendErrorTotheServer(error, 'getUserSocials');
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (userData?.userid) {
             getSocialsData();
         }
-    }, []);
+    }, [userData?.userid]);
 
 
     const handleUpdateSocialData = async () => {
-
+        if (submitting) return; // prevent multiple submissions
+        setSubmitting(true);
         const postData = {
             userid: userData.userid,
-            socialSet1: { platform: "Instagram", handle_or_url: formData.instagramUrl },
-            socialSet2: { platform: "Twitter", handle_or_url: formData.twitterUrl },
-            socialSet3: { platform: "Facebook", handle_or_url: formData.facebookUrl },
+            socialSet1: { platform: "Instagram", handle_or_url: formData.instagramUrl === '' ? null : formData.instagramUrl },
+            socialSet2: { platform: "Twitter", handle_or_url: formData.twitterUrl === '' ? null : formData.twitterUrl },
+            socialSet3: { platform: "Facebook", handle_or_url: formData.facebookUrl === '' ? null : formData.facebookUrl },
         };
         console.log('postData', postData);
         try {
@@ -87,6 +96,8 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
         } catch (error) {
             console.error('Error updating socials:', error);
             setSaveMessage('Failed to update socials.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -161,8 +172,16 @@ const ProfileSocialsModal = ({ visible, onClose, userData }) => {
                     ) : null}
                     {(visible && !loading) && (
                         <View style={{ marginVertical: 10 }}>
-                            <TouchableOpacity style={styles.btnNav} onPress={handleUpdateSocialData}>
-                                <Text style={{ color: 'white' }}>Save</Text>
+                            <TouchableOpacity
+                                style={[styles.btnNav, submitting && { opacity: 0.7 }]}
+                                onPress={handleUpdateSocialData}
+                                disabled={submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator color="#fff" size="small" />
+                                ) : (
+                                    <Text style={{ color: 'white' }}>Save</Text>
+                                )}
                             </TouchableOpacity>
                         </View>
                     )}

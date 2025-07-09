@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -24,23 +25,28 @@ export const LoginForm = ({
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (loading) return; // Prevent multiple submissions
+    setError('');
+    setLoading(true);
     try {
       if (!email || !password) {
         setError('Please fill in all fields');
+        setLoading(false);
         return;
       }
       const parameter = {
-        username: email.trim(),
-        password: password.trim(),
+        username: email,
+        password: password,
       };
 
       const res = await Apiclient.post('/login', parameter);
       // console.log('res', res);
       if (res.status === 200) {
         onLogin();
-        console.log(res.data.user);
+        // console.log(res.data.user);
         await AsyncStorage.setItem('token', res.data.token);
 
         const userDataString = JSON.stringify(res.data.user);
@@ -51,6 +57,8 @@ export const LoginForm = ({
       }
     } catch (err) {
       setError(err?.response?.data?.error || 'Invalid credentials');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,13 +143,19 @@ export const LoginForm = ({
           </View>
           <TouchableOpacity
             style={[themeStyles[theme].button]}
-            onPress={handleLogin}>
+            onPress={handleLogin}
+            disabled={loading}
+          >
             <LinearGradient
               colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
               start={{ x: 1, y: 0 }}
               end={{ x: 0, y: 1 }}
               style={styles.button}>
-              <Text style={styles.buttonText}>Sign In</Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Sign In</Text>
+              )}
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity

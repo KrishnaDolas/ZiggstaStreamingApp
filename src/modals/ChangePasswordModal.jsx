@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, TextInput } from 'react-native';
+import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -10,7 +10,7 @@ import Apiclient from '../utils/Apiclient';
 
 const ChangePasswordModal = ({ visible, onClose, userData }) => {
     const screenHeight = Dimensions.get('window').height;
-
+    const [submitting, setSubmitting] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -67,7 +67,9 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
 
 
     const handleSave = async () => {
+        if (submitting) return;
         if (validate()) {
+            setSubmitting(true);
             try {
                 const formData = {
                     userid: userData.userid,
@@ -91,7 +93,9 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
                     setErrors(response.data.message);
                 }
             } catch (err) {
-                setErrors({ apiError: 'Error updating email: ' + err.message });
+                setErrors({ apiError: 'Error updating password: ' + err.message });
+            } finally {
+                setSubmitting(false);
             }
         }
     };
@@ -229,8 +233,16 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
                             </Text>
                         )}
                         <View style={{ marginVertical: 10 }}>
-                            <TouchableOpacity style={styles.btnNav} onPress={handleSave}>
-                                <Text style={{ color: 'white' }}>Save</Text>
+                            <TouchableOpacity
+                                style={[styles.btnNav, submitting && { opacity: 0.7 }]}
+                                onPress={handleSave}
+                                disabled={submitting}
+                            >
+                                {submitting ? (
+                                    <ActivityIndicator color="#fff" size="small" />
+                                ) : (
+                                    <Text style={{ color: 'white' }}>Save</Text>
+                                )}
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
