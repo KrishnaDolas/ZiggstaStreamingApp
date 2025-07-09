@@ -138,7 +138,7 @@ const App = () => {
 
     init();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected]);
+  }, [isConnected,isAuthenticated]);
 
   // ✅ NEW: Fetch IP location only after login and if online
   useEffect(() => {

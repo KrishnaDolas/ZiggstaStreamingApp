@@ -18,6 +18,7 @@ import WebView from 'react-native-webview';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
+import { SendErrorTotheServer } from '../utils/constant';
 // import { NetworkInfo } from 'react-native-network-info';
 
 const screenHeight = Dimensions.get('window').height;
@@ -803,6 +804,7 @@ export const RegisterForm = ({
         })
         .catch(err => {
           console.error('API Error:', err);
+          SendErrorTotheServer(err, 'handleRegistration');
         })
         .finally(() => {
           setIsSubmitting(false); // Stop loader
