@@ -54,7 +54,7 @@ export const MainScreen = () => {
       try {
         const IsValid=isuserstreaming || isHost
         if (nextAppState === 'active' && isStreaming && IsValid) {
-          console.log('🔄 Restarting host stream...');
+          console.log('🔄 Restarting local stream...');
           // Stop old stream if exists
           if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -93,7 +93,6 @@ export const MainScreen = () => {
 
             socket.emit('signal', { to: userId, data: peer.localDescription });
           }
-          console.log('✅ Host stream restarted and renegotiated');
         }
       } catch (error) {
         SendErrorTotheServer(error, 'handleHostStreamRestart');
