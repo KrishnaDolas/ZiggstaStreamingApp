@@ -102,13 +102,13 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
             ) : (
                 <>
                     {/* Error Message */}
-                    {isUserError ? (
+                    {/* {isUserError ? (
                         <View style={styles.profileErrorBoxMain}>
                             <Text style={styles.profileErrorText}>
                                 {isUserError} Error Occur When Getting User Profile Data
                             </Text>
                         </View>
-                    ) : null}
+                    ) : null} */}
                     {/* Fixed Header */}
                     <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                         <View style={[styles.profileBlockLeftBox]}>

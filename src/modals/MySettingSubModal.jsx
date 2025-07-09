@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, Switch, Platform, PermissionsAndroid, Alert, Linking } from 'react-native';
+import { View, TouchableOpacity, Text, Switch } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -13,8 +13,9 @@ import EmailConfirmModal from './EmailConfirmModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
+import UserInterestUpdateModal from './UserInterestUpdateModal';
 
-const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userData, address }) => {
+const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
@@ -107,7 +108,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                 ];
             case 'Privacy Settings':
                 return [
-                    { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', rightArrowVisible: false },
+                    // { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', rightArrowVisible: false },
                     {
                         label: 'Blocked users:', icon: 'user-alt-slash', type: 'slider',
                         onPress: () => {
@@ -119,8 +120,8 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                 ];
             case 'Search Settings':
                 return [
-                    { label: 'Categories', icon: 'icons', onPress: () => { }, rightArrowVisible: true },
-                    { label: 'Distance (Km)', icon: 'people-arrows', type: 'slider', onPress: () => { }, rightArrowVisible: false },
+                    { label: 'Categories', icon: 'icons', onPress: () => { setVisibleModal('categories'); }, rightArrowVisible: true },
+                    // { label: 'Distance (km)', icon: 'people-arrows', type: 'slider', onPress: () => { }, rightArrowVisible: false },
                     // { label: 'Adult content:', icon: 'male', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                     { label: 'Only verified profiles:', icon: 'user-check', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                 ];
@@ -197,12 +198,12 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
                                                 ios_backgroundColor="#ccc"
                                                 style={{ transform: [{ scaleX: 1.1 }, { scaleY: 1.1 }] }}
                                             />
-                                        ) : item.label === 'Distance (Km)' ? (
+                                        ) : item.label === 'Distance (km)' ? (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10 }}>
                                                 <Slider
                                                     style={{ width: '70%' }}
                                                     minimumValue={100}
-                                                    maximumValue={200}
+                                                    maximumValue={400}
                                                     step={1}
                                                     value={distanceRange}
                                                     onValueChange={setDistanceRange}
@@ -258,6 +259,9 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, onLogout, userDat
             )}
             {visibleModal === 'email-confirm' && (
                 <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+            )}
+            {visibleModal === 'categories' && (
+                <UserInterestUpdateModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
             )}
         </>
     );

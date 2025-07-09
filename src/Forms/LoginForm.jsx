@@ -37,7 +37,7 @@ export const LoginForm = ({
       };
 
       const res = await Apiclient.post('/login', parameter);
-      console.log('res', res);
+      // console.log('res', res);
       if (res.status === 200) {
         onLogin();
         console.log(res.data.user);
