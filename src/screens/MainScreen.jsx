@@ -19,7 +19,7 @@ import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
-export const MainScreen = ({address }) => {
+export const MainScreen = () => {
   const {userData}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
@@ -549,7 +549,7 @@ export const MainScreen = ({address }) => {
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} address={address} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
         ) : (<StreamRoom
         remoteStreams={remoteStreams}
         localStream={localStream}

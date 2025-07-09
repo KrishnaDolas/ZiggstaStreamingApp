@@ -24,10 +24,10 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaveroomrefresh }) => {
+const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
-      const {userData}=useAppContext()
+      const {userData,userAddress}=useAppContext()
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -125,7 +125,7 @@ const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaver
     const getRoomsByLocation = async () => {
         try {
             setIsInitialLoading(true);
-            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${address.latitude},${address.longitude}`);
+            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${userAddress.latitude},${userAddress.longitude}`);
             if (response) {
                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
                 setApiRooms(livestreamlist || []);
@@ -173,7 +173,7 @@ const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaver
             const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
             filterroomdata(sorteddata);
         } else {
-            if (isNearBy && address) {
+            if (isNearBy && userAddress) {
                 getRoomsByLocation();
             } else {
                 if (searchFilteredData.length === 0) {
@@ -211,7 +211,7 @@ const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaver
                 thumbNail: 'dummyimg.jpg',
                 physicalLocation: 'pune',
                 Categories: sortcategories.join(','),
-                geoLocation: `${address.latitude},${address.longitude}`,
+                geoLocation: `${userAddress.latitude},${userAddress.longitude}`,
             };
 
             const response = await Apiclient.post('/rooms', roomData);
@@ -325,7 +325,6 @@ const StreamList = ({ theme, joinRoom, createRoom, address, refreshlobby, leaver
                 selectedCategoryIndices={selectedCategoryIndices}
                 searchFilteredData={searchFilteredData}
                 setSearchFilteredData={setSearchFilteredData}
-                address={address}
             />
             <View
                 style={[

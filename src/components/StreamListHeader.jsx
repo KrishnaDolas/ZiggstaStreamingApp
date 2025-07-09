@@ -16,11 +16,12 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 import SearchModal from '../modals/SearchModal';
+import { useAppContext } from '../context/AppContext';
 
 export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
     setIsFavourite, selectedCategoryIndices, searchFilteredData,
-    setSearchFilteredData, address }) => {
+    setSearchFilteredData }) => {
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -230,7 +231,6 @@ export const StreamListHeader = ({ setGetselectcategory, userData, isInterestLoa
                     categoryData={categoryData}
                     selectedcategory={selectedcategory}
                     selectedinterest={selectedinterest}
-                    address={address}
                 />
             )}
 

@@ -182,9 +182,7 @@ const App = () => {
                     {props => (
                       <MainScreen
                         {...props}
-                        onLogout={handleLogout}
-                        address={userAddress}
-                        userData={userData}
+                        isAuthenticated={isAuthenticated}
                       />
                     )}
                   </Stack.Screen>
