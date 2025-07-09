@@ -93,6 +93,14 @@ export const MainScreen = () => {
 
             socket.emit('signal', { to: userId, data: peer.localDescription });
           }
+        }else if(nextAppState === 'background' && isStreaming && IsValid) {
+          console.log('🔄 Stopping local stream...');
+          // Stop local stream
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+          }
         }
       } catch (error) {
         SendErrorTotheServer(error, 'handleHostStreamRestart');
@@ -335,6 +343,20 @@ export const MainScreen = () => {
   const HandleRoomFull = (msg) => {
     Alert.alert('Room Full', msg, [{ text: 'OK' }]);
   }
+  const stopLocalStream = () => {
+    try {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+        setLocalStream(null);
+        setIsUserStreaming(false); // Reset user streaming status
+        // Stop InCallManager
+        InCallManager.stop();
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'stopLocalStream');
+    }
+  }
   const HandleHostAction = ({ action }) => {
     try {
       if (!localStreamRef.current) return;
@@ -346,12 +368,7 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({HostControl: false, muted: false});
       } else if (action === 'stop-stream') {
-        if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-          localStreamRef.current = null;
-          setLocalStream(null);
-          setRemoteStreams(prev => [...prev]);
-        }
+        stopLocalStream();
       }
     } catch (error) {
       SendErrorTotheServer(error,'HandleHostAction');
@@ -369,7 +386,8 @@ export const MainScreen = () => {
         }
       }else{
         console.log(`You stopped streaming`);
-  
+        // rerender the remote streams
+        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
       }
     } catch (error) {
       SendErrorTotheServer(error,'HandleUserStreamStoped');
@@ -460,6 +478,7 @@ export const MainScreen = () => {
       peer.ontrack = (event) => {
         const stream = event.streams[0];
         if (!stream || !stream.getVideoTracks().length) return;
+        console.log(`Received remote stream`, stream);
         setRemoteStreams(prev => {
           const exists = prev.some(s => s.id === socketId);
           if (exists) {
