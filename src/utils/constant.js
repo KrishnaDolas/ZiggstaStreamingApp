@@ -60,3 +60,14 @@ import { io } from 'socket.io-client';
     sdpLines[mLineIndex] = [...header, ...reordered].join(' ');
     return sdpLines.join('\r\n');
   };
+  export function SendErrorTotheServer(error,functionname){
+    try {
+          // You can also send this error to your server for logging
+    socket.emit('errorLog',error,functionname);
+    Alert.alert('Error', `An error occurred: ${error.message}`, [
+      { text: 'OK' }
+    ]);
+    } catch (error) {
+      socket.emit('errorLog', error, 'SendErrorTotheServer');
+    }
+  }

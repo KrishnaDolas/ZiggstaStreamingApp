@@ -14,7 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { preferVP8, socket } from '../utils/constant';
+import { preferVP8, SendErrorTotheServer, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
@@ -55,13 +55,17 @@ export const MainScreen = ({address, userData }) => {
   };
   //Handle socket functions 
   const HandleAssignHost= async () => {
+   try {
     setIsHost(true);
     await startLocalStream();
+   } catch (error) {
+    SendErrorTotheServer(error,'HandleAssignHost');
+   }
   };
 
   const HandleJoined =async ({users }) => {
-
-    // If no one else, you're host
+    try {
+          // If no one else, you're host
     if (users.length === 0) {
       setJoined(true);
       setIsLoading(false);
@@ -87,6 +91,9 @@ export const MainScreen = ({address, userData }) => {
         peersRef.current[userId] = peer;
       }
     });
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleJoined');
+    }
   }
   const HandleStreamNotAvailable = () => {
     Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
@@ -94,64 +101,84 @@ export const MainScreen = ({address, userData }) => {
     );
   }
   const HandleNewUser =async (userId) => {
-    if (!peersRef.current[userId]) {
-      const peer = createPeer(userId);
-      peersRef.current[userId] = peer;
-      //viewer count increment
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-      socket.emit('signal', { to: userId, data: peer.localDescription });
+    try {
+      if (!peersRef.current[userId]) {
+        const peer = createPeer(userId);
+        peersRef.current[userId] = peer;
+        //viewer count increment
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+        socket.emit('signal', { to: userId, data: peer.localDescription });
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleNewUser');
     }
   }
   const HandleSignal=async ({ from, data }) => {
-    let peer = peersRef.current[from];
-    if (!peer) {
-      peer = createPeer(from);
-      peersRef.current[from] = peer;
-    }
-
-    if (data.type === 'offer') {
-      await peer.setRemoteDescription(new RTCSessionDescription(data));
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
-      socket.emit('signal', { to: from, data: peer.localDescription });
-
-      (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
-      pendingCandidates.current[from] = [];
-    } else if (data.type === 'answer') {
-      if (!peer.remoteDescription) {
+    try {
+      let peer = peersRef.current[from];
+      if (!peer) {
+        peer = createPeer(from);
+        peersRef.current[from] = peer;
+      }
+  
+      if (data.type === 'offer') {
         await peer.setRemoteDescription(new RTCSessionDescription(data));
+        const answer = await peer.createAnswer();
+        await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
+        socket.emit('signal', { to: from, data: peer.localDescription });
+  
+        (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+        pendingCandidates.current[from] = [];
+      } else if (data.type === 'answer') {
+        if (!peer.remoteDescription) {
+          await peer.setRemoteDescription(new RTCSessionDescription(data));
+        }
+      } else if (data.candidate) {
+        const candidate = new RTCIceCandidate(data.candidate);
+        if (peer.remoteDescription?.type) {
+          await peer.addIceCandidate(candidate);
+        } else {
+          (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
+        }
       }
-    } else if (data.candidate) {
-      const candidate = new RTCIceCandidate(data.candidate);
-      if (peer.remoteDescription?.type) {
-        await peer.addIceCandidate(candidate);
-      } else {
-        (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
-      }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleSignal');
     }
   }
   const HandleNewMessage =({ userName, message, id })=>{
-    const data={id: id,userProfile: chatimage,userName: userName,message: message}
-    setRoomchat(prev => [...prev, data]);
+    try {
+      const data={id: id,userProfile: chatimage,userName: userName,message: message}
+      setRoomchat(prev => [...prev, data]);
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleNewMessage');
+    }
   }
   const HandleStreamRequest =(streamrequsts) => {
+   try {
     setStreamRequestList(streamrequsts);
+   } catch (error) {
+    SendErrorTotheServer(error,'HandleStreamRequest');
+   }
   }
   
   const HandleApprovedStream = async () => {
-    await startLocalStream();
-    // Add tracks to existing peer connections
-    for (const userId in peersRef.current) {
-      const peer = peersRef.current[userId];
-      localStreamRef.current.getTracks().forEach(track =>
-        peer.addTrack(track, localStreamRef.current)
-      );
-          // Renegotiate by sending a new offer
-  const offer = await peer.createOffer();
-  await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-
-  socket.emit('signal', { to: userId, data: peer.localDescription });
+    try {
+      await startLocalStream();
+      // Add tracks to existing peer connections
+      for (const userId in peersRef.current) {
+        const peer = peersRef.current[userId];
+        localStreamRef.current.getTracks().forEach(track =>
+          peer.addTrack(track, localStreamRef.current)
+        );
+            // Renegotiate by sending a new offer
+    const offer = await peer.createOffer();
+    await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+  
+    socket.emit('signal', { to: userId, data: peer.localDescription });
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleApprovedStream');
     }
   }
   const HandleStreamReject = (Name) => {
@@ -163,49 +190,61 @@ export const MainScreen = ({address, userData }) => {
     );
   }
   const HandlereconnectWithNewPeer =async (newUserId) => {
-    const peer = peersRef.current[newUserId];
-    if (!peer || !localStreamRef.current) return;
-  
-    localStreamRef.current.getTracks().forEach(track =>
-      peer.addTrack(track, localStreamRef.current)
-    );
-  
-    const offer = await peer.createOffer();
-    await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-    socket.emit('signal', { to: newUserId, data: peer.localDescription });
+    try {
+      const peer = peersRef.current[newUserId];
+      if (!peer || !localStreamRef.current) return;
+    
+      localStreamRef.current.getTracks().forEach(track =>
+        peer.addTrack(track, localStreamRef.current)
+      );
+    
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+      socket.emit('signal', { to: newUserId, data: peer.localDescription });
+    } catch (error) {
+      SendErrorTotheServer(error,'HandlereconnectWithNewPeer');
+    }
   }
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
   }
   const HandleUserLeft = socketId => {
-    setRoomchat([])
-    if (peersRef.current[socketId]) {
-      peersRef.current[socketId].close();
-      delete peersRef.current[socketId];
-      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+    try {
+      setRoomchat([])
+      if (peersRef.current[socketId]) {
+        peersRef.current[socketId].close();
+        delete peersRef.current[socketId];
+        setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleUserLeft');
     }
   }
   const HandleHostLeft = () => {
-    Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
-    // Stop local stream if exists
-    setRoomchat([])
-    setHasRequestedStream(false);
-    disconnectSocket(); // Disconnect from socket server
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track => track.stop());
-      localStreamRef.current = null;
-      setLocalStream(null);
+    try {
+      Alert.alert('Host Left','The host has left the room. You will be disconnected.',[{text: 'OK'}]);
+      // Stop local stream if exists
+      setRoomchat([])
+      setHasRequestedStream(false);
+      disconnectSocket(); // Disconnect from socket server
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+        localStreamRef.current = null;
+        setLocalStream(null);
+      }
+      // clear peer connections
+      Object.values(peersRef.current).forEach(peer => peer.close());
+      peersRef.current = {};
+      // clear pending candidates
+      pendingCandidates.current = {};
+      // Reset state
+      setRemoteStreams([]);
+      setViewerCount(0);
+      setJoined(false);
+      setIsHost(false);
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleHostLeft');
     }
-    // clear peer connections
-    Object.values(peersRef.current).forEach(peer => peer.close());
-    peersRef.current = {};
-    // clear pending candidates
-    pendingCandidates.current = {};
-    // Reset state
-    setRemoteStreams([]);
-    setViewerCount(0);
-    setJoined(false);
-    setIsHost(false);
   }
   const HandleRoomInfo=(info)=>{
     setViewerCount(info?.viewerCount-1 || 0);
@@ -220,35 +259,43 @@ export const MainScreen = ({address, userData }) => {
     Alert.alert('Room Full', msg, [{ text: 'OK' }]);
   }
   const HandleHostAction = ({ action }) => {
-    if (!localStreamRef.current) return;
+    try {
+      if (!localStreamRef.current) return;
   
-    if (action === 'mute') {
-      localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = false));
-      setIsMuted({HostControl: true, muted: true});
-    } else if (action === 'unmute') {
-      localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
-      setIsMuted({HostControl: false, muted: false});
-    } else if (action === 'stop-stream') {
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => track.stop());
-        localStreamRef.current = null;
-        setLocalStream(null);
-        setRemoteStreams(prev => [...prev]);
+      if (action === 'mute') {
+        localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = false));
+        setIsMuted({HostControl: true, muted: true});
+      } else if (action === 'unmute') {
+        localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
+        setIsMuted({HostControl: false, muted: false});
+      } else if (action === 'stop-stream') {
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+          localStreamRef.current = null;
+          setLocalStream(null);
+          setRemoteStreams(prev => [...prev]);
+        }
       }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleHostAction');
     }
   };
   const HandleUserStreamStoped = (userId) => {
-    if(socket.id !== userId){
-      if (peersRef.current[userId]) {
-        peersRef.current[userId].close();
-        delete peersRef.current[userId];
-        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+    try {
+      if(socket.id !== userId){
+        if (peersRef.current[userId]) {
+          peersRef.current[userId].close();
+          delete peersRef.current[userId];
+          setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+        }else{
+          console.log(`No peer connection found for ${userId}`);
+        }
       }else{
-        console.log(`No peer connection found for ${userId}`);
+        console.log(`You stopped streaming`);
+  
       }
-    }else{
-      console.log(`You stopped streaming`);
-
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleUserStreamStoped');
     }
   }
 
@@ -311,45 +358,53 @@ export const MainScreen = ({address, userData }) => {
 
   }, [isSocketConnected]);
   const createPeer = (socketId) => {
-    const peer = new RTCPeerConnection({
-      iceServers: [{
-        urls: ['turn:coturn.streamalong.live:3478'],
-        username: 'webrtcuser',
-        credential: 'Test@1234'
-      }],
-      iceTransportPolicy: 'all',
-      sdpSemantics: 'unified-plan'
-    });
-
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach(track =>
-        peer.addTrack(track, localStreamRef.current)
-      );
-    }
-    peer.ontrack = (event) => {
-      const stream = event.streams[0];
-      if (!stream || !stream.getVideoTracks().length) return;
-      setRemoteStreams(prev => {
-        const exists = prev.some(s => s.id === socketId);
-        if (exists) return prev;
-        return [...prev, { id: socketId, stream }];
+    try {
+      const peer = new RTCPeerConnection({
+        iceServers: [{
+          urls: ['turn:coturn.streamalong.live:3478'],
+          username: 'webrtcuser',
+          credential: 'Test@1234'
+        }],
+        iceTransportPolicy: 'all',
+        sdpSemantics: 'unified-plan'
       });
-    };
-   
-    peer.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+  
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track =>
+          peer.addTrack(track, localStreamRef.current)
+        );
       }
-    };
-
-    return peer;
+      peer.ontrack = (event) => {
+        const stream = event.streams[0];
+        if (!stream || !stream.getVideoTracks().length) return;
+        setRemoteStreams(prev => {
+          const exists = prev.some(s => s.id === socketId);
+          if (exists) return prev;
+          return [...prev, { id: socketId, stream }];
+        });
+      };
+     
+      peer.onicecandidate = (event) => {
+        if (event.candidate) {
+          socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+        }
+      };
+  
+      return peer;
+    } catch (error) {
+      SendErrorTotheServer(error,'createPeer');
+    }
   };
   const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
-      ]);
+    try {
+      if (Platform.OS === 'android') {
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+        ]);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'requestPermissions');
     }
   };
 
@@ -364,8 +419,7 @@ export const MainScreen = ({address, userData }) => {
       setStreamInfo(RoomInfo);
       socket.emit('joinRoom',false, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
-      console.log(err);
-      Alert.alert("Room not available or permission denied");
+      SendErrorTotheServer(err,'joinRoom');
     }
   };
   const CreateRoom= async (RoomInfo) => {
@@ -377,32 +431,40 @@ export const MainScreen = ({address, userData }) => {
 
       socket.emit('joinRoom',true, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
-      console.log(err);
-      Alert.alert("Camera/Mic permission denied");
+      SendErrorTotheServer(err,'CreateRoom');
     }
   }
   const requestStreamPermission = async() => {
-    if (!hasRequestedStream) {
-      await requestPermissions();
-      socket.emit('requestStream');
-      setHasRequestedStream(true);
+    try {
+      if (!hasRequestedStream) {
+        await requestPermissions();
+        socket.emit('requestStream');
+        setHasRequestedStream(true);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'requestStreamPermission');
     }
   };
 
   const startLocalStream = async () => {
-    const stream = await mediaDevices.getUserMedia({
-      video: { width: 300, height: 320, facingMode: 'user' },audio: true,});
-    localStreamRef.current = stream;
-    setLocalStream(stream);
-    setIsStreaming(true);
-    // ✅ Start InCallManager and route audio to speaker
-    InCallManager.start({ media: 'audio' }); // or 'video' if you have both
-    InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
-    InCallManager.setSpeakerphoneOn(true);      // For Android
+    try {
+      const stream = await mediaDevices.getUserMedia({
+        video: { width: 300, height: 320, facingMode: 'user' },audio: true,});
+      localStreamRef.current = stream;
+      setLocalStream(stream);
+      setIsStreaming(true);
+      // ✅ Start InCallManager and route audio to speaker
+      InCallManager.start({ media: 'audio' }); // or 'video' if you have both
+      InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
+      InCallManager.setSpeakerphoneOn(true);      // For Android
+    } catch (error) {
+      SendErrorTotheServer(error,'startLocalStream');
+    }
   };
 
   const leaveRoom=()=>{
-    // Stop local stream if exists
+    try {
+          // Stop local stream if exists
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       // remote streams close 
@@ -423,36 +485,51 @@ export const MainScreen = ({address, userData }) => {
     setJoined(false);
     setViewerCount(0);
     socket.emit('leaveRoom',socket.id)
+    } catch (error) {
+      SendErrorTotheServer(error,'leaveRoom');
+    }
   }
   const toggleMute = () => {
-    if (localStreamRef.current) {
-      if (!isMuted.HostControl) {
-        localStreamRef.current.getAudioTracks().forEach(track => {track.enabled = !track.enabled});
-        // send mute/unmute action to host
-        socket.emit('IsMuted',!isMuted.muted)
-        setIsMuted({ HostControl: false, muted: !isMuted.muted });
-      }else{
-        Alert.alert('Host Control', 'You cannot unmute yourself as the host has muted you.');
+    try {
+      if (localStreamRef.current) {
+        if (!isMuted.HostControl) {
+          localStreamRef.current.getAudioTracks().forEach(track => {track.enabled = !track.enabled});
+          // send mute/unmute action to host
+          socket.emit('IsMuted',!isMuted.muted)
+          setIsMuted({ HostControl: false, muted: !isMuted.muted });
+        }else{
+          Alert.alert('Host Control', 'You cannot unmute yourself as the host has muted you.');
+        }
       }
+    } catch (error) {
+      SendErrorTotheServer(error,'toggleMute');
     }
   }
   const switchCamera = () => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getVideoTracks().forEach(track => {
-        track._switchCamera();
-      });
-      setIsFrontCamera(!isFrontCamera);
+    try {
+      if (localStreamRef.current) {
+        localStreamRef.current.getVideoTracks().forEach(track => {
+          track._switchCamera();
+        });
+        setIsFrontCamera(!isFrontCamera);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'switchCamera');
     }
   };
   const HandleChatmessages = (message) => {
-    if (message.trim()) {
-      const newMessage = {
-        userName: userData?.screenName,
-        message: message,
-        id: userData.userid,
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      socket.emit('send-message', newMessage);
+    try {
+      if (message.trim()) {
+        const newMessage = {
+          userName: userData?.screenName,
+          message: message,
+          id: userData.userid,
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        socket.emit('send-message', newMessage);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,'HandleChatmessages');
     }
   }
   const HandleSetLivestatus=async(roomID)=>{
@@ -464,7 +541,7 @@ export const MainScreen = ({address, userData }) => {
          Alert.alert('Error', 'Failed to update live status. Please try again later.');
       }
     } catch (error) {
-      console.log('Error updating live status:', error);
+      SendErrorTotheServer(error,'HandleSetLivestatus');
     }
   }
 
