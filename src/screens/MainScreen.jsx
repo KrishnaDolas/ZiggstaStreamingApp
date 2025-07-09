@@ -20,6 +20,7 @@ import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
+import ConnectingPanel from '../modals/CoonectingPanel';
 export const MainScreen = () => {
   const {userData}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
@@ -45,7 +46,7 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]);
   const [streamGuest, setStreamGuest] = useState([]);
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
-
+  const [socketisconnected, setSocketIsConnected] = useState(false); // Track socket connection status
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`App state changed to: ${nextAppState}`);
@@ -118,6 +119,12 @@ export const MainScreen = () => {
     socket.disconnect();
     setIsSocketConnected(false); // Update connection status
   };
+  const HandleConnect=()=>{
+    console.log('✅ Connected to Socket.IO server');
+    setIsSocketConnected(true); // Update connection status
+    setSocketIsConnected(true); // Track socket connection status
+    socket.emit('identity', userData?.userid, userData?.screenName);
+  }
   //Handle socket functions 
   const HandleAssignHost= async () => {
    try {
@@ -364,11 +371,16 @@ export const MainScreen = () => {
       SendErrorTotheServer(error,'HandleUserStreamStoped');
     }
   }
-
+  const HandleDisconnected=()=>{
+    console.log('❌ Disconnected from socket server');
+    setIsSocketConnected(false)
+    setSocketIsConnected(false); // Update connection status
+  }
   useEffect(() => {
     // Handles socket events
     if(isSocketConnected) {
       console.log('Connecting to socket server...');
+      socket.on('connect',HandleConnect);
       socket.emit('identity', userData?.userid, userData?.screenName);
       socket.on('assignHost', HandleAssignHost);
       socket.on('joined',HandleJoined);
@@ -389,12 +401,14 @@ export const MainScreen = () => {
       socket.on('new_stream',HandleNewStream)
       socket.on('Close_stream',HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
+      socket.on('disconnect', HandleDisconnected);
     }
 
     return () => {
       if (isSocketConnected) {
         // Cleanup socket listeners
         console.log('Disconnecting from socket server...');
+        socket.off('connect',HandleConnect);
         socket.off('assignHost', HandleAssignHost);
         socket.off('joined', HandleJoined);
         socket.off('StreamNotAvailable', HandleStreamNotAvailable)
@@ -413,6 +427,7 @@ export const MainScreen = () => {
         socket.off('new_stream',HandleNewStream)
         socket.off('Close_stream',HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
+        socket.off('disconnect', HandleDisconnected);
       }
     }
   }, [isHost,isSocketConnected]);
@@ -614,6 +629,7 @@ export const MainScreen = () => {
         backgroundColor="#fff"
       />
       <View style={[styles.container]}>
+        {!socketisconnected && !joined && <ConnectingPanel isVisible={!socketisconnected} onRetry={()=>{}}  />}
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
           <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />

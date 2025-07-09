@@ -10,17 +10,6 @@ import { io } from 'socket.io-client';
     reconnectionAttempts: Infinity,
     reconnectionDelay: 1000,
   });
-  socket.on('connect', () => {
-    console.log('✅ Connected to Socket.IO server');
-  });
-  
-  socket.on('connect_error', (err) => {
-    console.log('❌ Connection Error:', err.message);
-  });
-  
-  socket.on('disconnect', (reason) => {
-    console.log('🔌 Disconnected:', reason);
-  });
   
   // WebRTC ICE configuration with STUN and TURN servers
   export const iceServers = {
