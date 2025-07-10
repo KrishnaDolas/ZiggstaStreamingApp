@@ -397,6 +397,54 @@ export const MainScreen = () => {
     setIsSocketConnected(false)
     IsIdentify.current= false; // Reset identify flag
   }
+  const HandleRenegotiate = async ({ socketId }) => {
+    const newStream = await mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    let peer = peersRef.current[socketId];
+  
+    if (!peer) {
+      peer = createPeer(socketId);
+      peersRef.current[socketId] = peer;
+    }
+  
+    const localStream = localStreamRef.current;
+    if (!localStream || !localStream.getTracks().length) {
+      console.warn('Viewer has no local stream to renegotiate with.');
+      return;
+    }
+  
+    // Ensure tracks are attached
+    const existingSenders = peer.getSenders().map(s => s.track?.id);
+    localStream.getTracks().forEach(track => {
+      if (!existingSenders.includes(track.id)) {
+        peer.addTrack(track, localStream);
+      }
+    });
+  
+    // Send offer
+    const offer = await peer.createOffer({ iceRestart: true });
+    await peer.setLocalDescription(offer);
+  
+    socket.emit('signal', {
+      to: socketId, // send back to Host (A)
+      data: peer.localDescription,
+    });
+    
+  // 🔁 Replace old tracks
+  const senders = peer.getSenders();
+  senders.forEach(sender => {
+    peer.removeTrack(sender);
+  });
+
+  newStream.getTracks().forEach(track => {
+    peer.addTrack(track, newStream);
+  });
+
+
+
+  }
 
   useEffect(()=>{
     HandleConnect()
@@ -428,54 +476,7 @@ export const MainScreen = () => {
       socket.on('Close_stream',HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
-      socket.on('request-renegotiation-from-viewers', async ({ socketId }) => {
-        const newStream = await mediaDevices.getUserMedia({
-          video: true,
-          audio: true,
-        });
-        let peer = peersRef.current[socketId];
-      
-        if (!peer) {
-          peer = createPeer(socketId);
-          peersRef.current[socketId] = peer;
-        }
-      
-        const localStream = localStreamRef.current;
-        if (!localStream || !localStream.getTracks().length) {
-          console.warn('Viewer has no local stream to renegotiate with.');
-          return;
-        }
-      
-        // Ensure tracks are attached
-        const existingSenders = peer.getSenders().map(s => s.track?.id);
-        localStream.getTracks().forEach(track => {
-          if (!existingSenders.includes(track.id)) {
-            peer.addTrack(track, localStream);
-          }
-        });
-      
-        // Send offer
-        const offer = await peer.createOffer({ iceRestart: true });
-        await peer.setLocalDescription(offer);
-      
-        socket.emit('signal', {
-          to: socketId, // send back to Host (A)
-          data: peer.localDescription,
-        });
-        
-      // 🔁 Replace old tracks
-      const senders = peer.getSenders();
-      senders.forEach(sender => {
-        peer.removeTrack(sender);
-      });
-
-      newStream.getTracks().forEach(track => {
-        peer.addTrack(track, newStream);
-      });
-
-
-
-      });
+      socket.on('request-renegotiation-from-viewers',HandleRenegotiate);
       
     }
 
@@ -503,6 +504,7 @@ export const MainScreen = () => {
         socket.off('Close_stream',HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
+        socket.off('request-renegotiation-from-viewers',HandleRenegotiate);
       }
     }
   }, [isHost,isSocketConnected]);
