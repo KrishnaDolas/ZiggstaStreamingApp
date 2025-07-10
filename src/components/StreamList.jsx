@@ -186,10 +186,10 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     // Function to create a room
     const submitroomnameandcreateroom = () => {
         if (roomIdInput.trim() === '') {
-            Alert.alert('Error', 'Please enter a room name before creating a room.');
+            Alert.alert('Error', 'Please enter the stream description before creating stream.');
             return;
         } else if (selectedCategoryIndices.length === 0) {
-            Alert.alert('Error', 'Please select at least one category before creating a room.');
+            Alert.alert('Error', 'Please select at least one category before creating a stream.');
             return;
         }
         callapiforcreateroom();
