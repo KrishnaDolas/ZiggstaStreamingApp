@@ -622,6 +622,7 @@ export const MainScreen = () => {
   const leaveRoom=()=>{
     try {
           // Stop local stream if exists
+    socket.emit('leaveRoom',socket.id)
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
       // remote streams close 
@@ -635,14 +636,13 @@ export const MainScreen = () => {
     setHasRequestedStream(false);
    InCallManager.setForceSpeakerphoneOn(false);
    InCallManager.stop();
-   disconnectSocket()
    if(isHost){
     socket.emit('Hostleft')
     HandleSetLivestatus(streamInfo?.roomID);
    }
     setJoined(false);
     setViewerCount(0);
-    socket.emit('leaveRoom',socket.id)
+   disconnectSocket()
     } catch (error) {
       SendErrorTotheServer(error,'leaveRoom');
     }
