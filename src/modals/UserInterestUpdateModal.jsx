@@ -138,7 +138,7 @@ const UserInterestUpdateModal = ({ visible, onClose }) => {
                             }))}
                         </View>
                         {/* Confirm Button */}
-                        {!iscategoryLoading && (
+                        {selectedInterestIds?.length > userInterestData?.length && (
                             <TouchableOpacity
                                 style={{
                                     backgroundColor: '#d93a63',

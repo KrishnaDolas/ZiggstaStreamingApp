@@ -7,14 +7,15 @@ import Footer from '../components/Footer';
 import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Picker } from '@react-native-picker/picker';
 import { Dropdown } from 'react-native-element-dropdown';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppContext } from '../context/AppContext';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
 
-export const WalletDashboardScreen = ({ userData }) => {
+export const WalletDashboardScreen = () => {
+    const { userData } = useAppContext();
     const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
 
@@ -29,6 +30,7 @@ export const WalletDashboardScreen = ({ userData }) => {
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
     const bankName = ['Bank 1', 'Bank 2', 'Bank 3'];
 
+    
     const getToken = async () => {
         const token = await AsyncStorage.getItem('token');
         console.log('token', token);
@@ -227,7 +229,7 @@ export const WalletDashboardScreen = ({ userData }) => {
                             <View style={styles.wDReferralStatsRow}>
                                 <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                     <Text style={styles.wdRefStateTitle}>Balance</Text>
-                                    <Text style={styles.wdRefStateValue}>200</Text>
+                                    <Text style={styles.wdRefStateValue}>{userData?.CreditBalance}</Text>
                                 </View>
                                 <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                     <Text style={styles.wdRefStateTitle}>Today's Signups</Text>
