@@ -51,71 +51,70 @@ export const MainScreen = () => {
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`App state changed to: ${nextAppState}`);
-      try {
-        const IsValid=isuserstreaming || isHost
-        if (nextAppState === 'active' && isStreaming && IsValid) {
-          console.log('🔄 Restarting local stream...');
-          // Stop old stream if exists
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-          }
-
-          // Re-acquire media
-          const newStream = await mediaDevices.getUserMedia({
-            video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
-            audio: true,
-          });
-
-          localStreamRef.current = newStream;
-          setLocalStream(newStream);
-          setIsStreaming(true);
-
-          InCallManager.start({ media: 'audio' });
-          InCallManager.setForceSpeakerphoneOn(true);
-          InCallManager.setSpeakerphoneOn(true);
-
-          // Re-attach new tracks to existing peer connections
-          for (const [userId, peer] of Object.entries(peersRef.current)) {
-            // Remove old senders (cleaner renegotiation)
-            const senders = peer.getSenders();
-            senders.forEach(sender => {
-              if (sender.track?.kind === 'video' || sender.track?.kind === 'audio') {
-                peer.removeTrack(sender);
-              }
-            });
-            // Add new tracks
-            newStream.getTracks().forEach(track => {
-              peer.addTrack(track, newStream);
-            });
-            // Renegotiate by sending a new offer
-            const offer = await peer.createOffer();
-            await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-
-            socket.emit('signal', { to: userId, data: peer.localDescription });
-          }
-        }else if(nextAppState === 'background' && isStreaming && IsValid) {
-          console.log('🔄 Stopping local stream...');
-          // Stop local stream
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-            localStreamRef.current = null;
-            setLocalStream(null);
-          }
+      const IsValid = isuserstreaming || isHost;
+  
+      if (nextAppState === 'active' && isStreaming && IsValid) {
+        console.log('🔄 Restarting local stream...');
+  
+        // Stop old stream if exists
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
         }
-      } catch (error) {
-        SendErrorTotheServer(error, 'handleHostStreamRestart');
-        Alert.alert('Error', 'Failed to restart stream. Please try again.');
-      }
-
-
-      if (nextAppState === 'background') {
-        console.log('App has gone to background.');
+  
+        // Get new stream
+        const newStream = await mediaDevices.getUserMedia({
+          video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
+          audio: true,
+        });
+  
+        localStreamRef.current = newStream;
+        setLocalStream(newStream);
+        setIsStreaming(true);
+  
+        InCallManager.start({ media: 'audio' });
+        InCallManager.setForceSpeakerphoneOn(true);
+        InCallManager.setSpeakerphoneOn(true);
+  
+        // Replace tracks for each peer
+        for (const [userId, peer] of Object.entries(peersRef.current)) {
+          const senders = peer.getSenders();
+  
+          const videoTrack = newStream.getVideoTracks()[0];
+          const audioTrack = newStream.getAudioTracks()[0];
+  
+          senders.forEach(sender => {
+            if (sender.track?.kind === 'video' && videoTrack) {
+              sender.replaceTrack(videoTrack);
+            } else if (sender.track?.kind === 'audio' && audioTrack) {
+              sender.replaceTrack(audioTrack);
+            }
+            // delete old stream from remote streams
+            setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+          });
+  
+          // Create and send new offer
+          const offer = await peer.createOffer({ iceRestart: true });
+          await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+  
+          socket.emit('signal', { to: userId, data: peer.localDescription });
+        }
+        // Notify all viewers to renegotiate their stream TO ME
+        socket.emit('request-renegotiation-from-viewers', {socketId: socket.id});
+  
+      } else if (nextAppState === 'background' && isStreaming && IsValid) {
+        console.log('🔄 App in background: stopping local stream');
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => track.stop());
+          localStreamRef.current = null;
+          setLocalStream(null);
+        }
       }
     };
-    AppState.addEventListener('change', handleAppStateChange);
-    // return () => subscription.remove();
-  }, [isStreaming,isHost,isuserstreaming]);
   
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription.remove();
+  }, [isStreaming, isHost, isuserstreaming]);
+
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -429,6 +428,55 @@ export const MainScreen = () => {
       socket.on('Close_stream',HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
+      socket.on('request-renegotiation-from-viewers', async ({ socketId }) => {
+        const newStream = await mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+        let peer = peersRef.current[socketId];
+      
+        if (!peer) {
+          peer = createPeer(socketId);
+          peersRef.current[socketId] = peer;
+        }
+      
+        const localStream = localStreamRef.current;
+        if (!localStream || !localStream.getTracks().length) {
+          console.warn('Viewer has no local stream to renegotiate with.');
+          return;
+        }
+      
+        // Ensure tracks are attached
+        const existingSenders = peer.getSenders().map(s => s.track?.id);
+        localStream.getTracks().forEach(track => {
+          if (!existingSenders.includes(track.id)) {
+            peer.addTrack(track, localStream);
+          }
+        });
+      
+        // Send offer
+        const offer = await peer.createOffer({ iceRestart: true });
+        await peer.setLocalDescription(offer);
+      
+        socket.emit('signal', {
+          to: socketId, // send back to Host (A)
+          data: peer.localDescription,
+        });
+        
+      // 🔁 Replace old tracks
+      const senders = peer.getSenders();
+      senders.forEach(sender => {
+        peer.removeTrack(sender);
+      });
+
+      newStream.getTracks().forEach(track => {
+        peer.addTrack(track, newStream);
+      });
+
+
+
+      });
+      
     }
 
     return () => {
