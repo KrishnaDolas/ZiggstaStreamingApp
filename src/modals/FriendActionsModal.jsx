@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -9,40 +9,91 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { ScrollView } from 'react-native';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
+import MessageModal from './MessageModal';
+import { SendErrorTotheServer } from '../utils/constant';
+import ProfileScreenModal from './ProfileScreenModal';
 
 const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
     const { userData } = useAppContext();
     const [isModalRendered, setIsModalRendered] = useState(false);
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
 
+
+    // useEffect(() => {
+    //     console.log('friendInfo', friendInfo);
+    // }, [friendInfo]);
+
+    // Cleanup modals on unmount
     useEffect(() => {
-        console.log('friendInfo', friendInfo);
-    }, [friendInfo]);
+        return () => {
+            setVisibleModal(null); // Close all modals
+        };
+    }, []);
 
     // block friend
 
-    const handleBlock = async () => {
+    const handleBlock = useCallback(async () => {
         try {
             const payload = {
                 blockerID: userData?.userid,
                 blockedID: friendInfo?.userid,
                 action: 'block',
             };
-            console.log('payload /friends/block :', payload);
+            // console.log('payload /friends/block :', payload);
             const response = await Apiclient.post('/friends/block', payload); // Replace with your actual endpoint
-            console.log(`block user response`, response.data);
+            // console.log(`block user response`, response.data);
 
             if (response.status === 200 && response.data?.message) {
-                alert(response.data.message);
-                await getFriendsData();
+                setMessage(response.data.message);
+                setVisibleModal('message-modal');
                 // Refresh request list after short delay
-                setTimeout(() => {
+                setTimeout(async () => {
                     onClose();
-                }, 1000);
+                    await getFriendsData();
+                }, 1500);
             }
 
         } catch (error) {
             console.error(`Error getting when block user:`, error);
+            SendErrorTotheServer(error, 'handleBlock');
         }
+    }, [friendInfo?.userid, userData?.userid, getFriendsData, onClose]);
+
+    const handleFollowToggle = useCallback(async () => {
+        const currentStatus = friendInfo?.isFollowing;
+        const action = currentStatus === 1 ? 'unfollow' : 'follow';
+
+        const payload = {
+            userID: userData?.userid,
+            targetID: friendInfo?.userid,
+            action: action,
+        };
+
+        try {
+            // console.log(`Calling /followers with payload`, payload);
+            const response = await Apiclient.post('/followers', payload);
+
+            if (response.status === 200 && response.data?.message) {
+                setMessage(response.data.message);
+                setVisibleModal('message-modal');
+
+                // Refresh the parent data after a short delay
+                setTimeout(async () => {
+                    onClose();
+                    await getFriendsData();
+                }, 1500);
+            }
+        } catch (error) {
+            console.error('Error while updating follow status:', error);
+            SendErrorTotheServer(error, 'handleFollowToggle');
+        }
+    }, [friendInfo?.isFollowing, friendInfo?.userid, userData?.userid, getFriendsData, onClose]);
+
+
+    const handleChat = async () => {
+        setMessage('Not implemented yet');
+        setVisibleModal('message-modal');
     };
 
 
@@ -51,11 +102,14 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
             label: `Message  ${friendInfo.username?.split(' ')[0]}`,
             icon: 'chatbox-outline', // Better match for Facebook
             lib: 'ionicons',
+            onPress: handleChat,
         },
         {
-            label: `Unfollow ${friendInfo.username?.split(' ')[0]}`,
-            icon: 'person-remove-outline', // Still good
+            label: `${friendInfo.isFollowing === 1 ? 'Unfollow' : 'Follow'} ${friendInfo.username?.split(' ')[0]}`,
+            icon: friendInfo.isFollowing === 1 ? 'person-remove-outline' : 'person-add-outline',
             lib: 'ionicons',
+            onPress: handleFollowToggle,
+
         },
         {
             label: `Block ${friendInfo.username?.split(' ')[0]}'s Profile`,
@@ -117,14 +171,14 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                     alignItems: 'center',
                                     flex: 1,
                                 }}
-                                onPress={() => alert(`Profile Open`)}>
+                                onPress={() => setVisibleModal('profile-screen-modal')}>
                                 <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
                                 <Text numberOfLines={1} style={[styles.messageListName]}>
                                     {friendInfo.name}
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={onClose}>
-                                <Ionicons name="close" size={23} color="#333" />
+                                <Ionicons name="close" size={28} color="#333" />
                             </TouchableOpacity>
                         </View>
                         <View style={[styles.profileSettingModalBody]}>
@@ -165,6 +219,16 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                 }
 
             </Modal>
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
+            {visibleModal === 'profile-screen-modal' && (
+                <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={friendInfo} />
+            )}
         </>
 
     );

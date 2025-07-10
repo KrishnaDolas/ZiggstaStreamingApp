@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View, TouchableOpacity, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform,
     Alert,
@@ -9,10 +9,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Picker } from '@react-native-picker/picker';
 import Apiclient from '../utils/Apiclient';
+import MessageModal from './MessageModal';
+import { SendErrorTotheServer } from '../utils/constant';
 
 const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) => {
     const [selectedRegion, setSelectedRegion] = useState('');
     const [isModalRendered, setIsModalRendered] = useState(false);
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
     const [formData, setFormData] = useState({
         accountHolder: '',
         accountNumber: '',
@@ -27,6 +31,13 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
         sortCode: '',
         bsbCode: '',
     });
+
+    // Cleanup modals on unmount
+    useEffect(() => {
+        return () => {
+            setVisibleModal(null); // Close all modals
+        };
+    }, []);
 
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -251,7 +262,8 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             const response = await Apiclient.post('https://api.streamalong.live/saveuserbank', payload);
             console.log('response of saveuserbank', response);
             if (response?.status === 201) {
-                Alert.alert('Success', 'Bank details saved successfully.');
+                setMessage('Bank details saved successfully.');
+                setVisibleModal('message-modal');
                 setFormData({
                     accountHolder: '',
                     accountNumber: '',
@@ -267,12 +279,17 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     bsbCode: '',
                 });
                 setSelectedRegion('');
-                onSuccess?.();
+                setTimeout(() => {
+                    onSuccess?.();
+                }, 2000);
             } else {
-                Alert.alert('Error', response?.data?.message || 'Something went wrong.');
+                // Alert.alert('Error', response?.data?.message || 'Something went wrong.');
+                setMessage('Error', response?.data?.message || 'Something went wrong.');
+                setVisibleModal('message-modal');
             }
         } catch (error) {
             Alert.alert('API Error', 'Unable to save bank details. Please try again later.');
+            SendErrorTotheServer(error, 'handleAddBankDetails');
         } finally {
             setLoading(false);
         }
@@ -491,112 +508,121 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
     };
 
     return (
-        <Modal
-            isVisible={visible}
-            onBackdropPress={onClose}
-            onModalShow={() => setIsModalRendered(true)}
-            onModalHide={() => setIsModalRendered(false)}
-            animationIn="slideInUp"
-            animationOut="slideOutDown"
-            animationInTiming={400}
-            animationOutTiming={300}
-            backdropOpacity={0}
-            useNativeDriver={true}
-            propagateSwipe={true} // IMPORTANT
-            style={styles.fullScreenModalMain}
-        >
-            <View style={[styles.fullScreenModalOverlay, { flex: 1 }]}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-                    style={[styles.profileSettingModalBody, { flex: 1 }]}
-                >
-                    <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
-                        <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
-                            <Ionicons name="close" size={22} color="#333" />
-                        </TouchableOpacity>
-                    </View>
-                    <Text style={[styles.modalSmallTitle, { fontWeight: '500' }]}>Your Bank Details</Text>
-                    {isModalRendered && (
-                        <ScrollView
-                            contentContainerStyle={{ paddingLeft: 10, paddingBottom: 100 }}
-                            showsVerticalScrollIndicator={false}
-                            keyboardShouldPersistTaps="handled"
-                        >
-                            <Text style={styles.bdLabel}>Select Region:</Text>
-                            <View style={styles.bdPickerWrapper}>
-                                <Picker
-                                    selectedValue={selectedRegion}
-                                    onValueChange={(value) => {
-                                        setSelectedRegion(value);
-                                        setErrors(prev => ({ ...prev, selectedRegion: '' }));
-                                    }}
-                                    style={styles.bdPicker}
-                                    dropdownIconColor="#414141"
-                                    mode="dropdown"
-                                >
-                                    <Picker.Item label="-- Select Region --" value="" />
-                                    <Picker.Item label="United States" value="us" />
-                                    <Picker.Item label="European Union" value="eu" />
-                                    <Picker.Item label="United Kingdom" value="uk" />
-                                    <Picker.Item label="India" value="in" />
-                                    <Picker.Item label="Australia" value="au" />
-                                    <Picker.Item label="SE Asia" value="sea" />
-                                    <Picker.Item label="Other International" value="intl" />
-                                </Picker>
+        <>
+            <Modal
+                isVisible={visible}
+                onBackdropPress={onClose}
+                onModalShow={() => setIsModalRendered(true)}
+                onModalHide={() => setIsModalRendered(false)}
+                animationIn="slideInUp"
+                animationOut="slideOutDown"
+                animationInTiming={400}
+                animationOutTiming={300}
+                backdropOpacity={0}
+                useNativeDriver={true}
+                propagateSwipe={true} // IMPORTANT
+                style={styles.fullScreenModalMain}
+            >
+                <View style={[styles.fullScreenModalOverlay, { flex: 1 }]}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+                        style={[styles.profileSettingModalBody, { flex: 1 }]}
+                    >
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                            <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+                                <Ionicons name="close" size={22} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={[styles.modalSmallTitle, { fontWeight: '500' }]}>Your Bank Details</Text>
+                        {isModalRendered && (
+                            <ScrollView
+                                contentContainerStyle={{ paddingLeft: 10, paddingBottom: 100 }}
+                                showsVerticalScrollIndicator={false}
+                                keyboardShouldPersistTaps="handled"
+                            >
+                                <Text style={styles.bdLabel}>Select Region:</Text>
+                                <View style={styles.bdPickerWrapper}>
+                                    <Picker
+                                        selectedValue={selectedRegion}
+                                        onValueChange={(value) => {
+                                            setSelectedRegion(value);
+                                            setErrors(prev => ({ ...prev, selectedRegion: '' }));
+                                        }}
+                                        style={styles.bdPicker}
+                                        dropdownIconColor="#414141"
+                                        mode="dropdown"
+                                    >
+                                        <Picker.Item label="-- Select Region --" value="" />
+                                        <Picker.Item label="United States" value="us" />
+                                        <Picker.Item label="European Union" value="eu" />
+                                        <Picker.Item label="United Kingdom" value="uk" />
+                                        <Picker.Item label="India" value="in" />
+                                        <Picker.Item label="Australia" value="au" />
+                                        <Picker.Item label="SE Asia" value="sea" />
+                                        <Picker.Item label="Other International" value="intl" />
+                                    </Picker>
 
-                            </View>
-                            <ErrorText field="selectedRegion" />
+                                </View>
+                                <ErrorText field="selectedRegion" />
 
-                            <Text style={styles.bdLabel}>Account Holder Name:</Text>
-                            <TextInput
-                                style={styles.bdInput}
-                                value={formData.accountHolder}
-                                onChangeText={(text) => handleInputChange('accountHolder', text)}
-                                autoCapitalize="words"
-                                maxLength={50} // Reasonable limit for names
-                                minLength={2}  // Minimum for a valid name
-                            />
-                            <ErrorText field="accountHolder" />
+                                <Text style={styles.bdLabel}>Account Holder Name:</Text>
+                                <TextInput
+                                    style={styles.bdInput}
+                                    value={formData.accountHolder}
+                                    onChangeText={(text) => handleInputChange('accountHolder', text)}
+                                    autoCapitalize="words"
+                                    maxLength={50} // Reasonable limit for names
+                                    minLength={2}  // Minimum for a valid name
+                                />
+                                <ErrorText field="accountHolder" />
 
-                            <Text style={styles.bdLabel}>Bank Name:</Text>
-                            <TextInput
-                                style={styles.bdInput}
-                                value={formData.bankName}
-                                onChangeText={(text) => handleInputChange('bankName', text)}
-                                autoCapitalize="words"
-                                maxLength={50} // Reasonable limit for bank names
-                                minLength={2}  // Minimum for a valid bank name
-                            />
-                            <ErrorText field="bankName" />
-                            <Text style={styles.bdLabel}>Bank Address:</Text>
-                            <TextInput
-                                style={styles.bdInput}
-                                value={formData.bankAddress}
-                                onChangeText={(text) => handleInputChange('bankAddress', text)}
-                                autoCapitalize="words"
-                                multiline={true}
-                                numberOfLines={2}
-                                maxLength={100} // Reasonable limit for addresses
-                                minLength={5}   // Minimum for a valid address
-                            />
-                            <ErrorText field="bankAddress" />
+                                <Text style={styles.bdLabel}>Bank Name:</Text>
+                                <TextInput
+                                    style={styles.bdInput}
+                                    value={formData.bankName}
+                                    onChangeText={(text) => handleInputChange('bankName', text)}
+                                    autoCapitalize="words"
+                                    maxLength={50} // Reasonable limit for bank names
+                                    minLength={2}  // Minimum for a valid bank name
+                                />
+                                <ErrorText field="bankName" />
+                                <Text style={styles.bdLabel}>Bank Address:</Text>
+                                <TextInput
+                                    style={styles.bdInput}
+                                    value={formData.bankAddress}
+                                    onChangeText={(text) => handleInputChange('bankAddress', text)}
+                                    autoCapitalize="words"
+                                    multiline={true}
+                                    numberOfLines={2}
+                                    maxLength={100} // Reasonable limit for addresses
+                                    minLength={5}   // Minimum for a valid address
+                                />
+                                <ErrorText field="bankAddress" />
 
-                            {renderRegionFields()}
-                            <View style={{ marginVertical: 10 }}>
-                                <TouchableOpacity style={styles.btnNav} onPress={handleSubmit} disabled={loading}>
-                                    {loading ? (
-                                        <ActivityIndicator color="#fff" />
-                                    ) : (
-                                        <Text style={{ color: 'white' }}>Add</Text>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    )}
-                </KeyboardAvoidingView>
-            </View>
-        </Modal>
+                                {renderRegionFields()}
+                                <View style={{ marginVertical: 10 }}>
+                                    <TouchableOpacity style={styles.btnNav} onPress={handleSubmit} disabled={loading}>
+                                        {loading ? (
+                                            <ActivityIndicator color="#fff" />
+                                        ) : (
+                                            <Text style={{ color: 'white' }}>Add</Text>
+                                        )}
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        )}
+                    </KeyboardAvoidingView>
+                </View>
+            </Modal>
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
+        </>
     );
 };
 

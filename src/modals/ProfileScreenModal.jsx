@@ -11,6 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { SendErrorTotheServer } from '../utils/constant';
+import MessageModal from './MessageModal';
 // top gifters
 // const topGifters = [
 //     {
@@ -47,10 +48,18 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [showWarning, setShowWarning] = useState(false);
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
 
+    // Cleanup modals on unmount
+    useEffect(() => {
+        return () => {
+            setVisibleModal(null); // Close all modals
+        };
+    }, []);
 
     const panResponder = useRef(
         PanResponder.create({
@@ -221,6 +230,12 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         });
     };
 
+
+    const handleReport = () => {
+        setVisibleModal('message-modal');
+        setMessage(`Report feature is not implemented yet.`);
+    };
+
     return (
         <>
             <Modal
@@ -256,7 +271,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                 <>
                                     {/* Header with Report button */}
                                     <View style={styles.psmHeader}>
-                                        <TouchableOpacity style={styles.psmReportButton}>
+                                        <TouchableOpacity onPress={handleReport} style={styles.psmReportButton}>
                                             <Text style={styles.psmReportButtonText}>Report</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -449,6 +464,13 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                     </View>
                 </Animated.View>
             </Modal>
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
         </>
 
     );
