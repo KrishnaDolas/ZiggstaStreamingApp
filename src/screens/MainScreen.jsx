@@ -99,7 +99,7 @@ export const MainScreen = () => {
           socket.emit('signal', { to: userId, data: peer.localDescription });
         }
         // Notify all viewers to renegotiate their stream TO ME
-        socket.emit('request-renegotiation-from-viewers', {socketId: socket.id});
+        socket.emit('request-renegotiation-from-viewers', {socketId: userData.userid});
   
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('🔄 App in background: stopping local stream');
@@ -375,7 +375,7 @@ export const MainScreen = () => {
   };
   const HandleUserStreamStoped = (userId) => {
     try {
-      if(socket.id !== userId){
+      if(userData.userid !== userId){
         if (peersRef.current[userId]) {
           peersRef.current[userId].close();
           delete peersRef.current[userId];
@@ -639,7 +639,7 @@ export const MainScreen = () => {
    }
     setJoined(false);
     setViewerCount(0);
-    socket.emit('leaveRoom',socket.id)
+    socket.emit('leaveRoom',userData.userid)
     } catch (error) {
       SendErrorTotheServer(error,'leaveRoom');
     }
