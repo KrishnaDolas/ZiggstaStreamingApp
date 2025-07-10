@@ -273,20 +273,22 @@ export const MainScreen = () => {
       [{ text: 'OK' }]
     );
   }
-  const HandlereconnectWithNewPeer =async (newUserId) => {
-    try {
-      const peer = peersRef.current[newUserId];
-      if (!peer || !localStreamRef.current) return;
-    
-      localStreamRef.current.getTracks().forEach(track =>
-        peer.addTrack(track, localStreamRef.current)
-      );
-    
+  const HandlereconnectWithNewPeer =async ({ customID, socketId }) => {
+    // Only run if I'm host OR viewer and it's not my own socket
+    if (socket.id !== socketId && localStreamRef.current) {
+      console.log(`🔄 Reconnecting with peer ${customID} (${socketId})`);
+  
+      const peer = createPeer(socketId);
+      peersRef.current[socketId] = peer;
+  
+      localStreamRef.current.getTracks().forEach(track => {
+        peer.addTrack(track, localStreamRef.current);
+      });
+  
       const offer = await peer.createOffer();
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-      socket.emit('signal', { to: newUserId, data: peer.localDescription });
-    } catch (error) {
-      console.log(error);
+  
+      socket.emit('signal', { to: socketId, data: peer.localDescription });
     }
   }
   const HandleGetListStreamers = (streamers) => {
@@ -635,6 +637,7 @@ export const MainScreen = () => {
    InCallManager.stop();
    disconnectSocket()
    if(isHost){
+    socket.emit('Hostleft')
     HandleSetLivestatus(streamInfo?.roomID);
    }
     setJoined(false);
