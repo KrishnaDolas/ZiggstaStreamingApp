@@ -1807,6 +1807,11 @@ export const styles = StyleSheet.create({
     paddingTop: 5,
     paddingLeft: 4,
   },
+  wdFormSuccess: {
+    color: 'green',
+    paddingTop: 5,
+    paddingLeft: 4,
+  },
   wdFormGradientButton: {
     borderRadius: 30,
     overflow: 'hidden',

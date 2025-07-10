@@ -27,6 +27,7 @@ export const WalletDashboardScreen = () => {
     const [selectBankName, setSelectBankName] = useState('');
     const [userName, setUserName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [friendsData, setFriendsData] = useState([]);
     const [filteredFriends, setFilteredFriends] = useState([]);
     const [isFocused, setIsFocused] = useState(false);
@@ -172,7 +173,7 @@ export const WalletDashboardScreen = () => {
                 const response = await Apiclient.post('/transfercredit', postData);
                 if (response.status === 200) {
                     const data = response.data || [];
-                    setErrorMessage(response.data?.message);
+                    setSuccessMessage(response.data?.message);
                     console.log('transfercredit response', data);
                 } else {
                     setErrorMessage(response.data?.message);
@@ -352,6 +353,7 @@ export const WalletDashboardScreen = () => {
                                 </>}
 
                                 {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>}
+                                {successMessage !== '' && <Text style={styles.wdFormSuccess}>{successMessage}</Text>}
                                 {/* actions bases on active tab */}
                                 <TouchableOpacity onPress={handleSubmit} style={styles.wdFormButtonOverlay}>
                                     <LinearGradient
