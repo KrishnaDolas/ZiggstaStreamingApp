@@ -131,7 +131,7 @@ export const MainScreen = () => {
   const HandleConnect=()=>{
     console.log('✅ Connected to Socket.IO server');
     setIsSocketConnected(true); // Update connection status
-    if(!IsIdentify.current){
+    if(!IsIdentify.current &&userData){
      setTimeout(() => {
       socket.emit('identity', userData?.userid, userData?.screenName);
      }, 2000);
@@ -279,10 +279,10 @@ export const MainScreen = () => {
       [{ text: 'OK' }]
     );
   }
-  const HandlereconnectWithNewPeer =async ({ customID, socketId }) => {
+  const HandlereconnectWithNewPeer =async ({ socketId }) => {
     // Only run if I'm host OR viewer and it's not my own socket
     if (socket.id !== socketId && localStreamRef.current) {
-      console.log(`🔄 Reconnecting with peer ${customID} (${socketId})`);
+      console.log(`🔄 Reconnecting with peer id (${socketId})`);
   
       const peer = createPeer(socketId);
       peersRef.current[socketId] = peer;
@@ -357,10 +357,14 @@ export const MainScreen = () => {
         localStreamRef.current.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
         setLocalStream(null);
+        setHasRequestedStream(false);
         setIsUserStreaming(false); // Reset user streaming status
         // Stop InCallManager
         InCallManager.stop();
       }
+      setRemoteStreams([])
+      peersRef.current = {};
+      socket.emit('request-renegotiation-from-viewers',{socketId: socket.id})
     } catch (error) {
       SendErrorTotheServer(error,'stopLocalStream');
     }
