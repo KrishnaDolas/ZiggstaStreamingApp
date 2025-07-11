@@ -132,8 +132,14 @@ export const MainScreen = () => {
     console.log('✅ Connected to Socket.IO server');
     setIsSocketConnected(true); // Update connection status
     if(!IsIdentify.current){
+     setTimeout(() => {
       socket.emit('identity', userData?.userid, userData?.screenName);
+     }, 2000);
       IsIdentify.current = true; // Set identify flag to true
+      if(streamInfo){
+        const roomID = streamInfo?.roomID.toString()
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID)
+      }
     }
   }
   //Handle socket functions 
@@ -328,6 +334,7 @@ export const MainScreen = () => {
       setViewerCount(0);
       setJoined(false);
       setIsHost(false);
+      setStreamInfo(null)
     } catch (error) {
       SendErrorTotheServer(error,'HandleHostLeft');
     }
@@ -399,6 +406,24 @@ export const MainScreen = () => {
     setIsSocketConnected(false)
     IsIdentify.current= false; // Reset identify flag
   }
+  const HandleStopStream=(streamlist)=>{
+
+    streamlist.forEach((userId)=>{
+      if (peersRef.current[userId]) {
+        peersRef.current[userId].close();
+        delete peersRef.current[userId];
+        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+      }
+    })
+
+    streamlist.forEach(userId => {
+      if (!peersRef.current[userId]) {
+        const peer = createPeer(userId);
+        peersRef.current[userId] = peer;
+      }
+    });
+  }
+
   const HandleRenegotiate = async ({ socketId }) => {
     const newStream = await mediaDevices.getUserMedia({
       video: true,
@@ -479,7 +504,7 @@ export const MainScreen = () => {
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
       socket.on('request-renegotiation-from-viewers',HandleRenegotiate);
-      
+      socket.on('Stop-Stream',HandleStopStream)
     }
 
     return () => {
@@ -507,6 +532,7 @@ export const MainScreen = () => {
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
         socket.off('request-renegotiation-from-viewers',HandleRenegotiate);
+        socket.off('Stop-Stream',HandleStopStream)
       }
     }
   }, [isHost,isSocketConnected]);
@@ -642,6 +668,7 @@ export const MainScreen = () => {
    }
     setJoined(false);
     setViewerCount(0);
+    setStreamInfo(null)
    disconnectSocket()
     } catch (error) {
       SendErrorTotheServer(error,'leaveRoom');

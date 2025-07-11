@@ -517,7 +517,7 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={() => setTogglerequest(!togglerequest)}>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
