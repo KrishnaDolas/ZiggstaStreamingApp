@@ -886,7 +886,7 @@ export const styles = StyleSheet.create({
   streamHeaderCountBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent:'flex-end',
+    justifyContent: 'flex-end',
     marginRight: 12,
     backgroundColor: '#d93a63',
     borderRadius: 30,
@@ -1778,6 +1778,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
     marginHorizontal: 10,
+    position: 'relative',
   },
   wdPickerWrapper: {
     backgroundColor: '#f7f7f7',
@@ -1806,14 +1807,23 @@ export const styles = StyleSheet.create({
     paddingTop: 5,
     paddingLeft: 4,
   },
+  wdFormSuccess: {
+    color: 'green',
+    paddingTop: 5,
+    paddingLeft: 4,
+  },
   wdFormGradientButton: {
     borderRadius: 30,
     overflow: 'hidden',
     marginVertical: 12,
+    width: '100%',
+    // height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 14,
   },
 
   wdFormButtonOverlay: {
-    padding: 14,
     borderRadius: 30,
     alignItems: 'center',
   },
@@ -1875,6 +1885,34 @@ export const styles = StyleSheet.create({
     color: '#222',
     textAlign: 'center',
   },
+  wdFriendsDropdownContainer: {
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginTop: 4,
+    height: 160,
+    width: '100%',
+    left: 18,
+    right: 0,
+    overflow: 'scroll',
+    zIndex: 10,
+    position: 'absolute',
+    top: 100, // Adjust based on your layout
+  },
+
+  wdFriendItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+
+  wdFriendItemText: {
+    fontSize: 16,
+    color: '#333',
+  },
+
   // profile sub setting modal
   mySettingSubModalTitleBox: {
     flexDirection: 'row',

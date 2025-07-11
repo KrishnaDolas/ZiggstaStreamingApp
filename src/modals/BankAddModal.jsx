@@ -531,7 +531,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     >
                         <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
-                                <Ionicons name="close" size={22} color="#333" />
+                                <Ionicons name="close" size={28} color="#333" />
                             </TouchableOpacity>
                         </View>
                         <Text style={[styles.modalSmallTitle, { fontWeight: '500' }]}>Your Bank Details</Text>

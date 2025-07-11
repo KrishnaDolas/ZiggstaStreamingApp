@@ -133,7 +133,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                     <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
                         <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                             <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn]}>
-                                <Ionicons name="close" size={22} color="#333" />
+                                <Ionicons name="close" size={28} color="#333" />
                             </TouchableOpacity>
                         </View>
 
