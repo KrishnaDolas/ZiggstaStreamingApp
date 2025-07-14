@@ -138,9 +138,21 @@ export const MainScreen = () => {
       IsIdentify.current = true; // Set identify flag to true
       if(streamInfo){
         const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID)
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID,isHost)
       }
     }
+  }
+  const HandleClearOldInstance=()=>{
+    localStreamRef.current=null;
+    setLocalStream(null);
+    setRemoteStreams([]);
+    peersRef.current={};
+    pendingCandidates.current=null;
+    setIsMuted({HostControl: false, muted: false})
+    setHasRequestedStream(false)
+    setStreamRequestList([])
+    setIsUserStreaming(false)
+    setStreamGuest([])
   }
   //Handle socket functions 
   const HandleAssignHost= async () => {
@@ -152,10 +164,10 @@ export const MainScreen = () => {
    }
   };
 
-  const HandleJoined =async ({users }) => {
+  const HandleJoined =async ({users,IsHost }) => {
     try {
           // If no one else, you're host
-    if (users.length === 0) {
+    if (users.length === 0 || IsHost) {
       setJoined(true);
       setIsLoading(false);
       setIsHost(true);
@@ -191,7 +203,9 @@ export const MainScreen = () => {
   }
   const HandleNewUser =async (userId) => {
     try {
+      socket.emit('Clientlogs',`useird is --->`, userId)
       if (!peersRef.current[userId]) {
+        socket.emit('Clientlogs',`Creating peerconnection for --->`, userId)
         const peer = createPeer(userId);
         peersRef.current[userId] = peer;
         //viewer count increment
@@ -205,6 +219,7 @@ export const MainScreen = () => {
   }
   const HandleSignal=async ({ from, data }) => {
     try {
+      socket.emit('Clientlogs',`from ---->${from},  data----> ${data} `)
       let peer = peersRef.current[from];
       if (!peer) {
         peer = createPeer(from);
@@ -232,6 +247,7 @@ export const MainScreen = () => {
         }
       }
     } catch (error) {
+      socket.emit('Clientlogs',error)
       SendErrorTotheServer(error,'HandleSignal');
     }
   }
@@ -405,10 +421,23 @@ export const MainScreen = () => {
       SendErrorTotheServer(error,'HandleUserStreamStoped');
     }
   }
-  const HandleDisconnected=()=>{
+  const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
-    IsIdentify.current= false; // Reset identify flag
+    IsIdentify.current = false; // Reset identify flag
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach(track => track.stop());
+      localStreamRef.current = null;
+      setLocalStream(null);
+    }
+    setRemoteStreams([])
+    if (peersRef.current) {
+      // clear peer connections
+      Object.values(peersRef.current).forEach(peer => peer.close());
+      peersRef.current = {};
+      // clear pending candidates
+      pendingCandidates.current = {};
+    }
   }
   const HandleStopStream=(streamlist)=>{
 
@@ -509,6 +538,7 @@ export const MainScreen = () => {
       socket.on('disconnect', HandleDisconnected);
       socket.on('request-renegotiation-from-viewers',HandleRenegotiate);
       socket.on('Stop-Stream',HandleStopStream)
+      socket.on('Host-Disconnected',HandleUserLeft)
     }
 
     return () => {
@@ -537,6 +567,7 @@ export const MainScreen = () => {
         socket.off('disconnect', HandleDisconnected);
         socket.off('request-renegotiation-from-viewers',HandleRenegotiate);
         socket.off('Stop-Stream',HandleStopStream)
+        socket.on('Host-Disconnected',HandleUserLeft)
       }
     }
   }, [isHost,isSocketConnected]);
@@ -572,6 +603,7 @@ export const MainScreen = () => {
      
       peer.onicecandidate = (event) => {
         if (event.candidate) {
+          socket.emit('Clientlogs',`To ---->${socketId},  data----> ${event.candidate} `)
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
@@ -596,6 +628,7 @@ export const MainScreen = () => {
 
   const joinRoom = (roomID,RoomInfo) => {
     try {
+      HandleClearOldInstance()
       if(RoomInfo?.isLive===0){
         Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
           [{ text: 'OK' }]
@@ -610,6 +643,7 @@ export const MainScreen = () => {
   };
   const CreateRoom= async (RoomInfo) => {
     try {
+      HandleClearOldInstance()
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const isaccepted=await requestPermissions();

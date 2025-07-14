@@ -4,11 +4,11 @@ import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-  export const socket = io('http://192.168.0.18:5000', {
+  export const socket = io('https://streamalong.live', {
     transports: ['polling'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
-    reconnectionDelay: 1000,
+    reconnectionDelay: 1000, 
   });
   
   // WebRTC ICE configuration with STUN and TURN servers
@@ -47,9 +47,9 @@ import { io } from 'socket.io-client';
     try {
           // You can also send this error to your server for logging
     socket.emit('errorLog',error,functionname);
-    Alert.alert('Error', `An error occurred: ${error.message}`, [
-      { text: 'OK' }
-    ]);
+    // Alert.alert('Error', `An error occurred: ${error.message}`, [
+    //   { text: 'OK' }
+    // ]);
     } catch (error) {
       socket.emit('errorLog', error.message, 'SendErrorTotheServer');
     }
