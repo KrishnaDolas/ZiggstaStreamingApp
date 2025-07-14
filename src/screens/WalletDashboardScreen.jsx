@@ -17,7 +17,7 @@ const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
 
 export const WalletDashboardScreen = () => {
-    const { userData } = useAppContext();
+    const { profileData, userData, fetchProfileDetails } = useAppContext();
     const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
     const scrollRef = useRef(null);
@@ -175,6 +175,8 @@ export const WalletDashboardScreen = () => {
                     const data = response.data || [];
                     setSuccessMessage(response.data?.message);
                     console.log('transfercredit response', data);
+                    // Refresh profile data to update CreditBalance
+                    await fetchProfileDetails();
                 } else {
                     setErrorMessage(response.data?.message);
                 }
@@ -387,7 +389,7 @@ export const WalletDashboardScreen = () => {
                                 <View style={styles.wDReferralStatsRow}>
                                     <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={styles.wdRefStateTitle}>Balance</Text>
-                                        <Text style={styles.wdRefStateValue}>{userData?.CreditBalance}</Text>
+                                        <Text style={styles.wdRefStateValue}>${profileData?.CreditBalance}</Text>
                                     </View>
                                     <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={styles.wdRefStateTitle}>Today's Signups</Text>

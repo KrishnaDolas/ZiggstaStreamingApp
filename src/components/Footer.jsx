@@ -37,8 +37,12 @@ const Footer = () => {
 
   // Get the active tab based on the current route
   const activeTab = getActiveTab();
+  const isDark = theme === 'dark';
 
-  const iconColor = (tabName) => (activeTab === tabName ? '#d93a63' : 'grey');
+  const iconColor = (tabName) => {
+    if (activeTab === tabName) return '#d93a63'; // active = pink
+    return isDark ? '#fff' : 'grey';             // inactive = white (dark) or grey (light)
+  };
 
   return (
     <>
@@ -46,7 +50,7 @@ const Footer = () => {
 
         {/* Profile */}
         <TouchableOpacity
-          style={styles.footerItem}
+          style={[styles.footerItem, themeStyles[theme].footerItem]}
           // onPress={() => {
           //   if (route.name !== 'Profile') {
           //     navigation.navigate('Profile');
@@ -57,18 +61,6 @@ const Footer = () => {
           <FontAwesome name="user-o" size={25} color={iconColor('Profile')} />
           <Text style={[styles.footerText, { color: iconColor('Profile') }]}>Profile</Text>
         </TouchableOpacity>
-        {/* Live */}
-        {/* <TouchableOpacity
-        style={styles.footerItem}
-        onPress={() => {
-          if (route.name !== 'Main') {
-            navigation.navigate('Main');
-          }
-        }}
-      >
-        <Ionicons name="play" size={25} color={iconColor('Main')} />
-        <Text style={[styles.footerText, { color: iconColor('Main') }]}>Live</Text>
-      </TouchableOpacity> */}
         {/* Setting */}
         <TouchableOpacity
           style={styles.footerItem}
@@ -97,7 +89,12 @@ const Footer = () => {
             style={{
               width: 30,
               height: 30,
-              tintColor: route.name === 'Main' ? undefined : '#999', // gray if not active
+              tintColor:
+                activeTab === 'Main'
+                  ? '#d93a63' // active tab = pink
+                  : isDark
+                    ? '#fff'    // inactive + dark theme = white
+                    : '#999',   // inactive + light theme = gray
             }}
           />
           <Text style={[styles.footerText, { color: iconColor('Main') }]}>Home</Text>

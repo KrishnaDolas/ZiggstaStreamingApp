@@ -13,11 +13,13 @@ export const SplashScreen = () => {
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.SplashScreen, { paddingBottom: insets.bottom }]}>
+    <View style={[styles.SplashScreen, themeStyles[theme].SplashScreen, { paddingBottom: insets.bottom }]}>
       <StatusBar
         hidden={false} // Show the status bar
-        barStyle="dark-content"
-        backgroundColor="#fff"
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={
+          theme === 'dark' ? '#000' : '#fff' // adjust based on your theme background
+        }
       />
       <Image source={logo} style={styles.splashImage} />
       <LinearGradient

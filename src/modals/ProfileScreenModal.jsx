@@ -1,8 +1,8 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, Animated, Image, Linking } from 'react-native';
 import Modal from 'react-native-modal';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { PanResponder } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -12,6 +12,7 @@ import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { SendErrorTotheServer } from '../utils/constant';
 import MessageModal from './MessageModal';
+import { ThemeContext } from '../context/ThemeContext';
 // top gifters
 // const topGifters = [
 //     {
@@ -38,6 +39,7 @@ import MessageModal from './MessageModal';
 // ];
 
 const ProfileScreenModal = ({ visible, onClose, profileData }) => {
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -253,6 +255,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 <Animated.View
                     style={[
                         styles.profileModalOverlay,
+                        themeStyles[theme].profileModalOverlay,
                         { flex: 1, maxHeight: screenHeight * 0.8 + 30 },
                         { transform: [{ translateY: panY }] },
                     ]}
@@ -260,7 +263,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 >
                     {/* close modal */}
                     <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10, marginRight: 5 }]}>
-                        <Ionicons name="close" size={28} color="#333" />
+                        <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
                     <View style={[{ marginHorizontal: 0, flex: 1 }]}>
                         {layoutReady &&
@@ -278,7 +281,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                     {isUserLoading ? (
                                         // Skeleton while loading
                                         <View style={styles.psmProfileContainer}>
-                                            <View style={[styles.psmProfileTopCard, { paddingTop: 10 }]}>
+                                            <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard, { paddingTop: 10 }]}>
                                                 <ShimmerPlaceHolder
                                                     LinearGradient={LinearGradient}
                                                     style={[styles.psmProfileImage, { borderRadius: 50 }]}
@@ -310,9 +313,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
 
                                             <View style={styles.psmProfileContainer}>
                                                 {/* Profile Content */}
-                                                <View style={styles.psmProfileTopCard}>
+                                                <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard]}>
                                                     {/* Profile Image */}
-                                                    <View style={[styles.psmProfileImageContainer]}>
+                                                    <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
                                                         <Image
                                                             source={require('../../assets/images/LS-3.jpg')}
                                                             style={styles.psmProfileImage}
@@ -320,7 +323,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                     </View>
 
                                                     {/* Name and ID */}
-                                                    <Text style={styles.psmProfileName}>{userProfileDatails?.screenName}</Text>
+                                                    <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDatails?.screenName}</Text>
                                                     <Text style={styles.psmProfileId}>ID: {userProfileDatails?.userid}</Text>
 
                                                     {/* Stats Section */}
@@ -350,7 +353,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                             <FontAwesome
                                                                 name="instagram"
                                                                 size={34}
-                                                                color={socialLinks?.instagram ? '#833ab4' : '#A9A9A9'} // Gray when disabled
+                                                                color={
+                                                                    socialLinks?.instagram
+                                                                        ? theme === 'dark' ? '#fff' : '#833ab4'
+                                                                        : '#A9A9A9'
+                                                                }
                                                                 style={!socialLinks?.instagram ? { opacity: 0.5 } : {}}
                                                             />
                                                         </View>
@@ -365,7 +372,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                             <FontAwesome
                                                                 name="facebook"
                                                                 size={34}
-                                                                color={socialLinks?.facebook ? '#445fed' : '#A9A9A9'}
+                                                                color={
+                                                                    socialLinks?.facebook
+                                                                        ? theme === 'dark' ? '#fff' : '#445fed'
+                                                                        : '#A9A9A9'
+                                                                }
                                                                 style={!socialLinks?.facebook ? { opacity: 0.5 } : {}}
                                                             />
                                                         </View>
@@ -383,7 +394,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                                 style={{
                                                                     width: 26,
                                                                     height: 26,
-                                                                    tintColor: socialLinks?.twitter ? '#000' : '#A9A9A9',
+                                                                    tintColor: socialLinks?.twitter
+                                                                        ? theme === 'dark' ? '#fff' : '#000'
+                                                                        : '#A9A9A9',
                                                                     opacity: socialLinks?.twitter ? 1 : 0.5,
                                                                 }}
                                                             />
@@ -438,6 +451,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                                         {
                                                                             borderLeftWidth: index === 0 ? 1 : 0,
                                                                             borderLeftColor: '#f0f0f0',
+                                                                            borderBottomLeftRadius: index === 0 ? 15 : 0,
+                                                                            borderBottomRightRadius: index === 0 ? 0 : 15,
                                                                         }]}
                                                                     >
                                                                         <View style={styles.psmOtherGifterImageContainer}>

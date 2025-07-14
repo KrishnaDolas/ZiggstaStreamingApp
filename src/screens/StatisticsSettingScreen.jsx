@@ -13,37 +13,43 @@ import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useAppContext } from '../context/AppContext';
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
+    const { profileData } = useAppContext();
     const insetsTop = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
-    const [profileData, setProfileData] = useState({});
     const [averageIncomeData, setAverageIncomeData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
     const [topGiftersData, setTopGiftersData] = useState([]);
 
     // get profile details from API
-    const fetchProfileDetails = async () => {
-        setIsUserLoading(false);
-        setIsUserError('');
-        try {
-            const formData = {
-                userid: userData.userid,
-            };
-            const response = await Apiclient.post('/getUserDetails', formData);
-            if (response.status === 200) {
-                setProfileData(response.data.user || {});
-            } else {
-                setIsUserError('Failed to fetch user profile details');
-            }
-        } catch (err) {
-            setIsUserError('Error fetching user profile details: ' + err.message);
-        } finally {
-            setIsUserLoading(false);
-        }
-    };
+    // const fetchProfileDetails = async () => {
+    //     setIsUserLoading(false);
+    //     setIsUserError('');
+    //     try {
+    //         const formData = {
+    //             userid: userData.userid,
+    //         };
+    //         const response = await Apiclient.post('/getUserDetails', formData);
+    //         if (response.status === 200) {
+    //             setProfileData(response.data.user || {});
+    //         } else {
+    //             setIsUserError('Failed to fetch user profile details');
+    //         }
+    //     } catch (err) {
+    //         setIsUserError('Error fetching user profile details: ' + err.message);
+    //     } finally {
+    //         setIsUserLoading(false);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     console.log('profile userData :', profileData);
+    // }, [profileData]);
+
 
     // to get average daily income of user
     const getAverageDaily = async () => {
@@ -81,7 +87,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
     useEffect(() => {
         if (userData?.userid) {
-            fetchProfileDetails();
+            // fetchProfileDetails();
             getAverageDaily();
             getTopGifters();
         }
@@ -129,7 +135,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
                             <View style={styles.profileBlock}>
                                 <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>#{profileData?.CreditBalance}.00</Text>
+                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>${profileData?.CreditBalance}</Text>
                             </View>
                         </View>
 

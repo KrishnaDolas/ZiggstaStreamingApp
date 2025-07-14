@@ -320,7 +320,7 @@ export const MessageListScreen = () => {
                             {(friendListType === 'requests' ? friendRequestsData.length === 0 : friendsData.length === 0) ? (
                                 <View style={{ alignItems: 'center', paddingTop: 50 }}>
                                     <Image
-                                        source={require('../../assets/images/friends-no-data-found.jpg')} // <- Replace with your static "no data" image
+                                        source={require('../../assets/images/friends-no-data-found.png')} // <- Replace with your static "no data" image
                                         style={{ width: 200, height: 200, resizeMode: 'contain' }}
                                     />
                                     <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>

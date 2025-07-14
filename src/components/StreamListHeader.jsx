@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -10,19 +10,21 @@ import {
     Animated,
     ActivityIndicator
 } from 'react-native';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useRoute } from '@react-navigation/native';
 import SearchModal from '../modals/SearchModal';
 import { useAppContext } from '../context/AppContext';
+import { ThemeContext } from '../context/ThemeContext';
 
 export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
     setIsFavourite, selectedCategoryIndices, searchFilteredData,
     setSearchFilteredData }) => {
-    const { userData } = useAppContext();
+    const { theme } = useContext(ThemeContext);
+    const { profileData, userData } = useAppContext();
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -70,7 +72,7 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
 
 
     return (
-        <View style={[styles.streamListHeader]} >
+        <View style={[styles.streamListHeader, themeStyles[theme].streamListHeader]} >
             {/* header top */}
             <View style={styles.streamListHeaderTop}>
                 <Image
@@ -85,10 +87,10 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
                     </View> */}
                     <View style={styles.streamHeaderCountBox}>
                         <FontAwesome name='dollar' solid size={14} color="#fff" />
-                        <Text style={styles.streamHeaderCountTitle}>{userData?.CreditBalance}</Text>
+                        <Text style={styles.streamHeaderCountTitle}>{profileData?.CreditBalance}</Text>
                     </View>
                     <TouchableOpacity style={{ marginRight: 12 }}>
-                        <Ionicons name='notifications' solid size={18} color="#000" />
+                        <Ionicons name='notifications' solid size={18} color={theme === 'light' ? '#000' : '#fff'} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -116,23 +118,23 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                     >
-                        <TouchableOpacity onPress={() => setIsNearBy(!isNearBy)} style={[styles.strHeaderCategoryButton, isNearBy &&
+                        <TouchableOpacity onPress={() => setIsNearBy(!isNearBy)} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton, isNearBy &&
                             styles.btnInterestActive]}>
-                            <Text style={[styles.strHeaderCategoryText, isNearBy && styles.btnInterestActiveText]}>
+                            <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText, isNearBy && styles.btnInterestActiveText]}>
                                 Nearby
                             </Text>
                         </TouchableOpacity>
                         {categoryData.map((item) => (
                             <TouchableOpacity
                                 key={item.categoryID}
-                                style={[styles.strHeaderCategoryButton,
+                                style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton,
                                 selectedinterest.includes(item.categoryID) &&
                                 styles.btnInterestActive]}
                                 onPress={() => selectedcategory(item)}
                             >
                                 <Text style={[
-                                    styles.strHeaderCategoryText,
-                                    selectedinterest.includes(item.categoryID) && styles.btnInterestActiveText
+                                    styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText,
+                                    selectedinterest.includes(item.categoryID) && styles.btnInterestActiveText,
                                 ]}>
                                     {item.categoryName}
                                 </Text>

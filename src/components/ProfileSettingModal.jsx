@@ -5,7 +5,7 @@ import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
 import MySettingSubModal from '../modals/MySettingSubModal';
@@ -96,10 +96,11 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                 backdropOpacity={0}
                 style={[styles.profileModalMain]}
             >
-                <View style={[styles.profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
+                <View style={[styles.profileModalOverlay,
+                themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
                     {/* close modal */}
                     <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                        <Ionicons name="close" size={23} color="#333" />
+                        <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
                     {layoutReady &&
                         <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
@@ -109,7 +110,8 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                             >
                                 {/* dark / light setting */}
                                 <View style={[styles.profileSettingMDarkLightSetting]}>
-                                    <Text style={styles.pSettingMDarkLightSTitle}>Dark / Light Mode</Text>
+                                    <Text style={[styles.pSettingMDarkLightSTitle,
+                                    themeStyles[theme].pSettingMDarkLightSTitle]}>Dark / Light Mode</Text>
                                     <View style={styles.pSettingMDarkLightSIconBoxWrapper}>
                                         <TouchableOpacity onPress={toggle}>
                                             <Animated.View style={[styles.pSettingMDarkLightSIconBox, {
@@ -137,11 +139,11 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                                     }]}>
                                         <View style={styles.profileSettingMMenuListItem}>
                                             {item.label === 'Notification' ?
-                                                <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> : item.label === 'Search Settings' ? <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> : <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
+                                                <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : item.label === 'Search Settings' ? <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
                                             }
-                                            <Text style={{ fontSize: 15, color: '#000' }}>{item.label}</Text>
+                                            <Text style={{ fontSize: 15, color: theme === 'light' ? '#000' : '#fff' }}>{item.label}</Text>
                                         </View>
-                                        <FontAwesome5 name="chevron-right" size={14} regular color="#888" style={{ width: 30 }} />
+                                        <FontAwesome5 name="chevron-right" size={14} regular color={theme === 'light' ? '#888' : '#fff'} style={{ width: 30 }} />
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>

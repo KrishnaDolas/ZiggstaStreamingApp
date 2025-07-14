@@ -407,7 +407,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#ddd', // optional: a light border color
   },
 
   footerItem: {
@@ -530,7 +529,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 30,
+    paddingVertical: 20,
     zIndex: 10,
   },
 
@@ -742,7 +741,7 @@ export const styles = StyleSheet.create({
   },
 
   profileModalOverlay: {
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
     padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -808,7 +807,6 @@ export const styles = StyleSheet.create({
   pSettingMDarkLightSTitle: {
     fontSize: 16,
     fontWeight: '400',
-    color: '#232323',
   },
 
   pSettingMDarkLightSIconBoxWrapper: {
@@ -865,14 +863,13 @@ export const styles = StyleSheet.create({
     paddingBottom: 2,
     zIndex: 10,
     width: '100%',
-    backgroundColor: 'transparent',
   },
 
   streamListHeaderTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   streamHeaderLeftImg: {
     width: 140,
@@ -918,19 +915,18 @@ export const styles = StyleSheet.create({
 
   strHeaderScrollCategoryContainer: {
     paddingHorizontal: 4,
-    paddingBottom: 3,
+    // paddingBottom: 3,
+    paddingVertical: 3,
     flexDirection: 'row',
     alignItems: 'center',
   },
 
   strHeaderCategoryButton: {
-    backgroundColor: '#ebebeb',
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 6,
     marginHorizontal: 5,
     // Shadow for iOS
-    shadowColor: '#000',
     shadowOffset: { width: 1, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
@@ -940,7 +936,6 @@ export const styles = StyleSheet.create({
   },
 
   strHeaderCategoryText: {
-    color: '#232323',
     fontSize: 18,
     fontWeight: '600',
   },
@@ -1990,27 +1985,16 @@ export const styles = StyleSheet.create({
   psmProfileTopCard: {
     alignItems: 'center',
     // paddingHorizontal: 20,
-    backgroundColor: '#fff', // required for Android elevation
+    // backgroundColor: '#fff', // required for Android elevation
     borderRadius: 10,
     paddingTop: 140,
-    // iOS Shadow
-    shadowColor: '#d9d9d9',
-    shadowOffset: {
-      width: 0,
-      height: 20, // maps to second value in CSS (vertical offset)
-    },
-    shadowOpacity: 0.08, // similar to rgba alpha
-    shadowRadius: 20, // blur radius like the 3rd value in CSS
-
-    // Android Shadow
-    elevation: 10, // approximate effect, tweak as needed
     borderTopWidth: 0, // helps avoid shadow overlap on top
     position: 'relative',
   },
 
   psmProfileImageContainer: {
     width: screenWidth,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     position: 'absolute',
     top: -10,
     alignItems: 'center',
@@ -2036,7 +2020,7 @@ export const styles = StyleSheet.create({
   psmProfileName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    // color: '#333',
     marginBottom: 5,
   },
   psmProfileId: {
@@ -2111,7 +2095,6 @@ export const styles = StyleSheet.create({
   // Top Gifters Container
   psmTopGiftersContainer: {
     paddingVertical: 15,
-    backgroundColor: '#fff',
   },
 
   // Title
@@ -2230,6 +2213,11 @@ export const styles = StyleSheet.create({
 // Theme Styles
 export const themeStyles = {
   light: {
+    // splash screen
+    SplashScreen: {
+      backgroundColor: '#fff',
+    },
+    // common styles
     container: { backgroundColor: '#f0f4f8' },
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
@@ -2245,6 +2233,36 @@ export const themeStyles = {
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
     SingInlabel: { color: '#717580' },
+    // modal css
+    profileModalOverlay: {
+      backgroundColor: 'white',
+    },
+    psmProfileTopCard: {
+      backgroundColor: '#fff',
+      // iOS Shadow
+      shadowColor: '#d9d9d9',
+      shadowOffset: {
+        width: 0,
+        height: 20, // maps to second value in CSS (vertical offset)
+      },
+      shadowOpacity: 0.08, // similar to rgba alpha
+      shadowRadius: 20, // blur radius like the 3rd value in CSS
+
+      // Android Shadow
+      elevation: 10, // approximate effect, tweak as needed
+    },
+    psmProfileImageContainer: {
+      backgroundColor: '#fff',
+    },
+    psmTopGiftersContainer: {
+      backgroundColor: '#fff',
+    },
+    psmProfileName: {
+      color: '#333',
+    },
+    pSettingMDarkLightSTitle: {
+      color: '#232323',
+    },
     // profile css
     profileHeader: {
       backgroundColor: '#fafafa',
@@ -2289,7 +2307,16 @@ export const themeStyles = {
       backgroundColor: '#fff',
     },
     // stream list
-
+    streamListHeader: {
+      backgroundColor: '#fff',
+    },
+    strHeaderCategoryButton: {
+      backgroundColor: '#ebebeb',
+      shadowColor: '#000',
+    },
+    strHeaderCategoryText: {
+      color: '#232323',
+    },
     streamListMainTitle: {
       color: '#262628',
       // backgroundColor: "#fff"
@@ -2329,8 +2356,18 @@ export const themeStyles = {
       color: '#74858a',
     },
 
+    // footer 
+    footer: {
+      backgroundColor: '#fff',
+      borderTopColor: '#ddd', // optional: a light border color
+    },
   },
   dark: {
+    // splash screen
+    SplashScreen: {
+      backgroundColor: '#2a2a2a',
+    },
+    // common styles
     container: { backgroundColor: '#121212' },
     formContainer: { backgroundColor: '#1e1e1e' },
     text: { color: '#fff' },
@@ -2346,6 +2383,25 @@ export const themeStyles = {
     roomItem: { backgroundColor: '#2a2a2a' },
     splashButtonText: { color: '#fff' },
     SingInlabel: { color: 'white' },
+    // modal css
+    profileModalOverlay: {
+      backgroundColor: '#2a2a2a',
+    },
+    psmProfileTopCard: {
+      backgroundColor: '#2a2a2a',
+    },
+    psmProfileImageContainer: {
+      backgroundColor: '#2a2a2a',
+    },
+    psmTopGiftersContainer: {
+      backgroundColor: '#2a2a2a',
+    },
+    psmProfileName: {
+      color: '#fff',
+    },
+    pSettingMDarkLightSTitle: {
+      color: '#fff',
+    },
     // profile css
     profileHeader: {
       backgroundColor: '#2a2a2a',
@@ -2394,7 +2450,18 @@ export const themeStyles = {
     },
     // stream list
 
-
+    streamListHeader: {
+      backgroundColor: '#2a2a2a',
+      borderBottomColor: '#323232',
+      borderBottomWidth: 1,
+    },
+    strHeaderCategoryButton: {
+      backgroundColor: '#2a2a2a',
+      shadowColor: '#fff',
+    },
+    strHeaderCategoryText: {
+      color: '#fff',
+    },
     streamListMainTitle: {
       color: '#fff',
       // backgroundColor: '#2a2a2a'
@@ -2432,6 +2499,11 @@ export const themeStyles = {
     },
     messageListTime: {
       color: '#fff',
+    },
+    // footer
+    footer: {
+      backgroundColor: '#2a2a2a',
+      borderTopColor: '#323232', // optional: a light border color
     },
   },
 };

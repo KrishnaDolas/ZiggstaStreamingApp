@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { use, useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -22,6 +22,7 @@ import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
 import { useAppContext } from './src/context/AppContext';
 import { debounceStorage } from './src/utils/debounceStorage';
+import Apiclient from './src/utils/Apiclient';
 
 const Stack = createNativeStackNavigator();
 
@@ -36,19 +37,31 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
-  const { userAddress, setUserAddress, userData, setUserData, setIpAddress } = useAppContext();
+  const { userAddress, setUserAddress, userData, setUserData, setIpAddress, setProfileData, profileData, fetchProfileDetails } = useAppContext();
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
   const handleLogin = () => setIsAuthenticated(true);
 
 
-
   const handleLogout = async () => {
-    await AsyncStorage.clear();
-    setUserAddress(null);
-    setUserData(null);
-    setIpAddress('');
-    setIsAuthenticated(false);
-    hasFetchedAddress.current = false; // Allow re-fetch on next load
+    try {
+      // Only remove app/session-specific keys, not the theme
+      await AsyncStorage.multiRemove([
+        'token',
+        'UserData',
+        'locationTrackingEnabled',
+        'onlyProfileVerified',
+        'allowNotification',
+        'distanceRange',
+      ]);
+
+      setUserAddress(null);
+      setUserData(null);
+      setIpAddress('');
+      setIsAuthenticated(false);
+      hasFetchedAddress.current = false; // Allow re-fetch on next load
+    } catch (error) {
+      console.log('Logout failed:', error);
+    }
   };
 
   const fetchAddressFromIP = async () => {
@@ -138,7 +151,20 @@ const App = () => {
 
     init();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected,isAuthenticated]);
+  }, [isConnected, isAuthenticated]);
+
+
+  useEffect(() => {
+    console.log('App.jsx userData storage:', userData);
+  }, [userData]);
+
+  // Fetch profile details when userData.userid changes
+  useEffect(() => {
+    if (isAuthenticated && userData.userid) {
+      fetchProfileDetails();
+    }
+  }, [isAuthenticated, userData.userid, fetchProfileDetails]);
+
 
   // ✅ NEW: Fetch IP location only after login and if online
   useEffect(() => {

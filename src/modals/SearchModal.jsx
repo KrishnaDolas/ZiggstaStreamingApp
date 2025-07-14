@@ -1,20 +1,22 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useContext, useLayoutEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
+import { ThemeContext } from '../context/ThemeContext';
 
 const SearchModal = ({ visible, onClose,
     setSearchFilteredData, categoryData }) => {
     const screenHeight = Dimensions.get('window').height;
-    const {userAddress}=useAppContext()
+    const { theme } = useContext(ThemeContext);
+    const { userAddress } = useAppContext()
     const [searchText, setSearchText] = useState('');
     const [searchBy, setSearchBy] = useState('user');
     const [layoutReady, setLayoutReady] = useState(false);
@@ -50,7 +52,7 @@ const SearchModal = ({ visible, onClose,
         const getIsVerified = await AsyncStorage.getItem('onlyProfileVerified');
         const getMaxDistance = await AsyncStorage.getItem('distanceRange');
         const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
-        const userLocation =`${userAddress.latitude},${userAddress.longitude}`;
+        const userLocation = `${userAddress.latitude},${userAddress.longitude}`;
         const isVerifiedValue = getIsVerified === 'true' ? 1 : 0;
 
 
@@ -124,10 +126,10 @@ const SearchModal = ({ visible, onClose,
                     backdropOpacity={0}
                     style={[styles.profileModalMain, { margin: 0 }]}
                 >
-                    <View style={[styles.profileModalOverlay, { height: screenHeight * 0.6 }]}>
+                    <View style={[styles.profileModalOverlay, themeStyles[theme].profileModalOverlay, { height: screenHeight * 0.6 }]}>
                         {/* close modal */}
                         <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                            <Ionicons name="close" size={23} color="#333" />
+                            <Ionicons name="close" size={23} color={theme === 'light' ? '#333' : '#fff'} />
                         </TouchableOpacity>
                         <View style={[styles.profileSettingModalBody]}>
                             <ScrollView
@@ -162,7 +164,7 @@ const SearchModal = ({ visible, onClose,
                                 {isSearchLoading && (
                                     <View style={{ paddingVertical: 10 }}>
                                         <ActivityIndicator size="small" color="#d93a63" />
-                                        <Text style={{ textAlign: 'center', marginTop: 5 }}>Searching...</Text>
+                                        <Text style={{ color: theme === 'light' ? '#000' : '#fff', textAlign: 'center', marginTop: 5 }}>Searching...</Text>
                                     </View>
                                 )}
 

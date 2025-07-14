@@ -1,16 +1,18 @@
 // components/ProfileSocialsModal.js
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Apiclient from '../utils/Apiclient';
 import { useAppContext } from '../context/AppContext';
-import { SendErrorTotheServer } from '../utils/constant';
+// import { SendErrorTotheServer } from '../utils/constant';
+import { ThemeContext } from '../context/ThemeContext';
 
 
 const ProfileSocialsModal = ({ visible, onClose }) => {
+    const { theme } = useContext(ThemeContext);
     const { userData } = useAppContext();
     const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
@@ -119,9 +121,10 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                 swipeDirection={['down']}
                 onSwipeComplete={onClose}
             >
-                <View style={[styles.profileModalOverlay]}>
+                <View style={[styles.profileModalOverlay,
+                themeStyles[theme].profileModalOverlay]}>
                     <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                        <Ionicons name="close" size={23} color="#333" />
+                        <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
                     <View style={[styles.profileMSocialBox]}>
                         {loading ? (
@@ -133,13 +136,13 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                                         <FontAwesome5
                                             name={item.icon}
                                             size={24}
-                                            color="#232323"
+                                            color={theme === 'light' ? '#232323' : '#fff'}
                                             style={[styles.profileMSocialBoxItemIcon]}
                                         />
                                     ) : (
                                         <Image
                                             source={item.image}
-                                            style={[styles.profileMSocialBoxItemIcon, { width: 20, height: 20, resizeMode: 'contain' }]}
+                                            style={[styles.profileMSocialBoxItemIcon, { width: 20, height: 20, resizeMode: 'contain', tintColor: theme === 'dark' ? '#fff' : undefined, }]}
                                         />
                                     )}
                                     <TextInput
