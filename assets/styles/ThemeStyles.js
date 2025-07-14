@@ -719,16 +719,14 @@ export const styles = StyleSheet.create({
   },
 
   profileErrorBoxMain: {
-    backgroundColor: '#f44336',
     padding: 12,
-    margin: 10,
     borderRadius: 8,
   },
 
   profileErrorText: {
-    color: '#fff',
+    color: 'red',
     textAlign: 'center',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
 
   // profile style end
@@ -1709,7 +1707,6 @@ export const styles = StyleSheet.create({
 
   wdTabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
     borderRadius: 10,
     marginBottom: 10,
     overflow: 'hidden',
@@ -1768,7 +1765,6 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   wDFormContainer: {
-    backgroundColor: '#fff',
     paddingVertical: 40,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -1828,7 +1824,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
   },
   wdFormInfoText: {
-    color: '#000',
     fontSize: 12,
     marginTop: 5,
     fontWeight: '500',
@@ -2264,6 +2259,10 @@ export const themeStyles = {
       color: '#232323',
     },
     // profile css
+
+    profileErrorBoxMain: {
+      backgroundColor: '#fff',
+    },
     profileHeader: {
       backgroundColor: '#fafafa',
     },
@@ -2355,8 +2354,17 @@ export const themeStyles = {
     messageListTime: {
       color: '#74858a',
     },
-
-    // footer 
+    // wallet dashboard
+    wDFormContainer: {
+      backgroundColor: '#fff',
+    },
+    wdFormInfoText: {
+      color: '#000',
+    },
+    wdTabContainer: {
+      backgroundColor: '#f0f0f0',
+    },
+    // footer
     footer: {
       backgroundColor: '#fff',
       borderTopColor: '#ddd', // optional: a light border color
@@ -2401,6 +2409,9 @@ export const themeStyles = {
     },
     pSettingMDarkLightSTitle: {
       color: '#fff',
+    },
+    profileErrorBoxMain: {
+      backgroundColor: '#2a2a2a',
     },
     // profile css
     profileHeader: {
@@ -2498,6 +2509,16 @@ export const themeStyles = {
       color: '#fff',
     },
     messageListTime: {
+      color: '#fff',
+    },
+    // wallet dashboard
+    wdTabContainer: {
+      backgroundColor: '#323232d9',
+    },
+    wDFormContainer: {
+      backgroundColor: '#2a2a2a',
+    },
+    wdFormInfoText: {
       color: '#fff',
     },
     // footer

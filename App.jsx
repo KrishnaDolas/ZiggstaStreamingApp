@@ -37,7 +37,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
-  const { userAddress, setUserAddress, userData, setUserData, setIpAddress, setProfileData, profileData, fetchProfileDetails } = useAppContext();
+  const { userAddress, setUserAddress, userData, setUserData, setIpAddress, fetchProfileDetails } = useAppContext();
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
   const handleLogin = () => setIsAuthenticated(true);
 
@@ -160,10 +160,10 @@ const App = () => {
 
   // Fetch profile details when userData.userid changes
   useEffect(() => {
-    if (isAuthenticated && userData.userid) {
+    if (isAuthenticated && userData?.userid) {
       fetchProfileDetails();
     }
-  }, [isAuthenticated, userData.userid, fetchProfileDetails]);
+  }, [isAuthenticated, userData?.userid, fetchProfileDetails]);
 
 
   // ✅ NEW: Fetch IP location only after login and if online

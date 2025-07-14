@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
+import BalanceHistoryModal from '../modals/BalanceHistoryModal';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
@@ -33,6 +34,8 @@ export const WalletDashboardScreen = () => {
     const [isFocused, setIsFocused] = useState(false);
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [bankListData, setBankListData] = useState([]);
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [loadingSubmit, setLoadingSubmit] = useState(false);
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
@@ -128,6 +131,7 @@ export const WalletDashboardScreen = () => {
 
     // Handle tab change
     const handleTabChange = (tab) => {
+        setSuccessMessage('');
         setActiveTab(tab);
         setErrorMessage('');
         setSelectedAmount(5);
@@ -137,11 +141,10 @@ export const WalletDashboardScreen = () => {
     };
 
     const handleSubmit = async () => {
-        // const token = await AsyncStorage.getItem('token');
-        // if (!token || !userData?.userid) {
-        //     setErrorMessage('Invalid user session');
-        //     return;
-        // }
+        if (loadingSubmit) return; // prevent duplicate submits
+
+        setErrorMessage('');
+        setSuccessMessage('');
         if (activeTab === 'Deposit') {
             if (!paymentMethod) {
                 setErrorMessage('Please select a payment method');
@@ -160,6 +163,7 @@ export const WalletDashboardScreen = () => {
                     setErrorMessage('Please select a valid user');
                     return;
                 }
+                setLoadingSubmit(true);
                 setErrorMessage('');
                 const postData = {
                     // token: token,
@@ -168,13 +172,11 @@ export const WalletDashboardScreen = () => {
                     // amount: selectedAmount,
                     amount: Number(selectedAmount.toFixed(2)),
                 };
-
-                console.log('transfercredit postData', postData);
                 const response = await Apiclient.post('/transfercredit', postData);
                 if (response.status === 200) {
-                    const data = response.data || [];
+                    // const data = response.data || [];
                     setSuccessMessage(response.data?.message);
-                    console.log('transfercredit response', data);
+                    // console.log('transfercredit response', data);
                     // Refresh profile data to update CreditBalance
                     await fetchProfileDetails();
                 } else {
@@ -184,6 +186,8 @@ export const WalletDashboardScreen = () => {
                 console.error('Error getting when transfer amount to user:', error);
                 SendErrorTotheServer(error, 'getFriendRequestData');
                 setErrorMessage('Error getting when transfer amount to user');
+            } finally {
+                setLoadingSubmit(false); // Always reset loading
             }
         }
     };
@@ -226,7 +230,7 @@ export const WalletDashboardScreen = () => {
                             nestedScrollEnabled={true}
                         >
                             {/* wallet tabs button */}
-                            <View style={styles.wdTabContainer}>
+                            <View style={[styles.wdTabContainer, themeStyles[theme].wdTabContainer]}>
                                 {['Deposit', 'Withdraw', 'Transfer'].map((tab, index) => (
                                     <TouchableOpacity
                                         key={tab}
@@ -271,8 +275,7 @@ export const WalletDashboardScreen = () => {
                                 ))}
                             </View>
                             {/* forms inputs based on wallet tabs  */}
-                            <View style={styles.wDFormContainer}>
-
+                            <View style={[styles.wDFormContainer, themeStyles[theme].wDFormContainer]}>
                                 {/* if tab is deposit */}
                                 {activeTab === 'Deposit' ? (
                                     <View style={styles.wdPickerWrapper}>
@@ -357,19 +360,28 @@ export const WalletDashboardScreen = () => {
                                 {errorMessage !== '' && <Text style={styles.wdFormError}>{errorMessage}</Text>}
                                 {successMessage !== '' && <Text style={styles.wdFormSuccess}>{successMessage}</Text>}
                                 {/* actions bases on active tab */}
-                                <TouchableOpacity onPress={handleSubmit} style={styles.wdFormButtonOverlay}>
+                                <TouchableOpacity
+                                    onPress={handleSubmit}
+                                    disabled={loadingSubmit}
+                                    style={styles.wdFormButtonOverlay}
+                                >
                                     <LinearGradient
                                         colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 1 }}
                                         style={styles.wdFormGradientButton}
                                     >
-                                        <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Place Withdraw request' : 'Transfer'} </Text>
+                                        {loadingSubmit ? (
+                                            <ActivityIndicator size="small" color="#fff" />
+                                        ) : (
+
+                                            <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Place Withdraw request' : 'Transfer'} </Text>
+                                        )}
                                     </LinearGradient>
                                 </TouchableOpacity>
 
                                 {/* Info Text */}
-                                <Text style={styles.wdFormInfoText}>
+                                <Text style={[styles.wdFormInfoText, themeStyles[theme].wdFormInfoText]}>
                                     {activeTab === 'Deposit' ?
                                         'Add funds to your account securely using any supported payment method.' : activeTab === 'Withdraw' ? 'Transfer your balance to your bank or preferred payout option.' : 'Transfer credits to another Ziggster.'}
                                 </Text>
@@ -387,10 +399,10 @@ export const WalletDashboardScreen = () => {
                             </Text>
                             <View style={styles.wDReferralStatsContainer}>
                                 <View style={styles.wDReferralStatsRow}>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
+                                    <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={styles.wdRefStateTitle}>Balance</Text>
                                         <Text style={styles.wdRefStateValue}>${profileData?.CreditBalance}</Text>
-                                    </View>
+                                    </TouchableOpacity>
                                     <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={styles.wdRefStateTitle}>Today's Signups</Text>
                                         <Text style={styles.wdRefStateValue}>20</Text>
@@ -419,6 +431,9 @@ export const WalletDashboardScreen = () => {
                     </KeyboardAvoidingView>
 
                 </View>
+                {visibleModal === 'setting' && (
+                    <BalanceHistoryModal visible="true" onClose={() => setVisibleModal(null)} />
+                )}
                 <Footer />
             </SafeAreaView>
         </LinearGradient>

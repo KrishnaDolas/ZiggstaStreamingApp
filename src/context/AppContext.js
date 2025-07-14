@@ -16,9 +16,9 @@ export const AppProvider = ({ children }) => {
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
         try {
-            if (!userData.userid) return; // Guard clause
+            if (!userData?.userid) return; // Guard clause
             const formData = {
-                userid: userData.userid,
+                userid: userData?.userid,
             };
             const response = await Apiclient.post('/getUserDetails', formData);
             if (response.status === 200) {
@@ -27,7 +27,7 @@ export const AppProvider = ({ children }) => {
         } catch (err) {
             console.log('Error fetching user profile details: ' + err.message);
         }
-    }, [userData.userid, setProfileData]);
+    }, [userData?.userid, setProfileData]);
 
     return (
         <AppContext.Provider value={{
