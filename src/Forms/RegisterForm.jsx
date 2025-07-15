@@ -797,7 +797,7 @@ export const RegisterForm = ({
           />
           {usernameStatus === 'checking' && (
             <ActivityIndicator
-              style={{ position: 'absolute', right: 10, top: 15 }}
+              style={{ position: 'absolute', right: 10, top: 10 }}
               size="small"
               color="#666"
             />
@@ -807,7 +807,7 @@ export const RegisterForm = ({
               name="check"
               size={20}
               color="green"
-              style={{ position: 'absolute', right: 10, top: 15 }}
+              style={{ position: 'absolute', right: 10, top: 10 }}
             />
           )}
           {errors[question.field] && (

@@ -227,10 +227,16 @@ export const Signup = ({
               <Icon
                 name={acceptTerms ? 'check-square' : 'square-o'}
                 size={20}
-                color={theme === 'light' ? '#1e1e1e' : 'white'}
+                color={
+                  acceptTerms
+                    ? 'green'
+                    : theme === 'light'
+                      ? '#b8b8b8ff'
+                      : 'white'
+                }
                 style={{ marginRight: 10 }}
               />
-              <Text style={{ color: theme === 'light' ? '#1e1e1e' : '#fff' }}>
+              <Text style={{ color: theme === 'light' ? '#444' : '#fff' }}>
                 I accept the terms & conditions
               </Text>
             </TouchableOpacity>
@@ -242,10 +248,16 @@ export const Signup = ({
               <Icon
                 name={isAbove18 ? 'check-square' : 'square-o'}
                 size={20}
-                color={theme === 'light' ? '#1e1e1e' : 'white'}
+                color={
+                  isAbove18
+                    ? 'green'
+                    : theme === 'light'
+                      ? '#b8b8b8ff'
+                      : 'white'
+                }
                 style={{ marginRight: 10 }}
               />
-              <Text style={{ color: theme === 'light' ? '#1e1e1e' : '#fff' }}>
+              <Text style={{ color: theme === 'light' ? '#444' : '#fff' }}>
                 I am above 18 years of age
               </Text>
             </TouchableOpacity>
