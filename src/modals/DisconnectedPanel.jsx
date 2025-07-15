@@ -1,16 +1,14 @@
 import { View, ActivityIndicator, Text } from "react-native";
 
 const DisconnectedPanel = ({ time }) => {
+    console.log(time);
     return (
-        <View>
-            <View style={DisconnetPanelstyles.overlay}>
+        <View style={DisconnetPanelstyles.overlay}>
                 <View style={DisconnetPanelstyles.popup}>
-                    <ActivityIndicator size="large" color="#FF5C5C" />
                     <Text style={DisconnetPanelstyles.message}>
-                        Please reconnect to the internet.{"\n"}Your stream will end in {time} seconds.
+                    <ActivityIndicator size="large" color="white" /> Please reconnect to the internet.Your stream will end in {time} seconds.
                     </Text>
                 </View>
-            </View>
         </View>
     )
 }
@@ -23,17 +21,16 @@ const DisconnetPanelstyles = {
         left: 0,
         height: '100%',
         width: '100%',
-        backgroundColor: 'rgba(20, 20, 20, 0.75)',
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 9999,
         paddingHorizontal: 20,
     },
     popup: {
-        backgroundColor: '#fff',
-        paddingVertical: 25,
+        backgroundColor: 'red',
+        paddingVertical: 20,
         paddingHorizontal: 20,
-        borderRadius: 16,
+        borderRadius: 20,
         alignItems: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -48,8 +45,8 @@ const DisconnetPanelstyles = {
         color: '#222',
     },
     message: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 18,
+        color: 'white',
         marginTop: 8,
         textAlign: 'center',
         lineHeight: 20,

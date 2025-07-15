@@ -21,6 +21,7 @@ import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import ConnectingPanel from '../modals/CoonectingPanel';
+import DisconnectedPanel from '../modals/DisconnectedPanel';
 export const MainScreen = () => {
   const {userData,userAddress}=useAppContext()
   const [remoteStreams, setRemoteStreams] = useState([]);
@@ -46,41 +47,10 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]); //{CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
-  const [countdown,setCountdown]=useState(0)
+  const [countdown,setCountdown]=useState(30)
+  const [connectingpanel,setconnectingpanel]=useState(false)
   const countdownRef = useRef(null);
   const IsIdentify=useRef(false)
-
-  useEffect(() => {
-    if (!isSocketConnected) {
-      setCountdown(30); // reset to 30 on disconnect
-  
-      countdownRef.current = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(countdownRef.current);
-            leaveRoom(); // auto-leave or fallback
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      // ✅ Socket is connected -> clear the timer if running
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-      setCountdown(30); // reset countdown if needed
-    }
-  
-    return () => {
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-    };
-  }, [isSocketConnected]);
-  
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -165,6 +135,7 @@ export const MainScreen = () => {
   const HandleConnect=()=>{
     clearInterval(countdownRef.current);
     console.log('✅ Connected to Socket.IO server');
+    setconnectingpanel(false)
     setIsSocketConnected(true); // Update connection status
     if(!IsIdentify.current &&userData){
      setTimeout(() => {
@@ -457,6 +428,7 @@ export const MainScreen = () => {
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
+    setconnectingpanel(true)
     IsIdentify.current = false; // Reset identify flag
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -808,6 +780,7 @@ export const MainScreen = () => {
         barStyle="dark-content"
         backgroundColor="#fff"
       />
+      {connectingpanel && joined  && (<DisconnectedPanel time={countdown} />)}
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
