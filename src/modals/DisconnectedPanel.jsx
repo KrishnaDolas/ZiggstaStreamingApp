@@ -1,6 +1,6 @@
 import { View, ActivityIndicator, Text } from "react-native";
 
-export default DisconnectedPanel = ({ time }) => {
+const DisconnectedPanel = ({ time }) => {
     return (
         <View>
             <View style={DisconnetPanelstyles.overlay}>
@@ -14,6 +14,7 @@ export default DisconnectedPanel = ({ time }) => {
         </View>
     )
 }
+export default DisconnectedPanel
 
 const DisconnetPanelstyles = {
     overlay: {
