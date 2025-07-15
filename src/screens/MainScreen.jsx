@@ -147,7 +147,7 @@ export const MainScreen = () => {
     setLocalStream(null);
     setRemoteStreams([]);
     peersRef.current={};
-    pendingCandidates.current=null;
+    pendingCandidates.current={};
     setIsMuted({HostControl: false, muted: false})
     setHasRequestedStream(false)
     setStreamRequestList([])
@@ -171,6 +171,7 @@ export const MainScreen = () => {
       setJoined(true);
       setIsLoading(false);
       setIsHost(true);
+      await requestPermissions();
       await startLocalStream();
       socket.emit('assignHost');
     }else{
@@ -203,9 +204,7 @@ export const MainScreen = () => {
   }
   const HandleNewUser =async (userId) => {
     try {
-      socket.emit('Clientlogs',`useird is --->`, userId)
       if (!peersRef.current[userId]) {
-        socket.emit('Clientlogs',`Creating peerconnection for --->`, userId)
         const peer = createPeer(userId);
         peersRef.current[userId] = peer;
         //viewer count increment
@@ -219,7 +218,6 @@ export const MainScreen = () => {
   }
   const HandleSignal=async ({ from, data }) => {
     try {
-      socket.emit('Clientlogs',`from ---->${from},  data----> ${data} `)
       let peer = peersRef.current[from];
       if (!peer) {
         peer = createPeer(from);
@@ -603,7 +601,6 @@ export const MainScreen = () => {
      
       peer.onicecandidate = (event) => {
         if (event.candidate) {
-          socket.emit('Clientlogs',`To ---->${socketId},  data----> ${event.candidate} `)
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
@@ -675,6 +672,7 @@ export const MainScreen = () => {
       setLocalStream(stream);
       setIsStreaming(true);
       // ✅ Start InCallManager and route audio to speaker
+      stream.getTracks().forEach(track => track.enabled = true); // 🔊 ensure unmuted
       InCallManager.start({ media: 'audio' }); // or 'video' if you have both
       InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
       InCallManager.setSpeakerphoneOn(true);      // For Android

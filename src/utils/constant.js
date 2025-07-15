@@ -46,10 +46,10 @@ import { io } from 'socket.io-client';
   export function SendErrorTotheServer(error,functionname){
     try {
           // You can also send this error to your server for logging
-    socket.emit('errorLog',error,functionname);
-    // Alert.alert('Error', `An error occurred: ${error.message}`, [
-    //   { text: 'OK' }
-    // ]);
+    socket.emit('Clientlogs',error.message);
+    Alert.alert('Error', `An error occurred: ${error.message}`, [
+      { text: 'OK' }
+    ]);
     } catch (error) {
       socket.emit('errorLog', error.message, 'SendErrorTotheServer');
     }
