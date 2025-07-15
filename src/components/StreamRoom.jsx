@@ -18,6 +18,7 @@ import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
+import DisconnectedPanel from '../modals/DisconnectedPanel';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -73,7 +74,8 @@ const StreamRoom = ({
     streamInfo,
     streamrequestlist,
     streamGuest,
-    socket
+    socket,
+    isSocketConnected
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -708,6 +710,7 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
+            {!isSocketConnected && (<DisconnectedPanel time={30} />)}
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
             {/* close stream modal  */}
             {closeStreamModal && (

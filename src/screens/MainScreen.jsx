@@ -795,6 +795,7 @@ export const MainScreen = () => {
         streamrequestlist={streamrequestlist}
         streamGuest={streamGuest}
         socket={socket}
+        isSocketConnected={isSocketConnected}
       />)}
       </View>
     </LinearGradient>
