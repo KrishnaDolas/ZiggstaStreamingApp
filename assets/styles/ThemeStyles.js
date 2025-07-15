@@ -1562,6 +1562,8 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
   },
   strRoomBottomBox: {
+    position:'absolute',
+    bottom:0,
     paddingHorizontal: 14,
     paddingBottom: 6,
     flexDirection: 'row',

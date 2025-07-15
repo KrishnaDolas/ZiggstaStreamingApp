@@ -1,5 +1,4 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
@@ -19,7 +18,6 @@ import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
-import DisconnectedPanel from '../modals/DisconnectedPanel';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -75,9 +73,7 @@ const StreamRoom = ({
     streamInfo,
     streamrequestlist,
     streamGuest,
-    socket,
-    isSocketConnected,
-    countdown
+    socket
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -562,7 +558,7 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
-                                <View style={[styles.strRoomBottomBox, { marginBottom: keyboardOffset }]}>
+                                <View style={[styles.strRoomBottomBox]}>
                                     <TextInput
                                         placeholder=""
                                         placeholderTextColor="#414141"
@@ -712,7 +708,6 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-            {!isSocketConnected && (<DisconnectedPanel time={countdown} />)}
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
             {/* close stream modal  */}
             {closeStreamModal && (
@@ -722,4 +717,4 @@ const StreamRoom = ({
     );
 };
 
-export default React.memo(StreamRoom);
+export default StreamRoom;
