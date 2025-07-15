@@ -1,16 +1,15 @@
 /* eslint-disable react-native/no-inline-styles */
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
+import { ThemeContext } from '../context/ThemeContext';
 
 const EmailConfirmModal = ({ visible, onClose, userData }) => {
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
-
-
-
     return (
         <Modal
             isVisible={visible}
@@ -30,7 +29,7 @@ const EmailConfirmModal = ({ visible, onClose, userData }) => {
         >
             <View style={{
                 width: '100%', // like drawer
-                backgroundColor: '#fff',
+                backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
                 padding: 16,
                 shadowColor: '#000',
                 shadowOffset: { width: -3, height: 0 },
@@ -50,16 +49,16 @@ const EmailConfirmModal = ({ visible, onClose, userData }) => {
                         {/* Image */}
                         <View style={{ marginBottom: 20 }}>
                             <Image
-                                source={require('../../assets/images/confirmation-email.jpg')}
+                                source={require('../../assets/images/confirmation-email.png')}
                                 style={{ width: 140, height: 140, resizeMode: 'contain' }}
                             />
                         </View>
 
                         {/* Confirmation Message */}
-                        <Text style={{ fontSize: 18, fontWeight: '600', color: '#333', textAlign: 'center', marginBottom: 10 }}>
+                        <Text style={{ fontSize: 18, fontWeight: '600', color: theme === 'light' ? '#333' : '#fff', textAlign: 'center', marginBottom: 10 }}>
                             Confirm Your Email Address
                         </Text>
-                        <Text style={{ fontSize: 14, color: '#666', textAlign: 'center', paddingHorizontal: 25, marginBottom: 30 }}>
+                        <Text style={{ fontSize: 14, color: theme === 'light' ? '#666' : '#fff', textAlign: 'center', paddingHorizontal: 25, marginBottom: 30 }}>
                             To continue, please confirm your email address. We’ve sent a link to your registered email. Click the button below once you've confirmed.
                         </Text>
                         {/* Confirm Button */}
@@ -85,7 +84,7 @@ const EmailConfirmModal = ({ visible, onClose, userData }) => {
 
                 </View>
             </View>
-        </Modal>
+        </Modal >
     );
 };
 

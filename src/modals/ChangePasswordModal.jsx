@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -7,8 +7,10 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import Apiclient from '../utils/Apiclient';
+import { ThemeContext } from '../context/ThemeContext';
 
 const ChangePasswordModal = ({ visible, onClose, userData }) => {
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [submitting, setSubmitting] = useState(false);
     const [currentPassword, setCurrentPassword] = useState('');
@@ -119,7 +121,7 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
         >
             <View style={{
                 width: '100%', // like drawer
-                backgroundColor: '#fff',
+                backgroundColor:  theme === 'light' ? '#fff' : '#2a2a2a',
                 padding: 16,
                 shadowColor: '#000',
                 shadowOffset: { width: -3, height: 0 },

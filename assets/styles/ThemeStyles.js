@@ -1222,7 +1222,7 @@ export const styles = StyleSheet.create({
   },
   modalSmallTitle: {
     fontSize: 18,
-    color: '#000',
+    // color: '#000',
     marginBottom: 20,
   },
   modalLargeTitle: {
@@ -1253,7 +1253,6 @@ export const styles = StyleSheet.create({
   },
 
   fullScreenModalOverlay: {
-    backgroundColor: 'white',
     padding: 10,
   },
 
@@ -1717,17 +1716,14 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 9,
     paddingHorizontal: 12,
-    backgroundColor: '#e0e0e0',
     alignItems: 'center',
     borderRadius: 7,
   },
   wdActiveTab: {
-    backgroundColor: '#ffffff',
     borderWidth: 2,
-    borderColor: '#007bff',
   },
   wdTabText: {
-    color: '#333',
+    // color: '#333',
     fontWeight: '600',
   },
   wdActiveTabText: {
@@ -1745,23 +1741,22 @@ export const styles = StyleSheet.create({
     // padding: 10,
     paddingHorizontal: 22,
     paddingVertical: 10,
-    backgroundColor: '#e6f0ff',
+    // backgroundColor: '#e6f0ff',
     margin: 5,
     borderRadius: 5,
     alignItems: 'center',
   },
   wdAmountSelected: {
-    backgroundColor: '#004080',
+    // backgroundColor: '#004080',
     borderWidth: 2,
-    borderColor: '#007bff',
+    // borderColor: '#007bff',
   },
   wdAmountText: {
-    color: '#004080',
+    // color: '#004080',
     fontWeight: '500',
-
   },
   wdAmountTextSelected: {
-    color: '#fff',
+    // color: '#fff',
     fontWeight: 'bold',
   },
   wDFormContainer: {
@@ -1849,14 +1844,14 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   wdRefStateCard: {
-    backgroundColor: '#f5f5f5',
+    // backgroundColor: '#f5f5f5',
     borderRadius: 8,
     paddingVertical: 5,
     height: 70,
     alignItems: 'center',
     justifyContent: 'space-between',
     // Box shadow equivalent
-    shadowColor: '#000',
+    // shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -1864,7 +1859,7 @@ export const styles = StyleSheet.create({
   },
   wdRefStateTitle: {
     fontSize: 14,
-    color: '#555',
+    // color: '#555',
     fontWeight: '500',
     textAlign: 'center',
   },
@@ -1872,7 +1867,7 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 5,
-    color: '#222',
+    // color: '#222',
     textAlign: 'center',
   },
   wdFriendsDropdownContainer: {
@@ -2258,6 +2253,13 @@ export const themeStyles = {
     pSettingMDarkLightSTitle: {
       color: '#232323',
     },
+    fullScreenModalOverlay: {
+      backgroundColor: 'white',
+    },
+    modalSmallTitle: {
+      color: '#000',
+    },
+
     // profile css
 
     profileErrorBoxMain: {
@@ -2364,6 +2366,43 @@ export const themeStyles = {
     wdTabContainer: {
       backgroundColor: '#f0f0f0',
     },
+    wdTabButton: {
+      backgroundColor: '#e0e0e0',
+    },
+    wdActiveTab: {
+      backgroundColor: '#ffffff',
+      borderColor: '#007bff',
+    },
+    wdTabText: {
+      color: '#333',
+    },
+    wdActiveTabText: {
+      color: '#000',
+    },
+    wdRefStateCard: {
+      backgroundColor: '#f5f5f5',
+      shadowColor: '#000',
+    },
+    wdRefStateTitle: {
+      color: '#555',
+    },
+    wdRefStateValue: {
+      color: '#222',
+    },
+    wdAmountButton: {
+      backgroundColor: '#e6f0ff',
+    },
+    wdAmountSelected: {
+      backgroundColor: '#004080',
+      borderColor: '#007bff',
+    },
+    wdAmountText: {
+      color: '#004080',
+    },
+    wdAmountTextSelected: {
+      color: '#fff',
+    },
+
     // footer
     footer: {
       backgroundColor: '#fff',
@@ -2413,6 +2452,13 @@ export const themeStyles = {
     profileErrorBoxMain: {
       backgroundColor: '#2a2a2a',
     },
+    fullScreenModalOverlay: {
+      backgroundColor: '#2a2a2a',
+    },
+    modalSmallTitle: {
+      color: '#fff',
+    },
+
     // profile css
     profileHeader: {
       backgroundColor: '#2a2a2a',
@@ -2519,6 +2565,42 @@ export const themeStyles = {
       backgroundColor: '#2a2a2a',
     },
     wdFormInfoText: {
+      color: '#fff',
+    },
+    wdTabButton: {
+      backgroundColor: '#2c2c2c',
+    },
+    wdActiveTab: {
+      backgroundColor: '#1a1a1a',
+      borderColor: '#4da3ff',
+    },
+    wdTabText: {
+      color: '#ccc', // light gray for inactive tab text
+    },
+    wdActiveTabText: {
+      color: '#fff', // pure white for active tab text
+    },
+    wdRefStateCard: {
+      backgroundColor: '#2a2a2a',
+      shadowColor: '#fff',
+    },
+    wdRefStateTitle: {
+      color: '#ccccccff',
+    },
+    wdRefStateValue: {
+      color: '#fff',
+    },
+    wdAmountButton: {
+      backgroundColor: '#333c4a',
+    },
+    wdAmountSelected: {
+      backgroundColor: '#1a2b44',
+      borderColor: '#4da3ff',
+    },
+    wdAmountText: {
+      color: '#cce4ff',
+    },
+    wdAmountTextSelected: {
       color: '#fff',
     },
     // footer

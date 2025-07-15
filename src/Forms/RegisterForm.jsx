@@ -29,9 +29,9 @@ const questions = [
     placeholder: 'Enter your screen name',
   },
   {
-    label: 'What is your Email?',
-    field: 'email',
-    placeholder: 'Enter your email',
+    label: 'What is your User name?',
+    field: 'userName',
+    placeholder: 'Enter your user name',
   },
   {
     label: 'What is your Location?',
@@ -54,6 +54,9 @@ const getDefaultDOB = () => {
   const day = String(today.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
+
+const isValidUsername = name =>
+  /^[a-zA-Z0-9_]+$/.test(name) && name.length >= 6 && !/\s/.test(name);
 
 export const RegisterForm = ({
   userData,
@@ -81,7 +84,7 @@ export const RegisterForm = ({
 
   const [formData, setFormData] = useState({
     screenname: '',
-    email: '',
+    userName: '',
     location: '',
     dob: getDefaultDOB(), // ✅ default 18 years ago
     gender: '',
@@ -319,7 +322,6 @@ export const RegisterForm = ({
   useEffect(() => {
     if (userData || userAddress) {
       const updatedForm = {
-        screenname: userData?.username || '',
         city: userAddress?.city || '',
         state: userAddress?.state || '',
         country: userAddress?.country || '',
@@ -330,6 +332,8 @@ export const RegisterForm = ({
         ...updatedForm,
       }));
     }
+    console.log('userData', userData);
+
   }, [userData, userAddress]);
 
   const toggleInterest = interest => {
@@ -766,11 +770,10 @@ export const RegisterForm = ({
 
       // Build final payload object
       const finalData = {
-        username: userData?.username.trim(),
+        username: formData.userName.trim(),
         password: userData?.password.trim(),
-        email: formData.email.trim(),
+        email: userData?.email,
         screenName: formData.screenname.trim(),
-        // dob: formData.dob ? formatISO(formData.dob) : null,
         dob: formData.dob,
         gender: formData.gender,
         city: formData.city || userAddress?.city || formData.location || '',
@@ -814,11 +817,11 @@ export const RegisterForm = ({
 
   const userLogedIn = async () => {
     const parameter = {
-      username: userData?.username,
+      email: userData?.email,
       password: userData?.password,
     };
     const res = await axios.post(
-      'https://api.streamalong.live/login',
+      'https://api.streamalong.live/auth/login',
       parameter,
       {
         headers: {
@@ -927,9 +930,9 @@ export const RegisterForm = ({
           error = 'Screen name must be at least 5 characters';
         }
         break;
-      case 'email':
-        if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          error = 'Please enter a valid email address';
+      case 'userName':
+        if (!value || !isValidUsername(value)) {
+          error = 'Username must be at least 6 characters with only letters, numbers, or underscores';
         }
         break;
       case 'location':

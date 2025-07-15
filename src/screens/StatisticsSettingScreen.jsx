@@ -141,9 +141,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
                         <View style={styles.profileBlock}>
                             <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
-                            {profileData?.CreditBalance ? (
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>${profileData?.CreditBalance}</Text>
-                            ) : <ActivityIndicator size="small" />}
+                            <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>${profileData?.CreditBalance}</Text>
                         </View>
                     </View>
 

@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -7,18 +7,22 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import Apiclient from '../utils/Apiclient';
+import { ThemeContext } from '../context/ThemeContext';
 
 const ChangeEmailModal = ({ visible, onClose, userData }) => {
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [currentEmail, setCurrentEmail] = useState('');
     const [newEmail, setNewEmail] = useState('');
     const [errors, setErrors] = useState({});
     const [successMessage, setSuccessMessage] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [loadingEmail, setLoadingEmail] = useState(true);
 
     // get profile details from API
     useEffect(() => {
         const fetchProfileDetails = async () => {
+            setLoadingEmail(true);
             try {
                 const formData = {
                     userid: userData.userid,
@@ -29,6 +33,8 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
                 }
             } catch (err) {
                 setErrors('Error fetching user profile details: ' + err.message);
+            } finally {
+                setLoadingEmail(false);
             }
         };
         fetchProfileDetails();
@@ -110,7 +116,7 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
         >
             <View style={{
                 width: '100%', // like drawer
-                backgroundColor: '#fff',
+                backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
                 padding: 16,
                 shadowColor: '#000',
                 shadowOffset: { width: -3, height: 0 },
@@ -143,6 +149,23 @@ const ChangeEmailModal = ({ visible, onClose, userData }) => {
                                 autoCapitalize="none"
                                 readOnly
                             />
+                            {loadingEmail && (
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        // backgroundColor: 'rgba(255,255,255,0.6)', // optional light overlay
+                                        borderRadius: 6, // match your input styling
+                                    }}
+                                >
+                                    <ActivityIndicator size="small" color="#666" />
+                                </View>
+                            )}
                             {errors.currentEmail && (
                                 <Text style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
                                     {errors.currentEmail}

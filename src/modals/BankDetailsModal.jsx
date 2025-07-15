@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import BankAddModal from './BankAddModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Apiclient from '../utils/Apiclient';
+import { ThemeContext } from '../context/ThemeContext';
 
 const BankDetailsModal = ({ visible, onClose, userData }) => {
+    const { theme } = useContext(ThemeContext);
     const [bankListData, setBankListData] = useState([]);
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
     const [visibleModal, setVisibleModal] = useState(null);
@@ -129,18 +131,18 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                 useNativeDriver={true}
                 style={styles.fullScreenModalMain}
             >
-                <View style={[styles.fullScreenModalOverlay, { flex: 1 }]}>
+                <View style={[styles.fullScreenModalOverlay, themeStyles[theme].fullScreenModalOverlay, { flex: 1 }]}>
                     <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
                         <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                             <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn]}>
-                                <Ionicons name="close" size={28} color="#333" />
+                                <Ionicons name="close" size={28} color={theme === 'dark' ? '#fff' : '#000'} />
                             </TouchableOpacity>
                         </View>
 
                         {isModalRendered && (
                             <>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 10 }}>
-                                    <Text style={[styles.modalSmallTitle, { fontWeight: '500', marginBottom: 0 }]}>Your Bank Details List</Text>
+                                    <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { fontWeight: '500', marginBottom: 0 }]}>Your Bank Details List</Text>
                                     {bankListData.length < 3 && (
                                         <TouchableOpacity onPress={() => setVisibleModal('add-bank')} style={styles.btnNav}>
                                             <Text style={{ color: 'white' }}>Add</Text>
@@ -160,7 +162,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                 {loading ? (
                                     <View style={{ flex: 1, justifyContent: 'start', alignItems: 'center', paddingTop: 60 }}>
                                         <ActivityIndicator size="large" />
-                                        <Text style={{ marginTop: 10 }}>Loading bank details...</Text>
+                                        <Text style={{ marginTop: 10, color: theme === 'dark' ? '#fff' : '#000' }}>Loading bank details...</Text>
                                     </View>
                                 ) : <ScrollView
                                     contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
@@ -179,15 +181,13 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                                     key={item.id}
                                                     style={{
                                                         padding: 15,
-                                                        backgroundColor: '#f4f4f4',
+                                                        backgroundColor: theme === 'dark' ? '#323232d9' : '#f4f4f4',
                                                         borderRadius: 10,
                                                         marginBottom: 10,
                                                     }}
                                                 >
-                                                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.bankName}</Text>
-                                                    <Text>Account Number: {item.accountNumber}</Text>
-                                                    {/* <Text>IFSC Code: {item.ifscCode}</Text> */}
-
+                                                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000', }}>{item.bankName}</Text>
+                                                    <Text style={{ color: theme === 'dark' ? '#ddd' : '#333' }}>Account Number: {item.accountNumber}</Text>
                                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                                                         <TouchableOpacity
                                                             onPress={() => handleSetPrimary(item.BankID)}
@@ -196,10 +196,10 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                                             <FontAwesome
                                                                 name={item.isPrimaryAccount === 'Y' ? 'dot-circle-o' : 'circle-o'}
                                                                 size={20}
-                                                                color={item.isPrimaryAccount === 'Y' ? 'green' : '#888'}
+                                                                color={item.isPrimaryAccount === 'Y' ? 'green' : theme === 'dark' ? '#bbb' : '#888'}
                                                                 style={{ marginRight: 8 }}
                                                             />
-                                                            <Text style={{ fontSize: 14 }}>
+                                                            <Text style={{ fontSize: 14, color: theme === 'dark' ? '#eee' : '#000' }}>
                                                                 {item.isPrimaryAccount === 'Y' ? 'Primary Account' : 'Set as Primary'}
                                                             </Text>
                                                         </TouchableOpacity>
@@ -222,7 +222,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
 
                                             ))}
                                             {bankListData.length >= 3 && (
-                                                <Text style={{ color: '#000', fontWeight: '500', fontSize: 13, marginBottom: 10 }}>
+                                                <Text style={{ color: theme === 'dark' ? '#ccc' : '#000', fontWeight: '500', fontSize: 13, marginBottom: 10 }}>
                                                     Note: Maximum of 3 bank accounts can be added.
                                                 </Text>
                                             )}

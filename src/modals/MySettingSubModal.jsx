@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, Switch } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -14,8 +14,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 import UserInterestUpdateModal from './UserInterestUpdateModal';
+import { ThemeContext } from '../context/ThemeContext';
 
 const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
@@ -156,7 +158,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
             >
                 <View style={{
                     width: '100%',
-                    backgroundColor: '#fff',
+                    backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
                     padding: 16,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },
@@ -179,15 +181,15 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                                 }]}>
                                     <View style={styles.profileSettingMMenuListItem}>
                                         {item.label === 'Notification' ?
-                                            <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> :
+                                            <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> :
                                             item.label === 'Search Settings' ?
-                                                <Ionicons name={item.icon} size={20} color="#232323" style={{ width: 30 }} /> :
-                                                <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
+                                                <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> :
+                                                <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
                                         }
-                                        <Text style={{ fontSize: 15, color: '#000' }}>{item.label}</Text>
+                                        <Text style={{ fontSize: 15,color: theme === 'light' ? '#000' : '#fff'  }}>{item.label}</Text>
                                     </View>
                                     {item.rightArrowVisible ? (
-                                        <FontAwesome5 name="chevron-right" size={14} regular color="#888" style={{ width: 30 }} />
+                                        <FontAwesome5 name="chevron-right" size={14} regular color={theme === 'light' ? '#888' : '#fff'} style={{ width: 30 }} />
                                     ) : (
                                         item.label === 'Location tracking:' ? (
                                             <Switch
@@ -253,16 +255,23 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
             </Modal>
             {visibleModal === 'change-email' && (
                 <ChangeEmailModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )}
-            {visibleModal === 'change-password' && (
-                <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )}
-            {visibleModal === 'email-confirm' && (
-                <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )}
-            {visibleModal === 'categories' && (
-                <UserInterestUpdateModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )}
+            )
+            }
+            {
+                visibleModal === 'change-password' && (
+                    <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                )
+            }
+            {
+                visibleModal === 'email-confirm' && (
+                    <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                )
+            }
+            {
+                visibleModal === 'categories' && (
+                    <UserInterestUpdateModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                )
+            }
         </>
     );
 };

@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, Image, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -9,9 +9,11 @@ import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
 import { useAppContext } from '../context/AppContext';
 import MessageModal from './MessageModal';
+import { ThemeContext } from '../context/ThemeContext';
 const screenHeight = Dimensions.get('window').height;
 
 const UserInterestUpdateModal = ({ visible, onClose }) => {
+    const { theme } = useContext(ThemeContext);
     const { userData } = useAppContext();
     const [categoryData, setCategoryData] = useState([]);
     const [userInterestData, setUserInterestData] = useState([]);
@@ -134,7 +136,7 @@ const UserInterestUpdateModal = ({ visible, onClose }) => {
             >
                 <View style={{
                     width: '100%', // like drawer
-                    backgroundColor: '#fff',
+                    backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
                     padding: 16,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },

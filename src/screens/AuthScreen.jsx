@@ -10,7 +10,7 @@ export const AuthScreen = ({ onLogin }) => {
   const [showsingup, setshowsingup] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const { theme } = useContext(ThemeContext);
-  const [userData, setUserData] = useState({ username: '', password: '' });
+  const [userData, setUserData] = useState({ email: '', password: '' });
 
   const toggleForm = () => setshowsingup(!showsingup);
   const ShowloginForm = () => {

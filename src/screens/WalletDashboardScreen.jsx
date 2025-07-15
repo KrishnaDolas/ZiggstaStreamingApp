@@ -234,10 +234,10 @@ export const WalletDashboardScreen = () => {
                                 {['Deposit', 'Withdraw', 'Transfer'].map((tab, index) => (
                                     <TouchableOpacity
                                         key={tab}
-                                        style={[styles.wdTabButton, activeTab === tab && styles.wdActiveTab, { marginLeft: index === 0 ? 0 : 8 }]}
+                                        style={[styles.wdTabButton, themeStyles[theme].wdTabButton, activeTab === tab && themeStyles[theme].wdActiveTab, activeTab === tab && styles.wdActiveTab, { marginLeft: index === 0 ? 0 : 8 }]}
                                         onPress={() => handleTabChange(tab)}
                                     >
-                                        <Text style={[styles.wdTabText, activeTab === tab && styles.wdActiveTabText]}>
+                                        <Text style={[styles.wdTabText, themeStyles[theme].wdTabText, activeTab === tab && styles.wdActiveTabText, activeTab === tab && themeStyles[theme].wdActiveTabText]}>
                                             {tab}
                                         </Text>
                                     </TouchableOpacity>
@@ -258,15 +258,15 @@ export const WalletDashboardScreen = () => {
                                     <TouchableOpacity
                                         key={amount}
                                         style={[
-                                            styles.wdAmountButton,
-                                            selectedAmount === amount && styles.wdAmountSelected,
+                                            styles.wdAmountButton, themeStyles[theme].wdAmountButton,
+                                            selectedAmount === amount && styles.wdAmountSelected, selectedAmount === amount && themeStyles[theme].wdAmountSelected,
                                         ]}
                                         onPress={() => setSelectedAmount(amount)}
                                     >
                                         <Text
                                             style={[
-                                                styles.wdAmountText,
-                                                selectedAmount === amount && styles.wdAmountTextSelected,
+                                                styles.wdAmountText, themeStyles[theme].wdAmountText,
+                                                selectedAmount === amount && styles.wdAmountTextSelected, selectedAmount === amount && themeStyles[theme].wdAmountTextSelected,
                                             ]}
                                         >
                                             {amount}
@@ -399,31 +399,31 @@ export const WalletDashboardScreen = () => {
                             </Text>
                             <View style={styles.wDReferralStatsContainer}>
                                 <View style={styles.wDReferralStatsRow}>
-                                    <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Balance</Text>
-                                        <Text style={styles.wdRefStateValue}>${profileData?.CreditBalance}</Text>
+                                    <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Balance</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>${profileData?.CreditBalance}</Text>
                                     </TouchableOpacity>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Today's Signups</Text>
-                                        <Text style={styles.wdRefStateValue}>20</Text>
+                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Today's Signups</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>20</Text>
                                     </View>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Monthly Signup</Text>
-                                        <Text style={styles.wdRefStateValue}>180</Text>
+                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Monthly Signup</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>180</Text>
                                     </View>
                                 </View>
                                 <View style={styles.wDReferralStatsRow}>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Total Signup</Text>
-                                        <Text style={styles.wdRefStateValue}>400</Text>
+                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Total Signup</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>400</Text>
                                     </View>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Analytics</Text>
-                                        <Text style={styles.wdRefStateValue}>30</Text>
+                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Analytics</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>30</Text>
                                     </View>
-                                    <View style={[styles.wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={styles.wdRefStateTitle}>Coming Soon</Text>
-                                        <Text style={styles.wdRefStateValue}>?</Text>
+                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Coming Soon</Text>
+                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>?</Text>
                                     </View>
                                 </View>
                             </View>

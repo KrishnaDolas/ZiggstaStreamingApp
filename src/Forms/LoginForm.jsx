@@ -37,8 +37,15 @@ export const LoginForm = ({
         setLoading(false);
         return;
       }
+      // Email format validation using regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address');
+        setLoading(false);
+        return;
+      }
       const parameter = {
-        username: email,
+        email: email,
         password: password,
       };
 
@@ -100,7 +107,7 @@ export const LoginForm = ({
           </Text>
           <View style={[{ width: '100%', padding: '7' }]}>
             <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>
-              User Name
+              Email
             </Text>
             <TextInput
               value={email}
