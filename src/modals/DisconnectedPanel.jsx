@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { View,ActivityIndicator,Text } from "react-native";
 
 export default DisconnectedPanel = ({time}) => {
     return (
