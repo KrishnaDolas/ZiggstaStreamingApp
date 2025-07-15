@@ -46,7 +46,41 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]); //{CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
+  const [countdown,setCountdown]=useState(0)
+  const countdownRef = useRef(null);
   const IsIdentify=useRef(false)
+
+  useEffect(() => {
+    if (!isSocketConnected) {
+      setCountdown(30); // reset to 30 on disconnect
+  
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownRef.current);
+            leaveRoom(); // auto-leave or fallback
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      // ✅ Socket is connected -> clear the timer if running
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      setCountdown(30); // reset countdown if needed
+    }
+  
+    return () => {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+    };
+  }, [isSocketConnected]);
+  
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -796,6 +830,7 @@ export const MainScreen = () => {
         streamGuest={streamGuest}
         socket={socket}
         isSocketConnected={isSocketConnected}
+        countdown={countdown}
       />)}
       </View>
     </LinearGradient>

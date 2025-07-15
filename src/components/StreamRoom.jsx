@@ -75,7 +75,8 @@ const StreamRoom = ({
     streamrequestlist,
     streamGuest,
     socket,
-    isSocketConnected
+    isSocketConnected,
+    countdown
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -710,7 +711,7 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-            {!isSocketConnected && (<DisconnectedPanel time={30} />)}
+            {!isSocketConnected && (<DisconnectedPanel time={countdown} />)}
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
             {/* close stream modal  */}
             {closeStreamModal && (
@@ -720,4 +721,4 @@ const StreamRoom = ({
     );
 };
 
-export default StreamRoom;
+export default React.memo(StreamRoom);
