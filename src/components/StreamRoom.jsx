@@ -558,7 +558,7 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
-                                <View style={[styles.strRoomBottomBox]}>
+                                <View style={[styles.strRoomBottomBox,{ marginBottom: Platform.OS === 'android' ? keyboardHeight : 0 }]}>
                                     <TextInput
                                         placeholder=""
                                         placeholderTextColor="#414141"

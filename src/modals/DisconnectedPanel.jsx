@@ -45,7 +45,7 @@ const DisconnetPanelstyles = {
         color: '#222',
     },
     message: {
-        fontSize: 18,
+        fontSize: 14,
         color: 'white',
         marginTop: 8,
         textAlign: 'center',
