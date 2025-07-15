@@ -124,7 +124,7 @@ export const RegisterForm = ({
       } else {
         setUsernameStatus(null);
         setUsernameCheckMessage('');
-        setIsValidStep(false); // Disable Next button if username is invalid
+        validateStep(); // Trigger validation for invalid username
       }
     }, 500); // Debounce for 500ms
 
@@ -136,7 +136,7 @@ export const RegisterForm = ({
     if (!isValidUsername(trimmedUserName)) {
       setUsernameStatus(null);
       setUsernameCheckMessage('');
-      setIsValidStep(false); // Disable Next button for invalid username
+      validateStep(); // Trigger validation for invalid username
       return;
     }
     setUsernameStatus('checking');
@@ -144,23 +144,35 @@ export const RegisterForm = ({
       const res = await Apiclient.post('/register/checkUsername', { username: trimmedUserName });
       if (res.data.available) {
         setUsernameStatus('available');
-        // setUsernameCheckMessage(res.data.message);
-        setUsernameCheckMessage('');
+        setUsernameCheckMessage(''); // Clear message for available username
+        setErrors(prev => ({ ...prev, userName: '' })); // Clear userName error
         setIsValidStep(true); // Enable Next button
       } else {
         setUsernameStatus('taken');
-        setUsernameCheckMessage(res.data.message);
+        setUsernameCheckMessage(res.data.message || 'Username is already taken.');
+        setErrors(prev => ({
+          ...prev,
+          userName: res.data.message || 'Username is already taken.',
+        })); // Set error
         setIsValidStep(false); // Disable Next button
       }
     } catch (err) {
       if (err.response && err.response.status === 409 && err.response.data) {
         setUsernameStatus('taken');
         setUsernameCheckMessage(err.response.data.message || 'Username is already taken.');
+        setErrors(prev => ({
+          ...prev,
+          userName: err.response.data.message || 'Username is already taken.',
+        })); // Set error
         setIsValidStep(false); // Disable Next button
       } else {
         console.error('Error checking username:', err);
         setUsernameStatus('error');
         setUsernameCheckMessage('Error checking username availability');
+        setErrors(prev => ({
+          ...prev,
+          userName: 'Error checking username availability',
+        })); // Set error
         setIsValidStep(false); // Disable Next button on error
         SendErrorTotheServer(err, 'checkUserNameExists');
       }
@@ -358,6 +370,10 @@ export const RegisterForm = ({
     setFormData(prev => ({ ...prev, [field]: value }));
     if (field === 'location') {
       handleLocationSearch(value);
+    }
+    if (field === 'userName') {
+      setUsernameCheckMessage(''); // Clear username check message from API
+      validateStep(); // Validate immediately to set error for invalid username
     }
   };
 
@@ -794,9 +810,9 @@ export const RegisterForm = ({
               style={{ position: 'absolute', right: 10, top: 15 }}
             />
           )}
-          {(errors[question.field] || usernameStatus === 'taken') && (
+          {errors[question.field] && (
             <Text style={{ color: 'red', marginTop: 5 }}>
-              {errors[question.field] || usernameCheckMessage}
+              {errors[question.field]}
             </Text>
           )}
         </View>
@@ -1013,7 +1029,7 @@ export const RegisterForm = ({
         if (!value || !isValidUsername(value)) {
           error = 'Username must be at least 6 characters with only letters, numbers, or underscores';
         } else if (usernameStatus === 'taken') {
-          error = usernameCheckMessage;
+          error = usernameCheckMessage; // Use API-provided message
         } else if (usernameStatus === 'checking') {
           error = 'Checking username availability...';
         }
