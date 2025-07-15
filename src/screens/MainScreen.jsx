@@ -487,16 +487,6 @@ export const MainScreen = () => {
         peer.addTrack(track, localStream);
       }
     });
-  
-    // Send offer
-    const offer = await peer.createOffer({ iceRestart: true });
-    await peer.setLocalDescription(offer);
-  
-    socket.emit('signal', {
-      to: socketId, // send back to Host (A)
-      data: peer.localDescription,
-    });
-    
   // 🔁 Replace old tracks
   const senders = peer.getSenders();
   senders.forEach(sender => {
@@ -506,7 +496,11 @@ export const MainScreen = () => {
   newStream.getTracks().forEach(track => {
     peer.addTrack(track, newStream);
   });
-
+    // Send offer
+    const offer = await peer.createOffer({ iceRestart: true });
+    await peer.setLocalDescription(offer);
+  
+    socket.emit('signal', {to: socketId,data: peer.localDescription});
 
 
   }
