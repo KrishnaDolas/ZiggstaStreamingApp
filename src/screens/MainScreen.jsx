@@ -163,6 +163,7 @@ export const MainScreen = () => {
     setIsSocketConnected(false); // Update connection status
   };
   const HandleConnect=()=>{
+    clearInterval(countdownRef.current);
     console.log('✅ Connected to Socket.IO server');
     setIsSocketConnected(true); // Update connection status
     if(!IsIdentify.current &&userData){
