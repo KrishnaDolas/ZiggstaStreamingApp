@@ -2,7 +2,7 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator,
+    ActivityIndicator,Platform
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
