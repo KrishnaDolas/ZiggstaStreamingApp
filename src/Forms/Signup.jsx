@@ -30,11 +30,12 @@ export const Signup = ({
   const isValidEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  // Validate form inputs whenever they change
   useEffect(() => {
     validateForm();
   }, [email, password, confirmPassword, acceptTerms, isAbove18, emailAvailable]);
 
-
+  // Function to validate the form inputs
   const validateForm = () => {
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
@@ -97,7 +98,7 @@ export const Signup = ({
     setIsFormValid(true);
   };
 
-
+  // Check email availability when email changes
   useEffect(() => {
     const trimmedEmail = email.trim();
     if (trimmedEmail.length > 5 && isValidEmail(trimmedEmail)) {
@@ -114,6 +115,7 @@ export const Signup = ({
     }
   }, [email]);
 
+  // Function to check if email exists in the database
   const checkEmailExists = async (trimmedEmail) => {
     try {
       const res = await Apiclient.post('/register/checkEmail', { email: trimmedEmail });
@@ -133,16 +135,12 @@ export const Signup = ({
     }
   };
 
-
-
+  // Function to handle sign up
   const handleSignUp = async () => {
     setUserData({ email: email.trim(), password: password.trim() });
     onToggleForm();
     console.log(`Email: ${email.trim()}, Password: ${password.trim()}`);
   };
-
-
-
 
 
   return (
@@ -156,7 +154,7 @@ export const Signup = ({
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                style={[styles.input, themeStyles[theme].input, { paddingRight: 40 }]}
+                style={[styles.input, themeStyles[theme].input]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor={themeStyles[theme].placeholder.color}
@@ -164,7 +162,7 @@ export const Signup = ({
                 maxLength={50}
                 autoFocus
               />
-              <View style={{ position: 'absolute', right: 12, top: 13 }}>
+              <View style={{ position: 'absolute', right: 20, top: 23 }}>
                 {checkingEmail ? (
                   <Icon name="spinner" size={18} color="gray" style={{ transform: [{ rotate: '90deg' }] }} />
                 ) : emailAvailable === true ? (
@@ -176,8 +174,7 @@ export const Signup = ({
                 )}
               </View>
             </View>
-            {emailAvailable === true && <Text style={{ color: 'green', marginTop: 5 }}>Email is available.</Text>}
-            {emailAvailable === false && <Text style={{ color: 'red', marginTop: 5 }}>Email is already registered.</Text>}
+            {/* {emailAvailable === true && <Text style={{ color: 'green', fontSize: 13 }}>Email is available.</Text>} */}
           </View>
           <View style={[{ width: '100%', padding: '7' }]}>
             {/* <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>Password</Text> */}
@@ -191,7 +188,7 @@ export const Signup = ({
                 placeholder="Password"
                 maxLength={12}
               />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={{ padding: 10, position: 'absolute', right: 12, top: 12 }}>
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={{ padding: 10, position: 'absolute', right: 11, top: 12 }}>
                 <Icon
                   name={showConfirmPassword ? 'eye' : 'eye-slash'}
                   size={20}
@@ -212,7 +209,7 @@ export const Signup = ({
                 placeholder="Confirm Password"
                 maxLength={12}
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 10, position: 'absolute', right: 12, top: 12 }}>
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 10, position: 'absolute', right: 11, top: 12 }}>
                 <Icon
                   name={showPassword ? 'eye' : 'eye-slash'}
                   size={20}

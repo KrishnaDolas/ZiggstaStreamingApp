@@ -19,6 +19,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 // import { NetworkInfo } from 'react-native-network-info';
 
 const screenHeight = Dimensions.get('window').height;
@@ -80,7 +81,8 @@ export const RegisterForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [interestOptions, setInterestOptions] = useState([]); // Dynamic interest options
   const [categories, setCategories] = useState([]); // Store full categories data for categoryID mapping
-
+  const [usernameStatus, setUsernameStatus] = useState(null); // null, 'checking', 'available', 'taken'
+  const [usernameCheckMessage, setUsernameCheckMessage] = useState('');
 
   const [formData, setFormData] = useState({
     screenname: '',
@@ -94,14 +96,6 @@ export const RegisterForm = ({
     country: '',
     zipcode: '',
   });
-
-
-  // This gets only the IPv4 address
-  // NetworkInfo.getIPV4Address().then(ipv4 => {
-  //   console.log('IPv4 Address:', ipv4); // Expected: something like 192.168.x.x or 10.x.x.x
-  // });
-
-
 
   // Function to fetch user interest from the API
 
@@ -122,7 +116,56 @@ export const RegisterForm = ({
     getInterestData();
   }, []);
 
+  // Check username availability with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.userName && isValidUsername(formData.userName)) {
+        checkUserNameExists(formData.userName.trim());
+      } else {
+        setUsernameStatus(null);
+        setUsernameCheckMessage('');
+        setIsValidStep(false); // Disable Next button if username is invalid
+      }
+    }, 500); // Debounce for 500ms
 
+    return () => clearTimeout(timer);
+  }, [formData.userName]);
+
+  // Function to check if username exists
+  const checkUserNameExists = async (trimmedUserName) => {
+    if (!isValidUsername(trimmedUserName)) {
+      setUsernameStatus(null);
+      setUsernameCheckMessage('');
+      setIsValidStep(false); // Disable Next button for invalid username
+      return;
+    }
+    setUsernameStatus('checking');
+    try {
+      const res = await Apiclient.post('/register/checkUsername', { username: trimmedUserName });
+      if (res.data.available) {
+        setUsernameStatus('available');
+        // setUsernameCheckMessage(res.data.message);
+        setUsernameCheckMessage('');
+        setIsValidStep(true); // Enable Next button
+      } else {
+        setUsernameStatus('taken');
+        setUsernameCheckMessage(res.data.message);
+        setIsValidStep(false); // Disable Next button
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 409 && err.response.data) {
+        setUsernameStatus('taken');
+        setUsernameCheckMessage(err.response.data.message || 'Username is already taken.');
+        setIsValidStep(false); // Disable Next button
+      } else {
+        console.error('Error checking username:', err);
+        setUsernameStatus('error');
+        setUsernameCheckMessage('Error checking username availability');
+        setIsValidStep(false); // Disable Next button on error
+        SendErrorTotheServer(err, 'checkUserNameExists');
+      }
+    }
+  };
 
   // Unified function to update location data
   const updateLocationData = (address, source = 'ip') => {
@@ -722,6 +765,44 @@ export const RegisterForm = ({
       );
     }
 
+    // Modified username input with check tick and status message
+    if (question.field === 'userName') {
+      return (
+        <View style={{ position: 'relative' }}>
+          <TextInput
+            style={[
+              globalStyles.input,
+              usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1 },
+            ]}
+            placeholder={question.placeholder}
+            placeholderTextColor="#9d9d9d"
+            value={formData[question.field]}
+            onChangeText={text => handleChange(question.field, text)}
+          />
+          {usernameStatus === 'checking' && (
+            <ActivityIndicator
+              style={{ position: 'absolute', right: 10, top: 15 }}
+              size="small"
+              color="#666"
+            />
+          )}
+          {usernameStatus === 'available' && (
+            <Icon
+              name="check"
+              size={20}
+              color="green"
+              style={{ position: 'absolute', right: 10, top: 15 }}
+            />
+          )}
+          {(errors[question.field] || usernameStatus === 'taken') && (
+            <Text style={{ color: 'red', marginTop: 5 }}>
+              {errors[question.field] || usernameCheckMessage}
+            </Text>
+          )}
+        </View>
+      );
+    }
+
     return (
       <>
         <TextInput
@@ -754,11 +835,6 @@ export const RegisterForm = ({
     } else {
 
       if (isSubmitting) return; // Prevent duplicate submission
-
-      // const interestIndexes = formData.interests.map(interest =>
-      //   interestOptions.indexOf(interest),
-      // );
-
       // Map selected interest names to their categoryIDs and sort in ascending order
       const interestIds = formData.interests
         .map(interest => {
@@ -929,10 +1005,17 @@ export const RegisterForm = ({
         if (!value || value.trim().length < 5) {
           error = 'Screen name must be at least 5 characters';
         }
+        if (value.trim().length > 12) {
+          error = 'Screen name cannot be more than 12 characters';
+        }
         break;
       case 'userName':
         if (!value || !isValidUsername(value)) {
           error = 'Username must be at least 6 characters with only letters, numbers, or underscores';
+        } else if (usernameStatus === 'taken') {
+          error = usernameCheckMessage;
+        } else if (usernameStatus === 'checking') {
+          error = 'Checking username availability...';
         }
         break;
       case 'location':
@@ -960,7 +1043,10 @@ export const RegisterForm = ({
     }
 
     setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
-    setIsValidStep(!error);
+    setIsValidStep(
+      !error &&
+      !(currentQuestion.field === 'userName' && usernameStatus !== 'available')
+    );
     return !error;
   };
 
