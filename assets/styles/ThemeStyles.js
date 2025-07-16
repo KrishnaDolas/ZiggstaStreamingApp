@@ -1501,9 +1501,9 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   streamViewerCount: {
-    position:'relative',
-    right:17,
-    bottom:19,
+    position: 'relative',
+    right: 17,
+    bottom: 19,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ff0000',
@@ -1531,8 +1531,8 @@ export const styles = StyleSheet.create({
   streamChatContainer: {
     flex: 1,
     height: 250,
-    position:"relative",
-    bottom:25
+    position: "relative",
+    bottom: 25
   },
   streamChatItem: {
     flexDirection: 'row',
@@ -1567,9 +1567,9 @@ export const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   strRoomFooterSocialActions: {
-    position:'absolute',
-    bottom:18,
-    right:-9,
+    position: 'absolute',
+    bottom: 18,
+    right: -9,
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'baseline',
@@ -2216,6 +2216,174 @@ export const styles = StyleSheet.create({
     marginLeft: 5,
   },
 
+  // report modal
+
+  reportLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0f0f0f',
+  },
+  reportLoadingText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  reportUserInfoCard: {
+    // backgroundColor: '#0f0f0f',
+    borderRadius: 16,
+    // paddingHorizontal: 2,
+    paddingTop: 10,
+    marginBottom: 24,
+  },
+  reportUserInfoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  reportUserDetails: {
+    flex: 1,
+  },
+  reportUserName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#d93a63',
+  },
+  reportCategoriesSection: {
+    marginBottom: 24,
+  },
+  reportSectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    // color: '#fff',
+    marginBottom: 16,
+  },
+  reportCategoriesContainer: {
+    gap: 12,
+  },
+  reportCategoryCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  reportSelectedCategoryCard: {
+    backgroundColor: '#ff4757',
+    borderColor: '#ff4757',
+  },
+  reportCategoryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  reportCategoryTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
+    flex: 1,
+  },
+  reportSelectedCategoryTitle: {
+    color: '#fff',
+  },
+  reportCategoryIconContainer: {
+    marginLeft: 12,
+  },
+  reportSubCategoriesContainer: {
+    marginBottom: 24,
+  },
+  reportSubCategoryHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 16,
+  },
+  reportSubCategoryCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  reportSelectedSubCategoryCard: {
+    backgroundColor: '#2a2a2a',
+    borderColor: '#ff4757',
+  },
+  reportSubCategoryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  reportRadioButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#666',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reportRadioButtonInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#ff4757',
+  },
+  reportSubCategoryTitle: {
+    fontSize: 16,
+    color: '#fff',
+    flex: 1,
+  },
+  reportSelectedSubCategoryTitle: {
+    color: '#fff',
+  },
+  reportDescriptionSection: {
+    marginBottom: 32,
+  },
+  reportDescriptionLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  reportDescriptionInput: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#fff',
+    minHeight: 120,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  reportSubmitSection: {
+    marginBottom: 40,
+  },
+  reportSubmitButton: {
+    backgroundColor: '#ff4757',
+    borderRadius: 12,
+    padding: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff4757',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  reportSubmitButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginRight: 8,
+  },
+  reportSubmitIcon: {
+    marginLeft: 4,
+  },
+
 });
 
 // Theme Styles
@@ -2427,6 +2595,10 @@ export const themeStyles = {
     bdLabel: {
       color: '#717580',
     },
+    // report modal
+    reportSectionTitle: {
+      color: '#000',
+    },
     // footer
     footer: {
       backgroundColor: '#fff',
@@ -2632,6 +2804,10 @@ export const themeStyles = {
     },
     // bank details modal
     bdLabel: {
+      color: '#fff',
+    },
+    // report modal
+    reportSectionTitle: {
       color: '#fff',
     },
     // footer

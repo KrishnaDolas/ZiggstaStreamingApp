@@ -2,7 +2,7 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator,Platform
+    ActivityIndicator, Platform
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
@@ -112,9 +112,9 @@ const StreamRoom = ({
             console.error('Error fetching gifts:', error);
         }
     };
-    useEffect(()=>{
+    useEffect(() => {
         console.log(remoteStreams);
-    },[remoteStreams])
+    }, [remoteStreams])
 
     useEffect(() => {
         getGiftsCategory();
@@ -123,9 +123,9 @@ const StreamRoom = ({
     useEffect(() => {
         // Scroll to the bottom when roomchat updates
         if (scrollViewRef.current) {
-          scrollViewRef.current.scrollToEnd({ animated: true });
+            scrollViewRef.current.scrollToEnd({ animated: true });
         }
-      }, [roomchat]);
+    }, [roomchat]);
 
     // Function to fetch gifts from the API
     const getGifts = async () => {
@@ -332,26 +332,26 @@ const StreamRoom = ({
     }
 
     useEffect(() => {
-    if (streamrequestlist.length > 0) {
-        Animated.loop(
-        Animated.sequence([
-            Animated.timing(blinkingAnim, {
-            toValue: 0,
-            duration: 500,
-            easing: Easing.linear,
-            useNativeDriver: true,
-            }),
-            Animated.timing(blinkingAnim, {
-            toValue: 1,
-            duration: 500,
-            easing: Easing.linear,
-            useNativeDriver: true,
-            }),
-        ])
-        ).start();
-    } else {
-        blinkingAnim.setValue(1); // reset if no requests
-    }
+        if (streamrequestlist.length > 0) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(blinkingAnim, {
+                        toValue: 0,
+                        duration: 500,
+                        easing: Easing.linear,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(blinkingAnim, {
+                        toValue: 1,
+                        duration: 500,
+                        easing: Easing.linear,
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+        } else {
+            blinkingAnim.setValue(1); // reset if no requests
+        }
     }, [streamrequestlist.length]);
 
 
@@ -467,7 +467,12 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
-                                        <Ionicons name="diamond" solid size={14} color="#ffea23" />
+                                        {/* <Ionicons name="diamond" solid size={14} color="#ffea23" /> */}
+                                        <Image
+                                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                            style={{ width: 14, height: 14, marginRight: 4 }}
+                                            resizeMode="contain"
+                                        />
                                         <Text style={styles.strRoomHeaderRWalletInfoText}>1023</Text>
                                     </View>
                                     {/* <TouchableOpacity style={styles.strRoomHeaderRIconBox}>
@@ -489,7 +494,7 @@ const StreamRoom = ({
                                         <View style={styles.strRoomFooterChatOrActionsBox}>
                                             <View style={[styles.streamChatContainer]}>
                                                 <ScrollView
-                                                ref={scrollViewRef}
+                                                    ref={scrollViewRef}
                                                     showsVerticalScrollIndicator={false}
                                                 >
                                                     {roomchat.map((chat, ind) => (
@@ -553,7 +558,7 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                     </Animated.View>
                                 )}
-                                <View style={[styles.strRoomBottomBox,{ marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
+                                <View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
                                     <TextInput
                                         placeholder=""
                                         placeholderTextColor="#414141"
@@ -589,7 +594,7 @@ const StreamRoom = ({
                                                 <TouchableOpacity onPress={() => setTogglerequest(!togglerequest)} style={styles.strRoomBottomBoxIconBox}>
                                                     <Ionicons name="people" size={30} color="#fff" />
                                                     {streamrequestlist.length > 0 && (
-                                                    <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
+                                                        <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
                                                     )}
                                                 </TouchableOpacity>
                                             )}

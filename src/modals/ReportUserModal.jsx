@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, ScrollView, Alert, Animated, TextInput, StyleSheet } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -151,12 +151,12 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                         <View style={styles.reportSubCategoryContent}>
                             <View style={styles.reportRadioButton}>
                                 {selectedSubCategory?.id === subCategory.id && (
-                                    <View style={styles.radioButtonInner} />
+                                    <View style={styles.reportRadioButtonInner} />
                                 )}
                             </View>
                             <Text style={[
-                                styles.subCategoryTitle,
-                                selectedSubCategory?.id === subCategory.id && styles.selectedSubCategoryTitle,
+                                styles.reportSubCategoryTitle,
+                                selectedSubCategory?.id === subCategory.id && styles.reportSelectedSubCategoryTitle,
                             ]}>
                                 {subCategory.title}
                             </Text>
@@ -199,11 +199,11 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                 useNativeDriver={true}
                 style={styles.fullScreenModalMain}
             >
-                <View style={[styles.fullScreenModalOverlay, { flex: 1 }]}>
+                <View style={[styles.fullScreenModalOverlay, themeStyles[theme].fullScreenModalOverlay, { flex: 1 }]}>
                     <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
                         <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                             <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn]}>
-                                <Ionicons name="close" size={28} color="#fff" />
+                                <Ionicons name="close" size={28} color={theme === 'dark' ? '#fff' : '#000'} />
                             </TouchableOpacity>
                         </View>
 
@@ -241,7 +241,7 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                                 },
                                             ]}
                                         >
-                                            <Text style={styles.reportSectionTitle}>What's the issue?</Text>
+                                            <Text style={[styles.reportSectionTitle, themeStyles[theme].reportSectionTitle]}>What's the issue?</Text>
                                             <View style={styles.reportCategoriesContainer}>
                                                 {renderMainCategories()}
                                             </View>
@@ -277,16 +277,16 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                             {showDescription && (
                                                 <Animated.View
                                                     style={[
-                                                        styles.descriptionSection,
+                                                        styles.reportDescriptionSection,
                                                         {
                                                             opacity: fadeAnim,
                                                             transform: [{ translateY: slideAnim }],
                                                         },
                                                     ]}
                                                 >
-                                                    <Text style={styles.descriptionLabel}>Describe what happened</Text>
+                                                    <Text style={styles.reportDescriptionLabel}>Describe what happened</Text>
                                                     <TextInput
-                                                        style={styles.descriptionInput}
+                                                        style={styles.reportDescriptionInput}
                                                         multiline
                                                         numberOfLines={4}
                                                         value={description}
@@ -301,7 +301,7 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                             {showSubmitButton && (
                                                 <Animated.View
                                                     style={[
-                                                        styles.submitSection,
+                                                        styles.reportSubmitSection,
                                                         {
                                                             opacity: fadeAnim,
                                                             transform: [{ translateY: slideAnim }],
@@ -309,12 +309,12 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                                     ]}
                                                 >
                                                     <TouchableOpacity
-                                                        style={styles.submitButton}
+                                                        style={styles.reportSubmitButton}
                                                         onPress={handleSubmitReport}
                                                         activeOpacity={0.8}
                                                     >
-                                                        <Text style={styles.submitButtonText}>Submit Report</Text>
-                                                        <Icon name="send" size={20} color="#fff" style={styles.submitIcon} />
+                                                        <Text style={styles.reportSubmitButtonText}>Submit Report</Text>
+                                                        <Icon name="send" size={20} color="#fff" style={styles.reportSubmitIcon} />
                                                     </TouchableOpacity>
                                                 </Animated.View>
                                             )}
@@ -332,181 +332,181 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
 };
 
 
-const styles = StyleSheet.create({
-    fullScreenModalOverlay: {
-        padding: 10,
-        backgroundColor: '#0f0f0f',
+// const styles = StyleSheet.create({
+//     fullScreenModalOverlay: {
+//         padding: 10,
+//         backgroundColor: '#0f0f0f',
 
-    },
-    fullScreenModalMain: {
-        justifyContent: 'start',
-        margin: 0,
-    },
-    reportLoadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#0f0f0f',
-    },
-    reportLoadingText: {
-        color: '#fff',
-        fontSize: 16,
-    },
-    reportUserInfoCard: {
-        backgroundColor: '#0f0f0f',
-        borderRadius: 16,
-        // paddingHorizontal: 2,
-        paddingTop: 10,
-        marginBottom: 24,
-    },
-    reportUserInfoContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    reportUserDetails: {
-        flex: 1,
-    },
-    reportUserName: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#d93a63',
-    },
-    reportCategoriesSection: {
-        marginBottom: 24,
-    },
-    reportSectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-        marginBottom: 16,
-    },
-    reportCategoriesContainer: {
-        gap: 12,
-    },
-    reportCategoryCard: {
-        backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#333',
-    },
-    reportSelectedCategoryCard: {
-        backgroundColor: '#ff4757',
-        borderColor: '#ff4757',
-    },
-    reportCategoryContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    reportCategoryTitle: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#fff',
-        flex: 1,
-    },
-    reportSelectedCategoryTitle: {
-        color: '#fff',
-    },
-    reportCategoryIconContainer: {
-        marginLeft: 12,
-    },
-    reportSubCategoriesContainer: {
-        marginBottom: 24,
-    },
-    reportSubCategoryHeader: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-        marginBottom: 16,
-    },
-    reportSubCategoryCard: {
-        backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#333',
-    },
-    reportSelectedSubCategoryCard: {
-        backgroundColor: '#2a2a2a',
-        borderColor: '#ff4757',
-    },
-    reportSubCategoryContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    reportRadioButton: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        borderColor: '#666',
-        marginRight: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    radioButtonInner: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#ff4757',
-    },
-    subCategoryTitle: {
-        fontSize: 16,
-        color: '#fff',
-        flex: 1,
-    },
-    selectedSubCategoryTitle: {
-        color: '#fff',
-    },
-    descriptionSection: {
-        marginBottom: 32,
-    },
-    descriptionLabel: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-        marginBottom: 12,
-    },
-    descriptionInput: {
-        backgroundColor: '#1a1a1a',
-        borderRadius: 12,
-        padding: 16,
-        fontSize: 16,
-        color: '#fff',
-        minHeight: 120,
-        borderWidth: 1,
-        borderColor: '#333',
-    },
-    submitSection: {
-        marginBottom: 40,
-    },
-    submitButton: {
-        backgroundColor: '#ff4757',
-        borderRadius: 12,
-        padding: 18,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#ff4757',
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    submitButtonText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#fff',
-        marginRight: 8,
-    },
-    submitIcon: {
-        marginLeft: 4,
-    },
-});
+//     },
+//     fullScreenModalMain: {
+//         justifyContent: 'start',
+//         margin: 0,
+//     },
+//     reportLoadingContainer: {
+//         flex: 1,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         backgroundColor: '#0f0f0f',
+//     },
+//     reportLoadingText: {
+//         color: '#fff',
+//         fontSize: 16,
+//     },
+//     reportUserInfoCard: {
+//         backgroundColor: '#0f0f0f',
+//         borderRadius: 16,
+//         // paddingHorizontal: 2,
+//         paddingTop: 10,
+//         marginBottom: 24,
+//     },
+//     reportUserInfoContent: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//     },
+//     reportUserDetails: {
+//         flex: 1,
+//     },
+//     reportUserName: {
+//         fontSize: 20,
+//         fontWeight: '700',
+//         color: '#d93a63',
+//     },
+//     reportCategoriesSection: {
+//         marginBottom: 24,
+//     },
+//     reportSectionTitle: {
+//         fontSize: 18,
+//         fontWeight: '600',
+//         color: '#fff',
+//         marginBottom: 16,
+//     },
+//     reportCategoriesContainer: {
+//         gap: 12,
+//     },
+//     reportCategoryCard: {
+//         backgroundColor: '#1a1a1a',
+//         borderRadius: 12,
+//         padding: 16,
+//         borderWidth: 1,
+//         borderColor: '#333',
+//     },
+//     reportSelectedCategoryCard: {
+//         backgroundColor: '#ff4757',
+//         borderColor: '#ff4757',
+//     },
+//     reportCategoryContent: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         justifyContent: 'space-between',
+//     },
+//     reportCategoryTitle: {
+//         fontSize: 16,
+//         fontWeight: '500',
+//         color: '#fff',
+//         flex: 1,
+//     },
+//     reportSelectedCategoryTitle: {
+//         color: '#fff',
+//     },
+//     reportCategoryIconContainer: {
+//         marginLeft: 12,
+//     },
+//     reportSubCategoriesContainer: {
+//         marginBottom: 24,
+//     },
+//     reportSubCategoryHeader: {
+//         fontSize: 18,
+//         fontWeight: '600',
+//         color: '#fff',
+//         marginBottom: 16,
+//     },
+//     reportSubCategoryCard: {
+//         backgroundColor: '#1a1a1a',
+//         borderRadius: 12,
+//         padding: 16,
+//         marginBottom: 12,
+//         borderWidth: 1,
+//         borderColor: '#333',
+//     },
+//     reportSelectedSubCategoryCard: {
+//         backgroundColor: '#2a2a2a',
+//         borderColor: '#ff4757',
+//     },
+//     reportSubCategoryContent: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//     },
+//     reportRadioButton: {
+//         width: 20,
+//         height: 20,
+//         borderRadius: 10,
+//         borderWidth: 2,
+//         borderColor: '#666',
+//         marginRight: 12,
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//     },
+//     reportRadioButtonInner: {
+//         width: 10,
+//         height: 10,
+//         borderRadius: 5,
+//         backgroundColor: '#ff4757',
+//     },
+//     reportSubCategoryTitle: {
+//         fontSize: 16,
+//         color: '#fff',
+//         flex: 1,
+//     },
+//     reportSelectedSubCategoryTitle: {
+//         color: '#fff',
+//     },
+//     reportDescriptionSection: {
+//         marginBottom: 32,
+//     },
+//     reportDescriptionLabel: {
+//         fontSize: 18,
+//         fontWeight: '600',
+//         color: '#fff',
+//         marginBottom: 12,
+//     },
+//     reportDescriptionInput: {
+//         backgroundColor: '#1a1a1a',
+//         borderRadius: 12,
+//         padding: 16,
+//         fontSize: 16,
+//         color: '#fff',
+//         minHeight: 120,
+//         borderWidth: 1,
+//         borderColor: '#333',
+//     },
+//     reportSubmitSection: {
+//         marginBottom: 40,
+//     },
+//     reportSubmitButton: {
+//         backgroundColor: '#ff4757',
+//         borderRadius: 12,
+//         padding: 18,
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         justifyContent: 'center',
+//         shadowColor: '#ff4757',
+//         shadowOffset: {
+//             width: 0,
+//             height: 4,
+//         },
+//         shadowOpacity: 0.3,
+//         shadowRadius: 12,
+//         elevation: 8,
+//     },
+//     reportSubmitButtonText: {
+//         fontSize: 18,
+//         fontWeight: '600',
+//         color: '#fff',
+//         marginRight: 8,
+//     },
+//     reportSubmitIcon: {
+//         marginLeft: 4,
+//     },
+// });
 
 export default ReportUserModal;

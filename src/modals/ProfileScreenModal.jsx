@@ -264,6 +264,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
         setMessage(`Report feature is not implemented yet.`);
         setVisibleModal('message-modal');
         // navigation.navigate('ReportUser');
+
+
         // setVisibleModal('ReportUser');
     };
 
