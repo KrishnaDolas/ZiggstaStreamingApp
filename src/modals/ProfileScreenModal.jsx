@@ -53,6 +53,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
+    const [reportClicked, setReportClicked] = useState(false);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -255,8 +256,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
 
 
     const handleReport = () => {
-        setVisibleModal('message-modal');
+        if (reportClicked) return; // prevent multiple triggers
+        setReportClicked(true);
         setMessage(`Report feature is not implemented yet.`);
+        setVisibleModal('message-modal');
     };
 
     return (
@@ -295,7 +298,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                 <>
                                     {/* Header with Report button */}
                                     <View style={styles.psmHeader}>
-                                        <TouchableOpacity onPress={handleReport} style={styles.psmReportButton}>
+                                        <TouchableOpacity
+                                            onPress={handleReport}
+                                            style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                            disabled={reportClicked}
+                                        >
                                             <Text style={styles.psmReportButtonText}>Report</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -504,7 +511,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 <MessageModal
                     visible={visibleModal === 'message-modal'}
                     message={message}
-                    onClose={() => setVisibleModal(null)}
+                    onClose={() => {
+                        setVisibleModal(null);
+                        setReportClicked(false); // allow future clicks again
+                    }}
                 />
             )}
         </>
