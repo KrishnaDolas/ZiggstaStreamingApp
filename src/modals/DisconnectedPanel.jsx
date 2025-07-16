@@ -1,12 +1,30 @@
+import { useEffect, useState } from "react";
 import { View, ActivityIndicator, Text } from "react-native";
 
-const DisconnectedPanel = ({ time }) => {
+const DisconnectedPanel = ({ time,leaveRoom }) => {
+    const [count,setCount]=useState(time)
+
+    useEffect(()=>{
+       const timeoutID= setInterval(() => {
+            if(count>=1){
+                setCount(count-1)
+            }else{
+                leaveRoom()
+                clearInterval(timeoutID)
+            }
+        }, 1000);
+
+        return()=>{
+            clearInterval(timeoutID)
+        }
+    },[count])
     console.log(time);
     return (
         <View style={DisconnetPanelstyles.overlay}>
                 <View style={DisconnetPanelstyles.popup}>
+                    {/* <ActivityIndicator size="large" color="white" style={{display:'flex'}} /> */}
                     <Text style={DisconnetPanelstyles.message}>
-                    <ActivityIndicator size="large" color="white" /> Please reconnect to the internet.Your stream will end in {time} seconds.
+                     Please reconnect to the internet.Your stream {"\n"} will end in {count} seconds.
                     </Text>
                 </View>
         </View>
@@ -27,8 +45,10 @@ const DisconnetPanelstyles = {
         paddingHorizontal: 20,
     },
     popup: {
-        backgroundColor: 'red',
-        paddingVertical: 20,
+        display:'flex',
+        width:"100%",
+        backgroundColor: '#e84646',
+        paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 20,
         alignItems: 'center',
@@ -38,17 +58,11 @@ const DisconnetPanelstyles = {
         shadowRadius: 8,
         elevation: 10,
     },
-    title: {
-        fontSize: 18,
-        fontWeight: '700',
-        marginTop: 15,
-        color: '#222',
-    },
     message: {
-        fontSize: 14,
+        fontSize: 16,
         color: 'white',
-        marginTop: 8,
+        marginTop: 0,
         textAlign: 'center',
-        lineHeight: 20,
+        lineHeight: 16,
     }
 };

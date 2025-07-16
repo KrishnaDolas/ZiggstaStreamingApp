@@ -1501,6 +1501,9 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   streamViewerCount: {
+    position:'relative',
+    right:17,
+    bottom:19,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ff0000',
@@ -1527,7 +1530,9 @@ export const styles = StyleSheet.create({
   },
   streamChatContainer: {
     flex: 1,
-    height: 150,
+    height: 250,
+    position:"relative",
+    bottom:25
   },
   streamChatItem: {
     flexDirection: 'row',
@@ -1562,6 +1567,9 @@ export const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   strRoomFooterSocialActions: {
+    position:'absolute',
+    bottom:18,
+    right:-9,
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'baseline',

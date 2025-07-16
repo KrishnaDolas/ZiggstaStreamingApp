@@ -486,15 +486,6 @@ const StreamRoom = ({
                             >
                                 {!openMoreSettingList && (
                                     <>
-                                        <View style={styles.strLiveStats}>
-                                            <Text style={styles.strTitle}>
-                                                {/* {streamInfo?.RoomName} */}
-                                            </Text>
-                                            <View style={styles.streamViewerCount}>
-                                                <Ionicons name="eye-outline" size={18} color="#ffea23" />
-                                                <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
-                                            </View>
-                                        </View>
                                         <View style={styles.strRoomFooterChatOrActionsBox}>
                                             <View style={[styles.streamChatContainer]}>
                                                 <ScrollView
@@ -517,6 +508,10 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
+                                                <TouchableOpacity style={styles.streamViewerCount}>
+                                                    <Ionicons name="eye-outline" size={18} color="#ffea23" />
+                                                    <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
+                                                </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
