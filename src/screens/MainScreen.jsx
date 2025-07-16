@@ -46,7 +46,6 @@ export const MainScreen = () => {
   const [streamrequestlist, setStreamRequestList] = useState([]); //{CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
-  const [countdown,setCountdown]=useState(30)
   const [connectingpanel,setconnectingpanel]=useState(false)
   const countdownRef = useRef(null);
   const IsIdentify=useRef(false)
@@ -704,7 +703,6 @@ export const MainScreen = () => {
     setJoined(false);
     setViewerCount(0);
     setStreamInfo(null)
-   disconnectSocket()
     } catch (error) {
       SendErrorTotheServer(error,'leaveRoom');
     }
@@ -772,7 +770,7 @@ export const MainScreen = () => {
         barStyle="dark-content"
         backgroundColor="#fff"
       />
-      {connectingpanel && joined  && (<DisconnectedPanel time={countdown} leaveRoom={leaveRoom} />)}
+      {connectingpanel && joined  && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (
@@ -796,7 +794,6 @@ export const MainScreen = () => {
         streamGuest={streamGuest}
         socket={socket}
         isSocketConnected={isSocketConnected}
-        countdown={countdown}
       />)}
       </View>
     </LinearGradient>
