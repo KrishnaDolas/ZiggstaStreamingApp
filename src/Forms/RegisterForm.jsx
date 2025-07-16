@@ -452,7 +452,7 @@ export const RegisterForm = ({
                   styles.btnGender,
                   formData.gender === gender && styles.btnGenderActive,
                 ]}>
-                <Text style={{ color: 'white' }}>{gender}</Text>
+                <Text style={{ color: 'white', textAlign: 'center' }}>{gender}</Text>
               </TouchableOpacity>
             ))}
           </View>
