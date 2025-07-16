@@ -69,7 +69,7 @@ export const MainScreen = () => {
             // Get new media stream
             const newStream = await mediaDevices.getUserMedia({
               video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
-              audio: true,
+              audio: !isMuted.muted,
             });
   
             localStreamRef.current = newStream;
@@ -668,13 +668,15 @@ export const MainScreen = () => {
   const startLocalStream = async () => {
     try {
       const stream = await mediaDevices.getUserMedia({
-        video: { width: 300, height: 320, facingMode: 'user' },audio: true,});
+        video: { width: 300, height: 320, facingMode: 'user' },audio: !isMuted.muted,});
       localStreamRef.current = stream;
       setLocalStream(stream);
       setIsStreaming(true);
       // ✅ Start InCallManager and route audio to speaker
-      stream.getTracks().forEach(track => track.enabled = true); // 🔊 ensure unmuted
-      InCallManager.start({ media: 'audio' }); // or 'video' if you have both
+      if(!isMuted.muted){
+        stream.getTracks().forEach(track => track.enabled = true); // 🔊 ensure unmuted
+        InCallManager.start({ media: 'audio' }); // or 'video' if you have both
+      }
       InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
       InCallManager.setSpeakerphoneOn(true);      // For Android
     } catch (error) {

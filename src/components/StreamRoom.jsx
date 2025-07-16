@@ -112,9 +112,6 @@ const StreamRoom = ({
             console.error('Error fetching gifts:', error);
         }
     };
-    useEffect(() => {
-        console.log(remoteStreams);
-    }, [remoteStreams])
 
     useEffect(() => {
         getGiftsCategory();
