@@ -169,6 +169,7 @@ export const MainScreen = () => {
     localStreamRef.current=null;
     setLocalStream(null);
     setRemoteStreams([]);
+    Object.values(peersRef.current)?.forEach(peer => peer.close());
     peersRef.current={};
     pendingCandidates.current={};
     setIsMuted({HostControl: false, muted: false})
