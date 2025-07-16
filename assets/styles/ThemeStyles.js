@@ -491,17 +491,22 @@ export const styles = StyleSheet.create({
   },
   btnGenderWrapper: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 20,
-    marginTop: 40,
+    paddingHorizontal: 10, // Add some padding from screen edges
+    marginTop: 10,
   },
   btnGender: {
     backgroundColor: '#be0069',
     borderRadius: 24,
     paddingVertical: 10,
     paddingHorizontal: 24,
-    margin: 5,
+    marginVertical: 5,
     color: 'white',
+    width: '48%', // Each button takes 48% width with 4% total gap
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   btnGenderActive: {
     backgroundColor: 'rgba(190, 0, 105, 0.4)',
@@ -952,7 +957,7 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
   },
 
   streamListScrollContainer: {
@@ -1406,15 +1411,18 @@ export const styles = StyleSheet.create({
   messListFilterTab: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 10,
+    justifyContent: 'space-between',
+    marginHorizontal: 15,
     marginTop: 10,
-    flexWrap: 'wrap',
+    // gap: 10,
+    // flexWrap: 'wrap',
   },
   messListFilterTabBTn: {
     paddingVertical: 6,
     borderRadius: 4,
-    paddingHorizontal: 10,
-    marginRight: 8,
+    paddingHorizontal: 8, // Reduced from 10
+    flex: 1,
+    // maxWidth: '32%', // Ensures buttons don't exceed screen width
   },
   // stream room
 

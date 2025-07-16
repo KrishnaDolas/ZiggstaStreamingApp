@@ -126,7 +126,7 @@ const Footer = () => {
       </View>
       {/* Bottom Modal */}
       {visibleModal === 'profile-screen-modal' && (
-        <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={userData} />
+        <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={userData} isMainProfile={true} />
       )}
 
     </>

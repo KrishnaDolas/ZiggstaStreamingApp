@@ -13,6 +13,8 @@ import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { SendErrorTotheServer } from '../utils/constant';
 import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
+import ReportUserModal from './ReportUserModal';
 // top gifters
 // const topGifters = [
 //     {
@@ -38,8 +40,9 @@ import { ThemeContext } from '../context/ThemeContext';
 //     },
 // ];
 
-const ProfileScreenModal = ({ visible, onClose, profileData }) => {
+const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) => {
     const { theme } = useContext(ThemeContext);
+    const navigation = useNavigation();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -211,7 +214,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         const getStreamRoomCount = async () => {
             try {
                 const response = await Apiclient.get(`/rooms/getRoomCount?userid=${profileUserId}`);
-                console.log('getRoomCount response', response.data);
+                // console.log('getRoomCount response', response.data);
                 if (response.status === 200) {
                     setUserStreamRoomCount(response.data || {});
                 } else {
@@ -260,6 +263,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         setReportClicked(true);
         setMessage(`Report feature is not implemented yet.`);
         setVisibleModal('message-modal');
+        // navigation.navigate('ReportUser');
+        // setVisibleModal('ReportUser');
     };
 
     return (
@@ -297,15 +302,17 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                             >
                                 <>
                                     {/* Header with Report button */}
-                                    <View style={styles.psmHeader}>
-                                        <TouchableOpacity
-                                            onPress={handleReport}
-                                            style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
-                                            disabled={reportClicked}
-                                        >
-                                            <Text style={styles.psmReportButtonText}>Report</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                                    {!isMainProfile && (
+                                        <View style={styles.psmHeader}>
+                                            <TouchableOpacity
+                                                onPress={handleReport}
+                                                style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                                disabled={reportClicked}
+                                            >
+                                                <Text style={styles.psmReportButtonText}>Report</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                     {isUserLoading ? (
                                         // Skeleton while loading
                                         <View style={styles.psmProfileContainer}>
@@ -515,6 +522,15 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                         setVisibleModal(null);
                         setReportClicked(false); // allow future clicks again
                     }}
+                />
+            )}
+            {visibleModal === 'ReportUser' && (
+                <ReportUserModal
+                    visible={visibleModal === 'ReportUser'}
+                    onClose={() => {
+                        setVisibleModal(null);
+                    }}
+                    userData={userProfileDatails}
                 />
             )}
         </>

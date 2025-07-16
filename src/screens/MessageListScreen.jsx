@@ -277,7 +277,7 @@ export const MessageListScreen = () => {
                     <View
                         style={styles.messListFilterTab}
                     >
-                        {['friends', 'blocked', 'requests'].map((type) => (
+                        {['friends', 'blocked', 'requests'].map((type, index) => (
                             <TouchableOpacity
                                 key={type}
                                 onPress={() => {
@@ -286,6 +286,7 @@ export const MessageListScreen = () => {
                                 }}
                                 style={[styles.messListFilterTabBTn, {
                                     backgroundColor: friendListType === type ? '#d93a63' : '#f3f3f3',
+                                    marginRight: index === 2 ? 0 : 8,
                                 }]}
                             >
                                 <Text
@@ -293,13 +294,14 @@ export const MessageListScreen = () => {
                                         fontSize: 14,
                                         fontWeight: '500',
                                         color: friendListType === type ? '#fff' : '#333',
+                                        textAlign: 'center',
                                     }}
                                 >
                                     {type === 'friends'
                                         ? 'Friends'
                                         : type === 'blocked'
-                                            ? 'Blocked Users'
-                                            : 'Friend Requests'}
+                                            ? 'Blocked'
+                                            : 'Requests'}
                                 </Text>
                             </TouchableOpacity>
                         ))}
