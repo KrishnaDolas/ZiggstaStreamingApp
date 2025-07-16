@@ -50,6 +50,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [showWarning, setShowWarning] = useState(false);
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
+    const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
 
@@ -204,6 +205,26 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         getFollowersCount();
     }, [profileUserId]);
 
+    // to get stream count
+    useEffect(() => {
+        const getStreamRoomCount = async () => {
+            try {
+                const response = await Apiclient.get(`/rooms/getRoomCount?userid=${profileUserId}`);
+                console.log('getRoomCount response', response.data);
+                if (response.status === 200) {
+                    setUserStreamRoomCount(response.data || {});
+                } else {
+                    setIsUserError('Failed to fetch get room count data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetch get room count data: ' + err.message);
+                SendErrorTotheServer(err, 'getStreamRoomCount');
+
+            }
+        };
+        getStreamRoomCount();
+    }, [profileUserId]);
+
     // handle social media press
     const handleSocialPress = (platform) => {
         const handle = socialLinks?.[platform.toLowerCase()];
@@ -330,7 +351,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                     <View style={styles.psmStatsContainer}>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>STREAMS</Text>
-                                                            <Text style={styles.psmStatValue}>1K</Text>
+                                                            <Text style={styles.psmStatValue}>{userStreamRoomCount?.roomCount}</Text>
                                                         </View>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
