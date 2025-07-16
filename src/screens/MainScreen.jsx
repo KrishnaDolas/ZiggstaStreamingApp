@@ -188,7 +188,7 @@ export const MainScreen = () => {
    }
   };
 
-  const HandleJoined =async ({users,IsHost }) => {
+  const HandleJoined =async ({users,IsHost,ChatMessages }) => {
     try {
           // If no one else, you're host
     if (users.length === 0 || IsHost) {
@@ -217,6 +217,9 @@ export const MainScreen = () => {
         peersRef.current[userId] = peer;
       }
     });
+    if(ChatMessages){
+      setRoomchat(ChatMessages)
+    }
     } catch (error) {
       SendErrorTotheServer(error,'HandleJoined');
     }
