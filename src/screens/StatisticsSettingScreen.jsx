@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Dimensions } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
+import { useFocusEffect } from '@react-navigation/native';
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
@@ -26,7 +27,48 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const [totalDailyTime, setTotalDailyTime] = useState({});
     const [isAvgLoading, setIsAvgLoading] = useState(false);
     const [isTotalTimeLoading, setIsTotalTimeLoading] = useState(false);
+    const [liveOnlineTime, setLiveOnlineTime] = useState('');
 
+    const timerRef = useRef(null);
+    const startTimeRef = useRef(0);
+    const startTimestampRef = useRef(Date.now());
+
+
+    const parseTimeStringToSeconds = (timeStr) => {
+        const dayMatch = timeStr.match(/(\d+)d/);
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+        const days = dayMatch ? parseInt(dayMatch[1], 10) : 0;
+        const hours = timeMatch ? parseInt(timeMatch[1], 10) : 0;
+        const minutes = timeMatch ? parseInt(timeMatch[2], 10) : 0;
+        const seconds = timeMatch ? parseInt(timeMatch[3], 10) : 0;
+        return days * 86400 + hours * 3600 + minutes * 60 + seconds;
+    };
+
+    const formatSecondsToTime = (totalSeconds) => {
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${days}d, ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const startLiveTimer = (initialSeconds) => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        startTimeRef.current = initialSeconds;
+        startTimestampRef.current = Date.now();
+        timerRef.current = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTimestampRef.current) / 1000);
+            const updatedTime = startTimeRef.current + elapsed;
+            setLiveOnlineTime(formatSecondsToTime(updatedTime));
+        }, 1000);
+    };
+
+    const stopLiveTimer = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+        }
+    };
 
     // get user avg.total time from API
     const getUserOnlineTime = useCallback(async () => {
@@ -35,7 +77,10 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         try {
             const response = await Apiclient.get(`/getUserDetails/getUserOnlineTime?userid=${userData?.userid}&type=total`);
             if (response.status === 200) {
-                setTotalDailyTime(response.data || {});
+                const timeStr = response.data?.TotalOnlineTime;
+                setTotalDailyTime({ TotalOnlineTime: timeStr });
+                const totalSeconds = parseTimeStringToSeconds(timeStr);
+                startLiveTimer(totalSeconds); // Start real-time timer
             } else {
                 setIsUserError('Failed to get user online time');
             }
@@ -97,6 +142,13 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     useEffect(() => {
         getTopGifters();
     }, [getTopGifters]);
+
+    useFocusEffect(
+        useCallback(() => {
+            getUserOnlineTime();
+            return () => stopLiveTimer();
+        }, [getUserOnlineTime])
+    );
 
     return (
         <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80, paddingTop: insetsTop.top }}>
@@ -165,7 +217,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                             {isTotalTimeLoading ? (
                                 <ActivityIndicator size="small" />
                             ) : (
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>{totalDailyTime?.TotalOnlineTime}</Text>
+                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}> {liveOnlineTime || totalDailyTime?.TotalOnlineTime}</Text>
                             )}
                         </View>
                     </View>

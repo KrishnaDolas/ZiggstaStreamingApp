@@ -1562,8 +1562,8 @@ export const styles = StyleSheet.create({
     marginBottom: 24,
   },
   strRoomBottomBox: {
-    position:'absolute',
-    bottom:0,
+    position: 'absolute',
+    bottom: 0,
     paddingHorizontal: 14,
     paddingBottom: 6,
     flexDirection: 'row',
@@ -1919,7 +1919,7 @@ export const styles = StyleSheet.create({
   // bank details modal
   bdLabel: {
     fontSize: 14,
-    color: '#717580',
+    // color: '#717580',
     fontWeight: 500,
     marginBottom: 5,
   },
@@ -2225,6 +2225,9 @@ export const themeStyles = {
     roomItem: { backgroundColor: '#f5f5f5' },
     splashButtonText: { color: 'white' },
     SingInlabel: { color: '#717580' },
+    question: {
+      color: '#000',
+    },
     // modal css
     profileModalOverlay: {
       backgroundColor: 'white',
@@ -2404,7 +2407,10 @@ export const themeStyles = {
     wdAmountTextSelected: {
       color: '#fff',
     },
-
+    // bank details modal
+    bdLabel: {
+      color: '#717580',
+    },
     // footer
     footer: {
       backgroundColor: '#fff',
@@ -2432,6 +2438,9 @@ export const themeStyles = {
     roomItem: { backgroundColor: '#2a2a2a' },
     splashButtonText: { color: '#fff' },
     SingInlabel: { color: 'white' },
+    question: {
+      color: '#fff',
+    },
     // modal css
     profileModalOverlay: {
       backgroundColor: '#2a2a2a',
@@ -2603,6 +2612,10 @@ export const themeStyles = {
       color: '#cce4ff',
     },
     wdAmountTextSelected: {
+      color: '#fff',
+    },
+    // bank details modal
+    bdLabel: {
       color: '#fff',
     },
     // footer

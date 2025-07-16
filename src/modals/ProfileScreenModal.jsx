@@ -50,8 +50,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
     const [showWarning, setShowWarning] = useState(false);
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
+    const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
+    const [reportClicked, setReportClicked] = useState(false);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -204,6 +206,26 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
         getFollowersCount();
     }, [profileUserId]);
 
+    // to get stream count
+    useEffect(() => {
+        const getStreamRoomCount = async () => {
+            try {
+                const response = await Apiclient.get(`/rooms/getRoomCount?userid=${profileUserId}`);
+                console.log('getRoomCount response', response.data);
+                if (response.status === 200) {
+                    setUserStreamRoomCount(response.data || {});
+                } else {
+                    setIsUserError('Failed to fetch get room count data');
+                }
+            } catch (err) {
+                setIsUserError('Error fetch get room count data: ' + err.message);
+                SendErrorTotheServer(err, 'getStreamRoomCount');
+
+            }
+        };
+        getStreamRoomCount();
+    }, [profileUserId]);
+
     // handle social media press
     const handleSocialPress = (platform) => {
         const handle = socialLinks?.[platform.toLowerCase()];
@@ -234,8 +256,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
 
 
     const handleReport = () => {
-        setVisibleModal('message-modal');
+        if (reportClicked) return; // prevent multiple triggers
+        setReportClicked(true);
         setMessage(`Report feature is not implemented yet.`);
+        setVisibleModal('message-modal');
     };
 
     return (
@@ -274,7 +298,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                 <>
                                     {/* Header with Report button */}
                                     <View style={styles.psmHeader}>
-                                        <TouchableOpacity onPress={handleReport} style={styles.psmReportButton}>
+                                        <TouchableOpacity
+                                            onPress={handleReport}
+                                            style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                            disabled={reportClicked}
+                                        >
                                             <Text style={styles.psmReportButtonText}>Report</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -330,7 +358,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                                                     <View style={styles.psmStatsContainer}>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>STREAMS</Text>
-                                                            <Text style={styles.psmStatValue}>1K</Text>
+                                                            <Text style={styles.psmStatValue}>{userStreamRoomCount?.roomCount}</Text>
                                                         </View>
                                                         <View style={styles.psmStatItem}>
                                                             <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
@@ -483,7 +511,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData }) => {
                 <MessageModal
                     visible={visibleModal === 'message-modal'}
                     message={message}
-                    onClose={() => setVisibleModal(null)}
+                    onClose={() => {
+                        setVisibleModal(null);
+                        setReportClicked(false); // allow future clicks again
+                    }}
                 />
             )}
         </>

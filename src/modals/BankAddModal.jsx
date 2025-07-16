@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
     View, TouchableOpacity, Text, TextInput, ScrollView, KeyboardAvoidingView, Platform,
     Alert,
@@ -6,13 +6,15 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Picker } from '@react-native-picker/picker';
 import Apiclient from '../utils/Apiclient';
 import MessageModal from './MessageModal';
 import { SendErrorTotheServer } from '../utils/constant';
+import { ThemeContext } from '../context/ThemeContext';
 
 const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) => {
+    const { theme } = useContext(ThemeContext);
     const [selectedRegion, setSelectedRegion] = useState('');
     const [isModalRendered, setIsModalRendered] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
@@ -301,7 +303,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'us':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>Account Number:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -313,7 +315,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="accountNumber" />
 
-                        <Text style={styles.bdLabel}>Routing Number (ABA):</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Routing Number (ABA):</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.routingNumber}
@@ -329,7 +331,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'eu':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>IBAN:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>IBAN:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.iban}
@@ -340,7 +342,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="iban" />
 
-                        <Text style={styles.bdLabel}>BIC/SWIFT Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>BIC/SWIFT Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
@@ -355,7 +357,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'uk':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>Sort Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Sort Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.sortCode}
@@ -367,7 +369,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="sortCode" />
 
-                        <Text style={styles.bdLabel}>Account Number:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -383,7 +385,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'in':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>Account Number:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -395,7 +397,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="accountNumber" />
 
-                        <Text style={styles.bdLabel}>IFSC Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>IFSC Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.ifscCode}
@@ -410,7 +412,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'au':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>BSB Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>BSB Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             placeholder="e.g. 123-456"
@@ -423,7 +425,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="bsbCode" />
 
-                        <Text style={styles.bdLabel}>Account Number:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -439,7 +441,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'sea':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>Account Number:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -451,7 +453,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="accountNumber" />
 
-                        <Text style={styles.bdLabel}>Bank Code (if applicable):</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Code (if applicable):</Text>
                         <TextInput
                             style={styles.bdInput}
                             placeholder="e.g. BSA, BDO, DBS etc."
@@ -464,7 +466,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="bsbCode" />
 
-                        <Text style={styles.bdLabel}>SWIFT/BIC Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>SWIFT/BIC Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
@@ -479,7 +481,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             case 'intl':
                 return (
                     <>
-                        <Text style={styles.bdLabel}>Account Number / IBAN:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number / IBAN:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.accountNumber}
@@ -490,7 +492,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         />
                         <ErrorText field="accountNumber" />
 
-                        <Text style={styles.bdLabel}>SWIFT/BIC Code:</Text>
+                        <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>SWIFT/BIC Code:</Text>
                         <TextInput
                             style={styles.bdInput}
                             value={formData.bicSwiftCode}
@@ -523,7 +525,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                 propagateSwipe={true} // IMPORTANT
                 style={styles.fullScreenModalMain}
             >
-                <View style={[styles.fullScreenModalOverlay, { flex: 1 }]}>
+                <View style={[styles.fullScreenModalOverlay, themeStyles[theme].fullScreenModalOverlay, { flex: 1 }]}>
                     <KeyboardAvoidingView
                         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                         keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
@@ -531,17 +533,17 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     >
                         <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
                             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
-                                <Ionicons name="close" size={28} color="#333" />
+                                <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                             </TouchableOpacity>
                         </View>
-                        <Text style={[styles.modalSmallTitle, { fontWeight: '500' }]}>Your Bank Details</Text>
+                        <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { fontWeight: '500' }]}>Your Bank Details</Text>
                         {isModalRendered && (
                             <ScrollView
                                 contentContainerStyle={{ paddingLeft: 10, paddingBottom: 100 }}
                                 showsVerticalScrollIndicator={false}
                                 keyboardShouldPersistTaps="handled"
                             >
-                                <Text style={styles.bdLabel}>Select Region:</Text>
+                                <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Select Region:</Text>
                                 <View style={styles.bdPickerWrapper}>
                                     <Picker
                                         selectedValue={selectedRegion}
@@ -566,7 +568,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 </View>
                                 <ErrorText field="selectedRegion" />
 
-                                <Text style={styles.bdLabel}>Account Holder Name:</Text>
+                                <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Holder Name:</Text>
                                 <TextInput
                                     style={styles.bdInput}
                                     value={formData.accountHolder}
@@ -577,7 +579,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 />
                                 <ErrorText field="accountHolder" />
 
-                                <Text style={styles.bdLabel}>Bank Name:</Text>
+                                <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Name:</Text>
                                 <TextInput
                                     style={styles.bdInput}
                                     value={formData.bankName}
@@ -587,7 +589,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                     minLength={2}  // Minimum for a valid bank name
                                 />
                                 <ErrorText field="bankName" />
-                                <Text style={styles.bdLabel}>Bank Address:</Text>
+                                <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Address:</Text>
                                 <TextInput
                                     style={styles.bdInput}
                                     value={formData.bankAddress}

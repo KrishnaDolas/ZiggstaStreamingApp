@@ -10,7 +10,7 @@ import {
   FlatList,
   ActivityIndicator,
 } from 'react-native';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -1092,7 +1092,7 @@ export const RegisterForm = ({
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
                 <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
-                  <Text style={styles.question}>{questionItem.label}</Text>
+                  <Text style={[styles.question, themeStyles[theme].question]}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>
               </View>
