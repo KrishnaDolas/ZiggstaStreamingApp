@@ -774,7 +774,7 @@ export const MainScreen = () => {
         barStyle="dark-content"
         backgroundColor="#fff"
       />
-      {connectingpanel && joined  && (<DisconnectedPanel time={countdown} />)}
+      {connectingpanel && joined  && (<DisconnectedPanel time={countdown} leaveRoom={leaveRoom} />)}
       <View style={[styles.container]}>
       {isloading ?(<Loader LoaderImage={chatimage}/>):null}
         {!joined ? (

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator, Text } from "react-native";
 
-const DisconnectedPanel = ({ time }) => {
+const DisconnectedPanel = ({ time,leaveRoom }) => {
     const [count,setCount]=useState(time)
 
     useEffect(()=>{
@@ -9,6 +9,7 @@ const DisconnectedPanel = ({ time }) => {
             if(count>=1){
                 setCount(count-1)
             }else{
+                leaveRoom()
                 clearInterval(timeoutID)
             }
         }, 1000);
