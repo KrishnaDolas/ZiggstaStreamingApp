@@ -343,7 +343,6 @@ export const MainScreen = () => {
   }
   const HandleUserLeft = socketId => {
     try {
-      setRoomchat([])
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
         delete peersRef.current[socketId];
