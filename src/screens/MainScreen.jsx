@@ -20,7 +20,6 @@ import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
-import ConnectingPanel from '../modals/CoonectingPanel';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
 export const MainScreen = () => {
   const {userData,userAddress}=useAppContext()
@@ -54,70 +53,89 @@ export const MainScreen = () => {
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
-      console.log(`App state changed to: ${nextAppState}`);
+      console.log(`📱 App state changed to: ${nextAppState}`);
       const IsValid = isuserstreaming || isHost;
   
       if (nextAppState === 'active' && isStreaming && IsValid) {
-        console.log('🔄 Restarting local stream...');
+        console.log('🔄 Resuming: restarting local stream...');
   
-        // Stop old stream if exists
-        if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-        }
-  
-        // Get new stream
-        const newStream = await mediaDevices.getUserMedia({
-          video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
-          audio: true,
-        });
-  
-        localStreamRef.current = newStream;
-        setLocalStream(newStream);
-        setIsStreaming(true);
-  
-        InCallManager.start({ media: 'audio' });
-        InCallManager.setForceSpeakerphoneOn(true);
-        InCallManager.setSpeakerphoneOn(true);
-  
-        // Replace tracks for each peer
-        for (const [userId, peer] of Object.entries(peersRef.current)) {
-          const senders = peer.getSenders();
-  
-          const videoTrack = newStream.getVideoTracks()[0];
-          const audioTrack = newStream.getAudioTracks()[0];
-  
-          senders.forEach(sender => {
-            if (sender.track?.kind === 'video' && videoTrack) {
-              sender.replaceTrack(videoTrack);
-            } else if (sender.track?.kind === 'audio' && audioTrack) {
-              sender.replaceTrack(audioTrack);
+        // Optional small delay to allow app to fully resume
+        setTimeout(async () => {
+          try {
+            // Stop old tracks
+            if (localStreamRef.current) {
+              localStreamRef.current.getTracks().forEach(track => track.stop());
             }
-            // delete old stream from remote streams
-            setRemoteStreams(prev => prev.filter(s => s.id !== userId));
-          });
   
-          // Create and send new offer
-          const offer = await peer.createOffer({ iceRestart: true });
-          await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+            // Get new media stream
+            const newStream = await mediaDevices.getUserMedia({
+              video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
+              audio: true,
+            });
   
-          socket.emit('signal', { to: userId, data: peer.localDescription });
-        }
-        // Notify all viewers to renegotiate their stream TO ME
-        socket.emit('request-renegotiation-from-viewers', {socketId: socket.id});
+            localStreamRef.current = newStream;
+            setLocalStream(newStream);
+            setIsStreaming(true);
+  
+            // InCallManager setup
+            InCallManager.start({ media: 'audio' });
+            InCallManager.setForceSpeakerphoneOn(true);
+            InCallManager.setSpeakerphoneOn(true);
+  
+            // Replace track for each connected peer
+            for (const [userId, peer] of Object.entries(peersRef.current)) {
+              const senders = peer.getSenders();
+  
+              const videoTrack = newStream.getVideoTracks()[0];
+              const audioTrack = newStream.getAudioTracks()[0];
+  
+              senders.forEach(sender => {
+                if (sender.track?.kind === 'video' && videoTrack) {
+                  sender.replaceTrack(videoTrack);
+                } else if (sender.track?.kind === 'audio' && audioTrack) {
+                  sender.replaceTrack(audioTrack);
+                }
+              });
+  
+              // Clear stale remote stream if needed
+              setRemoteStreams(prev => prev.filter(stream => stream.id !== userId));
+  
+              // Create and send new offer
+              const offer = await peer.createOffer({ iceRestart: true });
+              await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+  
+              socket.emit('signal', { to: userId, data: peer.localDescription });
+            }
+  
+            // Notify others (viewers) to renegotiate their stream to me
+            socket.emit('request-renegotiation-from-viewers', { socketId: socket.id });
+          } catch (err) {
+            console.error('⚠️ Error while resuming stream:', err);
+          }
+        }, 500); // Delay for app stability
   
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
-        console.log('🔄 App in background: stopping local stream');
-        if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => track.stop());
-          localStreamRef.current = null;
-          setLocalStream(null);
+        console.log('⏸ App in background: stopping local stream');
+  
+        try {
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+          }
+        } catch (err) {
+          console.warn('⚠️ Error while stopping stream:', err);
         }
       }
     };
   
     const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription.remove();
-  }, [isStreaming, isHost, isuserstreaming]);
+  
+    return () => {
+      subscription.remove();
+    };
+  }, [isStreaming, isHost, isuserstreaming, isFrontCamera]);
+  
 
   const connectSocket = () => {
     console.log('Connecting to socket server...');
@@ -462,48 +480,28 @@ export const MainScreen = () => {
     });
   }
 
-  const HandleRenegotiate = async ({ socketId }) => {
-    const newStream = await mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    let peer = peersRef.current[socketId];
-  
-    if (!peer) {
-      peer = createPeer(socketId);
-      peersRef.current[socketId] = peer;
-    }
-  
-    const localStream = localStreamRef.current;
-    if (!localStream || !localStream.getTracks().length) {
-      console.warn('Viewer has no local stream to renegotiate with.');
-      return;
-    }
-  
-    // Ensure tracks are attached
-    const existingSenders = peer.getSenders().map(s => s.track?.id);
-    localStream.getTracks().forEach(track => {
-      if (!existingSenders.includes(track.id)) {
-        peer.addTrack(track, localStream);
+  const HandleRenegotiate = async (socketId) => {
+    console.log(`🔄 Host (${hostId}) requested renegotiation from viewer`);
+
+    try {
+      const peer = peersRef.current[socketId];
+      if (!peer) {
+        console.warn('⚠️ Peer connection not found with host for renegotiation.');
+        return;
       }
-    });
-  // 🔁 Replace old tracks
-  const senders = peer.getSenders();
-  senders.forEach(sender => {
-    peer.removeTrack(sender);
-  });
 
-  newStream.getTracks().forEach(track => {
-    peer.addTrack(track, newStream);
-  });
-    // Send offer
-    const offer = await peer.createOffer({ iceRestart: true });
-    await peer.setLocalDescription(offer);
-  
-    socket.emit('signal', {to: socketId,data: peer.localDescription});
+      // Create a new offer to the host
+      const offer = await peer.createOffer({ iceRestart: true });
+      await peer.setLocalDescription(offer);
 
+      // Send the offer to the host via signaling server
+      socket.emit('signal', { to: socketId, data: offer });
 
-  }
+      console.log(`✅ Viewer sent new offer to host (${socketId})`);
+    } catch (err) {
+      console.error('❌ Error during renegotiation with host:', err);
+    }
+  };
 
   useEffect(()=>{
     HandleConnect()
