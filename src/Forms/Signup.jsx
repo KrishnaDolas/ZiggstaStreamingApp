@@ -26,9 +26,12 @@ export const Signup = ({
 
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(null); // null = untouched
+  const [emailTouched, setEmailTouched] = useState(false);
 
-  const isValidEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  // Function to validate email format correctly
+  const isValidEmail = (email) => {
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+  };
 
   // Validate form inputs whenever they change
   useEffect(() => {
@@ -47,7 +50,11 @@ export const Signup = ({
       return;
     }
     if (!isValidEmail(trimmedEmail)) {
-      setError('Please enter a valid email address');
+      if (emailTouched) {
+        setError('Please enter a valid email address');
+      } else {
+        setError('');
+      }
       setIsFormValid(false);
       return;
     }
@@ -153,14 +160,17 @@ export const Signup = ({
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <TextInput
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  if (!emailTouched) setEmailTouched(true);
+                  setEmail(text);
+                }}
                 style={[styles.input, themeStyles[theme].input]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 placeholderTextColor={themeStyles[theme].placeholder.color}
                 placeholder="Email Address"
                 maxLength={50}
-                autoFocus
+              // autoFocus
               />
               <View style={{ position: 'absolute', right: 20, top: 23 }}>
                 {checkingEmail ? (

@@ -2222,16 +2222,14 @@ export const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#0f0f0f',
+    // backgroundColor: '#0f0f0f',
   },
   reportLoadingText: {
     color: '#fff',
     fontSize: 16,
   },
   reportUserInfoCard: {
-    // backgroundColor: '#0f0f0f',
     borderRadius: 16,
-    // paddingHorizontal: 2,
     paddingTop: 10,
     marginBottom: 24,
   },
@@ -2253,18 +2251,14 @@ export const styles = StyleSheet.create({
   reportSectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    // color: '#fff',
     marginBottom: 16,
   },
   reportCategoriesContainer: {
     gap: 12,
   },
   reportCategoryCard: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
+    borderRadius: 30,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#333',
   },
   reportSelectedCategoryCard: {
     backgroundColor: '#ff4757',
@@ -2276,9 +2270,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   reportCategoryTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#fff',
     flex: 1,
   },
   reportSelectedCategoryTitle: {
@@ -2293,20 +2286,13 @@ export const styles = StyleSheet.create({
   reportSubCategoryHeader: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
     marginBottom: 16,
   },
   reportSubCategoryCard: {
-    backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#333',
-  },
-  reportSelectedSubCategoryCard: {
-    backgroundColor: '#2a2a2a',
-    borderColor: '#ff4757',
   },
   reportSubCategoryContent: {
     flexDirection: 'row',
@@ -2326,15 +2312,12 @@ export const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ff4757',
+    backgroundColor: '#d93a63',
   },
   reportSubCategoryTitle: {
-    fontSize: 16,
-    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
     flex: 1,
-  },
-  reportSelectedSubCategoryTitle: {
-    color: '#fff',
   },
   reportDescriptionSection: {
     marginBottom: 32,
@@ -2342,43 +2325,35 @@ export const styles = StyleSheet.create({
   reportDescriptionLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    // color: '#fff',
     marginBottom: 12,
   },
   reportDescriptionInput: {
-    backgroundColor: '#1a1a1a',
+    // backgroundColor: '#1a1a1a',
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#fff',
+    // color: '#fff',
     minHeight: 120,
-    borderWidth: 1,
-    borderColor: '#333',
   },
   reportSubmitSection: {
     marginBottom: 40,
-  },
-  reportSubmitButton: {
-    backgroundColor: '#ff4757',
-    borderRadius: 12,
-    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ff4757',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+  },
+  reportSubmitButton: {
+    backgroundColor: '#d93a63',
+    borderRadius: 30,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   reportSubmitButtonText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
     color: '#fff',
-    marginRight: 8,
   },
   reportSubmitIcon: {
     marginLeft: 4,
@@ -2599,6 +2574,36 @@ export const themeStyles = {
     reportSectionTitle: {
       color: '#000',
     },
+    reportCategoryCard: {
+      backgroundColor: '#d6d6d6ff',
+    },
+    reportCategoryTitle: {
+      color: '#000',
+    },
+    reportSubCategoryHeader: {
+      color: '#000',
+    },
+    reportSubCategoryCard: {
+      backgroundColor: '#d6d6d6ff',
+      borderColor: '#d9d9d9',
+    },
+    reportSelectedSubCategoryCard: {
+      backgroundColor: '#d6d6d6ff',
+      borderColor: '#d93a63',
+    },
+    reportSubCategoryTitle: {
+      color: '#000',
+    },
+    reportLoadingContainer: {
+      backgroundColor: '#fff',
+    },
+    reportDescriptionLabel: {
+      color: '#000',
+    },
+    reportDescriptionInput: {
+      backgroundColor: '#d6d6d6ff',
+      color: '#000',
+    },
     // footer
     footer: {
       backgroundColor: '#fff',
@@ -2808,6 +2813,36 @@ export const themeStyles = {
     },
     // report modal
     reportSectionTitle: {
+      color: '#fff',
+    },
+    reportCategoryCard: {
+      backgroundColor: '#1a1a1a',
+    },
+    reportCategoryTitle: {
+      color: '#fff',
+    },
+    reportSubCategoryHeader: {
+      color: '#fff',
+    },
+    reportSubCategoryCard: {
+      backgroundColor: '#1a1a1a',
+      borderColor: '#333',
+    },
+    reportSelectedSubCategoryCard: {
+      backgroundColor: '#2a2a2a',
+      borderColor: '#d93a63',
+    },
+    reportSubCategoryTitle: {
+      color: '#fff',
+    },
+    reportLoadingContainer: {
+      backgroundColor: '#0f0f0f',
+    },
+    reportDescriptionLabel: {
+      color: '#fff',
+    },
+    reportDescriptionInput: {
+      backgroundColor: '#1a1a1a',
       color: '#fff',
     },
     // footer
