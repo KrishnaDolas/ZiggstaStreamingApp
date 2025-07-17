@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
+import GoogleBannerAd from './GoogleBannerAd';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -27,7 +28,7 @@ const hardcodedImages = [
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
-      const {userData,userAddress}=useAppContext()
+    const { userData, userAddress, subscriptionStatus } = useAppContext()
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -305,6 +306,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         }
     }, [searchFilteredData]);
 
+
     return (
         <LinearGradient
             style={{ height: '100%', width: '100%', position: 'relative' }}
@@ -410,6 +412,9 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     onPress={() => setOpenStreamInputModal(true)}>
                     <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                 </TouchableOpacity>
+                {subscriptionStatus?.success && (
+                    <GoogleBannerAd />
+                )}
                 {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
                 </TouchableOpacity> */}

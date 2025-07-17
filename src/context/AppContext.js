@@ -11,7 +11,7 @@ export const AppProvider = ({ children }) => {
     const [userAddress, setUserAddress] = useState('');
     const [ipAddress, setIpAddress] = useState('');
     const [profileData, setProfileData] = useState({});
-
+    const [subscriptionStatus, setSubscriptionStatus] = useState(null);
 
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
@@ -41,7 +41,9 @@ export const AppProvider = ({ children }) => {
             setIpAddress,
             profileData,
             setProfileData,
-            fetchProfileDetails
+            fetchProfileDetails,
+            subscriptionStatus,
+            setSubscriptionStatus,
         }}>
             {children}
         </AppContext.Provider>

@@ -1030,14 +1030,14 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '9.4%',
+    bottom: '8.2%',
     left: '50%',
     transform: [{ translateX: -0.475 * screenWidth }],
-    flexDirection: 'row',
+    flexDirection: 'column',
     width: '95%',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 10,
+    paddingHorizontal: 0,
   },
   streamListFiltersWhiteBtn: {
     backgroundColor: '#fff',
@@ -1079,6 +1079,7 @@ export const styles = StyleSheet.create({
 
     // Shadow for Android
     elevation: 4,
+    marginBottom: 10,
   },
 
   streamListFiltersColorBtnText: {
@@ -2358,7 +2359,17 @@ export const styles = StyleSheet.create({
   reportSubmitIcon: {
     marginLeft: 4,
   },
-
+  // google ad
+  googleAdContainer: {
+    alignItems: 'center',
+    marginTop: 5,
+    // backgroundColor: '#000',
+    width: '100%',
+  },
+  googleAdBanner: {
+    width: 320,
+    height: 50,
+  },
 });
 
 // Theme Styles
@@ -2604,6 +2615,9 @@ export const themeStyles = {
       backgroundColor: '#d6d6d6ff',
       color: '#000',
     },
+    googleAdContainer: {
+      backgroundColor: '#fff',
+    },
     // footer
     footer: {
       backgroundColor: '#fff',
@@ -2844,6 +2858,9 @@ export const themeStyles = {
     reportDescriptionInput: {
       backgroundColor: '#1a1a1a',
       color: '#fff',
+    },
+    googleAdContainer: {
+      backgroundColor: '#2a2a2a',
     },
     // footer
     footer: {
