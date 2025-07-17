@@ -351,6 +351,9 @@ const StreamRoom = ({
         }
     }, [streamrequestlist.length]);
 
+    const HidesettingPanel=()=>{
+        setOpenMoreSettingList(false)
+    }
 
     return (
         <View style={[styles.roomInfo]}>
@@ -539,17 +542,24 @@ const StreamRoom = ({
                                     >
                                         <TouchableOpacity onPress={() => {
                                             switchCamera();
+                                            HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
                                         {!isHost && (
-                                            <TouchableOpacity onPress={requestStreamPermission} style={styles.strMoreSettingListItem}>
+                                            <TouchableOpacity onPress={()=>{
+                                                requestStreamPermission(),
+                                                HidesettingPanel()
+                                                }} style={styles.strMoreSettingListItem}>
                                                 <Text style={styles.strMoreSettingListItemText}>Join As a Guest</Text>
                                                 <MaterialCommunityIcons name="video-plus" size={21} color="#fff" />
                                             </TouchableOpacity>
                                         )}
-                                        <TouchableOpacity onPress={() => toggleMute()} style={styles.strMoreSettingListItem}>
+                                        <TouchableOpacity onPress={() => {
+                                            toggleMute(),
+                                            HidesettingPanel()
+                                            }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
