@@ -57,7 +57,7 @@ export const MainScreen = () => {
   
       if (nextAppState === 'active' && isStreaming && IsValid) {
         console.log('🔄 Resuming: restarting local stream...');
-        HandleUserStreamStoped()
+        socket.emit('stream-Resume',socket.id)
         // Optional small delay to allow app to fully resume
         setTimeout(async () => {
           try {
@@ -491,6 +491,7 @@ export const MainScreen = () => {
       socket.on('disconnect', HandleDisconnected);
       socket.on('Stop-Stream',HandleStopStream)
       socket.on('Host-Disconnected',HandleUserLeft)
+      socket.on('stream-Resume',HandleUserStreamStoped)
     }
 
     return () => {
@@ -518,7 +519,8 @@ export const MainScreen = () => {
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
         socket.off('Stop-Stream',HandleStopStream)
-        socket.on('Host-Disconnected',HandleUserLeft)
+        socket.off('Host-Disconnected',HandleUserLeft)
+        socket.off('stream-Resume',HandleUserStreamStoped)
       }
     }
   }, [isHost,isSocketConnected]);
