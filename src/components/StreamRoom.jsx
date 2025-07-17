@@ -308,7 +308,7 @@ const StreamRoom = ({
 
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
-            Alert.alert('Please enter a message before sending.');
+            Alert.alert('Chat Error','Please enter a message before sending.', [{ text: 'OK' }]);
             return;
         }
         HandleChatmessages(userChatInput);
