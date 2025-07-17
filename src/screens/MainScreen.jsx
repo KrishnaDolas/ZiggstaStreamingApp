@@ -756,7 +756,7 @@ console.log(list);
         streamrequestlist={streamrequestlist}
         streamGuest={streamGuest}
         socket={socket}
-        isSocketConnected={isSocketConnected}
+        hasRequestedStream={hasRequestedStream}
       />)}
       </View>
     </LinearGradient>

@@ -73,7 +73,8 @@ const StreamRoom = ({
     streamInfo,
     streamrequestlist,
     streamGuest,
-    socket
+    socket,
+    hasRequestedStream
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -551,9 +552,9 @@ const StreamRoom = ({
                                             <TouchableOpacity onPress={()=>{
                                                 requestStreamPermission(),
                                                 HidesettingPanel()
-                                                }} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Join As a Guest</Text>
-                                                <MaterialCommunityIcons name="video-plus" size={21} color="#fff" />
+                                                }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
+                                                <Text style={[styles.strMoreSettingListItemText,{color:hasRequestedStream?'#007ACC':'white'}]}  >{hasRequestedStream? "Already Requested":'Join As a Guest'}</Text>
+                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream?'#007ACC':'white'}`} />
                                             </TouchableOpacity>
                                         )}
                                         <TouchableOpacity onPress={() => {
