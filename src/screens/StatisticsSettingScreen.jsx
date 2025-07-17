@@ -193,7 +193,17 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
                         <View style={styles.profileBlock}>
                             <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
-                            <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>${profileData?.CreditBalance}</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Image
+                                    source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                    style={{ width: 14, height: 14, marginRight: 5 }}
+                                    resizeMode="contain"
+                                />
+                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
+                                    {profileData?.CreditBalance}
+                                </Text>
+                            </View>
+
                         </View>
                     </View>
 
