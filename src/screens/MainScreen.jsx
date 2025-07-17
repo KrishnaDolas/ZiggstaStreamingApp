@@ -57,58 +57,18 @@ export const MainScreen = () => {
   
       if (nextAppState === 'active' && isStreaming && IsValid) {
         console.log('🔄 Resuming: restarting local stream...');
-  
+        HandleUserStreamStoped()
         // Optional small delay to allow app to fully resume
         setTimeout(async () => {
           try {
-            // Stop old tracks
-            if (localStreamRef.current) {
-              localStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-  
-            // Get new media stream
-            const newStream = await mediaDevices.getUserMedia({
-              video: { width: 300, height: 320, facingMode: isFrontCamera ? 'user' : 'environment' },
-              audio: !isMuted.muted,
-            });
-  
-            localStreamRef.current = newStream;
-            setLocalStream(newStream);
-            setIsStreaming(true);
-  
-            // InCallManager setup
-            InCallManager.start({ media: 'audio' });
-            InCallManager.setForceSpeakerphoneOn(true);
-            InCallManager.setSpeakerphoneOn(true);
-  
-            // Replace track for each connected peer
-            for (const [userId, peer] of Object.entries(peersRef.current)) {
-              const senders = peer.getSenders();
-  
-              const videoTrack = newStream.getVideoTracks()[0];
-              const audioTrack = newStream.getAudioTracks()[0];
-  
-              senders.forEach(sender => {
-                if (sender.track?.kind === 'video' && videoTrack) {
-                  sender.replaceTrack(videoTrack);
-                } else if (sender.track?.kind === 'audio' && audioTrack) {
-                  sender.replaceTrack(audioTrack);
-                }
-              });
-  
-              // Clear stale remote stream if needed
-              setRemoteStreams(prev => prev.filter(stream => stream.id !== userId));
-  
-              // Create and send new offer
-              const offer = await peer.createOffer({ iceRestart: true });
-              await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-  
-              socket.emit('signal', { to: userId, data: peer.localDescription });
-            }
+            socket.emit('stream-negotiate')
+            setTimeout(() => {
+              HandleApprovedStream()
+            }, 1000);
           } catch (err) {
             console.error('⚠️ Error while resuming stream:', err);
           }
-        }, 500); // Delay for app stability
+        }, 1000); // Delay for app stability
   
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
@@ -118,6 +78,18 @@ export const MainScreen = () => {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
             setLocalStream(null);
+            setHasRequestedStream(false);
+            setIsUserStreaming(false); // Reset user streaming status
+            // Stop InCallManager
+            InCallManager.stop();
+          }
+          setRemoteStreams([])
+          peersRef.current = {};
+          for (const [userId, peer] of Object.entries(peersRef.current)) {
+            if(peersRef.current[userId]){
+              peersRef.current[userId].close();
+              delete peersRef.current[userId]
+            }
           }
         } catch (err) {
           console.warn('⚠️ Error while stopping stream:', err);
