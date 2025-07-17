@@ -79,7 +79,6 @@ export const MainScreen = () => {
             localStreamRef.current = null;
             setLocalStream(null);
             setHasRequestedStream(false);
-            setIsUserStreaming(false); // Reset user streaming status
             // Stop InCallManager
             InCallManager.stop();
           }
@@ -421,6 +420,9 @@ export const MainScreen = () => {
       SendErrorTotheServer(error,'HandleUserStreamStoped');
     }
   }
+  const HandleStreamList=(list)=>{
+console.log(list);
+  }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -492,6 +494,7 @@ export const MainScreen = () => {
       socket.on('Stop-Stream',HandleStopStream)
       socket.on('Host-Disconnected',HandleUserLeft)
       socket.on('stream-Resume',HandleUserStreamStoped)
+      socket.on('streamer-List',HandleStreamList)
     }
 
     return () => {
@@ -521,6 +524,7 @@ export const MainScreen = () => {
         socket.off('Stop-Stream',HandleStopStream)
         socket.off('Host-Disconnected',HandleUserLeft)
         socket.off('stream-Resume',HandleUserStreamStoped)
+        socket.off('streamer-List',HandleStreamList)
       }
     }
   }, [isHost,isSocketConnected]);
