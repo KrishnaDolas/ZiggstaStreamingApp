@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, Alert, Animated, TextInput, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView, Alert, Animated, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
-const ReportUserModal = ({ visible, onClose, userData }) => {
+import { useAppContext } from '../context/AppContext';
+const ReportUserModal = ({ visible, onClose, reportData }) => {
+    const { userData } = useAppContext();
     const { theme } = useContext(ThemeContext);
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
     const [categories, setCategories] = useState([]);
@@ -72,11 +74,14 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
 
         try {
             // Here you would make your API call to submit the report
-            // const reportData = {
-            //   categoryId: selectedSubCategory?.id || selectedMainCategory?.id,
-            //   description: description.trim(),
-            //   reportedUserId: reportedUser.id
-            // };
+            const payload = {
+                category_id: selectedSubCategory?.id || selectedMainCategory?.id,
+                details: description.trim(),
+                reported_user_id: reportData.userid,
+                user_id: userData.userid, // Assuming userData contains the current user's ID
+                video_id: '',
+            };
+            console.log('Submitting report with data:', payload);
 
             Alert.alert(
                 'Report Submitted',
@@ -99,7 +104,7 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
             <TouchableOpacity
                 key={category.id}
                 style={[
-                    styles.reportCategoryCard,
+                    styles.reportCategoryCard, themeStyles[theme].reportCategoryCard,
                     selectedMainCategory?.id === category.id && styles.reportSelectedCategoryCard,
                 ]}
                 onPress={() => handleMainCategorySelect(category)}
@@ -107,7 +112,7 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
             >
                 <View style={styles.reportCategoryContent}>
                     <Text style={[
-                        styles.reportCategoryTitle,
+                        styles.reportCategoryTitle, themeStyles[theme].reportCategoryTitle,
                         selectedMainCategory?.id === category.id && styles.reportSelectedCategoryTitle,
                     ]}>
                         {category.title}
@@ -115,8 +120,12 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                     <View style={styles.reportCategoryIconContainer}>
                         <Icon
                             name={selectedMainCategory?.id === category.id ? "chevron-down" : "chevron-forward"}
-                            size={20}
-                            color={selectedMainCategory?.id === category.id ? "#fff" : "#666"}
+                            size={16}
+                            color={
+                                selectedMainCategory?.id === category.id
+                                    ? '#fff'
+                                    : (theme === 'dark' ? '#fff' : '#000')
+                            }
                         />
                     </View>
                 </View>
@@ -137,13 +146,13 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                     },
                 ]}
             >
-                <Text style={styles.reportSubCategoryHeader}>Select specific issue:</Text>
+                <Text style={[styles.reportSubCategoryHeader, themeStyles[theme].reportSubCategoryHeader]}>Select specific issue:</Text>
                 {selectedMainCategory.children.map((subCategory) => (
                     <TouchableOpacity
                         key={subCategory.id}
                         style={[
-                            styles.reportSubCategoryCard,
-                            selectedSubCategory?.id === subCategory.id && styles.reportSelectedSubCategoryCard,
+                            styles.reportSubCategoryCard, themeStyles[theme].reportSubCategoryCard,
+                            selectedSubCategory?.id === subCategory.id && styles.reportSelectedSubCategoryCard, selectedSubCategory?.id === subCategory.id && themeStyles[theme].reportSelectedSubCategoryCard,
                         ]}
                         onPress={() => handleSubCategorySelect(subCategory)}
                         activeOpacity={0.8}
@@ -155,8 +164,8 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                 )}
                             </View>
                             <Text style={[
-                                styles.reportSubCategoryTitle,
-                                selectedSubCategory?.id === subCategory.id && styles.reportSelectedSubCategoryTitle,
+                                styles.reportSubCategoryTitle, themeStyles[theme].reportSubCategoryTitle,
+                                // selectedSubCategory?.id === subCategory.id && styles.reportSelectedSubCategoryTitle,
                             ]}>
                                 {subCategory.title}
                             </Text>
@@ -167,21 +176,11 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
         );
     };
 
-    if (loading) {
-        return (
-            <View style={styles.reportLoadingContainer}>
-                <Text style={styles.reportLoadingText}>Loading categories...</Text>
-            </View>
-        );
-    }
-
-
-
     const showDescription =
         selectedSubCategory ||
         (selectedMainCategory && !selectedMainCategory.children?.length);
 
-    const showSubmitButton = showDescription && description.trim();
+    // const showSubmitButton = showDescription && description.trim();
 
 
     return (
@@ -209,96 +208,104 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
 
                         {isModalRendered && (
                             <>
-                                <ScrollView
-                                    contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
-                                    showsVerticalScrollIndicator={false}
-                                    initialNumToRender={5}
-                                    removeClippedSubviews={false}
-                                >
-                                    <Animated.View
-                                        style={[
-                                            styles.reportUserInfoCard,
-                                            {
-                                                opacity: fadeAnim,
-                                                transform: [{ translateY: slideAnim }],
-                                            },
-                                        ]}
+                                {loading ? (
+                                    <View style={[styles.reportLoadingContainer, themeStyles[theme].reportLoadingContainer]}>
+                                        <ActivityIndicator size="large" />
+                                        <Text style={{
+                                            color: theme === 'dark' ? '#fff' : '#000',
+                                            fontSize: 16,
+                                            marginTop: 15,
+                                        }}>Loading categories...</Text>
+                                    </View>) : (
+                                    <ScrollView
+                                        contentContainerStyle={{ paddingTop: 10, paddingBottom: 100 }}
+                                        showsVerticalScrollIndicator={false}
+                                        initialNumToRender={5}
+                                        removeClippedSubviews={false}
                                     >
-                                        <View style={styles.reportUserInfoContent}>
-                                            <View style={styles.reportUserDetails}>
-                                                {/* <Text style={styles.reportUserName}>{reportedUser.name}</Text> */}
-                                                <Text style={styles.reportUserName}>Why are you reporting this person?</Text>
-                                            </View>
-                                        </View>
-                                    </Animated.View>
-                                    {!selectedMainCategory && (
                                         <Animated.View
                                             style={[
-                                                styles.reportCategoriesSection,
+                                                styles.reportUserInfoCard,
                                                 {
                                                     opacity: fadeAnim,
                                                     transform: [{ translateY: slideAnim }],
                                                 },
                                             ]}
                                         >
-                                            <Text style={[styles.reportSectionTitle, themeStyles[theme].reportSectionTitle]}>What's the issue?</Text>
-                                            <View style={styles.reportCategoriesContainer}>
-                                                {renderMainCategories()}
+                                            <View style={styles.reportUserInfoContent}>
+                                                <View style={styles.reportUserDetails}>
+                                                    {/* <Text style={styles.reportUserName}>{reportedUser.name}</Text> */}
+                                                    <Text style={styles.reportUserName}>Why are you reporting this person?</Text>
+                                                </View>
                                             </View>
                                         </Animated.View>
-                                    )}
-
-
-                                    {selectedMainCategory && (
-                                        <Animated.View
-                                            style={[
-                                                styles.reportCategoriesSection,
-                                                {
-                                                    opacity: fadeAnim,
-                                                    transform: [{ translateY: slideAnim }],
-                                                },
-                                            ]}
-                                        >
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    setSelectedMainCategory(null);
-                                                    setSelectedSubCategory(null);
-                                                }}
-                                                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
+                                        {!selectedMainCategory && (
+                                            <Animated.View
+                                                style={[
+                                                    styles.reportCategoriesSection,
+                                                    {
+                                                        opacity: fadeAnim,
+                                                        transform: [{ translateY: slideAnim }],
+                                                    },
+                                                ]}
                                             >
-                                                <Icon name="arrow-back" size={20} color="#fff" style={{ marginRight: 8 }} />
-                                                <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff' }}>
-                                                    {selectedMainCategory.title}
-                                                </Text>
-                                            </TouchableOpacity>
-                                            {/* Show Subcategories only when MainCategory has children */}
-                                            {selectedMainCategory?.children?.length > 0 && renderSubCategories()}
+                                                <Text style={[styles.reportSectionTitle, themeStyles[theme].reportSectionTitle]}>What's the issue?</Text>
+                                                <View style={styles.reportCategoriesContainer}>
+                                                    {renderMainCategories()}
+                                                </View>
+                                            </Animated.View>
+                                        )}
 
-                                            {showDescription && (
-                                                <Animated.View
-                                                    style={[
-                                                        styles.reportDescriptionSection,
-                                                        {
-                                                            opacity: fadeAnim,
-                                                            transform: [{ translateY: slideAnim }],
-                                                        },
-                                                    ]}
+
+                                        {selectedMainCategory && (
+                                            <Animated.View
+                                                style={[
+                                                    styles.reportCategoriesSection,
+                                                    {
+                                                        opacity: fadeAnim,
+                                                        transform: [{ translateY: slideAnim }],
+                                                    },
+                                                ]}
+                                            >
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setSelectedMainCategory(null);
+                                                        setSelectedSubCategory(null);
+                                                    }}
+                                                    style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
                                                 >
-                                                    <Text style={styles.reportDescriptionLabel}>Describe what happened</Text>
-                                                    <TextInput
-                                                        style={styles.reportDescriptionInput}
-                                                        multiline
-                                                        numberOfLines={4}
-                                                        value={description}
-                                                        onChangeText={setDescription}
-                                                        placeholder="Please provide details about the issue..."
-                                                        placeholderTextColor="#999"
-                                                        textAlignVertical="top"
-                                                    />
-                                                </Animated.View>
-                                            )}
+                                                    <Icon name="arrow-back" size={20} color={theme === 'dark' ? '#fff' : '#000'} style={{ marginRight: 8 }} />
+                                                    <Text style={{ fontSize: 18, fontWeight: '600', color: theme === 'dark' ? '#fff' : '#000' }}>
+                                                        {selectedMainCategory.title}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                                {/* Show Subcategories only when MainCategory has children */}
+                                                {selectedMainCategory?.children?.length > 0 && renderSubCategories()}
 
-                                            {showSubmitButton && (
+                                                {showDescription && (
+                                                    <Animated.View
+                                                        style={[
+                                                            styles.reportDescriptionSection,
+                                                            {
+                                                                opacity: fadeAnim,
+                                                                transform: [{ translateY: slideAnim }],
+                                                            },
+                                                        ]}
+                                                    >
+                                                        <Text style={[styles.reportDescriptionLabel, themeStyles[theme].reportDescriptionLabel]}>Describe what happened</Text>
+                                                        <TextInput
+                                                            style={[styles.reportDescriptionInput, themeStyles[theme].reportDescriptionInput]}
+                                                            multiline
+                                                            numberOfLines={4}
+                                                            value={description}
+                                                            onChangeText={setDescription}
+                                                            placeholder="Please provide details about the issue..."
+                                                            placeholderTextColor="#999"
+                                                            textAlignVertical="top"
+                                                        />
+                                                    </Animated.View>
+                                                )}
+
                                                 <Animated.View
                                                     style={[
                                                         styles.reportSubmitSection,
@@ -309,18 +316,20 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
                                                     ]}
                                                 >
                                                     <TouchableOpacity
-                                                        style={styles.reportSubmitButton}
+                                                        style={[
+                                                            styles.reportSubmitButton,
+                                                            { opacity: !description.trim() ? 0.6 : 1 }, // Disabled look
+                                                        ]}
                                                         onPress={handleSubmitReport}
-                                                        activeOpacity={0.8}
+                                                        disabled={!description.trim()} // Disable press
                                                     >
-                                                        <Text style={styles.reportSubmitButtonText}>Submit Report</Text>
-                                                        <Icon name="send" size={20} color="#fff" style={styles.reportSubmitIcon} />
+                                                        <Text style={styles.reportSubmitButtonText}>Send Report</Text>
                                                     </TouchableOpacity>
                                                 </Animated.View>
-                                            )}
-                                        </Animated.View>)}
+                                            </Animated.View>)}
 
-                                </ScrollView>
+                                    </ScrollView>
+                                )}
                             </>
                         )}
 
@@ -330,183 +339,5 @@ const ReportUserModal = ({ visible, onClose, userData }) => {
         </>
     );
 };
-
-
-// const styles = StyleSheet.create({
-//     fullScreenModalOverlay: {
-//         padding: 10,
-//         backgroundColor: '#0f0f0f',
-
-//     },
-//     fullScreenModalMain: {
-//         justifyContent: 'start',
-//         margin: 0,
-//     },
-//     reportLoadingContainer: {
-//         flex: 1,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//         backgroundColor: '#0f0f0f',
-//     },
-//     reportLoadingText: {
-//         color: '#fff',
-//         fontSize: 16,
-//     },
-//     reportUserInfoCard: {
-//         backgroundColor: '#0f0f0f',
-//         borderRadius: 16,
-//         // paddingHorizontal: 2,
-//         paddingTop: 10,
-//         marginBottom: 24,
-//     },
-//     reportUserInfoContent: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//     },
-//     reportUserDetails: {
-//         flex: 1,
-//     },
-//     reportUserName: {
-//         fontSize: 20,
-//         fontWeight: '700',
-//         color: '#d93a63',
-//     },
-//     reportCategoriesSection: {
-//         marginBottom: 24,
-//     },
-//     reportSectionTitle: {
-//         fontSize: 18,
-//         fontWeight: '600',
-//         color: '#fff',
-//         marginBottom: 16,
-//     },
-//     reportCategoriesContainer: {
-//         gap: 12,
-//     },
-//     reportCategoryCard: {
-//         backgroundColor: '#1a1a1a',
-//         borderRadius: 12,
-//         padding: 16,
-//         borderWidth: 1,
-//         borderColor: '#333',
-//     },
-//     reportSelectedCategoryCard: {
-//         backgroundColor: '#ff4757',
-//         borderColor: '#ff4757',
-//     },
-//     reportCategoryContent: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         justifyContent: 'space-between',
-//     },
-//     reportCategoryTitle: {
-//         fontSize: 16,
-//         fontWeight: '500',
-//         color: '#fff',
-//         flex: 1,
-//     },
-//     reportSelectedCategoryTitle: {
-//         color: '#fff',
-//     },
-//     reportCategoryIconContainer: {
-//         marginLeft: 12,
-//     },
-//     reportSubCategoriesContainer: {
-//         marginBottom: 24,
-//     },
-//     reportSubCategoryHeader: {
-//         fontSize: 18,
-//         fontWeight: '600',
-//         color: '#fff',
-//         marginBottom: 16,
-//     },
-//     reportSubCategoryCard: {
-//         backgroundColor: '#1a1a1a',
-//         borderRadius: 12,
-//         padding: 16,
-//         marginBottom: 12,
-//         borderWidth: 1,
-//         borderColor: '#333',
-//     },
-//     reportSelectedSubCategoryCard: {
-//         backgroundColor: '#2a2a2a',
-//         borderColor: '#ff4757',
-//     },
-//     reportSubCategoryContent: {
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//     },
-//     reportRadioButton: {
-//         width: 20,
-//         height: 20,
-//         borderRadius: 10,
-//         borderWidth: 2,
-//         borderColor: '#666',
-//         marginRight: 12,
-//         justifyContent: 'center',
-//         alignItems: 'center',
-//     },
-//     reportRadioButtonInner: {
-//         width: 10,
-//         height: 10,
-//         borderRadius: 5,
-//         backgroundColor: '#ff4757',
-//     },
-//     reportSubCategoryTitle: {
-//         fontSize: 16,
-//         color: '#fff',
-//         flex: 1,
-//     },
-//     reportSelectedSubCategoryTitle: {
-//         color: '#fff',
-//     },
-//     reportDescriptionSection: {
-//         marginBottom: 32,
-//     },
-//     reportDescriptionLabel: {
-//         fontSize: 18,
-//         fontWeight: '600',
-//         color: '#fff',
-//         marginBottom: 12,
-//     },
-//     reportDescriptionInput: {
-//         backgroundColor: '#1a1a1a',
-//         borderRadius: 12,
-//         padding: 16,
-//         fontSize: 16,
-//         color: '#fff',
-//         minHeight: 120,
-//         borderWidth: 1,
-//         borderColor: '#333',
-//     },
-//     reportSubmitSection: {
-//         marginBottom: 40,
-//     },
-//     reportSubmitButton: {
-//         backgroundColor: '#ff4757',
-//         borderRadius: 12,
-//         padding: 18,
-//         flexDirection: 'row',
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         shadowColor: '#ff4757',
-//         shadowOffset: {
-//             width: 0,
-//             height: 4,
-//         },
-//         shadowOpacity: 0.3,
-//         shadowRadius: 12,
-//         elevation: 8,
-//     },
-//     reportSubmitButtonText: {
-//         fontSize: 18,
-//         fontWeight: '600',
-//         color: '#fff',
-//         marginRight: 8,
-//     },
-//     reportSubmitIcon: {
-//         marginLeft: 4,
-//     },
-// });
 
 export default ReportUserModal;

@@ -259,14 +259,14 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
 
 
     const handleReport = () => {
-        if (reportClicked) return; // prevent multiple triggers
-        setReportClicked(true);
-        setMessage(`Report feature is not implemented yet.`);
-        setVisibleModal('message-modal');
+        // if (reportClicked) return; // prevent multiple triggers
+        // setReportClicked(true);
+        // setMessage(`Report feature is not implemented yet.`);
+        // setVisibleModal('message-modal');
         // navigation.navigate('ReportUser');
 
 
-        // setVisibleModal('ReportUser');
+        setVisibleModal('ReportUser');
     };
 
     return (
@@ -532,7 +532,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                     onClose={() => {
                         setVisibleModal(null);
                     }}
-                    userData={userProfileDatails}
+                    reportData={userProfileDatails}
                 />
             )}
         </>
