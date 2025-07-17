@@ -79,7 +79,6 @@ export const MainScreen = () => {
             localStreamRef.current = null;
             setLocalStream(null);
             setHasRequestedStream(false);
-            setIsUserStreaming(false); // Reset user streaming status
             // Stop InCallManager
             InCallManager.stop();
           }
