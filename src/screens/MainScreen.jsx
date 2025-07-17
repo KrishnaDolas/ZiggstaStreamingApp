@@ -105,9 +105,6 @@ export const MainScreen = () => {
   
               socket.emit('signal', { to: userId, data: peer.localDescription });
             }
-  
-            // Notify others (viewers) to renegotiate their stream to me
-            socket.emit('request-renegotiation-from-viewers', { socketId: socket.id });
           } catch (err) {
             console.error('⚠️ Error while resuming stream:', err);
           }
@@ -404,7 +401,14 @@ export const MainScreen = () => {
       }
       // setRemoteStreams([])
       peersRef.current = {};
-      socket.emit('request-renegotiation-from-viewers',{socketId: socket.id})
+      for (const [userId, peer] of Object.entries(peersRef.current)) {
+        if(peersRef.current[userId]){
+          peersRef.current[userId].close();
+          delete peersRef.current[userId]
+        }
+      }
+      socket.emit('stream-negotiate')
+
     } catch (error) {
       SendErrorTotheServer(error,'stopLocalStream');
     }
@@ -482,28 +486,6 @@ export const MainScreen = () => {
     });
   }
 
-  const HandleRenegotiate = async (socketId) => {
-    console.log(`🔄 Host (${hostId}) requested renegotiation from viewer`);
-
-    try {
-      const peer = peersRef.current[socketId];
-      if (!peer) {
-        console.warn('⚠️ Peer connection not found with host for renegotiation.');
-        return;
-      }
-
-      // Create a new offer to the host
-      const offer = await peer.createOffer({ iceRestart: true });
-      await peer.setLocalDescription(offer);
-
-      // Send the offer to the host via signaling server
-      socket.emit('signal', { to: socketId, data: offer });
-
-      console.log(`✅ Viewer sent new offer to host (${socketId})`);
-    } catch (err) {
-      console.error('❌ Error during renegotiation with host:', err);
-    }
-  };
 
   useEffect(()=>{
     HandleConnect()
@@ -535,7 +517,6 @@ export const MainScreen = () => {
       socket.on('Close_stream',HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
-      socket.on('request-renegotiation-from-viewers',HandleRenegotiate);
       socket.on('Stop-Stream',HandleStopStream)
       socket.on('Host-Disconnected',HandleUserLeft)
     }
@@ -564,7 +545,6 @@ export const MainScreen = () => {
         socket.off('Close_stream',HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
-        socket.off('request-renegotiation-from-viewers',HandleRenegotiate);
         socket.off('Stop-Stream',HandleStopStream)
         socket.on('Host-Disconnected',HandleUserLeft)
       }
