@@ -315,6 +315,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             end={{ x: 0.5, y: 1 }}>
             <StreamListHeader
                 setGetselectcategory={setFilteredRooms}
+                getselectcategory={filteredRooms}
                 filteredRooms={filteredRooms}
                 userData={userData}
                 isInterestLoading={isInterestLoading}

@@ -39,7 +39,7 @@ const SearchModal = ({ visible, onClose,
     // Function to fetch searches data from the API
 
     const handleSearchByUser = async () => {
-        if (searchText && !searchText.trim()) {
+        if (searchText === '') {
             setSearchFilteredData([]);
             setIsError('Please enter a valid search term.');
             return;

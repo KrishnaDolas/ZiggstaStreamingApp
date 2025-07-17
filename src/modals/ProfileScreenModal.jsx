@@ -40,7 +40,7 @@ import ReportUserModal from './ReportUserModal';
 //     },
 // ];
 
-const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) => {
+const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, reportType }) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation();
     const screenHeight = Dimensions.get('window').height;
@@ -533,6 +533,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                         setVisibleModal(null);
                     }}
                     reportData={userProfileDatails}
+                    reportType="User"
                 />
             )}
         </>

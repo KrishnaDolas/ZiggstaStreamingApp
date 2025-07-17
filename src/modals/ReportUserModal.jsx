@@ -7,7 +7,7 @@ import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
-const ReportUserModal = ({ visible, onClose, reportData }) => {
+const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
     const { userData } = useAppContext();
     const { theme } = useContext(ThemeContext);
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
@@ -72,32 +72,63 @@ const ReportUserModal = ({ visible, onClose, reportData }) => {
             return;
         }
 
+        // Here you would make your API call to submit the report
+        const payload = {
+            category_id: selectedSubCategory?.id || selectedMainCategory?.id,
+            details: description.trim(),
+            reported_user_id: reportData?.userid,
+            user_id: userData?.userid,
+            video_id: reportType === 'User' ? null : reportData?.video_id,
+            report_type: reportType,
+        };
+        console.log('Submitting report with data:', payload);
         try {
-            // Here you would make your API call to submit the report
-            const payload = {
-                category_id: selectedSubCategory?.id || selectedMainCategory?.id,
-                details: description.trim(),
-                reported_user_id: reportData.userid,
-                user_id: userData.userid, // Assuming userData contains the current user's ID
-                video_id: '',
-            };
-            console.log('Submitting report with data:', payload);
-
-            Alert.alert(
-                'Report Submitted',
-                'Thank you for your report. We will review it and take appropriate action.',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => onClose(),
-                    },
-                ]
-            );
+            const response = await Apiclient.post('/flagReporting/submitReport', payload);
+            console.log('response submitReport', response);
+            if (response?.status === 200 && response?.data?.success) {
+                Alert.alert(
+                    'Report Submitted',
+                    'Thank you for your report. We will review it and take appropriate action.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: onClose,
+                        },
+                    ]
+                );
+            } else {
+                console.warn('Unexpected response:', response?.data);
+                Alert.alert(
+                    'Error',
+                    response?.data?.message || 'Unexpected response from server.'
+                );
+            }
         } catch (error) {
             console.error('Error submitting report:', error);
-            Alert.alert('Error', 'Failed to submit report. Please try again.');
+
+            // Handle network or API errors
+            if (error?.response) {
+                // Server responded with a status other than 200
+                Alert.alert(
+                    'Error',
+                    error.response.data?.message || 'Server error occurred. Please try again.'
+                );
+            } else if (error?.request) {
+                // Request was made but no response received
+                Alert.alert(
+                    'Network Error',
+                    'No response from server. Please check your internet connection.'
+                );
+            } else {
+                // Something else happened
+                Alert.alert(
+                    'Error',
+                    'Something went wrong. Please try again later.'
+                );
+            }
         }
     };
+
 
     const renderMainCategories = () => {
         return categories.map((category) => (

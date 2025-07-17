@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import {
     View,
     Text,
@@ -7,7 +7,6 @@ import {
     ScrollView,
     TextInput,
     Modal,
-    Animated,
     ActivityIndicator
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -18,58 +17,44 @@ import { useRoute } from '@react-navigation/native';
 import SearchModal from '../modals/SearchModal';
 import { useAppContext } from '../context/AppContext';
 import { ThemeContext } from '../context/ThemeContext';
+import CategoriesModal from '../modals/CategoriesModal';
+import MessageModal from '../modals/MessageModal';
 
-export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, categoryData, isNearBy,
+export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
-    setIsFavourite, selectedCategoryIndices, searchFilteredData,
+    setIsFavourite, searchFilteredData,
     setSearchFilteredData }) => {
     const { theme } = useContext(ThemeContext);
-    const { profileData, userData } = useAppContext();
+    const { profileData } = useAppContext();
     const route = useRoute();
     const [showSearch, setShowSearch] = useState(false);
     const [searchText, setSearchText] = useState('');
-    const [selectedinterest, setSelectedinterest] = useState([]); // State to track selected interest
     const [isSearchModalReady, setIsSearchModalReady] = useState(false);
     const [searchBy, setSearchBy] = useState('user');
-    const scaleAnim = useRef(new Animated.Value(1)).current;
     const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
 
-    // Sync selectedinterest with selectedCategoryIndices
-    useEffect(() => {
-        if (selectedCategoryIndices) {
-            setSelectedinterest(selectedCategoryIndices);
-            setGetselectcategory(selectedCategoryIndices); // Ensure StreamList's filteredRooms is updated
-        }
-    }, [selectedCategoryIndices, setGetselectcategory]);
 
     // ✅ Memoize heart toggle
     const handleToggleLiked = useCallback(() => {
         setIsFavourite((prev) => !prev);
     }, [setIsFavourite]);
 
-    // ✅ Animate heart icon once
-    useEffect(() => {
-        Animated.loop(
-            Animated.sequence([
-                Animated.timing(scaleAnim, { toValue: 1.2, duration: 300, useNativeDriver: true }),
-                Animated.timing(scaleAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-            ])
-        ).start();
+    const handleClearFilter = () => {
+        setGetselectcategory([]);
+        setIsFavourite(false);
+    };
+
+    const handleConnect = useCallback((item) => {
+        setMessage(`this feature is not implemented yet.`)
+        setVisibleModal('message-modal');
     }, []);
 
 
-    const selectedcategory = (item) => {
-        const isSelected = selectedinterest.includes(item.categoryID);
-        let updated;
-        if (isSelected) {
-            updated = selectedinterest.filter((id) => id !== item.categoryID);
-        } else {
-            updated = [...selectedinterest, item.categoryID];
-        }
-        setSelectedinterest(updated);
-        setGetselectcategory(updated); // Update StreamList's filteredRooms
-    };
-
+    const handleLeaderBoards = useCallback((item) => {
+        setMessage(`this feature is not implemented yet.`)
+        setVisibleModal('message-modal');
+    }, []);
 
     return (
         <View style={[styles.streamListHeader, themeStyles[theme].streamListHeader]} >
@@ -86,7 +71,12 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
                         <Text style={styles.streamHeaderCountTitle}>245</Text>
                     </View> */}
                     <View style={styles.streamHeaderCountBox}>
-                        <FontAwesome name='dollar' solid size={14} color="#fff" />
+                        {/* <FontAwesome name='dollar' solid size={14} color="#fff" /> */}
+                        <Image
+                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                            style={{ width: 14, height: 14 }}
+                            resizeMode="contain"
+                        />
                         <Text style={styles.streamHeaderCountTitle}>{profileData?.CreditBalance}</Text>
                     </View>
                     <TouchableOpacity style={{ marginRight: 12 }}>
@@ -97,16 +87,21 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
             {route.name === 'Main' && (
                 <View style={styles.streamListHeaderBottom}>
                     {/* Left Fixed Icon */}
-                    <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => {
-                        handleToggleLiked();
-                    }}>
-                        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                            {isFavourite ? (
-                                <Ionicons name="heart-sharp" size={22} color="red" />
-                            ) : (
-                                <Ionicons name="heart-outline" size={22} color="red" />
-                            )}
-                        </Animated.View>
+                    <TouchableOpacity onPress={handleClearFilter} style={[styles.strHeaderFixedIcon, { paddingHorizontal: getselectcategory?.length === 0 ? 3 : 8 }]}>
+                        {(
+                            <View style={{ opacity: getselectcategory?.length > 0 ? 1 : 0 }}>
+                                {/* <Ionicons name="close" size={22} color="#000" /> */}
+                                <Image
+                                    source={require('../../assets/images/icons/filter-remove.png')}
+                                    style={{
+                                        width: 23,
+                                        height: 23,
+                                        tintColor: theme === 'light' ? '#d93a63' : '#d93a63', // Optional, if image is monochrome
+                                    }}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        )}
                     </TouchableOpacity>
                     {/* Scrollable Category Buttons */}
                     {isInterestLoading ? (
@@ -124,22 +119,30 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
                                 Nearby
                             </Text>
                         </TouchableOpacity>
-                        {categoryData.map((item) => (
-                            <TouchableOpacity
-                                key={item.categoryID}
-                                style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton,
-                                selectedinterest.includes(item.categoryID) &&
-                                styles.btnInterestActive]}
-                                onPress={() => selectedcategory(item)}
-                            >
-                                <Text style={[
-                                    styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText,
-                                    selectedinterest.includes(item.categoryID) && styles.btnInterestActiveText,
-                                ]}>
-                                    {item.categoryName}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
+                        <TouchableOpacity onPress={() => setVisibleModal('category')} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton, getselectcategory?.length > 0 &&
+                            styles.btnInterestActive]}>
+                            <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText, getselectcategory?.length > 0 && styles.btnInterestActiveText]}>
+                                Categories
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleConnect} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton]}>
+                            <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText]}>
+                                Connect
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => {
+                            handleToggleLiked();
+                        }} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton, isFavourite &&
+                            styles.btnInterestActive]}>
+                            <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText, isFavourite && styles.btnInterestActiveText]}>
+                                Favourites
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleLeaderBoards} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton]}>
+                            <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText]}>
+                                Leaderboards
+                            </Text>
+                        </TouchableOpacity>
                     </ScrollView>}
                     {/* Right Fixed Icon */}
                     <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setVisibleModal('search')}>
@@ -232,11 +235,24 @@ export const StreamListHeader = ({ setGetselectcategory, isInterestLoading, cate
                     searchFilteredData={searchFilteredData}
                     setSearchFilteredData={setSearchFilteredData}
                     categoryData={categoryData}
-                    selectedcategory={selectedcategory}
-                    selectedinterest={selectedinterest}
                 />
             )}
-
+            {visibleModal === 'category' && (
+                <CategoriesModal
+                    visible="true"
+                    onClose={() => setVisibleModal(null)}
+                    categoryData={categoryData}
+                    getselectcategory={getselectcategory}
+                    setGetselectcategory={setGetselectcategory}
+                />
+            )}
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
         </View>
 
     );

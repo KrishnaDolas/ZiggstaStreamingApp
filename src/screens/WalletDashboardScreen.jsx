@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -401,7 +401,14 @@ export const WalletDashboardScreen = () => {
                                 <View style={styles.wDReferralStatsRow}>
                                     <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Balance</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>${profileData?.CreditBalance}</Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Image
+                                                source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                                style={{ width: 14, height: 14, marginRight: 5 }}
+                                                resizeMode="contain"
+                                            />
+                                            <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{profileData?.CreditBalance}</Text>
+                                        </View>
                                     </TouchableOpacity>
                                     <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
                                         <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Today's Signups</Text>
