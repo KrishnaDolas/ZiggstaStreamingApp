@@ -402,7 +402,7 @@ export const MainScreen = () => {
         // Stop InCallManager
         InCallManager.stop();
       }
-      setRemoteStreams([])
+      // setRemoteStreams([])
       peersRef.current = {};
       socket.emit('request-renegotiation-from-viewers',{socketId: socket.id})
     } catch (error) {
