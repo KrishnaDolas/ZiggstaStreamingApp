@@ -163,8 +163,8 @@ const StreamRoom = ({
     // Manage stream layout based on viewer count and streams
     useEffect(() => {
         const streams = [];
+        const hostInfo = streamerList.filter((item) => item.IsHost === true)
         remoteStreams.forEach(({ id, stream, name }) => {
-            const hostInfo = streamerList.filter((item) => item.IsHost === true)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
                     streams.unshift({ type: 'remote', stream, userId: id });
@@ -177,7 +177,11 @@ const StreamRoom = ({
         });
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
-            streams.push({ type: 'local', stream: localStream });
+            if (isHost) {
+                streams.unshift({ type: 'local', stream: localStream });
+            } else {
+                streams.push({ type: 'local', stream: localStream });
+            }
         }
         console.log(streamerList);
         setStreamLayout(streams);
