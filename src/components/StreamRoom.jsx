@@ -457,15 +457,16 @@ const StreamRoom = ({
                             ) : (
                                 <View style={styles.streamVideosInnerGrid}>
                                     {streamLayout.map((streamData, index) => (
-                                        <React.Fragment key={streamData.userId || index}>
+                                        <View key={index} style={styles.streamerContainer}>
                                         <Text style={styles.streamerName}>{streamData.Name}</Text>
                                         <RTCView
+                                        key={streamData.type === 'local' ? 'local' : streamData.userId}
                                         streamURL={streamData.stream.toURL()}
                                         style={[styles.streamVideo, getVideoTileStyle(streamLayout.length)]}
                                         objectFit="cover"
                                         mirror={streamData.type === 'local' && isFrontCamera}
                                         />
-                                        </React.Fragment>
+                                        </View>
                                     ))}
                                 </View>
                             )}

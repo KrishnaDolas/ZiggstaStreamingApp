@@ -191,7 +191,9 @@ export const styles = StyleSheet.create({
     position:'relative',
     bottom:'20',
     color:'white',
-
+  },
+  streamerContainer:{
+    position:'static',
   },
   streamVideo: {
     backgroundColor: 'gray',
