@@ -9,7 +9,7 @@ import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
@@ -457,16 +457,15 @@ const StreamRoom = ({
                             ) : (
                                 <View style={styles.streamVideosInnerGrid}>
                                     {streamLayout.map((streamData, index) => (
-                                        <>
+                                        <React.Fragment key={streamData.userId || index}>
                                         <Text style={styles.streamerName}>{streamData.Name}</Text>
                                         <RTCView
-                                        key={streamData.type === 'local' ? 'local' : streamData.userId}
                                         streamURL={streamData.stream.toURL()}
                                         style={[styles.streamVideo, getVideoTileStyle(streamLayout.length)]}
                                         objectFit="cover"
                                         mirror={streamData.type === 'local' && isFrontCamera}
                                         />
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </View>
                             )}
