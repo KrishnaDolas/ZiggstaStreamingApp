@@ -7,6 +7,7 @@ import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
+import MessageModal from './MessageModal';
 const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
     const { userData } = useAppContext();
     const { theme } = useContext(ThemeContext);
@@ -15,6 +16,9 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
     const [selectedMainCategory, setSelectedMainCategory] = useState(null);
     const [selectedSubCategory, setSelectedSubCategory] = useState(null);
     const [description, setDescription] = useState('');
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
+    const [submitLoading, setSubmitLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [fadeAnim] = useState(new Animated.Value(0));
     const [slideAnim] = useState(new Animated.Value(50));
@@ -62,6 +66,7 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
     };
 
     const handleSubmitReport = async () => {
+        if (submitLoading) return; // prevent double tap
         if (!selectedSubCategory && !selectedMainCategory) {
             Alert.alert('Error', 'Please select a category');
             return;
@@ -72,6 +77,7 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
             return;
         }
 
+        setSubmitLoading(true); // Start loading
         // Here you would make your API call to submit the report
         const payload = {
             category_id: selectedSubCategory?.id || selectedMainCategory?.id,
@@ -86,46 +92,23 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
             const response = await Apiclient.post('/flagReporting/submitReport', payload);
             console.log('response submitReport', response);
             if (response?.status === 200 && response?.data?.success) {
-                Alert.alert(
-                    'Report Submitted',
-                    'Thank you for your report. We will review it and take appropriate action.',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: onClose,
-                        },
-                    ]
-                );
+                setMessage(response.data.message);
+                setVisibleModal('message-modal');
             } else {
-                console.warn('Unexpected response:', response?.data);
-                Alert.alert(
-                    'Error',
-                    response?.data?.message || 'Unexpected response from server.'
-                );
+                setMessage(response.data.message || 'Unexpected error occurred');
+                setVisibleModal('message-modal');
             }
         } catch (error) {
-            console.error('Error submitting report:', error);
-
-            // Handle network or API errors
             if (error?.response) {
-                // Server responded with a status other than 200
-                Alert.alert(
-                    'Error',
-                    error.response.data?.message || 'Server error occurred. Please try again.'
-                );
+                setMessage(error.response.data?.message || 'Server error occurred.');
             } else if (error?.request) {
-                // Request was made but no response received
-                Alert.alert(
-                    'Network Error',
-                    'No response from server. Please check your internet connection.'
-                );
+                setMessage('No response from server. Please check your internet connection.');
             } else {
-                // Something else happened
-                Alert.alert(
-                    'Error',
-                    'Something went wrong. Please try again later.'
-                );
+                setMessage('Something went wrong. Please try again later.');
             }
+            setVisibleModal('message-modal');
+        } finally {
+            setSubmitLoading(false); // End loading
         }
     };
 
@@ -349,12 +332,16 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
                                                     <TouchableOpacity
                                                         style={[
                                                             styles.reportSubmitButton,
-                                                            { opacity: !description.trim() ? 0.6 : 1 }, // Disabled look
+                                                            { opacity: !description.trim() || submitLoading ? 0.6 : 1 },
                                                         ]}
                                                         onPress={handleSubmitReport}
-                                                        disabled={!description.trim()} // Disable press
+                                                        disabled={!description.trim() || submitLoading}
                                                     >
-                                                        <Text style={styles.reportSubmitButtonText}>Send Report</Text>
+                                                        {submitLoading ? (
+                                                            <ActivityIndicator color="#fff" size="small" />
+                                                        ) : (
+                                                            <Text style={styles.reportSubmitButtonText}>Send Report</Text>
+                                                        )}
                                                     </TouchableOpacity>
                                                 </Animated.View>
                                             </Animated.View>)}
@@ -367,6 +354,13 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
                     </View>
                 </View>
             </Modal>
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
         </>
     );
 };

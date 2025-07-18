@@ -5,12 +5,15 @@ import {
   Text,
   StyleSheet,
   AppState,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import Geolocation from 'react-native-geolocation-service';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -23,6 +26,7 @@ import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
 import { useAppContext } from './src/context/AppContext';
 import { debounceStorage } from './src/utils/debounceStorage';
 import Apiclient from './src/utils/Apiclient';
+import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,8 +41,19 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
-  const { userAddress, setUserAddress, userData, setUserData, setIpAddress, fetchProfileDetails, subscriptionStatus, setSubscriptionStatus } = useAppContext();
+  const {
+    userAddress,
+    setUserAddress,
+    userData,
+    setUserData,
+    setIpAddress,
+    fetchProfileDetails,
+    setSubscriptionStatus,
+  } = useAppContext();
+
+
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
+
   const handleLogin = () => setIsAuthenticated(true);
 
 
@@ -52,7 +67,15 @@ const App = () => {
         'onlyProfileVerified',
         'allowNotification',
         'distanceRange',
+        'userAddress', // Clear userAddress on logout
+        // 'locationPermission', // Clear location permission to prompt again
       ]);
+
+      // Introduce a 2-second delay before clearing locationPermission
+      setTimeout(async () => {
+        await AsyncStorage.removeItem('locationPermission');
+        console.log('locationPermission cleared after 2-second delay');
+      }, 2000);
 
       setUserAddress(null);
       setUserData(null);
@@ -64,24 +87,77 @@ const App = () => {
     }
   };
 
-  const fetchAddressFromIP = async () => {
-    if (hasFetchedAddress.current) return; // Prevent multiple fetches
-    hasFetchedAddress.current = true;
+  const requestLocationPermission = async () => {
     try {
-      // Step 1: Get public IP of the device
+      console.log('Requesting location permission...');
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission Required',
+            message: 'This app requires access to your location to provide personalized services.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        const isGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
+        console.log('Android permission result:', isGranted ? 'granted' : 'denied');
+        await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
+        return isGranted;
+      } else {
+        const auth = await Geolocation.requestAuthorization('whenInUse');
+        const isGranted = auth === 'granted';
+        console.log('iOS permission result:', isGranted ? 'granted' : 'denied');
+        await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
+        return isGranted;
+      }
+    } catch (error) {
+      console.error('Permission request error:', error);
+      await AsyncStorage.setItem('locationPermission', 'denied');
+      return false;
+    }
+  };
+
+  const fetchAddressFromCoords = async (latitude, longitude) => {
+    try {
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+      );
+      const data = await response.json();
+      if (data.features && data.features.length > 0) {
+        const address = data.features[0].properties;
+        const newAddress = {
+          city: address.city || '',
+          state: address.state || '',
+          country: address.country || '',
+          postcode: address.postcode || '',
+          latitude,
+          longitude,
+          source: 'device',
+        };
+        setUserAddress(newAddress);
+        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress)); // Persist userAddress
+        hasFetchedAddress.current = true;
+      } else {
+        console.log('No address found from Geoapify');
+      }
+    } catch (error) {
+      console.error('Geoapify reverse geocoding error:', error);
+    }
+  };
+
+  const fetchAddressFromIP = async () => {
+    try {
       const ipRes = await fetch('https://api64.ipify.org?format=json');
       const ipData = await ipRes.json();
       const ip = ipData.ip;
-      setIpAddress(ip); // Corrected to set the IP directly
+      setIpAddress(ip);
 
-      // Step 2: Use IP to get location info
       const response = await fetch(
         `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`
       );
       const json = await response.json();
-      console.log('App.jsx ip info api call', json);
-
-      // Step 3: Extract address details
       const address = {
         city: json.city?.name || '',
         state: json.state?.name || '',
@@ -92,67 +168,180 @@ const App = () => {
         ip,
         source: 'ip',
       };
-      console.log('App.jsx ip info address', address);
 
-      // Step 4: If postcode is missing, perform reverse geocoding
       if (!address.postcode && address.latitude && address.longitude) {
         const reverseResponse = await fetch(
           `https://api.geoapify.com/v1/geocode/reverse?lat=${address.latitude}&lon=${address.longitude}&apiKey=25127ca1c55f48909b03f43048040037`
         );
         const reverseJson = await reverseResponse.json();
         const reverseAddress = reverseJson.features?.[0]?.properties || {};
-        console.log('App.jsx reverse api call', reverseAddress);
-        address.city = reverseAddress.city || address.city;
-        address.state = reverseAddress.state || address.state;
-        address.country = reverseAddress.country || address.country;
-        address.postcode = reverseAddress.postcode || '';
+        const newAddress = {
+          city: reverseAddress.city || address.city,
+          state: reverseAddress.state || address.state,
+          country: reverseAddress.country || address.country,
+          postcode: reverseAddress.postcode || '',
+          latitude: address.latitude,
+          longitude: address.longitude,
+          ip,
+          source: 'ip',
+        };
+        setUserAddress(newAddress);
+        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress)); // Persist userAddress
+      } else {
+        setUserAddress(address);
+        await AsyncStorage.setItem('userAddress', JSON.stringify(address)); // Persist userAddress
       }
-
-      setUserAddress(address);
-      debounceStorage('userAddress', address);
+      hasFetchedAddress.current = true;
     } catch (error) {
-      console.error('Failed to get IP/location:', error);
-      hasFetchedAddress.current = false; // Allow retry on next load
+      console.error('IP-based location error:', error);
     }
   };
+
+
+  // useEffect(() => {
+  //   const init = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('token');
+  //       const userDataStored = await AsyncStorage.getItem('UserData');
+  //       const userAddressStored = await AsyncStorage.getItem('userAddress');
+  //       if (token) {
+  //         setIsAuthenticated(true);
+  //       }
+
+  //       if (userDataStored) {
+  //         setUserData(JSON.parse(userDataStored));
+  //       }
+
+  //       if (userAddressStored) {
+  //         setUserAddress(JSON.parse(userAddressStored));
+  //         hasFetchedAddress.current = true; // ✅ Prevent re-fetch if exists
+  //       }
+
+  //       // Simulate splash delay
+  //       setTimeout(() => {
+  //         setIsLoading(false);
+  //       }, 3000);
+  //     } catch (e) {
+  //       console.error('Init error:', e);
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   init();
+  //   //eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [isConnected, isAuthenticated]);
+
+
+  // const init = useCallback(async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+  //     const userDataStored = await AsyncStorage.getItem('UserData');
+  //     const locationPermission = await AsyncStorage.getItem('locationPermission');
+  //     const userAddressStored = await AsyncStorage.getItem('userAddress');
+
+  //     if (token) setIsAuthenticated(true);
+  //     if (userDataStored) setUserData(JSON.parse(userDataStored));
+  //     if (userAddressStored) {
+  //       setUserAddress(JSON.parse(userAddressStored));
+  //       hasFetchedAddress.current = true;
+  //     }
+
+  //     if (isConnected && !hasFetchedAddress.current && !locationPermission) {
+  //       if (locationPermission === 'granted') {
+  //         Geolocation.getCurrentPosition(
+  //           pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
+  //           err => {
+  //             console.error('Location error:', err);
+  //             fetchAddressFromIP();
+  //           },
+  //           { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+  //         );
+  //       } else {
+  //         const granted = await requestLocationPermission();
+  //         if (granted) {
+  //           Geolocation.getCurrentPosition(
+  //             pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
+  //             err => {
+  //               console.error('Location error:', err);
+  //               fetchAddressFromIP();
+  //             },
+  //             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+  //           );
+  //         } else {
+  //           fetchAddressFromIP();
+  //         }
+  //       }
+  //     }
+
+  //     setTimeout(() => setIsLoading(false), 3000);
+  //   } catch (e) {
+  //     console.error('Init error:', e);
+  //     setIsLoading(false);
+  //   }
+  // }, [isConnected, isAuthenticated]);
+
+  const init = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userDataStored = await AsyncStorage.getItem('UserData');
+      const userAddressStored = await AsyncStorage.getItem('userAddress');
+      const locationPermission = await AsyncStorage.getItem('locationPermission');
+
+      if (token) setIsAuthenticated(true);
+      if (userDataStored) setUserData(JSON.parse(userDataStored));
+      if (userAddressStored) {
+        setUserAddress(JSON.parse(userAddressStored));
+        hasFetchedAddress.current = true;
+      }
+
+      // Only request permission if it hasn't been set
+      if (isConnected && !hasFetchedAddress.current && !locationPermission) {
+        const granted = await requestLocationPermission();
+        if (granted) {
+          Geolocation.getCurrentPosition(
+            pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
+            err => {
+              console.error('Location error:', err);
+              fetchAddressFromIP();
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+          );
+        } else {
+          fetchAddressFromIP();
+        }
+      } else if (isConnected && !hasFetchedAddress.current && locationPermission === 'granted') {
+        Geolocation.getCurrentPosition(
+          pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
+          err => {
+            console.error('Location error:', err);
+            fetchAddressFromIP();
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+        );
+      } else if (isConnected && !hasFetchedAddress.current) {
+        fetchAddressFromIP();
+      }
+
+      setTimeout(() => setIsLoading(false), 3000);
+    } catch (e) {
+      console.error('Init error:', e);
+      setIsLoading(false);
+    }
+  }, [isConnected, isAuthenticated]);
+
+  useEffect(() => {
+    init();
+  }, [init]);
+
+  useEffect(() => {
+    if (isConnected && !hasFetchedAddress.current) {
+      init(); // Retry location if previously skipped
+    }
+  }, [isConnected, init]);
 
   useEffect(() => {
     console.log('App.jsx user address updated:', userAddress);
   }, [userAddress]);
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const userDataStored = await AsyncStorage.getItem('UserData');
-        const userAddressStored = await AsyncStorage.getItem('userAddress');
-        if (token) {
-          setIsAuthenticated(true);
-        }
-
-        if (userDataStored) {
-          setUserData(JSON.parse(userDataStored));
-        }
-
-        if (userAddressStored) {
-          setUserAddress(JSON.parse(userAddressStored));
-          hasFetchedAddress.current = true; // ✅ Prevent re-fetch if exists
-        }
-
-        // Simulate splash delay
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 3000);
-      } catch (e) {
-        console.error('Init error:', e);
-        setIsLoading(false);
-      }
-    };
-
-    init();
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, isAuthenticated]);
-
 
   useEffect(() => {
     console.log('App.jsx userData storage:', userData);
@@ -180,21 +369,12 @@ const App = () => {
 
 
 
-  // Fetch profile details when userData.userid changes
   useEffect(() => {
     if (isAuthenticated && userData?.userid) {
       fetchProfileDetails();
-      checkSubscription(); // 🔁 call here
+      checkSubscription();
     }
   }, [isAuthenticated, userData?.userid, fetchProfileDetails, checkSubscription]);
-
-
-  // ✅ NEW: Fetch IP location only after login and if online
-  useEffect(() => {
-    if (isAuthenticated && !hasFetchedAddress.current) {
-      fetchAddressFromIP();
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -268,6 +448,14 @@ const App = () => {
                   <Stack.Screen name="WalletDashboard">
                     {props => (
                       <WalletDashboardScreen
+                        {...props}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="TermsOfUse">
+                    {props => (
+                      <TermsOfUseScreen
                         {...props}
                         userData={userData}
                       />
