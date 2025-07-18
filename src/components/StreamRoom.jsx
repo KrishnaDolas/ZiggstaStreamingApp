@@ -312,7 +312,7 @@ const StreamRoom = ({
 
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
-            Alert.alert('Chat Error','Please enter a message before sending.', [{ text: 'OK' }]);
+            Alert.alert('Chat Error', 'Please enter a message before sending.', [{ text: 'OK' }]);
             return;
         }
         HandleChatmessages(userChatInput);
@@ -355,7 +355,7 @@ const StreamRoom = ({
         }
     }, [streamrequestlist.length]);
 
-    const HidesettingPanel=()=>{
+    const HidesettingPanel = () => {
         setOpenMoreSettingList(false)
     }
 
@@ -471,7 +471,6 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
-                                        {/* <Ionicons name="diamond" solid size={14} color="#ffea23" /> */}
                                         <Image
                                             source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
                                             style={{ width: 14, height: 14, marginRight: 4 }}
@@ -479,9 +478,6 @@ const StreamRoom = ({
                                         />
                                         <Text style={styles.strRoomHeaderRWalletInfoText}>1023</Text>
                                     </View>
-                                    {/* <TouchableOpacity style={styles.strRoomHeaderRIconBox}>
-                                        <Ionicons name="flag" size={28} color="#dc3131" />
-                                    </TouchableOpacity> */}
                                     <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                         <Ionicons name="close" size={30} color="#fff" />
                                     </TouchableOpacity>
@@ -552,20 +548,20 @@ const StreamRoom = ({
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
                                         {!isHost && (
-                                            <TouchableOpacity onPress={()=>{
+                                            <TouchableOpacity onPress={() => {
                                                 requestStreamPermission(),
-                                                HidesettingPanel(),
-                                                setVisibleModal('message-modal'),
-                                                setMessage('Request Send To the Host')
-                                                }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
-                                                <Text style={[styles.strMoreSettingListItemText,{color:hasRequestedStream?'#007ACC':'white'}]}  >{hasRequestedStream? "Already Requested":'Join As a Guest'}</Text>
-                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream?'#007ACC':'white'}`} />
+                                                    HidesettingPanel(),
+                                                    setVisibleModal('message-modal'),
+                                                    setMessage('Request Send To the Host')
+                                            }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
+                                                <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
+                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
                                         )}
                                         <TouchableOpacity onPress={() => {
                                             toggleMute(),
-                                            HidesettingPanel()
-                                            }} style={styles.strMoreSettingListItem}>
+                                                HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
