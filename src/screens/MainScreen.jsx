@@ -347,6 +347,7 @@ export const MainScreen = () => {
     }
   }
   const HandleRoomInfo = (info) => {
+    console.log(info);
     setStreamupdated({viewerCount:info?.viewerCount,LikeCount:info?.LikeCount})
   }
   const HandleNewStream = () => {
