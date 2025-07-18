@@ -9,7 +9,7 @@ import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
@@ -19,6 +19,7 @@ import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
+import { useAppContext } from '../context/AppContext';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -84,6 +85,7 @@ const StreamRoom = ({
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
+    const {userData}=useAppContext()
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
     const [userChatInput, setUserChatInput] = useState('');
@@ -392,6 +394,28 @@ const StreamRoom = ({
             socket.off('like-count', HandleLikeCount)
         }
     }, [])
+
+    const SendGift = async (item) => {
+        try {
+            const hostInfo = streamerList.filter((item) => item.IsHost === true)
+            console.log(item);
+            console.log(hostInfo);
+            const params = {
+                fromUserID: hostInfo[0].UserID,
+                toUserID: userData?.userid,
+                giftID: item?.giftID
+            }
+            console.log(params);
+            const Responce = await Apiclient.post('/sendGifts', params)
+            if (Responce.data) {
+               if(Responce.data.success){
+                socket.emit('Send-gift',userData?.screenName,item?.giftID)
+               }
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     return (
         <View style={[styles.roomInfo]}>
@@ -734,6 +758,7 @@ const StreamRoom = ({
                                                 return (
                                                     <TouchableOpacity key={index}
                                                         style={styles.giftModalCatItem}
+                                                        onPress={()=>SendGift(item)}
                                                     >
                                                         <FastImage
                                                             style={[styles.giftModalCatItemImage]}

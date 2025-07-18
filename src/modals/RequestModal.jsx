@@ -16,12 +16,12 @@ const RequestModal = ({
        socket.emit('host-control', {action: action,targetId: targetId}
        )
     }
-    const AcceptStream=(action,requesterId,name)=>{
+    const AcceptStream=(action,requesterId,name,CustomID)=>{
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
         if(action === 'approve') {
             const Address=userAddress ?{country:userAddress?.country,city:userAddress?.city} : {country:'India',city:'Pune'}
             console.log(Address);
-        socket.emit('approveStream', requesterId,Address,name)
+        socket.emit('approveStream', requesterId,Address,name,CustomID)
         }
         if( action === 'reject') {
           socket.emit('rejectStream', requesterId)
@@ -64,7 +64,7 @@ const RequestModal = ({
                                 <Text>{`${item?.country} (${item?.city})`}</Text>
                                 </View>
                                 <TouchableOpacity
-                                onPress={() => AcceptStream("approve", item.ID,item.Name)}
+                                onPress={() => AcceptStream("approve", item.ID,item.Name,item?.CustomID)}
                                 style={{
                                     backgroundColor: 'black',
                                     paddingVertical: 4,

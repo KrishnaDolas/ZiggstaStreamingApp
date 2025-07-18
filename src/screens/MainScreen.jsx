@@ -437,6 +437,9 @@ export const MainScreen = () => {
     const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} left`, message: '',TYPE:"USERLEFT"}
     setRoomchat(prev => [...prev, data]);
   }
+  const HandleGiftReceived=(senderName,GiftID)=>{
+console.log(`Gift Received from ${senderName} -${GiftID}`);
+  }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -511,6 +514,7 @@ export const MainScreen = () => {
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined',HandlenewUserJoined)
       socket.on('user-leftStream',HandleUserLeftStream)
+      socket.on('received-Gift',HandleGiftReceived)
     }
 
     return () => {
@@ -542,7 +546,7 @@ export const MainScreen = () => {
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined',HandlenewUserJoined)
-
+        socket.off('received-Gift',HandleGiftReceived)
       }
     }
   }, [isHost, isSocketConnected]);
