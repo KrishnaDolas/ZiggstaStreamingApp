@@ -17,6 +17,8 @@ import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { iceServers, preferVP8, SendErrorTotheServer, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
+import joinImage from '../../assets/images/LS-1.jpg';
+
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
@@ -246,7 +248,7 @@ export const MainScreen = () => {
   }
   const HandleNewMessage = ({ userName, message, id }) => {
     try {
-      const data = { id: id, userProfile: chatimage, userName: userName, message: message }
+      const data = { id: id, userProfile: chatimage, userName: userName, message: message,TYPE:"PLAYERCHAT"}
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
@@ -423,6 +425,11 @@ export const MainScreen = () => {
   const HandleStreamList = (list) => {
     console.log(list);
   }
+  const HandlenewUserJoined=(userinfo)=>{
+    console.log(userinfo);
+    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} joined`, message: '',TYPE:"USERJOINED"}
+    setRoomchat(prev => [...prev, data]);
+  }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -495,6 +502,7 @@ export const MainScreen = () => {
       socket.on('Host-Disconnected', HandleUserLeft)
       socket.on('stream-Resume', HandleUserStreamStoped)
       socket.on('streamer-List', HandleStreamList)
+      socket.on('newuser-joined',HandlenewUserJoined)
     }
 
     return () => {
@@ -525,6 +533,8 @@ export const MainScreen = () => {
         socket.off('Host-Disconnected', HandleUserLeft)
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
+        socket.off('newuser-joined',HandlenewUserJoined)
+
       }
     }
   }, [isHost, isSocketConnected]);

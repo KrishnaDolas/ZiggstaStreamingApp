@@ -524,7 +524,7 @@ const StreamRoom = ({
                                                         <View key={ind} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                                <Text numberOfLines={1} style={styles.streamChatUserName}>
+                                                                <Text numberOfLines={1} style={[styles.streamChatUserName,{color:`${chat?.TYPE==="USERJOINED"?`#3ab55d`:`#FFFF33`}`}]}>
                                                                     {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
                                                                 </Text>
                                                                 <Text numberOfLines={2} style={styles.streamChatMessage}>
