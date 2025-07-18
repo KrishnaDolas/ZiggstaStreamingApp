@@ -49,6 +49,7 @@ export const MainScreen = () => {
   const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [connectingpanel, setconnectingpanel] = useState(false)
+  const [streamerList,setStrimerList]=useState([])
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
 
@@ -423,7 +424,7 @@ export const MainScreen = () => {
     }
   }
   const HandleStreamList = (list) => {
-    console.log(list);
+    setStrimerList(list)
   }
   const HandlenewUserJoined=(userinfo)=>{
     console.log(userinfo);
@@ -774,6 +775,7 @@ export const MainScreen = () => {
           streamGuest={streamGuest}
           socket={socket}
           hasRequestedStream={hasRequestedStream}
+          streamerList={streamerList}
         />)}
       </View>
     </LinearGradient>

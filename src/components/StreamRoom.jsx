@@ -76,7 +76,8 @@ const StreamRoom = ({
     streamrequestlist,
     streamGuest,
     socket,
-    hasRequestedStream
+    hasRequestedStream,
+    streamerList
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -162,20 +163,27 @@ const StreamRoom = ({
     // Manage stream layout based on viewer count and streams
     useEffect(() => {
         const streams = [];
-        // Add local stream if available and user is streaming
-        if (localStream && isStreaming) {
+        const isUserHost = streamerList.length > 0 && streamerList[0].IsHost;
+        if (isUserHost) {
             streams.push({ type: 'local', stream: localStream });
-        }        // Add remote streams (assume remoteStreams is an array of { id, stream })
+        } else {
+            // If user is not host but streaming, show their stream first
+            streams.unshift({ type: 'local', stream: localStream });
+        }
         remoteStreams.forEach(({ id, stream, name }) => {
             if (stream && typeof stream.toURL === 'function') {
-                streams.push({ type: 'remote', stream, userId: id });
+                if (isUserHost) {
+                    streams.push({ type: 'remote', stream, userId: id });
+                } else {
+                    streams.unshift({ type: 'remote', stream, userId: id });
+                }
             } else {
                 console.warn('⚠️ Invalid remote stream:', stream);
             }
         });
-
+        console.log(streamerList);
         setStreamLayout(streams);
-    }, [localStream, remoteStreams, isStreaming]);
+    }, [localStream, remoteStreams, isStreaming, streamerList]);
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
