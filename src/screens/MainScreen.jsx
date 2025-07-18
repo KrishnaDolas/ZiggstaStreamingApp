@@ -337,7 +337,6 @@ export const MainScreen = () => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
-      setViewerCount(0);
       setJoined(false);
       setIsHost(false);
       setStreamInfo(null)
@@ -658,7 +657,6 @@ export const MainScreen = () => {
         HandleSetLivestatus(streamInfo?.roomID);
       }
       setJoined(false);
-      setViewerCount(0);
       setStreamInfo(null)
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');

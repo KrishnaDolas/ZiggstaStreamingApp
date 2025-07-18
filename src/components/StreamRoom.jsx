@@ -364,6 +364,7 @@ const StreamRoom = ({
         setStreamupdated({LikeCount:count});
     }
     const HandleRoomInfo = (info) => {
+        console.log(info);
         setStreamupdated({viewerCount:info?.viewerCount - 1 || 0,LikeCount:info.LikeCount});
     }
 
