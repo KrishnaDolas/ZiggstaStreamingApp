@@ -105,6 +105,7 @@ const StreamRoom = ({
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const scrollViewRef = useRef();
+     const LikeCountref=useRef(0)
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
@@ -359,6 +360,19 @@ const StreamRoom = ({
         setOpenMoreSettingList(false)
     }
 
+    // scoketevents
+    const HandleLikeCount=(count)=>{
+        LikeCountref.current=count
+      }
+
+    useEffect(()=>{
+        socket.on('like-count', HandleLikeCount)
+
+        return()=>{
+        socket.off('like-count', HandleLikeCount)
+        }
+    },[])
+
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
@@ -465,7 +479,7 @@ const StreamRoom = ({
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="heart" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{userDetails?.CreditBalance}</Text>
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{ LikeCountref.current}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -520,7 +534,7 @@ const StreamRoom = ({
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
                                                 </TouchableOpacity>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>socket.emit('like-count')} >
                                                     <Ionicons name="heart" size={30} color="#fff" />
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
