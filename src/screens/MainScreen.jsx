@@ -595,6 +595,7 @@ export const MainScreen = () => {
   const joinRoom = (roomID, RoomInfo) => {
     try {
       HandleClearOldInstance()
+      if(!userData) return
       if (RoomInfo?.isLive === 0) {
         Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
           [{ text: 'OK' }]
