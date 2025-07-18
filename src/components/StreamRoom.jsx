@@ -173,7 +173,7 @@ const StreamRoom = ({
         });
 
         setStreamLayout(streams);
-    }, [localStream, remoteStreams, isStreaming, viewerCount]);
+    }, [localStream, remoteStreams, isStreaming]);
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
