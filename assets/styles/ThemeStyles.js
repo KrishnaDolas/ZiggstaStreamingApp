@@ -185,15 +185,7 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     width: '100%',
     height: '100%',
-    justifyContent: 'center', // optional: space-around, space-evenly
-  },
-  streamerName:{
-    position:'relative',
-    bottom:'20',
-    color:'white',
-  },
-  streamerContainer:{
-    position:'static',
+    // justifyContent: 'center', // optional: space-around, space-evenly
   },
   streamVideo: {
     backgroundColor: 'gray',

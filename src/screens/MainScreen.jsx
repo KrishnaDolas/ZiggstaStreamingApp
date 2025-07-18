@@ -312,8 +312,9 @@ export const MainScreen = () => {
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
   }
-  const HandleUserLeft = socketId => {
+  const HandleUserLeft = (socketId,userinfo) => {
     try {
+      HandleUserLeftStream(userinfo)
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
         delete peersRef.current[socketId];
@@ -431,6 +432,11 @@ export const MainScreen = () => {
     const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} joined`, message: '',TYPE:"USERJOINED"}
     setRoomchat(prev => [...prev, data]);
   }
+  const HandleUserLeftStream=(userinfo)=>{
+    console.log(userinfo);
+    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} left`, message: '',TYPE:"USERLEFT"}
+    setRoomchat(prev => [...prev, data]);
+  }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -504,6 +510,7 @@ export const MainScreen = () => {
       socket.on('stream-Resume', HandleUserStreamStoped)
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined',HandlenewUserJoined)
+      socket.on('user-leftStream',HandleUserLeftStream)
     }
 
     return () => {
