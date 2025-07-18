@@ -18,6 +18,7 @@ import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
+import MessageModal from '../modals/MessageModal';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -100,6 +101,8 @@ const StreamRoom = ({
     const [closeStreamModal, setCloseStreamModal] = useState(false);
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
+    const [visibleModal, setVisibleModal] = useState(null);
+    const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const scrollViewRef = useRef();
     // Function to fetch gifts from the API
@@ -551,7 +554,9 @@ const StreamRoom = ({
                                         {!isHost && (
                                             <TouchableOpacity onPress={()=>{
                                                 requestStreamPermission(),
-                                                HidesettingPanel()
+                                                HidesettingPanel(),
+                                                setVisibleModal('message-modal'),
+                                                setMessage('Request Send To the Host')
                                                 }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
                                                 <Text style={[styles.strMoreSettingListItemText,{color:hasRequestedStream?'#007ACC':'white'}]}  >{hasRequestedStream? "Already Requested":'Join As a Guest'}</Text>
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream?'#007ACC':'white'}`} />
@@ -715,6 +720,13 @@ const StreamRoom = ({
                         </View>
                     </View>
                 </Modal>
+            )}
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
             )}
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
             {/* close stream modal  */}
