@@ -51,7 +51,7 @@ const MessageModal = ({ visible, message, onClose }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [visible, fadeAnim, slideAnim, onClose]);
+  }, [visible, fadeAnim, slideAnim]);
 
   if (!visible) return null;
 
@@ -149,4 +149,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MessageModal;
+export default React.memo(MessageModal);
