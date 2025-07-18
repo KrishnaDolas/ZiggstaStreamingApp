@@ -36,6 +36,7 @@ export const MainScreen = () => {
   const [isMuted, setIsMuted] = useState({ HostControl: false, muted: false });
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [Streamupdated,setStreamupdated]=useState({viewerCount:0,LikeCount:0})
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
@@ -337,12 +338,16 @@ export const MainScreen = () => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
+      setStreamupdated({viewerCount:0,LikeCount:0});
       setJoined(false);
       setIsHost(false);
       setStreamInfo(null)
     } catch (error) {
       SendErrorTotheServer(error, 'HandleHostLeft');
     }
+  }
+  const HandleRoomInfo = (info) => {
+    setStreamupdated({viewerCount:info?.viewerCount,LikeCount:info?.LikeCount})
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -480,6 +485,7 @@ export const MainScreen = () => {
       socket.on('User-streamStopped', HandleUserStreamStoped)
       socket.on('userLeft', HandleUserLeft);
       socket.on('Hostleft', HandleHostLeft)
+      socket.on('roomInfo', HandleRoomInfo)
       socket.on('new_stream', HandleNewStream)
       socket.on('Close_stream', HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
@@ -509,6 +515,7 @@ export const MainScreen = () => {
         socket.off('User-streamStopped', HandleUserStreamStoped)
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
+        socket.off('roomInfo', HandleRoomInfo)
         socket.off('new_stream', HandleNewStream)
         socket.off('Close_stream', HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
@@ -657,6 +664,7 @@ export const MainScreen = () => {
         HandleSetLivestatus(streamInfo?.roomID);
       }
       setJoined(false);
+      setStreamupdated({viewerCount:0,LikeCount:0});
       setStreamInfo(null)
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');
@@ -740,6 +748,8 @@ export const MainScreen = () => {
           isStreaming={isStreaming}
           requestStreamPermission={requestStreamPermission}
           isFrontCamera={isFrontCamera}
+          Streamupdated={Streamupdated}
+          setStreamupdated={setStreamupdated}
           toggleMute={toggleMute}
           switchCamera={switchCamera}
           leaveRoom={leaveRoom}
