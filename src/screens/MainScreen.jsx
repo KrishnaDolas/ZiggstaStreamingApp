@@ -36,7 +36,6 @@ export const MainScreen = () => {
   const [isMuted, setIsMuted] = useState({ HostControl: false, muted: false });
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0);
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
@@ -326,7 +325,6 @@ export const MainScreen = () => {
       // Stop local stream if exists
       setRoomchat([])
       setHasRequestedStream(false);
-      disconnectSocket(); // Disconnect from socket server
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
@@ -346,9 +344,6 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleHostLeft');
     }
-  }
-  const HandleRoomInfo = (info) => {
-    setViewerCount(info?.viewerCount - 1 || 0);
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -486,7 +481,6 @@ export const MainScreen = () => {
       socket.on('User-streamStopped', HandleUserStreamStoped)
       socket.on('userLeft', HandleUserLeft);
       socket.on('Hostleft', HandleHostLeft)
-      socket.on('roomInfo', HandleRoomInfo)
       socket.on('new_stream', HandleNewStream)
       socket.on('Close_stream', HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
@@ -516,7 +510,6 @@ export const MainScreen = () => {
         socket.off('User-streamStopped', HandleUserStreamStoped)
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
-        socket.off('roomInfo', HandleRoomInfo)
         socket.off('new_stream', HandleNewStream)
         socket.off('Close_stream', HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
@@ -749,7 +742,6 @@ export const MainScreen = () => {
           isStreaming={isStreaming}
           requestStreamPermission={requestStreamPermission}
           isFrontCamera={isFrontCamera}
-          viewerCount={viewerCount}
           toggleMute={toggleMute}
           switchCamera={switchCamera}
           leaveRoom={leaveRoom}

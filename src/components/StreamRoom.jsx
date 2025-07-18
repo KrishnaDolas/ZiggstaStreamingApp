@@ -63,7 +63,6 @@ const StreamRoom = ({
     isStreaming,
     requestStreamPermission,
     isFrontCamera,
-    viewerCount,
     toggleMute,
     switchCamera,
     leaveRoom,
@@ -102,11 +101,10 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
-    const[likecount,setlikeCount]=useState(0)
     const [message, setMessage] = useState(null);
+    const [Streamupdated,setStreamupdated]=useState({viewerCount:0,LikeCount:0})
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const scrollViewRef = useRef();
-     const LikeCountref=useRef(0)
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
         try {
@@ -363,14 +361,18 @@ const StreamRoom = ({
 
     // scoketevents
     const HandleLikeCount=(count)=>{
-        setlikeCount(count);
-      }
+        setStreamupdated({LikeCount:count});
+    }
+    const HandleRoomInfo = (info) => {
+        setStreamupdated({viewerCount:info?.viewerCount - 1 || 0,LikeCount:info.LikeCount});
+    }
 
     useEffect(()=>{
         socket.on('like-count', HandleLikeCount)
-
+        socket.on('roomInfo', HandleRoomInfo)
         return()=>{
         socket.off('like-count', HandleLikeCount)
+        socket.off('roomInfo', HandleRoomInfo)
         }
     },[])
 
@@ -480,7 +482,7 @@ const StreamRoom = ({
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="heart" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{likecount}</Text>
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{Streamupdated.LikeCount}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -530,7 +532,7 @@ const StreamRoom = ({
                                             <View style={styles.strRoomFooterSocialActions}>
                                                 <TouchableOpacity style={styles.streamViewerCount}>
                                                     <Ionicons name="eye-outline" size={18} color="#ffea23" />
-                                                    <Text style={styles.streamViewerCountTitle}>{viewerCount}</Text>
+                                                    <Text style={styles.streamViewerCountTitle}>{Streamupdated.viewerCount}</Text>
                                                 </TouchableOpacity>
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="person-add" size={30} color="#fff" />
