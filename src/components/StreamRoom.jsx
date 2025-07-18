@@ -102,6 +102,7 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
+    const[likecount,setlikeCount]=useState(0)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const scrollViewRef = useRef();
@@ -362,7 +363,7 @@ const StreamRoom = ({
 
     // scoketevents
     const HandleLikeCount=(count)=>{
-        LikeCountref.current=count
+        setlikeCount(count);
       }
 
     useEffect(()=>{
@@ -479,7 +480,7 @@ const StreamRoom = ({
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="heart" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{ LikeCountref.current}</Text>
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{likecount}</Text>
                                         </View>
                                     </View>
                                 </View>
