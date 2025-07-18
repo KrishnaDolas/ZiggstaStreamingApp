@@ -701,9 +701,13 @@ console.log(list);
   const HandleChatmessages = (message) => {
     try {
       if (message.trim()) {
+        let formattedMessage = message;
+        if (message.length >= 40) {
+          formattedMessage = message.match(/.{1,40}/g).join('\n');
+        }
         const newMessage = {
           userName: userData?.screenName,
-          message: message,
+          message: formattedMessage,
           id: userData.userid,
           timestamp: new Date().toLocaleTimeString(),
         };

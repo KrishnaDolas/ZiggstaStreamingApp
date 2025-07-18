@@ -508,8 +508,8 @@ const StreamRoom = ({
                                                                 <Text numberOfLines={1} style={styles.streamChatUserName}>
                                                                     {chat.userName.length > 30 ? chat.userName.slice(0, 30) + '...' : chat.userName}
                                                                 </Text>
-                                                                <Text numberOfLines={1} style={styles.streamChatMessage}>
-                                                                    {chat.message.length > 40 ? chat.message.slice(0, 40) + '...' : chat.message}
+                                                                <Text numberOfLines={2} style={styles.streamChatMessage}>
+                                                                    {chat.message.length > 80 ? chat.message.slice(0, 80) + '...' : chat.message}
                                                                 </Text>
                                                             </View>
                                                         </View>
