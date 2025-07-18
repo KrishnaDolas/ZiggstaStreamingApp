@@ -187,6 +187,11 @@ export const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center', // optional: space-around, space-evenly
   },
+  streamerName:{
+    position:'absolute',
+    bottom:'20',
+    color:'white'
+  },
   streamVideo: {
     backgroundColor: 'gray',
     alignItems: 'center',

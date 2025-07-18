@@ -163,13 +163,14 @@ const StreamRoom = ({
     // Manage stream layout based on viewer count and streams
     useEffect(() => {
         const streams = [];
-        const hostInfo = streamerList.filter((item) => item.IsHost === true)
-        remoteStreams.forEach(({ id, stream, name }) => {
+        remoteStreams.forEach(({ id, stream }) => {
+            const hostInfo = streamerList.filter((item) => item.IsHost === true)
+            const StreamerName=streamerList.find((streamer)=>streamer.ID===id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: id });
+                    streams.unshift({ type: 'remote', stream, userId: id,Name:`${StreamerName?.Name} (HOST)`});
                 } else {
-                    streams.push({ type: 'remote', stream, userId: id });
+                    streams.push({ type: 'remote', stream, userId: id,Name:`${StreamerName?.Name}` });
                 }
             } else {
                 console.warn('⚠️ Invalid remote stream:', stream);
@@ -404,68 +405,71 @@ const StreamRoom = ({
                     />
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
-                        {streamLayout.length === 3 ? (
-                            <View style={styles.threeUserRow}>
-                                <View style={styles.threeUserColumnLeft}>
-                                    <RTCView
-                                        streamURL={streamLayout[0].stream.toURL()}
-                                        style={styles.streamVideoFull}
-                                        objectFit="cover"
-                                        mirror={streamLayout[0].type === 'local' && isFrontCamera}
-                                    />
-                                </View>
-                                <View style={styles.threeUserColumnRight}>
-                                    {streamLayout.slice(1, 3).map((streamData, index) => (
+                            {streamLayout.length === 3 ? (
+                                <View style={styles.threeUserRow}>
+                                    <View style={styles.threeUserColumnLeft}>
                                         <RTCView
-                                            key={streamData.type === 'local' ? 'local' : streamData.userId}
-                                            streamURL={streamData.stream.toURL()}
-                                            style={styles.streamVideoHalf}
+                                            streamURL={streamLayout[0].stream.toURL()}
+                                            style={styles.streamVideoFull}
                                             objectFit="cover"
-                                            mirror={streamData.type === 'local' && isFrontCamera}
+                                            mirror={streamLayout[0].type === 'local' && isFrontCamera}
                                         />
-                                    ))}
-                                </View>
-                            </View>
-                        ) : streamLayout.length === 5 ? (
-                            <View style={styles.fiveUserWrapper}>
-                                <View style={styles.fiveUserRow}>
-                                    {streamLayout.slice(0, 2).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol50}>
+                                    </View>
+                                    <View style={styles.threeUserColumnRight}>
+                                        {streamLayout.slice(1, 3).map((streamData, index) => (
                                             <RTCView
+                                                key={streamData.type === 'local' ? 'local' : streamData.userId}
                                                 streamURL={streamData.stream.toURL()}
-                                                style={styles.streamFiveUserVideo}
+                                                style={styles.streamVideoHalf}
                                                 objectFit="cover"
                                                 mirror={streamData.type === 'local' && isFrontCamera}
                                             />
-                                        </View>
-                                    ))}
+                                        ))}
+                                    </View>
                                 </View>
-                                <View style={styles.fiveUserRow}>
-                                    {streamLayout.slice(2, 5).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol33}>
-                                            <RTCView
-                                                streamURL={streamData.stream.toURL()}
-                                                style={styles.streamFiveUserVideo}
-                                                objectFit="cover"
-                                                mirror={streamData.type === 'local' && isFrontCamera}
-                                            />
-                                        </View>
-                                    ))}
+                            ) : streamLayout.length === 5 ? (
+                                <View style={styles.fiveUserWrapper}>
+                                    <View style={styles.fiveUserRow}>
+                                        {streamLayout.slice(0, 2).map((streamData, index) => (
+                                            <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol50}>
+                                                <RTCView
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={styles.streamFiveUserVideo}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                            </View>
+                                        ))}
+                                    </View>
+                                    <View style={styles.fiveUserRow}>
+                                        {streamLayout.slice(2, 5).map((streamData, index) => (
+                                            <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol33}>
+                                                <RTCView
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={styles.streamFiveUserVideo}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                            </View>
+                                        ))}
+                                    </View>
                                 </View>
-                            </View>
-                        ) : (
-                            <View style={styles.streamVideosInnerGrid}>
-                                {streamLayout.map((streamData, index) => (
-                                    <RTCView
+                            ) : (
+                                <View style={styles.streamVideosInnerGrid}>
+                                    {streamLayout.map((streamData, index) => (
+                                        <>
+                                        <Text style={styles.streamerName}>{streamData.Name}</Text>
+                                        <RTCView
                                         key={streamData.type === 'local' ? 'local' : streamData.userId}
                                         streamURL={streamData.stream.toURL()}
                                         style={[styles.streamVideo, getVideoTileStyle(streamLayout.length)]}
                                         objectFit="cover"
                                         mirror={streamData.type === 'local' && isFrontCamera}
-                                    />
-                                ))}
-                            </View>
-                        )}
+                                        />
+                                        </>
+                                    ))}
+                                </View>
+                            )}
                     </View>
                 )}
                 {isStreaming && (
