@@ -221,6 +221,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    zIndex:99
   },
 
   userName: {

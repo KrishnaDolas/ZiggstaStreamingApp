@@ -20,6 +20,7 @@ import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
+import { SendErrorTotheServer } from '../utils/constant';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -169,12 +170,13 @@ const StreamRoom = ({
         const streams = [];
         remoteStreams.forEach(({ id, stream }) => {
             const hostInfo = streamerList.filter((item) => item.IsHost === true)
-            const StreamerName = streamerList.find((streamer) => streamer.ID === id)
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: id, Name: `${StreamerName?.Name} (HOST)` });
+                    console.log("IS Host");
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, Name: `${StreamerInfo?.Name} (HOST)` });
                 } else {
-                    streams.push({ type: 'remote', stream, userId: id, Name: `${StreamerName?.Name}` });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, Name: `${StreamerInfo?.Name}` });
                 }
             } else {
                 console.warn('⚠️ Invalid remote stream:', stream);
@@ -418,6 +420,21 @@ const StreamRoom = ({
             console.log(error);
         }
     }
+    const handleFriendRequest=async(userid)=>{
+        try {
+            const params={
+                "requesterID": userData?.userid,
+                "receiverID": userid
+              }
+              console.log(params);
+            const responce=await Apiclient.post(`/friends/request`,params)
+            if(responce){
+                console.log(responce.data);
+            }
+        } catch (error) {
+            SendErrorTotheServer(error,"handleFriendRequest")
+        }
+    }
 
     return (
         <View style={[styles.roomInfo]}>
@@ -438,7 +455,7 @@ const StreamRoom = ({
                                     </Text>
                                     <TouchableOpacity
                                         style={styles.friendRequestIcon}
-                                    // onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                    onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                     >
                                         <Ionicons name="person-add" size={20} color="#fff" />
                                     </TouchableOpacity>
@@ -465,7 +482,7 @@ const StreamRoom = ({
                                                 </Text>
                                                 <TouchableOpacity
                                                     style={styles.friendRequestIcon}
-                                                // onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                                onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                                 >
                                                     <Ionicons name="person-add" size={16} color="#fff" />
                                                 </TouchableOpacity>
@@ -490,7 +507,7 @@ const StreamRoom = ({
                                                         </Text>
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
-                                                        // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                        onPress={() => handleFriendRequest(streamData?.userId)}
                                                         >
                                                             <Ionicons name="person-add" size={14} color="#fff" />
                                                         </TouchableOpacity>
@@ -521,7 +538,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={14} color="#fff" />
                                                             </TouchableOpacity>
@@ -550,7 +567,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={12} color="#fff" />
                                                             </TouchableOpacity>
@@ -583,7 +600,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={18} color="#fff" />
                                                             </TouchableOpacity>
