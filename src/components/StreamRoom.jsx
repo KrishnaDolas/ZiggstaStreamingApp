@@ -21,6 +21,7 @@ import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import { SendErrorTotheServer } from '../utils/constant';
+import AnimatedGift from '../modals/AnimatedGift';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -103,6 +104,7 @@ const StreamRoom = ({
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [giftInfo,setGiftInfo]=useState(null)
     const [showMicIcon, setShowMicIcon] = useState(false);
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
@@ -392,10 +394,17 @@ const StreamRoom = ({
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
 
+    const HandleGiftReceived = (senderName, GiftID) => {
+        console.log(`Gift Received from ${senderName} -${GiftID}`);
+        setGiftInfo({giftName:'diamond.gif',username:'vikram'})
+    }
+
     useEffect(() => {
         socket.on('like-count', HandleLikeCount)
+        socket.on('received-Gift', HandleGiftReceived)
         return () => {
             socket.off('like-count', HandleLikeCount)
+            socket.off('received-Gift', HandleGiftReceived)
         }
     }, [])
 
@@ -617,17 +626,6 @@ const StreamRoom = ({
                 )}
                 {isStreaming && (
                     <>
-                        {showMicIcon && (
-                            <Animated.View
-                                pointerEvents="none"
-                                style={[
-                                    styles.strMuteOffIconBoxOverlay,
-                                    { opacity: fadeAnim },
-                                ]}
-                            >
-                                <Ionicons name="mic-off" size={180} color="#ccc" />
-                            </Animated.View>
-                        )}
                         <View style={[
                             styles.controls,
                             {
@@ -902,6 +900,9 @@ const StreamRoom = ({
                         </View>
                     </View>
                 </Modal>
+            )}
+            {giftInfo && (
+                <AnimatedGift giftName={giftInfo.giftName} username={giftInfo.username} />
             )}
             {visibleModal === 'message-modal' && (
                 <MessageModal
