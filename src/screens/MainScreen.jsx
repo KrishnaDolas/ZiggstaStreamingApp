@@ -249,7 +249,11 @@ export const MainScreen = () => {
   }
   const HandleNewMessage = ({ userName, message, id }) => {
     try {
-      const data = { id: id, userProfile: chatimage, userName: userName, message: message,TYPE:"PLAYERCHAT"}
+      let own=userName
+      if(userName===userData?.screenName){
+        own="Ypu"
+      }
+      const data = { id: id, userProfile: chatimage, userName: own, message: message,TYPE:"PLAYERCHAT"}
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
