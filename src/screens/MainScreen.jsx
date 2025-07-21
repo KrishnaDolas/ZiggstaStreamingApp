@@ -106,7 +106,23 @@ export const MainScreen = () => {
     };
   }, [isStreaming, isHost, isuserstreaming, isFrontCamera]);
 
-
+  const UpdatedRoomCount = async (roomid, userid, isConnected, isCoHost) => {
+    try {
+      let params = {
+        roomId: roomid,
+        user_id: userid,
+        isCoHost: isCoHost,
+        isConnected: isConnected
+      }
+      const response = await Apiclient.post(`/rooms/${roomid}/join`, params)
+      if (response) {
+        const user = response.data;
+        console.log(user);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,"UpdatedRoomCount")
+    }
+  }
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -159,7 +175,7 @@ export const MainScreen = () => {
     }
   };
 
-  const HandleJoined = async ({ users, IsHost, ChatMessages }) => {
+  const HandleJoined = async ({ users, IsHost, ChatMessages,roomID }) => {
     try {
       // If no one else, you're host
       if (users.length === 0 || IsHost) {
@@ -170,6 +186,10 @@ export const MainScreen = () => {
         await startLocalStream();
         socket.emit('assignHost');
       } else {
+        if(roomID){
+          //roomid, userid, isConnected, isCoHost
+          UpdatedRoomCount(roomID,userData?.userid,"Y","N")
+        }
         setIsLoading(true);
         setTimeout(() => {
           setJoined(true);
@@ -483,10 +503,11 @@ export const MainScreen = () => {
     });
   }
 
-
   useEffect(() => {
     HandleConnect()
   }, [])
+
+  
 
 
   useEffect(() => {
@@ -692,6 +713,8 @@ export const MainScreen = () => {
       if (isHost) {
         socket.emit('Hostleft')
         HandleSetLivestatus(streamInfo?.roomID);
+      }else{
+        UpdatedRoomCount(streamInfo?.roomID,userData?.userid,"N","N")
       }
       setJoined(false);
       setStreamupdated({viewerCount:0,LikeCount:0});
