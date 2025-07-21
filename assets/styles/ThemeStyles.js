@@ -201,7 +201,7 @@ export const styles = StyleSheet.create({
 
   strVideoContainer: {
     position: 'relative',
-    flex: 1,
+    // flex: 1,
     width: '100%',
     height: '100%',
   },
