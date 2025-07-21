@@ -396,7 +396,7 @@ const StreamRoom = ({
 
     const HandleGiftReceived = (senderName, GiftID) => {
         console.log(`Gift Received from ${senderName} -${GiftID}`);
-        setGiftInfo({giftName:'diamond.gif',username:'vikram'})
+        setGiftInfo({giftName:GiftID,username:senderName})
         setTimeout(() => {
             setGiftInfo(null)
         }, 4000);
