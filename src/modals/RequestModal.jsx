@@ -64,9 +64,10 @@ const RequestModal = ({
                                 <Text>{`${item?.country} (${item?.city})`}</Text>
                                 </View>
                                 <TouchableOpacity
+                                disabled={streamGuest.length>=6?true:false}
                                 onPress={() => AcceptStream("approve", item.ID,item.Name,item?.CustomID)}
                                 style={{
-                                    backgroundColor: 'black',
+                                    backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
                                     paddingVertical: 4,
                                     paddingHorizontal: 9,
                                     borderRadius: 6,
