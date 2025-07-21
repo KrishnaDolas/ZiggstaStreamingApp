@@ -274,6 +274,8 @@ export const RegisterForm = ({
     };
     checkLocationPermission();
   }, []);
+
+
   // Function to fetch user interest from the API
 
   useEffect(() => {
@@ -337,10 +339,15 @@ export const RegisterForm = ({
       console.log('user name taken catch err', err);
       if (err.response && err.response.status === 409 && err.response.data) {
         setUsernameStatus('taken');
-        setUsernameCheckMessage(err.response.data.message || 'Username is already taken.');
+        // setUsernameCheckMessage(err.response.data.message || 'Username is already taken.');
+        setUsernameCheckMessage('Username is already taken.');
+        // setErrors(prev => ({
+        //   ...prev,
+        //   userName: err.response.data.message || 'Username is already taken.',
+        // })); // Set error
         setErrors(prev => ({
           ...prev,
-          userName: err.response.data.message || 'Username is already taken.',
+          userName: 'Username is already taken.',
         })); // Set error
         setIsValidStep(false); // Disable Next button
       } else {
