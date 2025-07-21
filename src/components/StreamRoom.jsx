@@ -84,9 +84,10 @@ const StreamRoom = ({
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
+    const screenWidth = Dimensions.get('window').width;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
-    const {userData}=useAppContext()
+    const { userData } = useAppContext()
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
     const [userChatInput, setUserChatInput] = useState('');
@@ -183,6 +184,7 @@ const StreamRoom = ({
         if (localStream && isStreaming) {
             if (isHost) {
                 streams.unshift({ type: 'local', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.unshift({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
             } else {
                 streams.push({ type: 'local', stream: localStream, Name: `${userDetails?.screenName} (You)` });
             }
@@ -409,9 +411,9 @@ const StreamRoom = ({
             console.log(params);
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
-               if(Responce.data.success){
-                socket.emit('Send-gift',userData?.screenName,item?.giftID)
-               }
+                if (Responce.data.success) {
+                    socket.emit('Send-gift', userData?.screenName, item?.giftID)
+                }
             }
         } catch (error) {
             console.log(error);
@@ -480,17 +482,33 @@ const StreamRoom = ({
                                 </View>
                             </View>
                         ) : (
-                            <View style={styles.streamVideosInnerGrid}>
+                            <View style={[styles.streamVideosInnerGrid]}>
                                 {streamLayout.map((streamData, index) => {
                                     return (
                                         <Fragment key={index}>
-                                            <RTCView
-                                                key={streamData.type === 'local' ? 'local' : streamData.userId}
-                                                streamURL={streamData.stream.toURL()}
-                                                style={[styles.streamVideo, getVideoTileStyle(streamLayout.length)]}
-                                                objectFit="cover"
-                                                mirror={streamData.type === 'local' && isFrontCamera}
-                                            />
+                                            <View style={[styles.strVideoContainer, getVideoTileStyle(streamLayout.length)]}>
+                                                <RTCView
+                                                    key={streamData.type === 'local' ? 'local' : streamData.userId}
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={[styles.streamVideo]}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                                {streamData?.type !== 'local' && (
+                                                    <View style={styles.strVideoOverlay}>
+                                                        <View style={styles.strUserInfoContainer}>
+                                                            <Text style={styles.strUserName}>
+                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                            </Text>
+                                                            <TouchableOpacity
+                                                                style={styles.strFriendRequestIcon}
+                                                            >
+                                                                <Ionicons name="person-add" size={14} color="#fff" />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                )}
+                                            </View>
                                         </Fragment>
                                     )
                                 })}
@@ -564,7 +582,7 @@ const StreamRoom = ({
                                                         <View key={ind} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                                <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#43bf83` :chat.TYPE==="USERLEFT"? 'red': `#FFFF33`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `20` : `0`}` }]}>
+                                                                <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#43bf83` : chat.TYPE === "USERLEFT" ? 'red' : `#FFFF33`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `20` : `0`}` }]}>
                                                                     {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                                 </Text>
                                                                 <Text numberOfLines={2} style={styles.streamChatMessage}>
@@ -605,7 +623,7 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        {isuserstreaming ||isHost && (
+                                        {isuserstreaming || isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 switchCamera();
                                                 HidesettingPanel()
@@ -625,7 +643,7 @@ const StreamRoom = ({
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
                                         )}
-                                        {isuserstreaming ||isHost && (<TouchableOpacity onPress={() => {
+                                        {isuserstreaming || isHost && (<TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
@@ -764,7 +782,7 @@ const StreamRoom = ({
                                                 return (
                                                     <TouchableOpacity key={index}
                                                         style={styles.giftModalCatItem}
-                                                        onPress={()=>SendGift(item)}
+                                                        onPress={() => SendGift(item)}
                                                     >
                                                         <FastImage
                                                             style={[styles.giftModalCatItemImage]}

@@ -194,6 +194,51 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000',
     borderRadius: 10,
+
+    // flex: 1,
+    // width: '100%',
+    // height: '100%',
+  },
+
+  strVideoContainer: {
+    position: 'relative',
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+
+  strVideoOverlay: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    zIndex: 10,
+  },
+
+  strUserInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+
+  strUserName: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+    marginRight: 8,
+  },
+
+  strFriendRequestIcon: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // stream third row 

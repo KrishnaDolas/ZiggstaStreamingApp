@@ -218,7 +218,14 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                             {isAvgLoading ? (
                                 <ActivityIndicator size="small" />
                             ) : (
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>${averageIncomeData?.averageIncome}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image
+                                        source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                        style={{ width: 14, height: 14, marginRight: 5 }}
+                                        resizeMode="contain"
+                                    />
+                                    <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>{averageIncomeData?.averageIncome}</Text>
+                                </View>
                             )}
                         </View>
                         <View style={{ width: 5 }} />
