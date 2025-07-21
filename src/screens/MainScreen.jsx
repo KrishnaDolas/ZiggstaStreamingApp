@@ -429,13 +429,15 @@ export const MainScreen = () => {
   }
   const HandlenewUserJoined=(userinfo)=>{
     console.log(userinfo);
-    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} joined`, message: '',TYPE:"USERJOINED"}
+    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo?.Name} joined`, message: '',TYPE:"USERJOINED"}
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream=(userinfo)=>{
+  if(userinfo){
     console.log(userinfo);
-    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} left`, message: '',TYPE:"USERLEFT"}
+    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo?.Name} left`, message: '',TYPE:"USERLEFT"}
     setRoomchat(prev => [...prev, data]);
+  }
   }
   const HandleGiftReceived = (senderName, GiftID) => {
     console.log(`Gift Received from ${senderName} -${GiftID}`);
