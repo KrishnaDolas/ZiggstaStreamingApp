@@ -78,7 +78,8 @@ const StreamRoom = ({
     streamGuest,
     socket,
     hasRequestedStream,
-    streamerList
+    streamerList,
+    isuserstreaming
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -604,13 +605,15 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        <TouchableOpacity onPress={() => {
-                                            switchCamera();
-                                            HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
-                                            <Ionicons name="camera-reverse" size={20} color="#fff" />
-                                        </TouchableOpacity>
+                                        {isuserstreaming && (
+                                            <TouchableOpacity onPress={() => {
+                                                switchCamera();
+                                                HidesettingPanel()
+                                            }} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
+                                                <Ionicons name="camera-reverse" size={20} color="#fff" />
+                                            </TouchableOpacity>
+                                        )}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 requestStreamPermission(),
@@ -622,13 +625,13 @@ const StreamRoom = ({
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
                                         )}
-                                        <TouchableOpacity onPress={() => {
+                                        {isuserstreaming && (<TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
-                                        </TouchableOpacity>
+                                        </TouchableOpacity>)}
                                     </Animated.View>
                                 )}
                                 <View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
