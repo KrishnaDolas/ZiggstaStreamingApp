@@ -251,7 +251,7 @@ export const MainScreen = () => {
     try {
       let own=userName
       if(userName===userData?.screenName){
-        own="Ypu"
+        own="You"
       }
       const data = { id: id, userProfile: chatimage, userName: own, message: message,TYPE:"PLAYERCHAT"}
       setRoomchat(prev => [...prev, data]);
