@@ -184,7 +184,11 @@ const StreamRoom = ({
         if (localStream && isStreaming) {
             if (isHost) {
                 streams.unshift({ type: 'local', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.unshift({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
             } else {
                 streams.push({ type: 'local', stream: localStream, Name: `${userDetails?.screenName} (You)` });
             }
@@ -424,12 +428,29 @@ const StreamRoom = ({
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
-                    <RTCView
-                        streamURL={streamLayout[0]?.stream.toURL()}
-                        style={styles.fullScreenVideo}
-                        objectFit="cover"
-                        mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
-                    />
+                    <View style={styles.videoContainer}>
+                        <RTCView
+                            streamURL={streamLayout[0]?.stream.toURL()}
+                            style={styles.fullScreenVideo}
+                            objectFit="cover"
+                            mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
+                        />
+                        {streamLayout[0]?.type !== 'local' && (
+                            <View style={styles.videoOverlay}>
+                                <View style={styles.userInfoContainer}>
+                                    <Text style={styles.userName}>
+                                        {streamLayout[0]?.userName || streamLayout[0]?.screenName || 'Unknown User'}
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.friendRequestIcon}
+                                    // onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                    >
+                                        <Ionicons name="person-add" size={20} color="#fff" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    </View>
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
                         {streamLayout.length === 3 ? (
@@ -441,16 +462,47 @@ const StreamRoom = ({
                                         objectFit="cover"
                                         mirror={streamLayout[0].type === 'local' && isFrontCamera}
                                     />
+                                    {streamLayout[0]?.type !== 'local' && (
+                                        <View style={styles.videoOverlay}>
+                                            <View style={styles.userInfoContainer}>
+                                                <Text style={styles.userName}>
+                                                    {streamLayout[0]?.userName || streamLayout[0]?.screenName || 'Unknown User'}
+                                                </Text>
+                                                <TouchableOpacity
+                                                    style={styles.friendRequestIcon}
+                                                // onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                                >
+                                                    <Ionicons name="person-add" size={16} color="#fff" />
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
                                 </View>
                                 <View style={styles.threeUserColumnRight}>
                                     {streamLayout.slice(1, 3).map((streamData, index) => (
-                                        <RTCView
-                                            key={streamData.type === 'local' ? 'local' : streamData.userId}
-                                            streamURL={streamData.stream.toURL()}
-                                            style={styles.streamVideoHalf}
-                                            objectFit="cover"
-                                            mirror={streamData.type === 'local' && isFrontCamera}
-                                        />
+                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={{ flex: 1, position: 'relative' }}>
+                                            <RTCView
+                                                streamURL={streamData.stream.toURL()}
+                                                style={styles.streamVideoHalf}
+                                                objectFit="cover"
+                                                mirror={streamData.type === 'local' && isFrontCamera}
+                                            />
+                                            {streamData?.type !== 'local' && (
+                                                <View style={styles.videoOverlay}>
+                                                    <View style={styles.userInfoContainer}>
+                                                        <Text style={styles.userName}>
+                                                            {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                        </Text>
+                                                        <TouchableOpacity
+                                                            style={styles.friendRequestIcon}
+                                                        // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                        >
+                                                            <Ionicons name="person-add" size={14} color="#fff" />
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </View>
+                                            )}
+                                        </View>
                                     ))}
                                 </View>
                             </View>
@@ -459,24 +511,58 @@ const StreamRoom = ({
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(0, 2).map((streamData, index) => (
                                         <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol50}>
-                                            <RTCView
-                                                streamURL={streamData.stream.toURL()}
-                                                style={styles.streamFiveUserVideo}
-                                                objectFit="cover"
-                                                mirror={streamData.type === 'local' && isFrontCamera}
-                                            />
+                                            <View style={styles.videoContainer}>
+                                                <RTCView
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={styles.streamFiveUserVideo}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                                {streamData?.type !== 'local' && (
+                                                    <View style={styles.videoOverlay}>
+                                                        <View style={styles.userInfoContainer}>
+                                                            <Text style={styles.userName}>
+                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                            </Text>
+                                                            <TouchableOpacity
+                                                                style={styles.friendRequestIcon}
+                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            >
+                                                                <Ionicons name="person-add" size={14} color="#fff" />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                )}
+                                            </View>
                                         </View>
                                     ))}
                                 </View>
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(2, 5).map((streamData, index) => (
                                         <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol33}>
-                                            <RTCView
-                                                streamURL={streamData.stream.toURL()}
-                                                style={styles.streamFiveUserVideo}
-                                                objectFit="cover"
-                                                mirror={streamData.type === 'local' && isFrontCamera}
-                                            />
+                                            <View style={styles.videoContainer}>
+                                                <RTCView
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={styles.streamFiveUserVideo}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                                {streamData?.type !== 'local' && (
+                                                    <View style={styles.videoOverlay}>
+                                                        <View style={styles.userInfoContainer}>
+                                                            <Text style={styles.userName}>
+                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                            </Text>
+                                                            <TouchableOpacity
+                                                                style={styles.friendRequestIcon}
+                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            >
+                                                                <Ionicons name="person-add" size={12} color="#fff" />
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                )}
+                                            </View>
                                         </View>
                                     ))}
                                 </View>
@@ -486,7 +572,7 @@ const StreamRoom = ({
                                 {streamLayout.map((streamData, index) => {
                                     return (
                                         <Fragment key={index}>
-                                            <View style={[styles.strVideoContainer, getVideoTileStyle(streamLayout.length)]}>
+                                            <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
                                                 <RTCView
                                                     key={streamData.type === 'local' ? 'local' : streamData.userId}
                                                     streamURL={streamData.stream.toURL()}
@@ -494,21 +580,24 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
-                                                    <View style={styles.strVideoOverlay}>
-                                                        <View style={styles.strUserInfoContainer}>
-                                                            <Text style={styles.strUserName}>
-                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
-                                                            </Text>
+                                                <View style={styles.videoOverlay}>
+                                                    <View style={styles.userInfoContainer}>
+                                                        <Text style={styles.userName}>
+                                                            {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                        </Text>
+                                                        {streamData?.type !== 'local' && (
                                                             <TouchableOpacity
-                                                                style={styles.strFriendRequestIcon}
+                                                                style={styles.friendRequestIcon}
+                                                            // onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={14} color="#fff" />
                                                             </TouchableOpacity>
-                                                        </View>
+                                                        )}
                                                     </View>
+                                                </View>
                                             </View>
                                         </Fragment>
-                                    )
+                                    );
                                 })}
                             </View>
                         )}

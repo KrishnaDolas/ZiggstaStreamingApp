@@ -198,15 +198,14 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-
-  strVideoContainer: {
+  videoContainer: {
     position: 'relative',
-    flex: 1,
+    // flex: 1,
     width: '100%',
     height: '100%',
   },
 
-  strVideoOverlay: {
+  videoOverlay: {
     position: 'absolute',
     bottom: 8,
     left: 8,
@@ -214,7 +213,7 @@ export const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  strUserInfoContainer: {
+  userInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -224,7 +223,7 @@ export const styles = StyleSheet.create({
     borderRadius: 6,
   },
 
-  strUserName: {
+  userName: {
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
@@ -232,14 +231,13 @@ export const styles = StyleSheet.create({
     marginRight: 8,
   },
 
-  strFriendRequestIcon: {
+  friendRequestIcon: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
     padding: 4,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   // stream third row 
   threeUserRow: {
     flexDirection: 'row',
@@ -2639,7 +2637,7 @@ export const themeStyles = {
       color: '#000',
     },
     reportSubCategoryCard: {
-      backgroundColor: '#d6d6d6ff',
+      backgroundColor: '#f7f7f7',
       borderColor: '#d9d9d9',
     },
     reportSelectedSubCategoryCard: {
