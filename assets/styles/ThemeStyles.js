@@ -1484,6 +1484,7 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
+    minWidth:120
   },
 
   strRoomHeaderLeftProfileImg: {
@@ -1497,7 +1498,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderLeftProfileName: {
     color: '#fff',
     marginRight: 10,
-    fontSize: 13,
+    fontSize: 12,
   },
   strRoomHeaderLeftProfileSubInfo: {
     flexDirection: 'row',
