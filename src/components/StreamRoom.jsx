@@ -425,7 +425,7 @@ const StreamRoom = ({
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, item?.giftID)
+                    socket.emit('Send-gift', userData?.screenName, item?.giftName)
                 }
             }
         } catch (error) {
