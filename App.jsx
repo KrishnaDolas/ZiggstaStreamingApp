@@ -68,14 +68,8 @@ const App = () => {
         'allowNotification',
         'distanceRange',
         'userAddress', // Clear userAddress on logout
-        // 'locationPermission', // Clear location permission to prompt again
+        'locationPermission', // Clear location permission to prompt again
       ]);
-
-      // Introduce a 2-second delay before clearing locationPermission
-      setTimeout(async () => {
-        await AsyncStorage.removeItem('locationPermission');
-        console.log('locationPermission cleared after 2-second delay');
-      }, 2000);
 
       setUserAddress(null);
       setUserData(null);
@@ -229,55 +223,6 @@ const App = () => {
 
   //   init();
   //   //eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isConnected, isAuthenticated]);
-
-
-  // const init = useCallback(async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem('token');
-  //     const userDataStored = await AsyncStorage.getItem('UserData');
-  //     const locationPermission = await AsyncStorage.getItem('locationPermission');
-  //     const userAddressStored = await AsyncStorage.getItem('userAddress');
-
-  //     if (token) setIsAuthenticated(true);
-  //     if (userDataStored) setUserData(JSON.parse(userDataStored));
-  //     if (userAddressStored) {
-  //       setUserAddress(JSON.parse(userAddressStored));
-  //       hasFetchedAddress.current = true;
-  //     }
-
-  //     if (isConnected && !hasFetchedAddress.current && !locationPermission) {
-  //       if (locationPermission === 'granted') {
-  //         Geolocation.getCurrentPosition(
-  //           pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
-  //           err => {
-  //             console.error('Location error:', err);
-  //             fetchAddressFromIP();
-  //           },
-  //           { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
-  //         );
-  //       } else {
-  //         const granted = await requestLocationPermission();
-  //         if (granted) {
-  //           Geolocation.getCurrentPosition(
-  //             pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
-  //             err => {
-  //               console.error('Location error:', err);
-  //               fetchAddressFromIP();
-  //             },
-  //             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
-  //           );
-  //         } else {
-  //           fetchAddressFromIP();
-  //         }
-  //       }
-  //     }
-
-  //     setTimeout(() => setIsLoading(false), 3000);
-  //   } catch (e) {
-  //     console.error('Init error:', e);
-  //     setIsLoading(false);
-  //   }
   // }, [isConnected, isAuthenticated]);
 
   const init = useCallback(async () => {
