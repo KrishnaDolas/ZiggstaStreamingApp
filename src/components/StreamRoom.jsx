@@ -579,12 +579,14 @@ const StreamRoom = ({
                                                     <Ionicons name="eye-outline" size={18} color="#ffea23" />
                                                     <Text style={styles.streamViewerCountTitle}>{Streamupdated.viewerCount}</Text>
                                                 </TouchableOpacity>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
-                                                    <Ionicons name="person-add" size={30} color="#fff" />
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
-                                                    <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
-                                                </TouchableOpacity>
+                                                {!isHost && (<>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                        <Ionicons name="person-add" size={30} color="#fff" />
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
+                                                        <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
+                                                    </TouchableOpacity>
+                                                </>)}
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                                 </TouchableOpacity>
