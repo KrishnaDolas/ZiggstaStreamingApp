@@ -109,7 +109,6 @@ export const MainScreen = () => {
   const UpdatedRoomCount = async (roomid, userid, isConnected, isCoHost) => {
     try {
       let params = {
-        roomId: roomid,
         user_id: userid,
         isCoHost: isCoHost,
         isConnected: isConnected
