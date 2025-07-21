@@ -663,12 +663,12 @@ const StreamRoom = ({
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                            {/* <LinearGradient
+                            <LinearGradient
                                 colors={streamLayout.length > 1 ? ['#1d1d1d', '#1d1d1d'] : ['rgba(141, 124, 124, 0)', 'rgba(255, 255, 255, 0)']}
                                 start={{ x: 0.5, y: 1 }}
                                 end={{ x: 0.5, y: 0 }}
                                 style={styles.strRoomFooter}
-                            > */}
+                            >
                                 {!openMoreSettingList && (
                                     <>
                                         <View style={styles.strRoomFooterChatOrActionsBox}>
@@ -795,7 +795,7 @@ const StreamRoom = ({
                                         </>
                                     )}
                                 </View>
-                            {/* </LinearGradient> */}
+                            </LinearGradient>
                         </View>
                     </>
                 )}
