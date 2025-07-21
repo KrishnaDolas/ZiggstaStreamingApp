@@ -18,7 +18,6 @@ const DisconnectedPanel = ({ time,leaveRoom }) => {
             clearInterval(timeoutID)
         }
     },[count])
-    console.log(time);
     return (
         <View style={DisconnetPanelstyles.overlay}>
                 <View style={DisconnetPanelstyles.popup}>
