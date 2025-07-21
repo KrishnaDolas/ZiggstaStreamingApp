@@ -194,10 +194,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000',
     borderRadius: 10,
-
-    // flex: 1,
-    // width: '100%',
-    // height: '100%',
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
 
   strVideoContainer: {
@@ -209,7 +208,7 @@ export const styles = StyleSheet.create({
 
   strVideoOverlay: {
     position: 'absolute',
-    top: 8,
+    bottom: 8,
     left: 8,
     right: 8,
     zIndex: 10,

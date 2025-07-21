@@ -494,7 +494,6 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
-                                                {streamData?.type !== 'local' && (
                                                     <View style={styles.strVideoOverlay}>
                                                         <View style={styles.strUserInfoContainer}>
                                                             <Text style={styles.strUserName}>
@@ -507,7 +506,6 @@ const StreamRoom = ({
                                                             </TouchableOpacity>
                                                         </View>
                                                     </View>
-                                                )}
                                             </View>
                                         </Fragment>
                                     )
