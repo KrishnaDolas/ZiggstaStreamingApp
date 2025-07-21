@@ -404,8 +404,8 @@ const StreamRoom = ({
             console.log(item);
             console.log(hostInfo);
             const params = {
-                fromUserID: hostInfo[0].UserID,
-                toUserID: userData?.userid,
+                fromUserID: userData?.userid,
+                toUserID: hostInfo[0].UserID,
                 giftID: item?.giftID
             }
             console.log(params);
