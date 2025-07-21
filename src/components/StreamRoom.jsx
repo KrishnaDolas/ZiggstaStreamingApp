@@ -605,7 +605,7 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        {isuserstreaming && (
+                                        {isuserstreaming ||isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 switchCamera();
                                                 HidesettingPanel()
@@ -625,7 +625,7 @@ const StreamRoom = ({
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
                                         )}
-                                        {isuserstreaming && (<TouchableOpacity onPress={() => {
+                                        {isuserstreaming ||isHost && (<TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
@@ -642,6 +642,7 @@ const StreamRoom = ({
                                         onChangeText={setUserChatInput}
                                         onFocus={() => setIsTyping(true)}
                                         onBlur={() => setIsTyping(false)}
+                                        onSubmitEditing={HadleSendChat}
                                         style={styles.strRoomBottomBoxInput}
                                     />
                                     {keyboardOffset && isTyping ? (
