@@ -128,7 +128,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         setIsUserError('');
         try {
             const response = await Apiclient.post('/topgifters', formData);
-            // console.log('topgifters response', response.data);
+            console.log('topgifters response', response.data);
             if (response) {
                 setTopGiftersData(response.data || []);
             } else {
@@ -251,7 +251,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 return (
                                     <View key={index} style={styles.profileTableRow}>
                                         <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.ScreenName}</Text>
+                                        <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
                                         <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
                                     </View>
                                 );
