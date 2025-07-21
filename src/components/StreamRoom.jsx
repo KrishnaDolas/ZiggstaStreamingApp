@@ -184,11 +184,6 @@ const StreamRoom = ({
         if (localStream && isStreaming) {
             if (isHost) {
                 streams.unshift({ type: 'local', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.push({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
             } else {
                 streams.push({ type: 'local', stream: localStream, Name: `${userDetails?.screenName} (You)` });
             }
@@ -439,7 +434,7 @@ const StreamRoom = ({
                             <View style={styles.videoOverlay}>
                                 <View style={styles.userInfoContainer}>
                                     <Text style={styles.userName}>
-                                        {streamLayout[0]?.userName || streamLayout[0]?.screenName || 'Unknown User'}
+                                        {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
                                     </Text>
                                     <TouchableOpacity
                                         style={styles.friendRequestIcon}
@@ -466,7 +461,7 @@ const StreamRoom = ({
                                         <View style={styles.videoOverlay}>
                                             <View style={styles.userInfoContainer}>
                                                 <Text style={styles.userName}>
-                                                    {streamLayout[0]?.userName || streamLayout[0]?.screenName || 'Unknown User'}
+                                                    {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
                                                 </Text>
                                                 <TouchableOpacity
                                                     style={styles.friendRequestIcon}
@@ -491,7 +486,7 @@ const StreamRoom = ({
                                                 <View style={styles.videoOverlay}>
                                                     <View style={styles.userInfoContainer}>
                                                         <Text style={styles.userName}>
-                                                            {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                            {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                         </Text>
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
@@ -522,7 +517,7 @@ const StreamRoom = ({
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
                                                             <Text style={styles.userName}>
-                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                                {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
@@ -551,7 +546,7 @@ const StreamRoom = ({
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
                                                             <Text style={styles.userName}>
-                                                                {streamData?.userName || streamData?.screenName || 'Unknown User'}
+                                                                {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
@@ -581,19 +576,19 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={styles.videoOverlay}>
-                                                    <View style={styles.userInfoContainer}>
-                                                        <Text style={styles.userName}>
-                                                            {streamData?.userName || streamData?.screenName || 'Unknown User'}
-                                                        </Text>
-                                                        {streamData?.type !== 'local' && (
+                                                    {streamData?.type !== 'local' && (
+                                                        <View style={styles.userInfoContainer}>
+                                                            <Text style={styles.userName}>
+                                                                {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                            </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
                                                             // onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={14} color="#fff" />
+                                                                <Ionicons name="person-add" size={18} color="#fff" />
                                                             </TouchableOpacity>
-                                                        )}
-                                                    </View>
+                                                        </View>
+                                                    )}
                                                 </View>
                                             </View>
                                         </Fragment>

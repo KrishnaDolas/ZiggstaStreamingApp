@@ -217,7 +217,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'transparent',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -225,10 +225,10 @@ export const styles = StyleSheet.create({
 
   userName: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     flex: 1,
-    marginRight: 8,
+    marginRight: 3,
   },
 
   friendRequestIcon: {
