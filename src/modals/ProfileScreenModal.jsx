@@ -40,6 +40,9 @@ import ReportUserModal from './ReportUserModal';
 //     },
 // ];
 
+const fallbackImage = require('../../assets/images/LS-9.jpg');
+
+
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, reportType }) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation();
@@ -57,6 +60,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
+    const [mainImageError, setMainImageError] = useState(false);
+    const [otherImageErrors, setOtherImageErrors] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -173,7 +178,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
             };
             try {
                 const response = await Apiclient.post('/topgifters', formData);
-                // console.log('topgifters response', response.data);
+                console.log('topgifters response', response.data);
                 if (response.status === 200) {
                     setTopGiftersData(response.data || []);
                 } else {
@@ -471,12 +476,17 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                                                             >
                                                                 <View style={styles.psmTopGifterImageContainer}>
                                                                     <Image
-                                                                        source={topGiftersData[0]?.image}
+                                                                        source={
+                                                                            mainImageError || !topGiftersData[0]?.image
+                                                                                ? fallbackImage
+                                                                                : topGiftersData[0]?.image
+                                                                        }
+                                                                        onError={() => setMainImageError(true)}
                                                                         style={styles.psmTopGifterMainImage}
                                                                     />
                                                                 </View>
                                                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                    <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.ScreenName}</Text>
+                                                                    <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.screenName}</Text>
                                                                     <Text style={styles.psmTopGifterMainAmount}>{topGiftersData[0]?.Amount}</Text>
                                                                 </View>
                                                             </LinearGradient>
@@ -494,12 +504,19 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                                                                     >
                                                                         <View style={styles.psmOtherGifterImageContainer}>
                                                                             <Image
-                                                                                source={gifter.image}
+                                                                                source={
+                                                                                    otherImageErrors[gifter.id] || !gifter?.image
+                                                                                        ? fallbackImage
+                                                                                        : gifter.image
+                                                                                }
+                                                                                onError={() =>
+                                                                                    setOtherImageErrors(prev => ({ ...prev, [gifter.id]: true }))
+                                                                                }
                                                                                 style={styles.psmOtherGifterImage}
                                                                             />
                                                                         </View>
                                                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                            <Text style={styles.psmOtherGifterName}>{gifter?.ScreenName}</Text>
+                                                                            <Text style={styles.psmOtherGifterName}>{gifter?.screenName}</Text>
                                                                             <Text style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
                                                                         </View>
                                                                     </View>

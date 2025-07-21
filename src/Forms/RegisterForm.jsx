@@ -334,6 +334,7 @@ export const RegisterForm = ({
         setIsValidStep(false); // Disable Next button
       }
     } catch (err) {
+      console.log('user name taken catch err', err);
       if (err.response && err.response.status === 409 && err.response.data) {
         setUsernameStatus('taken');
         setUsernameCheckMessage(err.response.data.message || 'Username is already taken.');
@@ -457,66 +458,6 @@ export const RegisterForm = ({
       }
     });
   };
-
-
-  // // Fetch IP-based location and perform reverse geocoding if needed
-  // useEffect(() => {
-  //   const getIPLocation = async () => {
-  //     try {
-  //       // Step 1: Get public IP
-  //       const ipRes = await fetch('https://api64.ipify.org?format=json');
-  //       const ipData = await ipRes.json();
-  //       const ip = ipData.ip;
-  //       setIpAddress(ip); // Store IP address
-  //       // Step 2: Get location info from IP
-  //       const response = await fetch(
-  //         `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`
-  //       );
-  //       const json = await response.json();
-  //       // console.log('ip info api call', json);
-
-  //       // Step 3: Extract address details from the full response
-  //       const address = {
-  //         city: json.city?.name || '',
-  //         state: json.state?.name || '',
-  //         country: json.country?.name || '',
-  //         postcode: json.postcode || '',
-  //         latitude: json.location?.latitude || null,
-  //         longitude: json.location?.longitude || null,
-  //         ip,
-  //       };
-  //       // console.log('ip info address', address);
-
-  //       // Step 3: If state or zipcode is missing, perform reverse geocoding
-  //       if (!address.postcode && address.latitude && address.longitude) {
-  //         const reverseResponse = await fetch(
-  //           `https://api.geoapify.com/v1/geocode/reverse?lat=${address.latitude}&lon=${address.longitude}&apiKey=25127ca1c55f48909b03f43048040037`
-  //         );
-  //         const reverseJson = await reverseResponse.json();
-  //         const reverseAddress = reverseJson.features?.[0]?.properties || {};
-  //         // console.log('reverse api call', reverseAddress);
-  //         updateLocationData(
-  //           {
-  //             ...address,
-  //             city: reverseAddress.city || address.city,
-  //             state: reverseAddress.state || address.state,
-  //             country: reverseAddress.country || address.country,
-  //             postcode: reverseAddress.postcode || '',
-  //           },
-  //           'ip'
-  //         );
-  //       } else {
-  //         updateLocationData(address, 'ip');
-  //       }
-  //     } catch (err) {
-  //       console.error('Error fetching IP location:', err);
-  //       Alert.alert('Error', 'Unable to get IP-based location.');
-  //     }
-  //   };
-
-  //   getIPLocation();
-  // }, []);
-
 
   // Handle location search with autocomplete
   const handleLocationSearch = async text => {
