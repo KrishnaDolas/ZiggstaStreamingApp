@@ -184,7 +184,6 @@ const StreamRoom = ({
         if (localStream && isStreaming) {
             if (isHost) {
                 streams.unshift({ type: 'local', stream: localStream, Name: `${userDetails?.screenName}` });
-                streams.unshift({ type: 'remote', stream: localStream, Name: `${userDetails?.screenName}` });
             } else {
                 streams.push({ type: 'local', stream: localStream, Name: `${userDetails?.screenName} (You)` });
             }
