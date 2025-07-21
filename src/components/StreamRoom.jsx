@@ -169,7 +169,7 @@ const StreamRoom = ({
     useEffect(() => {
         const streams = [];
         remoteStreams.forEach(({ id, stream }) => {
-            const hostInfo = streamerList.filter((item) => item.IsHost === true)
+            const hostInfo = streamerList.find((item) => item.IsHost === true)
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
