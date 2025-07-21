@@ -437,8 +437,8 @@ export const MainScreen = () => {
     const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo.Name} left`, message: '',TYPE:"USERLEFT"}
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleGiftReceived=(senderName,GiftID)=>{
-console.log(`Gift Received from ${senderName} -${GiftID}`);
+  const HandleGiftReceived = (senderName, GiftID) => {
+    console.log(`Gift Received from ${senderName} -${GiftID}`);
   }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
