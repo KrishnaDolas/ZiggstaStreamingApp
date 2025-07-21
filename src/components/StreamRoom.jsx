@@ -192,7 +192,7 @@ const StreamRoom = ({
         }
         console.log(streamerList);
         setStreamLayout(streams);
-    }, [localStream, remoteStreams, isStreaming]);
+    }, [localStream, remoteStreams,streamerList, isStreaming]);
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
