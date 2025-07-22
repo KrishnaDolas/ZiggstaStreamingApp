@@ -9,7 +9,7 @@ import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
@@ -22,6 +22,7 @@ import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import { SendErrorTotheServer } from '../utils/constant';
 import AnimatedGift from '../modals/AnimatedGift';
+import ReportUserModal from '../modals/ReportUserModal';
 
 const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),
@@ -81,12 +82,11 @@ const StreamRoom = ({
     socket,
     hasRequestedStream,
     streamerList,
-    isuserstreaming
+    streammsg
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
     const screenHeight = Dimensions.get('window').height;
-    const screenWidth = Dimensions.get('window').width;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
     const { userData } = useAppContext()
@@ -103,9 +103,7 @@ const StreamRoom = ({
     const animatedOpacity = useRef(new Animated.Value(0)).current;
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
-    const fadeAnim = useRef(new Animated.Value(0)).current;
     const [giftInfo,setGiftInfo]=useState(null)
-    const [showMicIcon, setShowMicIcon] = useState(false);
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
     const [userDetails, setUserDetails] = useState({});
@@ -307,29 +305,6 @@ const StreamRoom = ({
         ]).start();
     };
 
-    // Mic icon animation
-    useEffect(() => {
-        if (!isMuted?.muted) {
-            setShowMicIcon(true);
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 300,
-                useNativeDriver: true,
-            }).start();
-
-            const timeout = setTimeout(() => {
-                Animated.timing(fadeAnim, {
-                    toValue: 0,
-                    duration: 300,
-                    useNativeDriver: true,
-                }).start(() => {
-                    setShowMicIcon(false);
-                });
-            }, 3000);
-
-            return () => clearTimeout(timeout);
-        }
-    }, [isMuted?.muted, fadeAnim]);
 
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
@@ -389,6 +364,10 @@ const StreamRoom = ({
         }
     }
 
+    const HandleReport=()=>{
+        setVisibleModal('ReportVideo')
+    }
+
     // scoketevents
     const HandleLikeCount = (count) => {
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
@@ -435,19 +414,32 @@ const StreamRoom = ({
     const handleFriendRequest=async(userid)=>{
         try {
             console.log(userid);
-            // const params={
-            //     "requesterID": userData?.userid,
-            //     "receiverID": userid
-            //   }
-            //   console.log(params);
-            // const responce=await Apiclient.post(`/friends/request`,params)
-            // if(responce){
-            //     console.log(responce.data);
-            // }
+            const params={
+                requesterID: userData?.userid,
+                receiverID: userid
+              }
+              console.log(params);
+            const responce=await Apiclient.post(`/friends/request`,params)
+            console.log(responce.data);
+            if(responce.data?.success){
+                setMessage(`Request Sent To ${userDetails?.screenName}`)
+                setVisibleModal('message-modal')
+            }else{
+                console.log(responce);
+            }
         } catch (error) {
-            SendErrorTotheServer(error,"handleFriendRequest")
+            setMessage(`Request Already Sent`)
+            setVisibleModal('message-modal')
+            // console.log(error);
+            // SendErrorTotheServer(error,"handleFriendRequest")
         }
     }
+    useEffect(()=>{
+        if(streammsg!==null){
+            setMessage(streammsg)
+            setVisibleModal('message-modal')
+        }
+    },[streammsg])
 
     return (
         <View style={[styles.roomInfo]}>
@@ -460,7 +452,7 @@ const StreamRoom = ({
                             objectFit="cover"
                             mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
                         />
-                        {streamLayout[0]?.type !== 'local' && (
+                        {/* {streamLayout[0]?.type !== 'local' && (
                             <View style={styles.videoOverlay}>
                                 <View style={styles.userInfoContainer}>
                                     <Text style={styles.userName}>
@@ -474,7 +466,7 @@ const StreamRoom = ({
                                     </TouchableOpacity>
                                 </View>
                             </View>
-                        )}
+                        )} */}
                     </View>
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
@@ -706,7 +698,7 @@ const StreamRoom = ({
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
                                                 {!isHost && streamerList?.length===1 && (<>
-                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>handleFriendRequest(userDetails?.userid)}>
                                                         <Ionicons name="person-add" size={30} color="#fff" />
                                                     </TouchableOpacity>
                                                     <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
@@ -729,7 +721,7 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        {isuserstreaming || isHost && (
+                                        {/* {localStream || isHost && ( */}
                                             <TouchableOpacity onPress={() => {
                                                 switchCamera();
                                                 HidesettingPanel()
@@ -737,7 +729,7 @@ const StreamRoom = ({
                                                 <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                                 <Ionicons name="camera-reverse" size={20} color="#fff" />
                                             </TouchableOpacity>
-                                        )}
+                                        {/* // )} */}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 requestStreamPermission(),
@@ -749,13 +741,25 @@ const StreamRoom = ({
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
                                         )}
-                                        {isuserstreaming || isHost && (<TouchableOpacity onPress={() => {
+                                        {/* {localStream || isHost && ( */}
+                                            <TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
-                                        </TouchableOpacity>)}
+                                        </TouchableOpacity>
+                                        {/* )} */}
+                                        {!isHost && (
+                                            <TouchableOpacity onPress={() => {
+                                                console.log("Hi");
+                                                HidesettingPanel()
+                                                HandleReport()
+                                            }} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Report</Text>
+                                                <Ionicons name="flag" size={20} color="#dc3131" />
+                                            </TouchableOpacity>
+                                        )}
                                     </Animated.View>
                                 )}
                                 <View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
@@ -924,6 +928,17 @@ const StreamRoom = ({
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
+            )}
+            {visibleModal === 'ReportVideo' && (
+                <ReportUserModal
+                    visible={visibleModal === 'ReportVideo'}
+                    onClose={() => {
+                        setVisibleModal(null);
+                    }}
+                    reportData={userDetails}
+                    RoomID={streamInfo?.roomID}
+                    reportType="Video"
+                />
             )}
         </View>
     );

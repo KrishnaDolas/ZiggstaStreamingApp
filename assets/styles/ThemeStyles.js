@@ -1749,8 +1749,8 @@ export const styles = StyleSheet.create({
   // stream more setting options
   strMoreSettingListContainer: {
     position: 'absolute',
-    bottom: 80,
-    right: '10%',
+    bottom: 70,
+    right: '14%',
   },
   strMoreSettingListItem: {
     flexDirection: 'row',
