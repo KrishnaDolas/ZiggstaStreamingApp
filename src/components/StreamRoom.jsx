@@ -82,6 +82,7 @@ const StreamRoom = ({
     socket,
     hasRequestedStream,
     streamerList,
+    streammsg
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -433,6 +434,12 @@ const StreamRoom = ({
             // SendErrorTotheServer(error,"handleFriendRequest")
         }
     }
+    useEffect(()=>{
+        if(streammsg!==null){
+            setMessage(streammsg)
+            setVisibleModal('message-modal')
+        }
+    },[streammsg])
 
     return (
         <View style={[styles.roomInfo]}>

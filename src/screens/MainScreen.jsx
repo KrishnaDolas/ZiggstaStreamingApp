@@ -50,6 +50,7 @@ export const MainScreen = () => {
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [connectingpanel, setconnectingpanel] = useState(false)
   const [streamerList,setStrimerList]=useState([])
+  const [streammsg,setStreamMsg]=useState(null)
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
 
@@ -422,6 +423,7 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
+        setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
       }
     } catch (error) {
@@ -811,6 +813,7 @@ export const MainScreen = () => {
           hasRequestedStream={hasRequestedStream}
           streamerList={streamerList}
           isuserstreaming={isuserstreaming}
+          streammsg={streammsg}
         />)}
       </View>
     </LinearGradient>
