@@ -394,9 +394,9 @@ const StreamRoom = ({
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
 
-    const HandleGiftReceived = (senderName, GiftID) => {
-        console.log(`Gift Received from ${senderName} -${GiftID}`);
-        setGiftInfo({giftName:GiftID,username:senderName})
+    const HandleGiftReceived = (senderName, giftName) => {
+        console.log(`Gift Received from ${senderName} -${giftName}`);
+        setGiftInfo({giftName:giftName,username:senderName})
         setTimeout(() => {
             setGiftInfo(null)
         }, 4000);
