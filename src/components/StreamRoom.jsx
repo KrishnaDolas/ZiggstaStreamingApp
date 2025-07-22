@@ -405,6 +405,8 @@ const StreamRoom = ({
             if (Responce.data) {
                 if (Responce.data.success) {
                     socket.emit('Send-gift', userData?.screenName, item?.giftIcon)
+                    setMessage(`Gift send to the ${userData?.screenName}`)
+                    setVisibleModal('message-modal')
                 }
             }
         } catch (error) {
