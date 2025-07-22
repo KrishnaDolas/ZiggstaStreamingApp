@@ -434,15 +434,16 @@ const StreamRoom = ({
     }
     const handleFriendRequest=async(userid)=>{
         try {
-            const params={
-                "requesterID": userData?.userid,
-                "receiverID": userid
-              }
-              console.log(params);
-            const responce=await Apiclient.post(`/friends/request`,params)
-            if(responce){
-                console.log(responce.data);
-            }
+            console.log(userid);
+            // const params={
+            //     "requesterID": userData?.userid,
+            //     "receiverID": userid
+            //   }
+            //   console.log(params);
+            // const responce=await Apiclient.post(`/friends/request`,params)
+            // if(responce){
+            //     console.log(responce.data);
+            // }
         } catch (error) {
             SendErrorTotheServer(error,"handleFriendRequest")
         }
