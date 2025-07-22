@@ -80,7 +80,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         setIsUserError('');
         try {
             const response = await Apiclient.get(`/getUserDetails/getUserOnlineTime?userid=${userData?.userid}&type=total`);
-            console.log('response user online time data', response.data);
+            // console.log('response user online time data', response.data);
             if (response.status === 200) {
                 const timeStr = response.data?.TotalOnlineTime;
                 setTotalDailyTime({ TotalOnlineTime: timeStr });

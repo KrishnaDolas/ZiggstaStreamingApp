@@ -27,6 +27,10 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">
+      <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-8185038181870633~9964264089"/>
+
       <activity
         android:name=".MainActivity"
         android:label="ZIGGSTA"

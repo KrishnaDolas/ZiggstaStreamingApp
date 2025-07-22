@@ -1,34 +1,41 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Image } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
-// import {
-//     BannerAd,
-//     BannerAdSize,
-//     TestIds,
-// } from 'react-native-google-mobile-ads';
+import {
+    BannerAd,
+    BannerAdSize,
+} from 'react-native-google-mobile-ads';
+import mobileAds from 'react-native-google-mobile-ads';
 
-// const adUnitId = __DEV__
-//     ? TestIds.BANNER
-//     : Platform.OS === 'android'
-//         ? 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx' // 🔁 Replace with Android Banner Ad Unit ID
-//         : 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx'; // 🔁 Replace with iOS Banner Ad Unit ID
+const unitId = 'ca-app-pub-3940256099942544/6300978111'; // fixed size banner
+const unitId2 = 'ca-app-pub-3940256099942544/9214589741'; // test Adaptive Banner
+
 const GoogleBannerAd = () => {
     const { theme } = useContext(ThemeContext);
+
+    useEffect(() => {
+        mobileAds()
+            .initialize()
+            .then(() => {
+                console.log('AdMob initialized');
+            });
+    }, []);
+
     return (
         <View style={[styles.googleAdContainer, themeStyles[theme].googleAdContainer]}>
-            {/* <BannerAd
-                unitId={adUnitId}
-                size={BannerAdSize.BANNER} // Small banner: 320x50
+            <BannerAd
+                unitId={unitId2}
+                size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{
                     requestNonPersonalizedAdsOnly: true,
                 }}
-            /> */}
-            <Image
+            />
+            {/* <Image
                 source={require('../../assets/images/google-ad.png')} // adjust path
                 style={styles.googleAdBanner}
                 resizeMode="contain"
-            />
+            /> */}
         </View>
     );
 };
