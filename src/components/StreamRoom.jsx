@@ -694,7 +694,7 @@ const StreamRoom = ({
                                                         <View key={ind} style={styles.streamChatItem}>
                                                             <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
                                                             <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                                <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#43bf83` : chat.TYPE === "USERLEFT" ? 'red' : `#FFFF33`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `20` : `0`}` }]}>
+                                                                <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `20` : `0`}` }]}>
                                                                     {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                                 </Text>
                                                                 <Text numberOfLines={2} style={styles.streamChatMessage}>
