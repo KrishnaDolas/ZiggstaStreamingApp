@@ -131,6 +131,42 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                 return [
                     { label: 'Allow Notifications:', icon: 'bell', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                 ];
+            case 'About Ziggsta':
+                return [
+                    {
+                        label: 'About us:',
+                        icon: 'info-circle',
+                        onPress: () => {
+                            navigation.navigate('TermsOfUse', {
+                                title: 'About Us',
+                                url: 'https://test.streamalong.live/content/about.html',
+                            });
+                        },
+                        rightArrowVisible: true,
+                    },
+                    {
+                        label: 'Privacy Policy:',
+                        icon: 'user-shield',
+                        onPress: () => {
+                            navigation.navigate('TermsOfUse', {
+                                title: 'Privacy Policy',
+                                url: 'https://test.streamalong.live/content/privacy_policy.html',
+                            });
+                        },
+                        rightArrowVisible: true,
+                    },
+                    {
+                        label: 'Terms & Conditions:',
+                        icon: 'file-contract',
+                        onPress: () => {
+                            navigation.navigate('TermsOfUse', {
+                                title: 'Terms & Conditions',
+                                url: 'https://test.streamalong.live/content/terms_conditions.html',
+                            });
+                        },
+                        rightArrowVisible: true,
+                    },
+                ];
             default:
                 return [];
         }
@@ -186,7 +222,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                                                 <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> :
                                                 <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
                                         }
-                                        <Text style={{ fontSize: 15,color: theme === 'light' ? '#000' : '#fff'  }}>{item.label}</Text>
+                                        <Text style={{ fontSize: 15, color: theme === 'light' ? '#000' : '#fff' }}>{item.label}</Text>
                                     </View>
                                     {item.rightArrowVisible ? (
                                         <FontAwesome5 name="chevron-right" size={14} regular color={theme === 'light' ? '#888' : '#fff'} style={{ width: 30 }} />

@@ -10,7 +10,6 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
 import MySettingSubModal from '../modals/MySettingSubModal';
-import { useNavigation } from '@react-navigation/native';
 
 const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) => {
     const { theme, toggleTheme } = useContext(ThemeContext);
@@ -19,7 +18,6 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
     const [modalLabelName, setModalLabelName] = useState('');
     const [layoutReady, setLayoutReady] = useState(false);
     const isDark = theme === 'dark';
-    const navigation = useNavigation();
 
     const animation = useRef(new Animated.Value(isDark ? 1 : 0)).current;
 
@@ -81,11 +79,13 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
             icon: 'notifications-outline',
             onPress: () => { setVisibleModal(true); setModalLabelName('Notification'); },
         },
-        // {
-        //     label: 'Terms of Use',
-        //     icon: 'policy',
-        //     onPress: () => { navigation.navigate('TermsOfUse'); },
-        // },
+        {
+            label: 'About Ziggsta',
+            icon: 'info-circle',
+            // onPress: () => { navigation.navigate('TermsOfUse'); },
+            onPress: () => { setVisibleModal(true); setModalLabelName('About Ziggsta'); },
+
+        },
     ];
 
 
@@ -147,7 +147,7 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                                     }]}>
                                         <View style={styles.profileSettingMMenuListItem}>
                                             {item.label === 'Notification' ?
-                                                <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : item.label === 'Search Settings' ? <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : item.label === 'Terms of Use' ? <MaterialIcons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
+                                                <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : item.label === 'Search Settings' ? <Ionicons name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : item.label === 'About Ziggsta' ? <FontAwesome5 name={item.icon} size={20} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} /> : <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
                                             }
                                             <Text style={{ fontSize: 15, color: theme === 'light' ? '#000' : '#fff' }}>{item.label}</Text>
                                         </View>

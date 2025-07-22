@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import ReportUserModal from './ReportUserModal';
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
 const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) => {

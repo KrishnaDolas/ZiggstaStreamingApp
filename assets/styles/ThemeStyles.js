@@ -2630,7 +2630,7 @@ export const themeStyles = {
       color: '#000',
     },
     reportCategoryCard: {
-      backgroundColor: '#d6d6d6ff',
+      backgroundColor: '#f7f7f7',
     },
     reportCategoryTitle: {
       color: '#000',
@@ -2656,7 +2656,7 @@ export const themeStyles = {
       color: '#000',
     },
     reportDescriptionInput: {
-      backgroundColor: '#d6d6d6ff',
+      backgroundColor: '#f7f7f7',
       color: '#000',
     },
     googleAdContainer: {
