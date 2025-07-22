@@ -53,6 +53,7 @@ export const MainScreen = () => {
   const [streammsg,setStreamMsg]=useState(null)
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
+  const RoomIDRef=useRef(null)
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -123,6 +124,23 @@ export const MainScreen = () => {
       SendErrorTotheServer(error,"UpdatedRoomCount")
     }
   }
+  const UpdatedCoHost = async (roomid, userid, isCoHost) => {
+    try {
+      let params = {
+        roomId: roomid,
+        userId: userid,
+        makeCoHost: isCoHost
+      }
+      console.log(params);
+      const response = await Apiclient.post(`/rooms/updateTocoHost`, params)
+      if (response) {
+        const user = response.data;
+        console.log(user);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error,"UpdatedRoomCount")
+    }
+  }
   const connectSocket = () => {
     console.log('Connecting to socket server...');
     // Connect logic
@@ -164,6 +182,8 @@ export const MainScreen = () => {
     setStreamRequestList([])
     setIsUserStreaming(false)
     setStreamGuest([])
+    setStreamMsg(null)
+    RoomIDRef.current=null
   }
   //Handle socket functions 
   const HandleAssignHost = async () => {
@@ -289,6 +309,10 @@ export const MainScreen = () => {
 
   const HandleApprovedStream = async () => {
     try {
+      //roomid, userid, isCoHost
+      if(RoomIDRef.current){
+        UpdatedCoHost(RoomIDRef.current,userData?.userid,"Y")
+      }
       await startLocalStream();
       // Add tracks to existing peer connections
       for (const userId in peersRef.current) {
@@ -376,6 +400,7 @@ export const MainScreen = () => {
   }
   const HandleRoomInfo = (info) => {
     console.log(info);
+    RoomIDRef.current=info?.roomID
     setStreamupdated({viewerCount:info?.viewerCount,LikeCount:info?.LikeCount})
   }
   const HandleNewStream = () => {
@@ -423,6 +448,9 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
+        if(RoomIDRef.current){
+          UpdatedCoHost(RoomIDRef.current,userData?.userid,"N")
+        }
         setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
       }
