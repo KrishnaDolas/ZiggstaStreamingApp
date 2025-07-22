@@ -645,9 +645,20 @@ const StreamRoom = ({
                                             {userDetails?.screenName}
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                            <Ionicons name="heart" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{Streamupdated.LikeCount}</Text>
+                                            <Ionicons name="star" solid size={14} color="#fff" />
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}></Text>
                                         </View>
+                                    </View>
+                                </View>
+                                <View style={{ height: '20', position: 'absolute', left: '10', top: '60', display: 'flex' }}>
+                                    <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Text style={{ color: 'white', fontSize: 14, opacity: 0.7, backgroundColor: '#b3a7a6', paddingHorizontal: '10', borderRadius: 30 }}>
+                                            <Ionicons name="diamond" size={12} color="#fff" /> {'\t'}0
+                                        </Text>
+                                        <Text style={{ color: 'white', marginLeft: '4', fontSize: 14, opacity: 0.7, backgroundColor: '#b3a7a6', paddingHorizontal: '10', borderRadius: 30 }}>
+                                            <Ionicons name="heart" size={12} color="#fff" /> {Streamupdated.LikeCount}{'\t'}
+                                            <Ionicons name="eye" size={12} color="#fff" /> {Streamupdated.viewerCount}
+                                        </Text>
                                     </View>
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
@@ -694,10 +705,6 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                <TouchableOpacity style={styles.streamViewerCount}>
-                                                    <Ionicons name="eye-outline" size={18} color="#ffea23" />
-                                                    <Text style={styles.streamViewerCountTitle}>{Streamupdated.viewerCount}</Text>
-                                                </TouchableOpacity>
                                                 {!isHost && (<>
                                                     <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                         <Ionicons name="person-add" size={30} color="#fff" />

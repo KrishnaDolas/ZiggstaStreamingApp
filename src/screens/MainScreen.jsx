@@ -33,11 +33,11 @@ export const MainScreen = () => {
   const peersRef = useRef({});
   const pendingCandidates = useRef({});
   const insetsTop = useSafeAreaInsets();
-  const [joined, setJoined] = useState(false);
+  const [joined, setJoined] = useState(true);
   const [roomchat, setRoomchat] = useState([]);
   const [isMuted, setIsMuted] = useState({ HostControl: false, muted: false });
   const [isFrontCamera, setIsFrontCamera] = useState(true);
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(true);
   const [Streamupdated,setStreamupdated]=useState({viewerCount:0,LikeCount:0})
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [streamInfo, setStreamInfo] = useState(null);

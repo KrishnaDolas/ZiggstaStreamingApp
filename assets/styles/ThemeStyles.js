@@ -1614,7 +1614,7 @@ export const styles = StyleSheet.create({
   strRoomFooterSocialActions: {
     position: 'absolute',
     bottom: 18,
-    right: -9,
+    right:8,
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'baseline',
