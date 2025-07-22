@@ -706,7 +706,7 @@ const StreamRoom = ({
                                                 </ScrollView>
                                             </View>
                                             <View style={styles.strRoomFooterSocialActions}>
-                                                {!isHost && (<>
+                                                {!isHost && streamerList?.length===1 && (<>
                                                     <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                         <Ionicons name="person-add" size={30} color="#fff" />
                                                     </TouchableOpacity>
