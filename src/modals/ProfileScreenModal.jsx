@@ -15,35 +15,12 @@ import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import ReportUserModal from './ReportUserModal';
-// top gifters
-// const topGifters = [
-//     {
-//         id: 1,
-//         name: 'Name 1',
-//         amount: '$2,500',
-//         image: require('../../assets/images/LS-12.jpg'), // Replace with actual image
-//         isTop: true,
-//     },
-//     {
-//         id: 2,
-//         name: 'Name 2',
-//         amount: '$1,200',
-//         image: require('../../assets/images/LS-8.jpg'), // Replace with actual image
-//         isTop: false,
-//     },
-//     {
-//         id: 3,
-//         name: 'Name 3',
-//         amount: '$950',
-//         image: require('../../assets/images/LS-9.jpg'), // Replace with actual image
-//         isTop: false,
-//     },
-// ];
-
-const fallbackImage = require('../../assets/images/LS-9.jpg');
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
 
 
-const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, reportType }) => {
+const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation();
     const screenHeight = Dimensions.get('window').height;
@@ -60,8 +37,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
-    const [mainImageError, setMainImageError] = useState(false);
-    const [otherImageErrors, setOtherImageErrors] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -114,7 +89,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                     userid: profileUserId,
                 };
                 const response = await Apiclient.post('/getUserDetails', formData);
-                // console.log('response user profile data', response.data.user);
+                console.log('response user profile data', response.data.user);
 
                 if (response.status === 200) {
                     setUserProfileDetails(response.data.user || {});
@@ -274,6 +249,18 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
         setVisibleModal('ReportUser');
     };
 
+    const getGenderFallbackImage = (gender) => {
+        switch (gender?.toLowerCase()) {
+            case 'male':
+                return userMaleFallbackImage;
+            case 'female':
+                return userFeMaleFallbackImage;
+            default:
+                return userOtherFallbackImage;
+        }
+    };
+
+
     return (
         <>
             <Modal
@@ -359,9 +346,13 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                                                     {/* Profile Image */}
                                                     <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
                                                         <Image
-                                                            source={require('../../assets/images/LS-3.jpg')}
+                                                            source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                ? getGenderFallbackImage(userProfileDatails?.gender)
+                                                                : { uri: userProfileDatails?.gender }
+                                                            }
                                                             style={styles.psmProfileImage}
                                                         />
+
                                                     </View>
 
                                                     {/* Name and ID */}
@@ -477,11 +468,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                                                                 <View style={styles.psmTopGifterImageContainer}>
                                                                     <Image
                                                                         source={
-                                                                            mainImageError || !topGiftersData[0]?.image
-                                                                                ? fallbackImage
-                                                                                : topGiftersData[0]?.image
+                                                                            topGiftersData[0]?.image === 'default' || !topGiftersData[0]?.image
+                                                                                ? getGenderFallbackImage(topGiftersData[0]?.gender)
+                                                                                : { uri: topGiftersData[0]?.image }
                                                                         }
-                                                                        onError={() => setMainImageError(true)}
                                                                         style={styles.psmTopGifterMainImage}
                                                                     />
                                                                 </View>
@@ -505,12 +495,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, repo
                                                                         <View style={styles.psmOtherGifterImageContainer}>
                                                                             <Image
                                                                                 source={
-                                                                                    otherImageErrors[gifter.id] || !gifter?.image
-                                                                                        ? fallbackImage
-                                                                                        : gifter.image
-                                                                                }
-                                                                                onError={() =>
-                                                                                    setOtherImageErrors(prev => ({ ...prev, [gifter.id]: true }))
+                                                                                    !gifter?.image || gifter?.image === 'default'
+                                                                                        ? getGenderFallbackImage(gifter?.gender)
+                                                                                        : { uri: gifter.image }
                                                                                 }
                                                                                 style={styles.psmOtherGifterImage}
                                                                             />

@@ -15,6 +15,10 @@ import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
+
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
@@ -76,6 +80,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         setIsUserError('');
         try {
             const response = await Apiclient.get(`/getUserDetails/getUserOnlineTime?userid=${userData?.userid}&type=total`);
+            console.log('response user online time data', response.data);
             if (response.status === 200) {
                 const timeStr = response.data?.TotalOnlineTime;
                 setTotalDailyTime({ TotalOnlineTime: timeStr });
@@ -150,6 +155,18 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         }, [getUserOnlineTime])
     );
 
+    const getGenderFallbackImage = (gender) => {
+        switch (gender?.toLowerCase()) {
+            case 'male':
+                return userMaleFallbackImage;
+            case 'female':
+                return userFeMaleFallbackImage;
+            default:
+                return userOtherFallbackImage;
+        }
+    };
+
+
     return (
         <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80, paddingTop: insetsTop.top }}>
             <StatusBar
@@ -175,7 +192,10 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                             resizeMode="contain"
                         />
                         <Image
-                            source={require('../../assets/images/LS-3.jpg')}
+                            source={!profileData?.avatar || profileData?.avatar === 'default'
+                                ? getGenderFallbackImage(profileData?.gender)
+                                : { uri: profileData?.gender }
+                            }
                             style={styles.profileAvatar}
                         />
                     </View>

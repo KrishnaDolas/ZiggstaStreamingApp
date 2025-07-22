@@ -16,6 +16,9 @@ import { ActivityIndicator } from 'react-native';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 import { SendErrorTotheServer } from '../utils/constant';
 import MessageModal from '../modals/MessageModal';
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();
@@ -80,7 +83,7 @@ export const MessageListScreen = () => {
         setLoading(true);
         try {
             const response = await Apiclient.get(`/friends/requests/${userData.userid}`);
-            // console.log('response friends requests data', response);
+            // console.log('response friends requests data', response.data);
             if (response.status === 200) {
                 const data = response.data || [];
                 setFriendRequestsData(data);
@@ -178,12 +181,31 @@ export const MessageListScreen = () => {
         setVisibleModal('message-modal');
     }, []);
 
+
+    const getGenderFallbackImage = (gender) => {
+        switch (gender?.toLowerCase()) {
+            case 'male':
+                return userMaleFallbackImage;
+            case 'female':
+                return userFeMaleFallbackImage;
+            default:
+                return userOtherFallbackImage;
+        }
+    };
+
+
     const renderItem = useCallback(({ item }) => {
         if (friendListType === 'requests') {
             return (
                 <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer, { alignItems: 'center' }]}>
                     <TouchableOpacity onPress={() => handleProfileOpen(item)}>
-                        <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
+                        <Image
+                            source={!item?.avatar || item?.avatar === 'default'
+                                ? getGenderFallbackImage(item?.gender)
+                                : { uri: item?.gender }
+                            }
+                            style={styles.messageListAvatar}
+                        />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleChatOpen(item)} style={{ flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
@@ -209,7 +231,13 @@ export const MessageListScreen = () => {
         return (
             <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer]}>
                 <TouchableOpacity onPress={() => handleProfileOpen(item)}>
-                    <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
+                    <Image
+                        source={!item?.avatar || item?.avatar === 'default'
+                            ? getGenderFallbackImage(item?.gender)
+                            : { uri: item?.gender }
+                        }
+                        style={styles.messageListAvatar}
+                    />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleChatOpen(item)} style={styles.messageListContent}>
                     <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
