@@ -1,4 +1,7 @@
 {
   "name": "StreamingApp",
-  "displayName": "StreamingApp"
+  "displayName": "StreamingApp",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-8185038181870633~9964264089"
+  }
 }

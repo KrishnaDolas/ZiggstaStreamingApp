@@ -264,7 +264,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {item.screenName}
+                        {item.hostScreenName}
                     </Text>
                     <Text style={styles.streamListStatus}
                         numberOfLines={1}
@@ -413,7 +413,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     onPress={() => setOpenStreamInputModal(true)}>
                     <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                 </TouchableOpacity>
-                {subscriptionStatus?.success && (
+                {!subscriptionStatus?.success && (
                     <GoogleBannerAd />
                 )}
                 {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>

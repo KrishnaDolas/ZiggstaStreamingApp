@@ -12,6 +12,10 @@ import Apiclient from '../utils/Apiclient';
 import MessageModal from './MessageModal';
 import { SendErrorTotheServer } from '../utils/constant';
 import ProfileScreenModal from './ProfileScreenModal';
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
+
 
 const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
     const { userData } = useAppContext();
@@ -125,6 +129,16 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
     ];
 
 
+    const getGenderFallbackImage = (gender) => {
+        switch (gender?.toLowerCase()) {
+            case 'male':
+                return userMaleFallbackImage;
+            case 'female':
+                return userFeMaleFallbackImage;
+            default:
+                return userOtherFallbackImage;
+        }
+    };
 
 
 
@@ -172,7 +186,13 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                     flex: 1,
                                 }}
                                 onPress={() => setVisibleModal('profile-screen-modal')}>
-                                <Image source={require('../../assets/images/LS-1.jpg')} style={styles.messageListAvatar} />
+                                <Image
+                                    source={!friendInfo?.avatar || friendInfo?.avatar === 'default'
+                                        ? getGenderFallbackImage(friendInfo?.gender)
+                                        : { uri: friendInfo?.gender }
+                                    }
+                                    style={styles.messageListAvatar}
+                                />
                                 <Text numberOfLines={1} style={[styles.messageListName]}>
                                     {friendInfo.name}
                                 </Text>
