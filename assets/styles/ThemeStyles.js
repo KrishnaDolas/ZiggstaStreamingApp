@@ -1575,7 +1575,7 @@ export const styles = StyleSheet.create({
   },
   streamChatContainer: {
     flex: 1,
-    height: 240,
+    height: 215,
     position: "relative",
     bottom: 25
   },
