@@ -8,7 +8,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
 import MessageModal from './MessageModal';
-const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
+const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) => {
     const { userData } = useAppContext();
     const { theme } = useContext(ThemeContext);
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
@@ -84,7 +84,7 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType }) => {
             details: description.trim(),
             reported_user_id: reportData?.userid,
             user_id: userData?.userid,
-            video_id: reportType === 'User' ? null : reportData?.video_id,
+            video_id: reportType === 'User' ? null : RoomID,
             report_type: reportType,
         };
         console.log('Submitting report with data:', payload);
