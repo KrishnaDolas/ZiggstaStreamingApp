@@ -646,7 +646,7 @@ const StreamRoom = ({
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             <Ionicons name="star" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}></Text>
+                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
                                         </View>
                                     </View>
                                 </View>
