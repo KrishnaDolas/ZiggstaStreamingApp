@@ -18,7 +18,7 @@ import { SendErrorTotheServer } from '../utils/constant';
 import MessageModal from '../modals/MessageModal';
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
 const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();

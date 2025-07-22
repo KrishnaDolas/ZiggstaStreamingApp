@@ -17,7 +17,7 @@ import { useAppContext } from '../context/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
 const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default_user_other.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
