@@ -23,6 +23,7 @@ import { useAppContext } from '../context/AppContext';
 import AnimatedGift from '../modals/AnimatedGift';
 import ReportUserModal from '../modals/ReportUserModal';
 import { giftImages, SendErrorTotheServer } from '../utils/constant';
+import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 
 
 const StreamRoom = ({
@@ -73,6 +74,7 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
+    const [OpenViewerLIst,setOpenViewerList]=useState(false)
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
@@ -618,7 +620,8 @@ const StreamRoom = ({
                                         </View>
                                     </View>
                                 </View>
-                                <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
+                               <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
+                               <TouchableOpacity onPress={()=>setOpenViewerList(true)}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)',width:'100%',height:'25',margin:'5',borderRadius:21 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center',paddingLeft: '5'}}>
                                             <Ionicons name="heart" size={15} color={Streamupdated.LikeCount===0?"white":"red"} />
@@ -635,6 +638,7 @@ const StreamRoom = ({
                                             </>)}
                                         </View>
                                     </View>
+                               </TouchableOpacity>
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
@@ -919,6 +923,12 @@ const StreamRoom = ({
                     reportData={userDetails}
                     RoomID={streamInfo?.roomID}
                     reportType="Video"
+                />
+            )}
+            {OpenViewerLIst && (
+                <ViewerTotalLIst
+                    visible={OpenViewerLIst}
+                    onClose={()=>setOpenViewerList(false)}
                 />
             )}
         </View>
