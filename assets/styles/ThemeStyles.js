@@ -221,7 +221,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    zIndex:99
+    zIndex: 99
   },
 
   userName: {
@@ -1485,7 +1485,7 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
-    minWidth:120
+    minWidth: 120
   },
 
   strRoomHeaderLeftProfileImg: {
@@ -1614,7 +1614,7 @@ export const styles = StyleSheet.create({
   strRoomFooterSocialActions: {
     position: 'absolute',
     bottom: 18,
-    right:8,
+    right: 8,
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'baseline',
@@ -2054,6 +2054,31 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'column',
     paddingVertical: 20,
+  },
+  profileImageWrapper: {
+    position: 'relative',
+    marginBottom: 15,
+  },
+  editIconContainer: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#d93a63',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 6,
   },
   psmProfileImage: {
     width: 120,

@@ -172,7 +172,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                 >
                                     {bankListData.length === 0 ?
                                         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 }}>
-                                            <Text style={{ fontSize: 16 }}>No bank details have been added yet.</Text>
+                                            <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#000' }}>No bank details have been added yet.</Text>
                                         </View>
                                         :
                                         <>
