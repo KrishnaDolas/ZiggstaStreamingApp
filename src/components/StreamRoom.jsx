@@ -22,7 +22,7 @@ import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import AnimatedGift from '../modals/AnimatedGift';
 import ReportUserModal from '../modals/ReportUserModal';
-import { giftImages } from '../utils/constant';
+import { giftImages, SendErrorTotheServer } from '../utils/constant';
 
 
 const StreamRoom = ({
@@ -85,7 +85,7 @@ const StreamRoom = ({
                 setGiftCategoryItems(response.data.data || []);
             }
         } catch (error) {
-            console.error('Error fetching gifts:', error);
+            SendErrorTotheServer(error,"getGiftsCategory")
         }
     };
     useEffect(() => {
@@ -117,7 +117,7 @@ const StreamRoom = ({
                 setGiftItems(response.data.data || []);
             }
         } catch (error) {
-            console.error('Error fetching gifts:', error);
+            SendErrorTotheServer(error,"getGifts")
         } finally {
             setGiftDataLoading(false);
         }
@@ -150,7 +150,7 @@ const StreamRoom = ({
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 }
             } else {
-                console.warn('⚠️ Invalid remote stream:', stream);
+                SendErrorTotheServer('⚠️ Invalid remote stream:',"remoteStreams.forEach")
             }
         });
         // Add local stream if available and user is streaming
@@ -296,7 +296,7 @@ const StreamRoom = ({
                 setUserDetails(user);
             }
         } catch (error) {
-            console.log(error);
+            SendErrorTotheServer(error,'GetUserDetails')
         }
     }
 
@@ -346,13 +346,16 @@ const StreamRoom = ({
     }
 
     const HandleGiftReceived = (senderName, giftName) => {
-        console.log(`Gift Received from ${senderName} -${giftName}`);
-        setMessage(`Gift Received from ${senderName}`)
-        setVisibleModal('message-modal')
-        setGiftInfo({giftName:giftName,username:senderName})
-        setTimeout(() => {
-            setGiftInfo(null)
-        }, 4000);
+        try {
+            setMessage(`Gift Received from ${senderName}`)
+            setVisibleModal('message-modal')
+            setGiftInfo({giftName:giftName,username:senderName})
+            setTimeout(() => {
+                setGiftInfo(null)
+            }, 4000);
+        } catch (error) {
+            SendErrorTotheServer(error,"HandleGiftReceived")
+        }
     }
 
     useEffect(() => {
@@ -381,7 +384,7 @@ const StreamRoom = ({
                 }
             }
         } catch (error) {
-            console.log(error);
+            SendErrorTotheServer(error,"SendGift")
         }
     }
     const handleFriendRequest=async(userid)=>{
@@ -400,7 +403,6 @@ const StreamRoom = ({
         } catch (error) {
             setMessage(`Request Already Sent`)
             setVisibleModal('message-modal')
-            // console.log(error);
             // SendErrorTotheServer(error,"handleFriendRequest")
         }
     }
