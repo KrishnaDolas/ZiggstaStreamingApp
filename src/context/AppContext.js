@@ -12,6 +12,7 @@ export const AppProvider = ({ children }) => {
     const [ipAddress, setIpAddress] = useState('');
     const [profileData, setProfileData] = useState({});
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
+    const [isInStreamRoom, setIsInStreamRoom] = useState(false);
 
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
@@ -44,6 +45,8 @@ export const AppProvider = ({ children }) => {
             fetchProfileDetails,
             subscriptionStatus,
             setSubscriptionStatus,
+            isInStreamRoom,
+            setIsInStreamRoom,
         }}>
             {children}
         </AppContext.Provider>

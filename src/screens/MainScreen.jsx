@@ -7,7 +7,7 @@ import {
 import { AppState } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
-import React, { useState, useContext, useEffect, useRef, } from 'react';
+import React, { useState, useContext, useEffect, useRef, useLayoutEffect, } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
@@ -23,8 +23,9 @@ import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
+
 export const MainScreen = () => {
-  const { userData, userAddress } = useAppContext()
+  const { userData, userAddress, setIsInStreamRoom } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -38,7 +39,7 @@ export const MainScreen = () => {
   const [isMuted, setIsMuted] = useState({ HostControl: false, muted: false });
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [Streamupdated,setStreamupdated]=useState({viewerCount:0,LikeCount:0})
+  const [Streamupdated, setStreamupdated] = useState({ viewerCount: 0, LikeCount: 0 })
   const [hasRequestedStream, setHasRequestedStream] = useState(false);
   const [streamInfo, setStreamInfo] = useState(null);
   const { theme } = useContext(ThemeContext);
@@ -49,11 +50,16 @@ export const MainScreen = () => {
   const [streamGuest, setStreamGuest] = useState([]); // {CustomID:23, Name: "viki",IsMuted:true,country:'india',city:'pune'}
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [connectingpanel, setconnectingpanel] = useState(false)
-  const [streamerList,setStrimerList]=useState([])
-  const [streammsg,setStreamMsg]=useState(null)
+  const [streamerList, setStrimerList] = useState([])
+  const [streammsg, setStreamMsg] = useState(null)
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
-  const RoomIDRef=useRef(null)
+  const RoomIDRef = useRef(null)
+
+  useEffect(() => {
+    setIsInStreamRoom(joined); // keep global value in sync
+    return () => setIsInStreamRoom(false); // reset when unmounted
+  }, [joined]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -121,7 +127,7 @@ export const MainScreen = () => {
         console.log(user);
       }
     } catch (error) {
-      SendErrorTotheServer(error,"UpdatedRoomCount")
+      SendErrorTotheServer(error, "UpdatedRoomCount")
     }
   }
   const UpdatedCoHost = async (roomid, userid, isCoHost) => {
@@ -138,7 +144,7 @@ export const MainScreen = () => {
         console.log(user);
       }
     } catch (error) {
-      SendErrorTotheServer(error,"UpdatedRoomCount")
+      SendErrorTotheServer(error, "UpdatedRoomCount")
     }
   }
   const connectSocket = () => {
@@ -183,7 +189,7 @@ export const MainScreen = () => {
     setIsUserStreaming(false)
     setStreamGuest([])
     setStreamMsg(null)
-    RoomIDRef.current=null
+    RoomIDRef.current = null
   }
   //Handle socket functions 
   const HandleAssignHost = async () => {
@@ -195,7 +201,7 @@ export const MainScreen = () => {
     }
   };
 
-  const HandleJoined = async ({ users, IsHost, ChatMessages,roomID }) => {
+  const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
       // If no one else, you're host
       if (users.length === 0 || IsHost) {
@@ -206,9 +212,9 @@ export const MainScreen = () => {
         await startLocalStream();
         socket.emit('assignHost');
       } else {
-        if(roomID){
+        if (roomID) {
           //roomid, userid, isConnected, isCoHost
-          UpdatedRoomCount(roomID,userData?.userid,"Y","N")
+          UpdatedRoomCount(roomID, userData?.userid, "Y", "N")
         }
         setIsLoading(true);
         setTimeout(() => {
@@ -289,11 +295,11 @@ export const MainScreen = () => {
   }
   const HandleNewMessage = ({ userName, message, id }) => {
     try {
-      let own=userName
-      if(userName===userData?.screenName){
-        own="You"
+      let own = userName
+      if (userName === userData?.screenName) {
+        own = "You"
       }
-      const data = { id: id, userProfile: chatimage, userName: own, message: message,TYPE:"PLAYERCHAT"}
+      const data = { id: id, userProfile: chatimage, userName: own, message: message, TYPE: "PLAYERCHAT" }
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
@@ -310,8 +316,8 @@ export const MainScreen = () => {
   const HandleApprovedStream = async () => {
     try {
       //roomid, userid, isCoHost
-      if(RoomIDRef.current){
-        UpdatedCoHost(RoomIDRef.current,userData?.userid,"Y")
+      if (RoomIDRef.current) {
+        UpdatedCoHost(RoomIDRef.current, userData?.userid, "Y")
       }
       await startLocalStream();
       // Add tracks to existing peer connections
@@ -360,7 +366,7 @@ export const MainScreen = () => {
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
   }
-  const HandleUserLeft = (socketId,userinfo) => {
+  const HandleUserLeft = (socketId, userinfo) => {
     try {
       HandleUserLeftStream(userinfo)
       if (peersRef.current[socketId]) {
@@ -390,7 +396,7 @@ export const MainScreen = () => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
-      setStreamupdated({viewerCount:0,LikeCount:0});
+      setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setJoined(false);
       setIsHost(false);
       setStreamInfo(null)
@@ -400,8 +406,8 @@ export const MainScreen = () => {
   }
   const HandleRoomInfo = (info) => {
     console.log(info);
-    RoomIDRef.current=info?.roomID
-    setStreamupdated({viewerCount:info?.viewerCount,LikeCount:info?.LikeCount})
+    RoomIDRef.current = info?.roomID
+    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount })
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -448,8 +454,8 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
-        if(RoomIDRef.current){
-          UpdatedCoHost(RoomIDRef.current,userData?.userid,"N")
+        if (RoomIDRef.current) {
+          UpdatedCoHost(RoomIDRef.current, userData?.userid, "N")
         }
         setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
@@ -480,17 +486,17 @@ export const MainScreen = () => {
   const HandleStreamList = (list) => {
     setStrimerList(list)
   }
-  const HandlenewUserJoined=(userinfo)=>{
+  const HandlenewUserJoined = (userinfo) => {
     console.log(userinfo);
-    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo?.Name} joined`, message: '',TYPE:"USERJOINED"}
+    const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
-  const HandleUserLeftStream=(userinfo)=>{
-  if(userinfo){
-    console.log(userinfo);
-    const data = { id: userinfo?.customid||1, userProfile: joinImage, userName: `${userinfo?.Name} left`, message: '',TYPE:"USERLEFT"}
-    setRoomchat(prev => [...prev, data]);
-  }
+  const HandleUserLeftStream = (userinfo) => {
+    if (userinfo) {
+      console.log(userinfo);
+      const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
+      setRoomchat(prev => [...prev, data]);
+    }
   }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
@@ -533,7 +539,7 @@ export const MainScreen = () => {
     HandleConnect()
   }, [])
 
-  
+
 
 
   useEffect(() => {
@@ -565,8 +571,8 @@ export const MainScreen = () => {
       socket.on('Host-Disconnected', HandleUserLeft)
       socket.on('stream-Resume', HandleUserStreamStoped)
       socket.on('streamer-List', HandleStreamList)
-      socket.on('newuser-joined',HandlenewUserJoined)
-      socket.on('user-leftStream',HandleUserLeftStream)
+      socket.on('newuser-joined', HandlenewUserJoined)
+      socket.on('user-leftStream', HandleUserLeftStream)
     }
 
     return () => {
@@ -597,7 +603,7 @@ export const MainScreen = () => {
         socket.off('Host-Disconnected', HandleUserLeft)
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
-        socket.off('newuser-joined',HandlenewUserJoined)
+        socket.off('newuser-joined', HandlenewUserJoined)
       }
     }
   }, [isHost, isSocketConnected]);
@@ -658,7 +664,7 @@ export const MainScreen = () => {
   const joinRoom = (roomID, RoomInfo) => {
     try {
       HandleClearOldInstance()
-      if(!userData) return
+      if (!userData) return
       if (RoomInfo?.isLive === 0) {
         Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
           [{ text: 'OK' }]
@@ -737,11 +743,11 @@ export const MainScreen = () => {
       if (isHost) {
         socket.emit('Hostleft')
         HandleSetLivestatus(streamInfo?.roomID);
-      }else{
-        UpdatedRoomCount(streamInfo?.roomID,userData?.userid,"N","N")
+      } else {
+        UpdatedRoomCount(streamInfo?.roomID, userData?.userid, "N", "N")
       }
       setJoined(false);
-      setStreamupdated({viewerCount:0,LikeCount:0});
+      setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setStreamInfo(null)
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');

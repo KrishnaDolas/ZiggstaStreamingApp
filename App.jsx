@@ -50,7 +50,7 @@ const NetworkCheck = () => (
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
   const { theme } = useContext(ThemeContext);
-  const { userData } = useAppContext();
+  const { userData, isInStreamRoom } = useAppContext();
   const [visibleModal, setVisibleModal] = useState(null);
 
   const isDark = theme === 'dark';
@@ -58,6 +58,9 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   const iconColor = (isFocused) => {
     return isFocused ? '#d93a63' : (isDark ? '#fff' : 'grey');
   };
+
+  if (isInStreamRoom) return null; // <-- Hide entire tab bar
+
 
   // Footer styles to match your original styling
   const footerStyles = {
