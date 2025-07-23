@@ -174,9 +174,9 @@ const StreamRoom = ({
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
                     console.log("IS Host");
-                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, Name: `${StreamerInfo?.Name} (HOST)` });
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
                 } else {
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, Name: `${StreamerInfo?.Name}` });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 }
             } else {
                 console.warn('⚠️ Invalid remote stream:', stream);
@@ -184,10 +184,11 @@ const StreamRoom = ({
         });
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID ===  socket.id)
             if (isHost) {
-                streams.unshift({ type: 'local', stream: localStream, Name: `${userDetails?.screenName}` });
+                streams.unshift({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName}` });
             } else {
-                streams.push({ type: 'local', stream: localStream, Name: `${userDetails?.screenName} (You)` });
+                streams.push({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
             }
         }
         console.log(streamerList);
@@ -454,21 +455,9 @@ const StreamRoom = ({
                             objectFit="cover"
                             mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
                         />
-                        {/* {streamLayout[0]?.type !== 'local' && (
-                            <View style={styles.videoOverlay}>
-                                <View style={styles.userInfoContainer}>
-                                    <Text style={styles.userName}>
-                                        {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
-                                    </Text>
-                                    <TouchableOpacity
-                                        style={styles.friendRequestIcon}
-                                    onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
-                                    >
-                                        <Ionicons name="person-add" size={20} color="#fff" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )} */}
+                        <View style={{position:'absolute',left:'40%',top:'40%'}}>
+                            <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                        </View>
                     </View>
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
@@ -480,7 +469,10 @@ const StreamRoom = ({
                                         style={styles.streamVideoFull}
                                         objectFit="cover"
                                         mirror={streamLayout[0].type === 'local' && isFrontCamera}
-                                    />
+                                        />
+                                        <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                            <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                        </View>
                                     {streamLayout[0]?.type !== 'local' && (
                                         <View style={styles.videoOverlay}>
                                             <View style={styles.userInfoContainer}>
@@ -506,6 +498,9 @@ const StreamRoom = ({
                                                 objectFit="cover"
                                                 mirror={streamData.type === 'local' && isFrontCamera}
                                             />
+                                            <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                            </View>
                                             {streamData?.type !== 'local' && (
                                                 <View style={styles.videoOverlay}>
                                                     <View style={styles.userInfoContainer}>
@@ -537,6 +532,9 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
+                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                </View>
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
@@ -566,6 +564,9 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
+                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                </View>
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
@@ -599,6 +600,9 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
+                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                </View>
                                                 <View style={styles.videoOverlay}>
                                                     {streamData?.type !== 'local' && (
                                                         <View style={styles.userInfoContainer}>
