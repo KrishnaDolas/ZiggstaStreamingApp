@@ -153,13 +153,6 @@ export const MainScreen = () => {
     socket.connect();
     setIsSocketConnected(true); // Update connection status
   };
-  const disconnectSocket = () => {
-    console.log('Disconnecting from socket server...');
-    // Disconnect logic
-    socket.disconnect();
-    IsIdentify.current = false;
-    setIsSocketConnected(false); // Update connection status
-  };
   const HandleConnect = () => {
     clearInterval(countdownRef.current);
     console.log('✅ Connected to Socket.IO server');
@@ -191,15 +184,7 @@ export const MainScreen = () => {
     setStreamMsg(null)
     RoomIDRef.current = null
   }
-  //Handle socket functions 
-  const HandleAssignHost = async () => {
-    try {
-      setIsHost(true);
-      await startLocalStream();
-    } catch (error) {
-      SendErrorTotheServer(error, 'HandleAssignHost');
-    }
-  };
+  //Handle socket functions
 
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
@@ -222,10 +207,6 @@ export const MainScreen = () => {
           setIsLoading(false);
         }, 2000);
         setIsStreaming(true);
-      }
-
-      if (isHost && !localStreamRef.current) {
-        await startLocalStream();
       }
 
       users.forEach(userId => {
@@ -547,7 +528,6 @@ export const MainScreen = () => {
     if (isSocketConnected) {
       console.log('Connecting to socket server...');
       socket.on('connect', HandleConnect);
-      socket.on('assignHost', HandleAssignHost);
       socket.on('joined', HandleJoined);
       socket.on('StreamNotAvailable', HandleStreamNotAvailable)
       socket.on('newUser', HandleNewUser);
@@ -580,7 +560,6 @@ export const MainScreen = () => {
         // Cleanup socket listeners
         console.log('Disconnecting from socket server...');
         socket.off('connect', HandleConnect);
-        socket.off('assignHost', HandleAssignHost);
         socket.off('joined', HandleJoined);
         socket.off('StreamNotAvailable', HandleStreamNotAvailable)
         socket.off('newUser', HandleNewUser);
@@ -740,7 +719,7 @@ export const MainScreen = () => {
       setHasRequestedStream(false);
       InCallManager.setForceSpeakerphoneOn(false);
       InCallManager.stop();
-      if (isHost) {
+      if (streamInfo?.hostID===userData?.userid) {
         socket.emit('Hostleft')
         HandleSetLivestatus(streamInfo?.roomID);
       } else {
