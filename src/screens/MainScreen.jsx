@@ -638,7 +638,8 @@ export const MainScreen = () => {
         return;
       }
       setStreamInfo(RoomInfo);
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName);
+      const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName,Address);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -649,7 +650,8 @@ export const MainScreen = () => {
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const isaccepted = await requestPermissions();
-      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName);
+      const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
+      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName,Address);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }

@@ -75,6 +75,7 @@ const StreamRoom = ({
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
     const [OpenViewerLIst,setOpenViewerList]=useState(false)
+    const [totalRoomviewerList,setTotalRoomviewerList]=useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
@@ -359,13 +360,19 @@ const StreamRoom = ({
             SendErrorTotheServer(error,"HandleGiftReceived")
         }
     }
+    const HandleRoomTotalCount=(list)=>{
+        console.log(list);
+        setTotalRoomviewerList(list)
+    }
 
     useEffect(() => {
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
+        socket.on('RoomTotalCount', HandleRoomTotalCount)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
+            socket.off('RoomTotalCount', HandleRoomTotalCount)
         }
     }, [])
 
@@ -375,7 +382,8 @@ const StreamRoom = ({
             const params = {
                 fromUserID: userData?.userid,
                 toUserID: hostInfo[0].UserID,
-                giftID: item?.giftID
+                giftID: item?.giftID,
+                roomId:streamInfo?.roomID
             }
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
@@ -621,7 +629,10 @@ const StreamRoom = ({
                                     </View>
                                 </View>
                                <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
-                               <TouchableOpacity onPress={()=>setOpenViewerList(true)}>
+                               <TouchableOpacity onPress={()=>{
+                                setOpenViewerList(true)
+                                socket.emit('RoomTotalCount')
+                                }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)',width:'100%',height:'25',margin:'5',borderRadius:21 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center',paddingLeft: '5'}}>
                                             <Ionicons name="heart" size={15} color={Streamupdated.LikeCount===0?"white":"red"} />
@@ -929,6 +940,7 @@ const StreamRoom = ({
                 <ViewerTotalLIst
                     visible={OpenViewerLIst}
                     onClose={()=>setOpenViewerList(false)}
+                    totalRoomviewerList={totalRoomviewerList}
                 />
             )}
         </View>
