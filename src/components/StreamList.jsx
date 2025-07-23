@@ -498,7 +498,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             )
             }
 
-            <Footer />
+            {/* <Footer /> */}
         </LinearGradient>
     );
 };

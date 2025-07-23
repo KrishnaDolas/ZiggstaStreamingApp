@@ -371,7 +371,7 @@ export const MessageListScreen = () => {
                         </>
                     )}
                 </View>
-                <Footer />
+                {/* <Footer /> */}
                 {visibleModal === 'friend-action' && (
                     <FriendActionsModal
                         visible="true"
