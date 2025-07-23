@@ -173,7 +173,6 @@ const StreamRoom = ({
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    console.log("IS Host");
                     streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
                 } else {
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
@@ -191,7 +190,6 @@ const StreamRoom = ({
                 streams.push({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
             }
         }
-        console.log(streamerList);
         setStreamLayout(streams);
     }, [localStream, remoteStreams,streamerList, isStreaming]);
 
@@ -219,6 +217,7 @@ const StreamRoom = ({
         }
         //    }
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+            HidesettingPanel()
             setKeyboardOffset(e.endCoordinates.height);
         });
         const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -394,14 +393,11 @@ const StreamRoom = ({
     const SendGift = async (item) => {
         try {
             const hostInfo = streamerList.filter((item) => item.IsHost === true)
-            console.log(item);
-            console.log(hostInfo);
             const params = {
                 fromUserID: userData?.userid,
                 toUserID: hostInfo[0].UserID,
                 giftID: item?.giftID
             }
-            console.log(params);
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
@@ -416,14 +412,11 @@ const StreamRoom = ({
     }
     const handleFriendRequest=async(userid)=>{
         try {
-            console.log(userid);
             const params={
                 requesterID: userData?.userid,
                 receiverID: userid
               }
-              console.log(params);
             const responce=await Apiclient.post(`/friends/request`,params)
-            console.log(responce.data);
             if(responce.data?.success){
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
@@ -758,7 +751,6 @@ const StreamRoom = ({
                                         {/* )} */}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
-                                                console.log("Hi");
                                                 HidesettingPanel()
                                                 HandleReport()
                                             }} style={styles.strMoreSettingListItem}>
