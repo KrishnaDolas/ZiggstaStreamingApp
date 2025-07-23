@@ -405,7 +405,7 @@ const StreamRoom = ({
             if (Responce.data) {
                 if (Responce.data.success) {
                     socket.emit('Send-gift', userData?.screenName, item?.giftIcon)
-                    setMessage(`Gift send to the ${userData?.screenName}`)
+                    setMessage(`Gift send to the ${hostInfo[0]?.Name}`)
                     setVisibleModal('message-modal')
                 }
             }
@@ -703,10 +703,10 @@ const StreamRoom = ({
                                                     <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>handleFriendRequest(userDetails?.userid)}>
                                                         <Ionicons name="person-add" size={30} color="#fff" />
                                                     </TouchableOpacity>
+                                                </>)}
                                                     <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                                         <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                                     </TouchableOpacity>
-                                                </>)}
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                                 </TouchableOpacity>

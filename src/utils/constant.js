@@ -1,5 +1,4 @@
 // Socket.IO client initialization
-import { Alert } from 'react-native';
 import { io } from 'socket.io-client';
 
 //http://192.168.0.18:5000
@@ -43,14 +42,11 @@ import { io } from 'socket.io-client';
     sdpLines[mLineIndex] = [...header, ...reordered].join(' ');
     return sdpLines.join('\r\n');
   };
-  export function SendErrorTotheServer(error,functionname){
-    try {
-          // You can also send this error to your server for logging
-    socket.emit('Clientlogs',error.message);
-    Alert.alert('Error', `An error occurred: ${error.message}`, [
-      { text: 'OK' }
-    ]);
-    } catch (error) {
-      socket.emit('errorLog', error.message, 'SendErrorTotheServer');
-    }
+export function SendErrorTotheServer(error, functionname) {
+  try {
+    // You can also send this error to your server for logging
+    socket.emit('Clientlogs',functionname, error.message);
+  } catch (error) {
+    socket.emit('Clientlogs',"SendErrorTotheServer", error.message);
   }
+}
