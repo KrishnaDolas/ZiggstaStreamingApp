@@ -387,8 +387,8 @@ export const MainScreen = () => {
   }
   const HandleRoomInfo = (info) => {
     console.log(info);
-    RoomIDRef.current = info?.roomID
-    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount })
+    RoomIDRef.current = info?.roomID;
+    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount,TotalViewerCount:info?.TotalViewerCount })
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
