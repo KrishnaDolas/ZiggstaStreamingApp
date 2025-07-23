@@ -67,7 +67,6 @@ export const MainScreen = () => {
       const IsValid = isuserstreaming || isHost;
 
       if (nextAppState === 'active' && isStreaming && IsValid) {
-        console.log('🔄 Resuming: restarting local stream...');
         socket.emit('stream-Resume', socket.id)
         // Optional small delay to allow app to fully resume
         setTimeout(async () => {
@@ -77,7 +76,7 @@ export const MainScreen = () => {
               HandleApprovedStream()
             }, 1000);
           } catch (err) {
-            console.error('⚠️ Error while resuming stream:', err);
+            handleAppStateChange(err,"handleAppStateChange")
           }
         }, 1000); // Delay for app stability
 
@@ -102,7 +101,7 @@ export const MainScreen = () => {
             }
           }
         } catch (err) {
-          console.warn('⚠️ Error while stopping stream:', err);
+         SendErrorTotheServer(err,"handleAppStateChange")
         }
       }
     };
@@ -124,7 +123,6 @@ export const MainScreen = () => {
       const response = await Apiclient.post(`/rooms/${roomid}/join`, params)
       if (response) {
         const user = response.data;
-        console.log(user);
       }
     } catch (error) {
       SendErrorTotheServer(error, "UpdatedRoomCount")
@@ -137,19 +135,15 @@ export const MainScreen = () => {
         userId: userid,
         makeCoHost: isCoHost
       }
-      console.log(params);
       const response = await Apiclient.post(`/rooms/updateTocoHost`, params)
       if (response) {
         const user = response.data;
-        console.log(user);
       }
     } catch (error) {
       SendErrorTotheServer(error, "UpdatedRoomCount")
     }
   }
   const connectSocket = () => {
-    console.log('Connecting to socket server...');
-    // Connect logic
     socket.connect();
     setIsSocketConnected(true); // Update connection status
   };
@@ -329,7 +323,6 @@ export const MainScreen = () => {
   const HandlereconnectWithNewPeer = async ({ socketId }) => {
     // Only run if I'm host OR viewer and it's not my own socket
     if (socket.id !== socketId && localStreamRef.current) {
-      console.log(`🔄 Reconnecting with peer id (${socketId})`);
 
       const peer = createPeer(socketId);
       peersRef.current[socketId] = peer;
@@ -386,9 +379,8 @@ export const MainScreen = () => {
     }
   }
   const HandleRoomInfo = (info) => {
-    console.log(info);
-    RoomIDRef.current = info?.roomID
-    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount })
+    RoomIDRef.current = info?.roomID;
+    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount,TotalViewerCount:info?.TotalViewerCount })
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -453,11 +445,9 @@ export const MainScreen = () => {
           delete peersRef.current[userId];
           setRemoteStreams(prev => prev.filter(s => s.id !== userId));
         } else {
-          console.log(`No peer connection found for ${userId}`);
+          SendErrorTotheServer(`No peer connection found for ${userId}`,'HandleUserStreamStoped');
         }
       } else {
-        console.log(`You stopped streaming`);
-        // rerender the remote streams
         setRemoteStreams(prev => prev.filter(s => s.id !== userId));
       }
     } catch (error) {
@@ -468,13 +458,11 @@ export const MainScreen = () => {
     setStrimerList(list)
   }
   const HandlenewUserJoined = (userinfo) => {
-    console.log(userinfo);
     const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
-      console.log(userinfo);
       const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
@@ -606,7 +594,6 @@ export const MainScreen = () => {
       peer.ontrack = (event) => {
         const stream = event.streams[0];
         if (!stream || !stream.getVideoTracks().length) return;
-        console.log(`Received remote stream`, stream);
         setRemoteStreams(prev => {
           const exists = prev.some(s => s.id === socketId);
           if (exists) {
@@ -662,8 +649,6 @@ export const MainScreen = () => {
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const isaccepted = await requestPermissions();
-      console.log(`Permissions granted: ${isaccepted}`);
-
       socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');

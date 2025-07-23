@@ -20,46 +20,11 @@ import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
-import { SendErrorTotheServer } from '../utils/constant';
 import AnimatedGift from '../modals/AnimatedGift';
 import ReportUserModal from '../modals/ReportUserModal';
+import { giftImages, SendErrorTotheServer } from '../utils/constant';
+import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 
-const giftImages = {
-    '420.gif': require('../../assets/images/gifts/420.gif'),
-    'award.gif': require('../../assets/images/gifts/award.gif'),
-    'balloons.gif': require('../../assets/images/gifts/balloons.gif'),
-    'boss.gif': require('../../assets/images/gifts/boss.gif'),
-    'broken-heart.gif': require('../../assets/images/gifts/broken-heart.gif'),
-    'casino-chip.gif': require('../../assets/images/gifts/casino-chip.gif'),
-    'casino-chip2.gif': require('../../assets/images/gifts/casino-chip2.gif'),
-    'casino-chip3.gif': require('../../assets/images/gifts/casino-chip3.gif'),
-    'casino-chip5.gif': require('../../assets/images/gifts/casino-chip5.gif'),
-    'clown.gif': require('../../assets/images/gifts/clown.gif'),
-    'crown.gif': require('../../assets/images/gifts/crown.gif'),
-    'diamond.gif': require('../../assets/images/gifts/diamond.gif'),
-    'diamond2.gif': require('../../assets/images/gifts/diamond2.gif'),
-    'diamond3.gif': require('../../assets/images/gifts/diamond3.gif'),
-    'dollar.gif': require('../../assets/images/gifts/dollar.gif'),
-    'financial-freedom.gif': require('../../assets/images/gifts/financial-freedom.gif'),
-    'hearts.gif': require('../../assets/images/gifts/hearts.gif'),
-    'in-love.gif': require('../../assets/images/gifts/in-love.gif'),
-    'jack-in-the-box.gif': require('../../assets/images/gifts/jack-in-the-box.gif'),
-    'laugh.gif': require('../../assets/images/gifts/laugh.gif'),
-    'like.gif': require('../../assets/images/gifts/like.gif'),
-    'love.gif': require('../../assets/images/gifts/love.gif'),
-    'piggy-bank.gif': require('../../assets/images/gifts/piggy-bank.gif'),
-    'popcorn.gif': require('../../assets/images/gifts/popcorn.gif'),
-    'popcorn2.gif': require('../../assets/images/gifts/popcorn2.gif'),
-    'profit.gif': require('../../assets/images/gifts/profit.gif'),
-    'savings3.gif': require('../../assets/images/gifts/savings3.gif'),
-    'sunrise.gif': require('../../assets/images/gifts/sunrise.gif'),
-    'ticket.gif': require('../../assets/images/gifts/ticket.gif'),
-    'ticket2.gif': require('../../assets/images/gifts/ticket2.gif'),
-    'valentines-day.gif': require('../../assets/images/gifts/valentines-day.gif'),
-    'wallet.gif': require('../../assets/images/gifts/wallet.gif'),
-    'wave.gif': require('../../assets/images/gifts/wave.gif'),
-    'win-win.gif': require('../../assets/images/gifts/win-win.gif'),
-};
 
 const StreamRoom = ({
     remoteStreams,
@@ -109,6 +74,7 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
+    const [OpenViewerLIst,setOpenViewerList]=useState(false)
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
@@ -121,9 +87,17 @@ const StreamRoom = ({
                 setGiftCategoryItems(response.data.data || []);
             }
         } catch (error) {
-            console.error('Error fetching gifts:', error);
+            SendErrorTotheServer(error,"getGiftsCategory")
         }
     };
+    useEffect(() => {
+        // Preload all images
+        Object.values(giftImages).forEach((img) => {
+          // require returns a number (packaged asset), but Image.resolveAssetSource gives URI
+          const source = Image.resolveAssetSource(img).uri;
+          Image.prefetch(source);
+        });
+      }, []);
 
     useEffect(() => {
         getGiftsCategory();
@@ -145,7 +119,7 @@ const StreamRoom = ({
                 setGiftItems(response.data.data || []);
             }
         } catch (error) {
-            console.error('Error fetching gifts:', error);
+            SendErrorTotheServer(error,"getGifts")
         } finally {
             setGiftDataLoading(false);
         }
@@ -173,13 +147,12 @@ const StreamRoom = ({
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    console.log("IS Host");
                     streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
                 } else {
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 }
             } else {
-                console.warn('⚠️ Invalid remote stream:', stream);
+                SendErrorTotheServer('⚠️ Invalid remote stream:',"remoteStreams.forEach")
             }
         });
         // Add local stream if available and user is streaming
@@ -191,7 +164,6 @@ const StreamRoom = ({
                 streams.push({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
             }
         }
-        console.log(streamerList);
         setStreamLayout(streams);
     }, [localStream, remoteStreams,streamerList, isStreaming]);
 
@@ -219,6 +191,7 @@ const StreamRoom = ({
         }
         //    }
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+            HidesettingPanel()
             setKeyboardOffset(e.endCoordinates.height);
         });
         const hideSub = Keyboard.addListener('keyboardDidHide', () => {
@@ -325,7 +298,7 @@ const StreamRoom = ({
                 setUserDetails(user);
             }
         } catch (error) {
-            console.log(error);
+            SendErrorTotheServer(error,'GetUserDetails')
         }
     }
 
@@ -375,11 +348,16 @@ const StreamRoom = ({
     }
 
     const HandleGiftReceived = (senderName, giftName) => {
-        console.log(`Gift Received from ${senderName} -${giftName}`);
-        setGiftInfo({giftName:giftName,username:senderName})
-        setTimeout(() => {
-            setGiftInfo(null)
-        }, 4000);
+        try {
+            setMessage(`Gift Received from ${senderName}`)
+            setVisibleModal('message-modal')
+            setGiftInfo({giftName:giftName,username:senderName})
+            setTimeout(() => {
+                setGiftInfo(null)
+            }, 4000);
+        } catch (error) {
+            SendErrorTotheServer(error,"HandleGiftReceived")
+        }
     }
 
     useEffect(() => {
@@ -394,14 +372,11 @@ const StreamRoom = ({
     const SendGift = async (item) => {
         try {
             const hostInfo = streamerList.filter((item) => item.IsHost === true)
-            console.log(item);
-            console.log(hostInfo);
             const params = {
                 fromUserID: userData?.userid,
                 toUserID: hostInfo[0].UserID,
                 giftID: item?.giftID
             }
-            console.log(params);
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
@@ -411,19 +386,16 @@ const StreamRoom = ({
                 }
             }
         } catch (error) {
-            console.log(error);
+            SendErrorTotheServer(error,"SendGift")
         }
     }
     const handleFriendRequest=async(userid)=>{
         try {
-            console.log(userid);
             const params={
                 requesterID: userData?.userid,
                 receiverID: userid
               }
-              console.log(params);
             const responce=await Apiclient.post(`/friends/request`,params)
-            console.log(responce.data);
             if(responce.data?.success){
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
@@ -433,7 +405,6 @@ const StreamRoom = ({
         } catch (error) {
             setMessage(`Request Already Sent`)
             setVisibleModal('message-modal')
-            // console.log(error);
             // SendErrorTotheServer(error,"handleFriendRequest")
         }
     }
@@ -649,16 +620,25 @@ const StreamRoom = ({
                                         </View>
                                     </View>
                                 </View>
-                                <View style={{ height: '20', position: 'absolute', left: '10', top: '60', display: 'flex' }}>
-                                    <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                        <Text style={{ color: 'white', fontSize: 14, opacity: 0.7, backgroundColor: '#b3a7a6', paddingHorizontal: '10', borderRadius: 30 }}>
-                                            <Ionicons name="diamond" size={12} color="#fff" /> {'\t'}0
-                                        </Text>
-                                        <Text style={{ color: 'white', marginLeft: '4', fontSize: 14, opacity: 0.7, backgroundColor: '#b3a7a6', paddingHorizontal: '10', borderRadius: 30 }}>
-                                            <Ionicons name="heart" size={12} color="#fff" /> {Streamupdated.LikeCount}{'\t'}
-                                            <Ionicons name="eye" size={12} color="#fff" /> {Streamupdated.viewerCount}
-                                        </Text>
+                               <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
+                               <TouchableOpacity onPress={()=>setOpenViewerList(true)}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)',width:'100%',height:'25',margin:'5',borderRadius:21 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center',paddingLeft: '5'}}>
+                                            <Ionicons name="heart" size={15} color={Streamupdated.LikeCount===0?"white":"red"} />
+                                            <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
+                                            <Ionicons name="eye" size={15} color="#1F85F5" />
+                                            <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
+                                            {isHost && (<>
+                                                <Ionicons name="eye" size={15} color="#00BD35" />
+                                                <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{Streamupdated.viewerCount}</Text>
+                                            </>)}
+                                        </View>
                                     </View>
+                               </TouchableOpacity>
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
@@ -708,9 +688,9 @@ const StreamRoom = ({
                                                         <Ionicons name="person-add" size={30} color="#fff" />
                                                     </TouchableOpacity>
                                                 </>)}
-                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
+                                                    {!isHost &&(<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                                         <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
-                                                    </TouchableOpacity>
+                                                    </TouchableOpacity>)}
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
                                                     <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                                 </TouchableOpacity>
@@ -758,7 +738,6 @@ const StreamRoom = ({
                                         {/* )} */}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
-                                                console.log("Hi");
                                                 HidesettingPanel()
                                                 HandleReport()
                                             }} style={styles.strMoreSettingListItem}>
@@ -944,6 +923,12 @@ const StreamRoom = ({
                     reportData={userDetails}
                     RoomID={streamInfo?.roomID}
                     reportType="Video"
+                />
+            )}
+            {OpenViewerLIst && (
+                <ViewerTotalLIst
+                    visible={OpenViewerLIst}
+                    onClose={()=>setOpenViewerList(false)}
                 />
             )}
         </View>
