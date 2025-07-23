@@ -340,7 +340,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                 {visibleModal === 'half-screen-modal' && (
                     <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
                 )}
-                <Footer />
+                {/* <Footer /> */}
             </>
         </SafeAreaView>
     );

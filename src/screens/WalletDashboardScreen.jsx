@@ -441,7 +441,7 @@ export const WalletDashboardScreen = () => {
                 {visibleModal === 'setting' && (
                     <BalanceHistoryModal visible="true" onClose={() => setVisibleModal(null)} />
                 )}
-                <Footer />
+                {/* <Footer /> */}
             </SafeAreaView>
         </LinearGradient>
 

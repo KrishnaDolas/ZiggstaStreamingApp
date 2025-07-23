@@ -116,7 +116,7 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
 
                     </ScrollView>
 
-                    <Footer />
+                    {/* <Footer /> */}
                 </>)}
         </SafeAreaView>
     );

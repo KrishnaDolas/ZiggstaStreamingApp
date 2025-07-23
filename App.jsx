@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -7,28 +7,37 @@ import {
   AppState,
   Platform,
   PermissionsAndroid,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import Geolocation from 'react-native-geolocation-service';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
-import { ProfileScreen } from './src/screens/ProfileScreen';
+// import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
 import { useAppContext } from './src/context/AppContext';
-import { debounceStorage } from './src/utils/debounceStorage';
+// import { debounceStorage } from './src/utils/debounceStorage';
 import Apiclient from './src/utils/Apiclient';
 import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
+import ProfileScreenModal from './src/modals/ProfileScreenModal';
+import { ThemeContext } from './src/context/ThemeContext';
+import { themeStyles } from './assets/styles/ThemeStyles';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 const NetworkCheck = () => (
   <View style={styles.center}>
@@ -36,6 +45,198 @@ const NetworkCheck = () => (
     <Text style={styles.text}>No Internet Connection</Text>
   </View>
 );
+
+// Custom Tab Bar Component to handle Profile Modal
+const CustomTabBar = ({ state, descriptors, navigation }) => {
+  const insets = useSafeAreaInsets();
+  const { theme } = useContext(ThemeContext);
+  const { userData } = useAppContext();
+  const [visibleModal, setVisibleModal] = useState(null);
+
+  const isDark = theme === 'dark';
+
+  const iconColor = (isFocused) => {
+    return isFocused ? '#d93a63' : (isDark ? '#fff' : 'grey');
+  };
+
+  // Footer styles to match your original styling
+  const footerStyles = {
+    footer: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: isDark ? themeStyles.dark.footer?.backgroundColor || '#000' : 'white',
+      paddingVertical: 10,
+      paddingBottom: insets.bottom, // Add safe area padding
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: isDark ? themeStyles.dark.footer?.borderTopColor || '#333' : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
+    },
+    footerItem: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingBottom: 10,
+    },
+    footerText: {
+      fontSize: 12,
+      color: '#fff',
+    },
+  };
+
+  const getTabIcon = (routeName, isFocused, size = 25) => {
+    const color = iconColor(isFocused);
+
+    switch (routeName) {
+      case 'Profile':
+        return <FontAwesome name="user-o" size={size} color={color} />;
+      case 'Stats':
+        return <Ionicons name="stats-chart" size={size} color={color} />;
+      case 'Main':
+        return (
+          <Image
+            source={require('./assets/images/logo-icon.png')}
+            resizeMode="contain"
+            style={{
+              width: 30,
+              height: 30,
+              tintColor: color,
+            }}
+          />
+        );
+      case 'Messages':
+        return <Ionicons name="chatbox-ellipses-outline" size={size} color={color} />;
+      case 'WalletDashboard':
+        return <Ionicons name="wallet-outline" size={size} color={color} />;
+      default:
+        return null;
+    }
+  };
+
+  const getTabLabel = (routeName) => {
+    switch (routeName) {
+      case 'Main':
+        return 'Home';
+      case 'WalletDashboard':
+        return 'Wallet';
+      default:
+        return routeName;
+    }
+  };
+
+  return (
+    <>
+      <View style={footerStyles.footer}>
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = getTabLabel(route.name);
+          const isFocused = state.index === index;
+
+          const onPress = () => {
+            if (route.name === 'Profile') {
+              // Show modal instead of navigating
+              setVisibleModal('profile-screen-modal');
+              return;
+            }
+
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          return (
+            <TouchableOpacity
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              testID={options.tabBarTestID}
+              onPress={onPress}
+              style={footerStyles.footerItem}
+            >
+              {getTabIcon(route.name, isFocused)}
+              <Text style={[footerStyles.footerText, { color: iconColor(isFocused) }]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Profile Modal */}
+      {visibleModal === 'profile-screen-modal' && (
+        <ProfileScreenModal
+          visible="true"
+          onClose={() => setVisibleModal(null)}
+          profileData={userData}
+          isMainProfile={true}
+        />
+      )}
+    </>
+  );
+};
+
+// Bottom Tab Navigator
+const BottomTabNavigator = ({ onLogout, userData, userAddress }) => {
+  return (
+    <View style={{ flex: 1 }}>
+      <Tab.Navigator
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+        }}
+        initialRouteName="Main"
+      >
+        <Tab.Screen
+          name="Profile"
+          component={View} // Dummy component since we handle with modal
+        />
+        <Tab.Screen name="Stats">
+          {(props) => (
+            <StatisticsSettingScreen
+              {...props}
+              onLogout={onLogout}
+              userData={userData}
+              address={userAddress}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Main">
+          {(props) => (
+            <MainScreen
+              {...props}
+              isAuthenticated={true}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Messages">
+          {(props) => (
+            <MessageListScreen
+              {...props}
+              userData={userData}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="WalletDashboard">
+          {(props) => (
+            <WalletDashboardScreen
+              {...props}
+              userData={userData}
+            />
+          )}
+        </Tab.Screen>
+      </Tab.Navigator>
+    </View>
+  );
+};
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -191,40 +392,6 @@ const App = () => {
     }
   };
 
-
-  // useEffect(() => {
-  //   const init = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('token');
-  //       const userDataStored = await AsyncStorage.getItem('UserData');
-  //       const userAddressStored = await AsyncStorage.getItem('userAddress');
-  //       if (token) {
-  //         setIsAuthenticated(true);
-  //       }
-
-  //       if (userDataStored) {
-  //         setUserData(JSON.parse(userDataStored));
-  //       }
-
-  //       if (userAddressStored) {
-  //         setUserAddress(JSON.parse(userAddressStored));
-  //         hasFetchedAddress.current = true; // ✅ Prevent re-fetch if exists
-  //       }
-
-  //       // Simulate splash delay
-  //       setTimeout(() => {
-  //         setIsLoading(false);
-  //       }, 3000);
-  //     } catch (e) {
-  //       console.error('Init error:', e);
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   init();
-  //   //eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isConnected, isAuthenticated]);
-
   const init = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -354,59 +521,24 @@ const App = () => {
               {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
               {isAuthenticated ? (
                 <>
-                  <Stack.Screen name="Main">
-                    {props => (
-                      <MainScreen
-                        {...props}
-                        isAuthenticated={isAuthenticated}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="Profile">
-                    {props => (
-                      <ProfileScreen
+                  <Stack.Screen name="MainTabs">
+                    {(props) => (
+                      <BottomTabNavigator
                         {...props}
                         onLogout={handleLogout}
                         userData={userData}
-                        address={userAddress}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="Stats">
-                    {props => (
-                      <StatisticsSettingScreen
-                        {...props}
-                        onLogout={handleLogout}
-                        userData={userData}
-                        address={userAddress}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="Messages">
-                    {props => (
-                      <MessageListScreen
-                        {...props}
-                        userData={userData}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="WalletDashboard">
-                    {props => (
-                      <WalletDashboardScreen
-                        {...props}
-                        userData={userData}
+                        userAddress={userAddress}
                       />
                     )}
                   </Stack.Screen>
                   <Stack.Screen name="TermsOfUse">
-                    {props => (
+                    {(props) => (
                       <TermsOfUseScreen
                         {...props}
                         userData={userData}
                       />
                     )}
                   </Stack.Screen>
-                  {/* <Stack.Screen name="Profile" component={ProfileScreen} /> */}
                 </>
               ) : (
                 <Stack.Screen name="Auth">
