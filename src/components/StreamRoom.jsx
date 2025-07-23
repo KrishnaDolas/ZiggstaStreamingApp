@@ -600,8 +600,8 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
-                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                <View style={{ position: 'absolute', left: '30%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={80} color="#fff" />}</Text>
                                                 </View>
                                                 <View style={styles.videoOverlay}>
                                                     {streamData?.type !== 'local' && (
