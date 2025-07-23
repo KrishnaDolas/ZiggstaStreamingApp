@@ -110,6 +110,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         try {
             setIsInitialLoading(true);
             const response = await Apiclient.get('/rooms/getrooms?isLive=1');
+            // console.log('response get rooms ', response.data);
+
             if (response) {
                 setApiRooms(response.data.data || []);
             }
@@ -264,7 +266,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         numberOfLines={1}
                         ellipsizeMode="tail"
                     >
-                        {item.hostScreenName}
+                        {item.hostScreenName || item.screenName}
                     </Text>
                     <Text style={styles.streamListStatus}
                         numberOfLines={1}

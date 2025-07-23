@@ -56,7 +56,7 @@ export const MessageListScreen = () => {
             };
 
             const response = await Apiclient.post('/getFriendsList', postData);
-            // console.log('response getFriendsList', response.data);
+            console.log('response getFriendsList', response.data);
             if (response.status === 200) {
                 const data = response.data?.friends || [];
                 setFriendsData(data);

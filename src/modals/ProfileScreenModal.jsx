@@ -1,6 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Text, Animated, Image, Linking } from 'react-native';
+import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, } from 'react-native';
+
 import Modal from 'react-native-modal';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
@@ -15,6 +16,10 @@ import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import ReportUserModal from './ReportUserModal';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import ActionSheet from 'react-native-actionsheet';
+import CameraActionSheet from '../components/CameraActionSheet';
+
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
 const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
 const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
@@ -37,6 +42,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [showActionSheet, setShowActionSheet] = useState(false);
+
+    const actionSheetRef = useRef();
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
@@ -48,6 +57,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
         };
     }, []);
 
+    // ACTION SHEET OPTIONS
+    const actionSheetOptions = ['Take Photo', 'Choose from Gallery', 'Cancel'];
+
+
+
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
@@ -55,7 +69,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
             },
             onPanResponderMove: Animated.event(
                 [null, { dy: panY }],
-                { useNativeDriver: false }
+                { useNativeDriver: false } // Explicitly set
             ),
             onPanResponderRelease: (_, gesture) => {
                 if (gesture.dy > 120) {
@@ -63,7 +77,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                 } else {
                     Animated.spring(panY, {
                         toValue: 0,
-                        useNativeDriver: false,
+                        useNativeDriver: false, // Explicitly set
                     }).start();
                 }
             },
@@ -79,7 +93,112 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
         }
     }, [visible]);
 
+
+
+    const handleEditAvatar = () => {
+        setShowActionSheet(true);
+    };
+
+    const onSelectImage = async (type) => {
+        const options = {
+            mediaType: 'photo',
+            quality: 0.7,
+        };
+
+        try {
+            const result =
+                type === 'camera'
+                    ? await launchCamera(options)
+                    : await launchImageLibrary(options);
+
+            if (result.didCancel || result.errorCode) return;
+
+            const file = result.assets[0];
+            const uri = file.uri;
+            const name = file.fileName || `avatar_${Date.now()}.jpg`;
+            const typeMime = file.type;
+
+            const avatarFile = {
+                uri,
+                name,
+                type: typeMime,
+            };
+
+            uploadAvatarToServer(avatarFile);
+        } catch (error) {
+            console.error('Image selection error:', error);
+            Alert.alert('Error', 'Failed to select image.');
+        }
+    };
+
+    const uploadAvatarToServer = async (avatarFile) => {
+        setAvatarUploading(true);
+        console.log('avatarFile', avatarFile);
+        console.log('userId', profileUserId);
+        const formData = new FormData();
+        // formData.append('avatar', avatarFile);
+        formData.append('avatar', {
+            uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
+            type: avatarFile.type,
+            name: avatarFile.name,
+        });
+        formData.append('userId', profileUserId);
+
+        try {
+            const response = await Apiclient.post('/avatar/upload', formData);
+            const resJson = response.data;
+            console.log('response avatar upload', resJson);
+            if (response.status === 200) {
+                // const fullAvatar = resJson.filename.startsWith('http')
+                //     ? resJson.filename
+                //     : `https://api.streamlong.live/${resJson.filename}?t=${Date.now()}`;
+
+                // setUserProfileDetails(prev => ({
+                //     ...prev,
+                //     avatar: fullAvatar,
+                // }));
+                Alert.alert('Upload successFully', resJson.message);
+
+            } else {
+                Alert.alert('Upload Failed', resJson.message || 'Something went wrong');
+            }
+        } catch (error) {
+            console.error('Avatar upload error:', error);
+            Alert.alert('Error', 'Failed to upload avatar.');
+        } finally {
+            setAvatarUploading(false);
+        }
+    };
+
     // get profile details from API
+
+
+    // const uploadAvatarToServer = async (avatarFile) => {
+    //     const formData = new FormData();
+    //     formData.append('avatar', {
+    //         uri: avatarFile.uri,
+    //         type: avatarFile.type,
+    //         name: avatarFile.name,
+    //     });
+    //     formData.append('userId', profileUserId); // Assuming you have this
+
+    //     fetch('https://api.streamlong.live/avatar/upload', {
+    //         method: 'POST',
+    //         headers: {
+    //             'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d', // if needed
+    //         },
+    //         body: formData,
+    //     })
+    //         .then(response => response.json())
+    //         .then(result => {
+    //             console.log('Upload success:', result);
+    //         })
+    //         .catch(error => {
+    //             console.error('Upload failed:', error);
+    //         });
+
+    // };
+
     useEffect(() => {
         const fetchProfileDetails = async () => {
             setIsUserLoading(true);
@@ -149,11 +268,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
         const getTopGifters = async () => {
             const formData = {
                 toUserId: profileUserId,
-                gifterCount: 25,
+                gifterCount: 3,
             };
             try {
                 const response = await Apiclient.post('/topgifters', formData);
-                console.log('topgifters response', response.data);
+                // console.log('topgifters response', response.data);
                 if (response.status === 200) {
                     setTopGiftersData(response.data || []);
                 } else {
@@ -345,14 +464,21 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                                                 <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard]}>
                                                     {/* Profile Image */}
                                                     <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
-                                                        <Image
-                                                            source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
-                                                                ? getGenderFallbackImage(userProfileDatails?.gender)
-                                                                : { uri: userProfileDatails?.gender }
-                                                            }
-                                                            style={styles.psmProfileImage}
-                                                        />
-
+                                                        <View style={styles.profileImageWrapper}>
+                                                            <Image
+                                                                source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                    ? getGenderFallbackImage(userProfileDatails?.gender)
+                                                                    : { uri: userProfileDatails?.avatar }
+                                                                }
+                                                                style={styles.psmProfileImage}
+                                                            />
+                                                            <TouchableOpacity
+                                                                style={styles.editIconContainer}
+                                                                onPress={handleEditAvatar}
+                                                            >
+                                                                <Ionicons name="camera" size={16} color="#fff" />
+                                                            </TouchableOpacity>
+                                                        </View>
                                                     </View>
 
                                                     {/* Name and ID */}
@@ -540,6 +666,28 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                     reportType="User"
                 />
             )}
+            {/* <ActionSheet
+                ref={actionSheetRef}
+                title={'Update Profile Picture'}
+                options={actionSheetOptions}
+                cancelButtonIndex={2}
+                onPress={(index) => {
+                    if (index === 0) onSelectImage('camera');
+                    if (index === 1) onSelectImage('gallery');
+                }}
+            /> */}
+            <CameraActionSheet
+                visible={showActionSheet}
+                onClose={() => setShowActionSheet(false)}
+                title="Update Profile Picture"
+                options={['Take Photo', 'Choose from Gallery', 'Cancel']}
+                theme={theme}
+                onPress={(index) => {
+                    if (index === 0) onSelectImage('camera');
+                    if (index === 1) onSelectImage('gallery');
+                    // Cancel is handled automatically by the component
+                }}
+            />
         </>
 
     );
