@@ -25,7 +25,7 @@ const hardcodedImages = [
 ];
 
 
-const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh }) => {
+const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const { userData, userAddress, subscriptionStatus } = useAppContext()
@@ -230,6 +230,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         }
     };
     const viewerjoinedroom = (item) => {
+        setCurrentStreamData(item);
         const roomId = item.roomID.toString();
         if (item.hostID === userData.userid) {
             joinRoom(roomId, item);

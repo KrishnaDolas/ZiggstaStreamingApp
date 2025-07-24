@@ -25,7 +25,7 @@ import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
 
 export const MainScreen = () => {
-  const { userData, userAddress, setIsInStreamRoom,fetchProfileDetails } = useAppContext();
+  const { userData, userAddress, setIsInStreamRoom, fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -51,7 +51,8 @@ export const MainScreen = () => {
   const [isuserstreaming, setIsUserStreaming] = useState(false); // Track if user is streaming
   const [connectingpanel, setconnectingpanel] = useState(false)
   const [streamerList, setStrimerList] = useState([])
-  const [streammsg, setStreamMsg] = useState(null)
+  const [streammsg, setStreamMsg] = useState(null);
+  const [currentStreamData, setCurrentStreamData] = useState({});
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
   const RoomIDRef = useRef(null)
@@ -77,7 +78,7 @@ export const MainScreen = () => {
               HandleApprovedStream()
             }, 1000);
           } catch (err) {
-            handleAppStateChange(err,"handleAppStateChange")
+            handleAppStateChange(err, "handleAppStateChange")
           }
         }, 1000); // Delay for app stability
 
@@ -102,7 +103,7 @@ export const MainScreen = () => {
             }
           }
         } catch (err) {
-         SendErrorTotheServer(err,"handleAppStateChange")
+          SendErrorTotheServer(err, "handleAppStateChange")
         }
       }
     };
@@ -381,7 +382,7 @@ export const MainScreen = () => {
   }
   const HandleRoomInfo = (info) => {
     RoomIDRef.current = info?.roomID;
-    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount,TotalViewerCount:info?.TotalViewerCount })
+    setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount, TotalViewerCount: info?.TotalViewerCount })
   }
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
@@ -446,7 +447,7 @@ export const MainScreen = () => {
           delete peersRef.current[userId];
           setRemoteStreams(prev => prev.filter(s => s.id !== userId));
         } else {
-          SendErrorTotheServer(`No peer connection found for ${userId}`,'HandleUserStreamStoped');
+          SendErrorTotheServer(`No peer connection found for ${userId}`, 'HandleUserStreamStoped');
         }
       } else {
         setRemoteStreams(prev => prev.filter(s => s.id !== userId));
@@ -640,7 +641,7 @@ export const MainScreen = () => {
       }
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName,Address);
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -652,7 +653,7 @@ export const MainScreen = () => {
       setStreamInfo(RoomInfo);
       const isaccepted = await requestPermissions();
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName,Address);
+      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }
@@ -707,7 +708,7 @@ export const MainScreen = () => {
       setHasRequestedStream(false);
       InCallManager.setForceSpeakerphoneOn(false);
       InCallManager.stop();
-      if (streamInfo?.hostID===userData?.userid) {
+      if (streamInfo?.hostID === userData?.userid) {
         socket.emit('Hostleft')
         HandleSetLivestatus(streamInfo?.roomID);
       } else {
@@ -778,7 +779,7 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleSetLivestatus');
     }
-  }
+  };
 
   return (
     <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
@@ -789,9 +790,9 @@ export const MainScreen = () => {
       />
       {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
       <View style={[styles.container]}>
-        {isloading ? (<Loader LoaderImage={chatimage} />) : null}
+        {isloading ? (<Loader LoaderImage={chatimage} currentStreamData={currentStreamData} />) : null}
         {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} />
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
         ) : (<StreamRoom
           remoteStreams={remoteStreams}
           localStream={localStream}

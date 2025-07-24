@@ -658,7 +658,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
                                                                 <View style={styles.psmOtherGiftersContainer}>
                                                                     {topGiftersData?.slice(1).map((gifter, index) => (
                                                                         <View
-                                                                            key={gifter.id}
+                                                                            key={index}
                                                                             style={[styles.psmOtherGifterCard,
                                                                             {
                                                                                 borderLeftWidth: index === 0 ? 1 : 0,

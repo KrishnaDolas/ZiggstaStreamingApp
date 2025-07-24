@@ -1,10 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Image, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
+import { useAppContext } from '../context/AppContext';
 const { width, height } = Dimensions.get('window');
 
-const Loader = ({ LoaderImage }) => {
+const Loader = ({ LoaderImage, currentStreamData }) => {
+  const { setIsInStreamRoom } = useAppContext();
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    setIsInStreamRoom(true); // keep global value in sync
+    return () => setIsInStreamRoom(false); // reset when unmounted
+  }, [setIsInStreamRoom]);
+
 
   useEffect(() => {
     Animated.loop(
@@ -58,7 +66,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: width,
     height: height,
-    zIndex:100
+    zIndex: 100
   },
   centerContent: {
     flex: 1,
