@@ -76,12 +76,12 @@ const StreamRoom = ({
     const [userDetails, setUserDetails] = useState({});
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
-    const [OpenViewerLIst,setOpenViewerList]=useState(false)
-    const [totalRoomviewerList,setTotalRoomviewerList]=useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
+    const [OpenViewerLIst, setOpenViewerList] = useState(false)
+    const [totalRoomviewerList, setTotalRoomviewerList] = useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
-    const [OpenHostPorfile,setOpenHostPorfile]=useState(false)
+    const [OpenHostPorfile, setOpenHostPorfile] = useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
     const [sendAnimationData, setSendAnimationData] = useState(null);
@@ -96,7 +96,7 @@ const StreamRoom = ({
                 setGiftCategoryItems(response.data.data || []);
             }
         } catch (error) {
-            SendErrorTotheServer(error,"getGiftsCategory")
+            SendErrorTotheServer(error, "getGiftsCategory")
         }
     };
     useEffect(() => {
@@ -108,11 +108,11 @@ const StreamRoom = ({
         });
         KeepAwake.activate(); // Prevent screen from sleeping
 
-        return()=>{
+        return () => {
             console.log("unmounting");
             KeepAwake.deactivate();
         }
-      }, []);
+    }, []);
 
     useEffect(() => {
         getGiftsCategory();
@@ -134,7 +134,7 @@ const StreamRoom = ({
                 setGiftItems(response.data.data || []);
             }
         } catch (error) {
-            SendErrorTotheServer(error,"getGifts")
+            SendErrorTotheServer(error, "getGifts")
         } finally {
             setGiftDataLoading(false);
         }
@@ -162,25 +162,25 @@ const StreamRoom = ({
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
                 } else {
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID,isMuted:StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 }
             } else {
-                SendErrorTotheServer('⚠️ Invalid remote stream:',"remoteStreams.forEach")
+                SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
             }
         });
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID ===  socket.id)
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id)
             if (isHost) {
-                streams.unshift({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName}` });
+                streams.unshift({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName}` });
             } else {
-                streams.push({ type: 'local', stream: localStream,isMuted:StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
+                streams.push({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
             }
         }
         setStreamLayout(streams);
-    }, [localStream, remoteStreams,streamerList, isStreaming]);
+    }, [localStream, remoteStreams, streamerList, isStreaming]);
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
@@ -313,7 +313,7 @@ const StreamRoom = ({
                 setUserDetails(user);
             }
         } catch (error) {
-            SendErrorTotheServer(error,'GetUserDetails')
+            SendErrorTotheServer(error, 'GetUserDetails')
         }
     }
 
@@ -353,7 +353,7 @@ const StreamRoom = ({
         }
     }
 
-    const HandleReport=()=>{
+    const HandleReport = () => {
         setVisibleModal('ReportVideo')
     }
 
@@ -370,10 +370,10 @@ const StreamRoom = ({
             });
             setShowReceiveAnimation(true);
         } catch (error) {
-            SendErrorTotheServer(error,"HandleGiftReceived")
+            SendErrorTotheServer(error, "HandleGiftReceived")
         }
     }
-    const HandleRoomTotalCount=(list)=>{
+    const HandleRoomTotalCount = (list) => {
         console.log(list);
         setTotalRoomviewerList(list)
     }
@@ -396,7 +396,7 @@ const StreamRoom = ({
                 fromUserID: userData?.userid,
                 toUserID: hostInfo[0].UserID,
                 giftID: item?.giftID,
-                roomId:streamInfo?.roomID
+                roomId: streamInfo?.roomID
             }
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
@@ -411,20 +411,20 @@ const StreamRoom = ({
                 }
             }
         } catch (error) {
-            SendErrorTotheServer(error,"SendGift")
+            SendErrorTotheServer(error, "SendGift")
         }
     }
-    const handleFriendRequest=async(userid)=>{
+    const handleFriendRequest = async (userid) => {
         try {
-            const params={
+            const params = {
                 requesterID: userData?.userid,
                 receiverID: userid
-              }
-            const responce=await Apiclient.post(`/friends/request`,params)
-            if(responce.data?.success){
+            }
+            const responce = await Apiclient.post(`/friends/request`, params)
+            if (responce.data?.success) {
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
-            }else{
+            } else {
                 console.log(responce);
             }
         } catch (error) {
@@ -433,18 +433,18 @@ const StreamRoom = ({
             // SendErrorTotheServer(error,"handleFriendRequest")
         }
     }
-    useEffect(()=>{
-        if(streammsg!==null){
+    useEffect(() => {
+        if (streammsg !== null) {
             setMessage(streammsg)
             setVisibleModal('message-modal')
         }
-    },[streammsg])
+    }, [streammsg])
 
     const handleSendAnimationComplete = () => {
         setShowSendAnimation(false);
         setSendAnimationData(null);
     };
-    
+
     const handleReceiveAnimationComplete = () => {
         setShowReceiveAnimation(false);
         setReceiveAnimationData(null);
@@ -461,7 +461,7 @@ const StreamRoom = ({
                             objectFit="cover"
                             mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
                         />
-                        <View style={{position:'absolute',left:'40%',top:'40%'}}>
+                        <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                             <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                         </View>
                     </View>
@@ -475,10 +475,10 @@ const StreamRoom = ({
                                         style={styles.streamVideoFull}
                                         objectFit="cover"
                                         mirror={streamLayout[0].type === 'local' && isFrontCamera}
-                                        />
-                                        <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                            <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
-                                        </View>
+                                    />
+                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                        <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                    </View>
                                     {streamLayout[0]?.type !== 'local' && (
                                         <View style={styles.videoOverlay}>
                                             <View style={styles.userInfoContainer}>
@@ -487,7 +487,7 @@ const StreamRoom = ({
                                                 </Text>
                                                 <TouchableOpacity
                                                     style={styles.friendRequestIcon}
-                                                onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                                    onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                                 >
                                                     <Ionicons name="person-add" size={16} color="#fff" />
                                                 </TouchableOpacity>
@@ -515,7 +515,7 @@ const StreamRoom = ({
                                                         </Text>
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
-                                                        onPress={() => handleFriendRequest(streamData?.userId)}
+                                                            onPress={() => handleFriendRequest(streamData?.userId)}
                                                         >
                                                             <Ionicons name="person-add" size={14} color="#fff" />
                                                         </TouchableOpacity>
@@ -549,7 +549,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={14} color="#fff" />
                                                             </TouchableOpacity>
@@ -581,7 +581,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={12} color="#fff" />
                                                             </TouchableOpacity>
@@ -617,7 +617,7 @@ const StreamRoom = ({
                                                             </Text>
                                                             <TouchableOpacity
                                                                 style={styles.friendRequestIcon}
-                                                            onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 <Ionicons name="person-add" size={18} color="#fff" />
                                                             </TouchableOpacity>
@@ -643,42 +643,42 @@ const StreamRoom = ({
                             },
                         ]}>
                             <View style={styles.strRoomHeader}>
-                                <Pressable onPress={()=>setOpenHostPorfile(!OpenHostPorfile)}>
-                                <View style={styles.strRoomHeaderLeft}>
-                                    <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
-                                    <View style={styles.strRoomHeaderLeftProfileInfo}>
-                                        <Text style={[styles.strRoomHeaderLeftProfileName]}>
-                                            {userDetails?.screenName}
-                                        </Text>
-                                        <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                            <Ionicons name="star" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
+                                <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
+                                    <View style={styles.strRoomHeaderLeft}>
+                                        <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                        <View style={styles.strRoomHeaderLeftProfileInfo}>
+                                            <Text style={[styles.strRoomHeaderLeftProfileName]}>
+                                                {userDetails?.screenName}
+                                            </Text>
+                                            <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
+                                                <Ionicons name="star" solid size={14} color="#fff" />
+                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
+                                            </View>
                                         </View>
                                     </View>
-                                </View>
                                 </Pressable>
-                               <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
-                               <TouchableOpacity onPress={()=>{
-                                setOpenViewerList(true)
-                                socket.emit('RoomTotalCount')
-                                }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)',width:'100%',height:'25',margin:'5',borderRadius:21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center',paddingLeft: '5'}}>
-                                            <Ionicons name="heart" size={15} color={Streamupdated.LikeCount===0?"white":"red"} />
-                                            <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
+                                <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
+                                    <TouchableOpacity onPress={() => {
+                                        setOpenViewerList(true)
+                                        socket.emit('RoomTotalCount')
+                                    }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: '5' }}>
+                                                <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
+                                                <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
+                                                <Ionicons name="eye" size={15} color="#1F85F5" />
+                                                <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
+                                                {isHost && (<>
+                                                    <Ionicons name="eye" size={15} color="#00BD35" />
+                                                    <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{Streamupdated.viewerCount}</Text>
+                                                </>)}
+                                            </View>
                                         </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
-                                            <Ionicons name="eye" size={15} color="#1F85F5" />
-                                            <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
-                                        </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
-                                            {isHost && (<>
-                                                <Ionicons name="eye" size={15} color="#00BD35" />
-                                                <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{Streamupdated.viewerCount}</Text>
-                                            </>)}
-                                        </View>
-                                    </View>
-                               </TouchableOpacity>
+                                    </TouchableOpacity>
                                 </View>
                                 <View style={styles.strRoomHeaderRight}>
                                     <View style={styles.strRoomHeaderRWalletInfo}>
@@ -700,43 +700,43 @@ const StreamRoom = ({
                                 end={{ x: 0.5, y: 0 }}
                                 style={styles.strRoomFooter}
                             >
-                                    <>
-                                        <View style={styles.strRoomFooterChatOrActionsBox}>
-                                            <View style={[styles.streamChatContainer]}>
-                                                <ScrollView
-                                                    ref={scrollViewRef}
-                                                    showsVerticalScrollIndicator={false}
-                                                >
-                                                    {roomchat.map((chat, ind) => (
-                                                        <View key={ind} style={styles.streamChatItem}>
-                                                            <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
-                                                            <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                                <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
-                                                                    {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
-                                                                </Text>
-                                                                <Text numberOfLines={2} style={styles.streamChatMessage}>
-                                                                    {chat.message?.length > 80 ? chat.message?.slice(0, 80) + '...' : chat?.message}
-                                                                </Text>
-                                                            </View>
+                                <>
+                                    <View style={styles.strRoomFooterChatOrActionsBox}>
+                                        <View style={[styles.streamChatContainer]}>
+                                            <ScrollView
+                                                ref={scrollViewRef}
+                                                showsVerticalScrollIndicator={false}
+                                            >
+                                                {roomchat.map((chat, ind) => (
+                                                    <View key={ind} style={styles.streamChatItem}>
+                                                        <Image style={styles.streamChatItemProfileImg} source={chat.userProfile} />
+                                                        <View numberOfLines={1} style={styles.streamChatMessageBox}>
+                                                            <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
+                                                                {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
+                                                            </Text>
+                                                            <Text numberOfLines={2} style={styles.streamChatMessage}>
+                                                                {chat.message?.length > 80 ? chat.message?.slice(0, 80) + '...' : chat?.message}
+                                                            </Text>
                                                         </View>
-                                                    ))}
-                                                </ScrollView>
-                                            </View>
-                                            <View style={styles.strRoomFooterSocialActions}>
-                                                {!isHost && streamerList?.length===1 && (<>
-                                                    <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={()=>handleFriendRequest(userDetails?.userid)}>
-                                                        <Ionicons name="person-add" size={30} color="#fff" />
-                                                    </TouchableOpacity>
-                                                </>)}
-                                                    {!isHost &&(<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
-                                                        <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
-                                                    </TouchableOpacity>)}
-                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
-                                                    <Ionicons name="share-social-sharp" size={30} color="#fff" />
-                                                </TouchableOpacity>
-                                            </View>
+                                                    </View>
+                                                ))}
+                                            </ScrollView>
                                         </View>
-                                    </>
+                                        <View style={styles.strRoomFooterSocialActions}>
+                                            {!isHost && streamerList?.length === 1 && (<>
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={() => handleFriendRequest(userDetails?.userid)}>
+                                                    <Ionicons name="person-add" size={30} color="#fff" />
+                                                </TouchableOpacity>
+                                            </>)}
+                                            {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
+                                                <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
+                                            </TouchableOpacity>)}
+                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                                <Ionicons name="share-social-sharp" size={30} color="#fff" />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </>
                                 {openMoreSettingList && (
                                     <Animated.View
                                         style={[
@@ -748,13 +748,13 @@ const StreamRoom = ({
                                         ]}
                                     >
                                         {/* {localStream || isHost && ( */}
-                                            <TouchableOpacity onPress={() => {
-                                                switchCamera();
-                                                HidesettingPanel()
-                                            }} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
-                                                <Ionicons name="camera-reverse" size={20} color="#fff" />
-                                            </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => {
+                                            switchCamera();
+                                            HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
+                                            <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
+                                            <Ionicons name="camera-reverse" size={20} color="#fff" />
+                                        </TouchableOpacity>
                                         {/* // )} */}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
@@ -768,7 +768,7 @@ const StreamRoom = ({
                                             </TouchableOpacity>
                                         )}
                                         {/* {localStream || isHost && ( */}
-                                            <TouchableOpacity onPress={() => {
+                                        <TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
@@ -965,29 +965,29 @@ const StreamRoom = ({
             {OpenViewerLIst && (
                 <ViewerTotalLIst
                     visible={OpenViewerLIst}
-                    onClose={()=>setOpenViewerList(false)}
+                    onClose={() => setOpenViewerList(false)}
                     totalRoomviewerList={totalRoomviewerList}
                     userDetails={userDetails}
                     RoomID={streamInfo?.roomID}
                 />
             )}
-                    {/* Send Animation - shown to the gift sender */}
-        {showSendAnimation && sendAnimationData && (
-            <GiftSendAnimation
-                giftName={sendAnimationData.giftName}
-                recipientName={sendAnimationData.recipientName}
-                onComplete={handleSendAnimationComplete}
-            />
-        )}
-        
-        {/* Receive Animation - shown to the gift receiver (host) */}
-        {showReceiveAnimation && receiveAnimationData && (
-            <GiftReceiveAnimation
-                giftName={receiveAnimationData.giftName}
-                senderName={receiveAnimationData.senderName}
-                onComplete={handleReceiveAnimationComplete}
-            />
-        )}
+            {/* Send Animation - shown to the gift sender */}
+            {showSendAnimation && sendAnimationData && (
+                <GiftSendAnimation
+                    giftName={sendAnimationData.giftName}
+                    recipientName={sendAnimationData.recipientName}
+                    onComplete={handleSendAnimationComplete}
+                />
+            )}
+
+            {/* Receive Animation - shown to the gift receiver (host) */}
+            {showReceiveAnimation && receiveAnimationData && (
+                <GiftReceiveAnimation
+                    giftName={receiveAnimationData.giftName}
+                    senderName={receiveAnimationData.senderName}
+                    onComplete={handleReceiveAnimationComplete}
+                />
+            )}
             {OpenHostPorfile && (
                 <ProfileScreenModal
                     visible="true"
