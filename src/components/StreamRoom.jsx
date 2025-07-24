@@ -401,8 +401,6 @@ const StreamRoom = ({
                     });
                     setShowSendAnimation(true);
                     setGiftModalVisible(false);
-                    // setMessage(`Gift send to the ${hostInfo[0]?.Name}`)
-                    // setVisibleModal('message-modal')
                 }
             }
         } catch (error) {
