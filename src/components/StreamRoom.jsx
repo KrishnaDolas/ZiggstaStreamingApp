@@ -4,6 +4,7 @@ import {
     Easing,
     ActivityIndicator, Platform
 } from 'react-native';
+import KeepAwake from 'react-native-keep-awake';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -20,7 +21,6 @@ import RequestModal from '../modals/RequestModal';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
-import AnimatedGift from '../modals/AnimatedGift';
 import ReportUserModal from '../modals/ReportUserModal';
 import { giftImages, SendErrorTotheServer } from '../utils/constant';
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
@@ -81,9 +81,9 @@ const StreamRoom = ({
     const blinkingAnim = useRef(new Animated.Value(1)).current;
 
     const [showSendAnimation, setShowSendAnimation] = useState(false);
-const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
-const [sendAnimationData, setSendAnimationData] = useState(null);
-const [receiveAnimationData, setReceiveAnimationData] = useState(null);
+    const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
+    const [sendAnimationData, setSendAnimationData] = useState(null);
+    const [receiveAnimationData, setReceiveAnimationData] = useState(null);
 
     const scrollViewRef = useRef();
     // Function to fetch gifts from the API
@@ -100,10 +100,15 @@ const [receiveAnimationData, setReceiveAnimationData] = useState(null);
     useEffect(() => {
         // Preload all images
         Object.values(giftImages).forEach((img) => {
-          // require returns a number (packaged asset), but Image.resolveAssetSource gives URI
-          const source = Image.resolveAssetSource(img).uri;
-          Image.prefetch(source);
+            // require returns a number (packaged asset), but Image.resolveAssetSource gives URI
+            const source = Image.resolveAssetSource(img).uri;
+            Image.prefetch(source);
         });
+        KeepAwake.activate();
+        return () => {
+            // Allow sleep when leaving stream
+            KeepAwake.deactivate();
+        };
       }, []);
 
     useEffect(() => {
