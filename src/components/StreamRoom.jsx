@@ -24,6 +24,7 @@ import AnimatedGift from '../modals/AnimatedGift';
 import ReportUserModal from '../modals/ReportUserModal';
 import { giftImages, SendErrorTotheServer } from '../utils/constant';
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
+import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 
 
 const StreamRoom = ({
@@ -79,6 +80,12 @@ const StreamRoom = ({
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
+
+    const [showSendAnimation, setShowSendAnimation] = useState(false);
+const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
+const [sendAnimationData, setSendAnimationData] = useState(null);
+const [receiveAnimationData, setReceiveAnimationData] = useState(null);
+
     const scrollViewRef = useRef();
     // Function to fetch gifts from the API
     const getGiftsCategory = async () => {
@@ -350,12 +357,17 @@ const StreamRoom = ({
 
     const HandleGiftReceived = (senderName, giftName) => {
         try {
-            setMessage(`Gift Received from ${senderName}`)
-            setVisibleModal('message-modal')
-            setGiftInfo({giftName:giftName,username:senderName})
-            setTimeout(() => {
-                setGiftInfo(null)
-            }, 4000);
+            // setMessage(`Gift Received from ${senderName}`)
+            // setVisibleModal('message-modal')
+            setReceiveAnimationData({
+                giftName: giftName,
+                senderName: senderName
+            });
+            setShowReceiveAnimation(true);
+            // setGiftInfo({giftName:giftName,username:senderName})
+            // setTimeout(() => {
+            //     setGiftInfo(null)
+            // }, 4000);
         } catch (error) {
             SendErrorTotheServer(error,"HandleGiftReceived")
         }
@@ -389,8 +401,14 @@ const StreamRoom = ({
             if (Responce.data) {
                 if (Responce.data.success) {
                     socket.emit('Send-gift', userData?.screenName, item?.giftIcon)
-                    setMessage(`Gift send to the ${hostInfo[0]?.Name}`)
-                    setVisibleModal('message-modal')
+                    setSendAnimationData({
+                        giftName: item?.giftIcon,
+                        recipientName: hostInfo[0]?.Name
+                    });
+                    setShowSendAnimation(true);
+                    setGiftModalVisible(false);
+                    // setMessage(`Gift send to the ${hostInfo[0]?.Name}`)
+                    // setVisibleModal('message-modal')
                 }
             }
         } catch (error) {
@@ -422,6 +440,16 @@ const StreamRoom = ({
             setVisibleModal('message-modal')
         }
     },[streammsg])
+
+    const handleSendAnimationComplete = () => {
+        setShowSendAnimation(false);
+        setSendAnimationData(null);
+    };
+    
+    const handleReceiveAnimationComplete = () => {
+        setShowReceiveAnimation(false);
+        setReceiveAnimationData(null);
+    };
 
     return (
         <View style={[styles.roomInfo]}>
@@ -910,9 +938,9 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
-            {giftInfo && (
+            {/* {giftInfo && (
                 <AnimatedGift giftName={giftInfo.giftName} username={giftInfo.username} />
-            )}
+            )} */}
             {visibleModal === 'message-modal' && (
                 <MessageModal
                     visible={visibleModal === 'message-modal'}
@@ -945,6 +973,23 @@ const StreamRoom = ({
                     RoomID={streamInfo?.roomID}
                 />
             )}
+                    {/* Send Animation - shown to the gift sender */}
+        {showSendAnimation && sendAnimationData && (
+            <GiftSendAnimation
+                giftName={sendAnimationData.giftName}
+                recipientName={sendAnimationData.recipientName}
+                onComplete={handleSendAnimationComplete}
+            />
+        )}
+        
+        {/* Receive Animation - shown to the gift receiver (host) */}
+        {showReceiveAnimation && receiveAnimationData && (
+            <GiftReceiveAnimation
+                giftName={receiveAnimationData.giftName}
+                senderName={receiveAnimationData.senderName}
+                onComplete={handleReceiveAnimationComplete}
+            />
+        )}
         </View>
     );
 };
