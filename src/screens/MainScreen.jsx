@@ -25,7 +25,7 @@ import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
 
 export const MainScreen = () => {
-  const { userData, userAddress, setIsInStreamRoom } = useAppContext();
+  const { userData, userAddress, setIsInStreamRoom,fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -58,6 +58,7 @@ export const MainScreen = () => {
 
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
+    fetchProfileDetails()
     return () => setIsInStreamRoom(false); // reset when unmounted
   }, [joined]);
 
