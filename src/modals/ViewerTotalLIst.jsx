@@ -22,8 +22,8 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
         const HandleGetGiftersData = async () => {
             try {
                 // const params = {
-                //     "toUserID": 1,
-                //     "roomId": 955
+                //     "toUserID": userDetails?.userid,
+                //     "roomId": RoomID
                 // }
                 const params = {
                     "toUserID": userDetails?.userid,
@@ -53,9 +53,9 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
         switch (activeTab) {
             case 0:
                 return (
-                    <View style={{ position: 'absolute' }}>
+                    <View>
                         <View>
-                            <Text style={{ fontSize: 16 }}>Gifters</Text>
+                            {/* <Text style={{ fontSize: 16 }}>Gifters</Text>
                             <FlatList
                                 data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
                                 keyExtractor={(item) => item.ViewerID.toString()}
@@ -99,9 +99,9 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                                         </View>
                                     </View>
                                 )}
-                            />
+                            /> */}
                         </View>
-                        <View style={{ position: 'relative', top: 0 }}>
+                        <View>
                             <Text style={{ fontSize: 16 }}>Viewers</Text>
                             <FlatList
                                 data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
