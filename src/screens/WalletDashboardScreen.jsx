@@ -1,18 +1,17 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image, RefreshControl } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
-import Footer from '../components/Footer';
 import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dropdown } from 'react-native-element-dropdown';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
 import BalanceHistoryModal from '../modals/BalanceHistoryModal';
+import { useFocusEffect } from '@react-navigation/native';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
@@ -36,10 +35,10 @@ export const WalletDashboardScreen = () => {
     const [bankListData, setBankListData] = useState([]);
     const [visibleModal, setVisibleModal] = useState(null);
     const [loadingSubmit, setLoadingSubmit] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
-    // const bankName = ['Bank 1', 'Bank 2', 'Bank 3'];
 
     // const getToken = async () => {
     //     const token = await AsyncStorage.getItem('token');
@@ -50,15 +49,26 @@ export const WalletDashboardScreen = () => {
     //     getToken();
     // }, []);
 
+    useFocusEffect(
+        useCallback(() => {
+            setErrorMessage('');
+            setSuccessMessage('');
+            // Refetch data
+            getFriendsData();
+
+            getBankListData();
+        }, [])
+    );
+
 
     // Function to fetch friends data blocked/unblocked user from the API
 
     const getFriendsData = useCallback(async () => {
-        if (!userData.userid) return
+        if (!userData?.userid) return
         try {
 
             const postData = {
-                userId: userData.userid,
+                userId: userData?.userid,
                 isBlocked: 0,
             };
 
@@ -93,41 +103,32 @@ export const WalletDashboardScreen = () => {
     }, [userName, friendsData]);
 
 
-    // useEffect(() => {
-    //     console.log('selectedFriend', selectedFriend);
-    // }, [selectedFriend]);
-
-    // useEffect(() => {
-    //     console.log('selectedAmount', selectedAmount);
-    // }, [selectedAmount]);
-
-
     // Function to fetch social data from the API
-    useEffect(() => {
-        const getBankListData = async () => {
-            try {
-                const response = await Apiclient.post(`/saveuserbank/getUserBankList?userID=${userData.userid}`);
-                const apiData = response.data?.data || [];
+    const getBankListData = useCallback(async () => {
+        try {
+            const response = await Apiclient.post(`/saveuserbank/getUserBankList?userID=${userData.userid}`);
+            const apiData = response.data?.data || [];
 
-                // Transform API data to local format
-                const transformedData = apiData.map((item, index) => ({
-                    id: index + 1, // Unique ID for rendering
-                    BankID: item.BankID,
-                    bankName: item.BankName,
-                    accountNumber: item.AccountNumber,
-                    isPrimaryAccount: item.IsPrimary === 1 ? 'Y' : 'N',
-                }));
+            // Transform API data to local format
+            const transformedData = apiData.map((item, index) => ({
+                id: index + 1, // Unique ID for rendering
+                BankID: item.BankID,
+                bankName: item.BankName,
+                accountNumber: item.AccountNumber,
+                isPrimaryAccount: item.IsPrimary === 1 ? 'Y' : 'N',
+            }));
 
-                setBankListData(transformedData);
-                // console.log('Bank List Data:', transformedData);
-            } catch (error) {
-                console.error('Error fetching bank list:', error);
-            }
-        };
-        if (userData.userid) {
-            getBankListData();
+            setBankListData(transformedData);
+            // console.log('Bank List Data:', transformedData);
+        } catch (error) {
+            console.error('Error fetching bank list:', error);
         }
     }, [userData.userid]);
+
+
+    useEffect(() => {
+        getBankListData();
+    }, [getBankListData]);
 
     // Handle tab change
     const handleTabChange = (tab) => {
@@ -192,6 +193,13 @@ export const WalletDashboardScreen = () => {
         }
     };
 
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await getFriendsData();
+        await getBankListData();
+        setRefreshing(false);
+    }, [getFriendsData, getBankListData]);
+
     return (
         <LinearGradient
             style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
@@ -228,6 +236,14 @@ export const WalletDashboardScreen = () => {
                             contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
                             keyboardShouldPersistTaps="handled"
                             nestedScrollEnabled={true}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={refreshing}
+                                    onRefresh={onRefresh}
+                                    tintColor={theme === 'dark' ? '#fff' : '#000'} // optional styling
+                                    colors={['#b83af3', '#6950fb']} // Android spinner color
+                                />
+                            }
                         >
                             {/* wallet tabs button */}
                             <View style={[styles.wdTabContainer, themeStyles[theme].wdTabContainer]}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Modal from 'react-native-modal';
 import { format } from 'date-fns';
@@ -45,6 +45,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const [isFavourite, setIsFavourite] = useState(false);
     const [searchFilteredData, setSearchFilteredData] = useState([]);
     const [isdisable, setIsDisable] = useState(false); // for disabling the button when creating room
+    const [refreshing, setRefreshing] = useState(false);
 
     // Function to fetch user details from the API
     const getUserDetails = async () => {
@@ -309,6 +310,25 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     }, [searchFilteredData]);
 
 
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            if (filteredRooms.length > 0) {
+                const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
+                await filterroomdata(sorteddata);
+            } else if (isNearBy && userAddress) {
+                await getRoomsByLocation();
+            } else {
+                await getRooms();
+            }
+        } catch (error) {
+            console.error('Error on pull-to-refresh:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
+
     return (
         <LinearGradient
             style={{ height: '100%', width: '100%', position: 'relative' }}
@@ -353,12 +373,22 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 {isInitialLoading ? (
                     <StreamListSkeleton count={6} columns={2} />
                 ) : apiRooms.length === 0 && searchFilteredData.length > 0 ? (
-                    <View style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: screenHeight * 0.4,
-                        padding: 20,
-                    }}>
+                    <ScrollView
+                        contentContainerStyle={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: screenHeight * 0.5,
+                            paddingHorizontal: 20,
+                        }}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
+                                colors={['#d93a63']}
+                                tintColor="#d93a63"
+                            />
+                        }
+                    >
                         <Image
                             source={require('../../assets/images/default-streamer.jpg')}
                             style={[
@@ -374,14 +404,24 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         }}>
                             No rooms found for this search.
                         </Text>
-                    </View>
+                    </ScrollView>
                 ) : apiRooms.length === 0 ? (
-                    <View style={{
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: screenHeight * 0.4,
-                        padding: 20,
-                    }}>
+                    <ScrollView
+                        contentContainerStyle={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: screenHeight * 0.5,
+                            paddingHorizontal: 20,
+                        }}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
+                                colors={['#d93a63']}
+                                tintColor="#d93a63"
+                            />
+                        }
+                    >
                         <Image
                             source={require('../../assets/images/NoStreamAvailable.png')}
                             style={[
@@ -389,7 +429,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
                             ]}
                         />
-                    </View>
+                    </ScrollView>
                 ) : (
                     <FlatList
                         data={apiRooms}
@@ -400,6 +440,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         numColumns={2}
                         columnWrapperStyle={styles.streamListGrid}
                         renderItem={renderItem}
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
                     />)}
             </View>
 
