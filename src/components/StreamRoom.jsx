@@ -4,7 +4,6 @@ import {
     Easing,
     ActivityIndicator, Platform
 } from 'react-native';
-import KeepAwake from 'react-native-keep-awake';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -104,11 +103,6 @@ const StreamRoom = ({
             const source = Image.resolveAssetSource(img).uri;
             Image.prefetch(source);
         });
-        KeepAwake.activate();
-        return () => {
-            // Allow sleep when leaving stream
-            KeepAwake.deactivate();
-        };
       }, []);
 
     useEffect(() => {

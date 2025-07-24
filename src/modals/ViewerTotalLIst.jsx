@@ -21,14 +21,15 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
     useEffect(() => {
         const HandleGetGiftersData = async () => {
             try {
-                const params = {
-                    "toUserID": 1,
-                    "roomId": 955
-                }
                 // const params = {
-                //     "toUserID": userDetails?.reportData?.userid,
-                //     "roomId": RoomID
+                //     "toUserID": 1,
+                //     "roomId": 955
                 // }
+                const params = {
+                    "toUserID": userDetails?.reportData?.userid,
+                    "roomId": RoomID
+                }
+                console.log(params);
                 const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
                 if (responce.data.success) {
                     const data = responce.data.data;
