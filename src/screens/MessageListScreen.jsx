@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity } from 'react-native';
+import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -34,7 +34,8 @@ export const MessageListScreen = () => {
     const [profileUserData, setProfileUserData] = useState({});
     const [message, setMessage] = useState(null);
     const [isUnblocking, setIsUnblocking] = useState(false); // New state to prevent multiple unblock triggers
-
+    // Add this state near other states
+    const [refreshing, setRefreshing] = useState(false);
 
     // Cleanup modals on unmount
     useEffect(() => {
@@ -194,6 +195,24 @@ export const MessageListScreen = () => {
     };
 
 
+    // Add this function
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            if (friendListType === 'requests') {
+                await getFriendRequestData();
+            } else {
+                await getFriendsData();
+            }
+        } catch (error) {
+            console.error('Error on pull-to-refresh:', error);
+            SendErrorTotheServer(error, 'handleRefresh');
+        } finally {
+            setRefreshing(false);
+        }
+    }, [friendListType, getFriendsData, getFriendRequestData]);
+
+
     const renderItem = useCallback(({ item }) => {
         if (friendListType === 'requests') {
             return (
@@ -348,9 +367,19 @@ export const MessageListScreen = () => {
                     ) : (
                         <>
                             {(friendListType === 'requests' ? friendRequestsData.length === 0 : friendsData.length === 0) ? (
-                                <View style={{ alignItems: 'center', paddingTop: 50 }}>
+                                <ScrollView
+                                    contentContainerStyle={{ alignItems: 'center', paddingTop: 50 }}
+                                    refreshControl={
+                                        <RefreshControl
+                                            refreshing={refreshing}
+                                            onRefresh={handleRefresh}
+                                            colors={['#d93a63']}
+                                            tintColor="#d93a63"
+                                        />
+                                    }
+                                >
                                     <Image
-                                        source={require('../../assets/images/friends-no-data-found.png')} // <- Replace with your static "no data" image
+                                        source={require('../../assets/images/friends-no-data-found.png')}
                                         style={{ width: 200, height: 200, resizeMode: 'contain' }}
                                     />
                                     <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>
@@ -358,7 +387,7 @@ export const MessageListScreen = () => {
                                         {friendListType === 'blocked' && 'No blocked users'}
                                         {friendListType === 'requests' && 'No friend requests'}
                                     </Text>
-                                </View>
+                                </ScrollView>
                             ) : (
                                 <FlatList
                                     data={friendListType === 'requests' ? friendRequestsData : friendsData}
@@ -366,6 +395,8 @@ export const MessageListScreen = () => {
                                     renderItem={renderItem}
                                     contentContainerStyle={styles.messageListLayout}
                                     initialNumToRender={10}
+                                    refreshing={refreshing} // <-- Add this
+                                    onRefresh={handleRefresh} // <-- And this
                                 />
                             )}
                         </>

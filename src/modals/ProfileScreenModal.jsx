@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, } from 'react-native';
+import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, } from 'react-native';
 
 import Modal from 'react-native-modal';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -17,7 +17,6 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import ReportUserModal from './ReportUserModal';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import ActionSheet from 'react-native-actionsheet';
 import CameraActionSheet from '../components/CameraActionSheet';
 
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
@@ -25,9 +24,8 @@ const userFeMaleFallbackImage = require('../../assets/images/default_avatar_fema
 const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 
-const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) => {
+const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isViewer }) => {
     const { theme } = useContext(ThemeContext);
-    const navigation = useNavigation();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -45,8 +43,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [showActionSheet, setShowActionSheet] = useState(false);
 
-    const actionSheetRef = useRef();
-
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
 
@@ -56,11 +52,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
             setVisibleModal(null); // Close all modals
         };
     }, []);
-
-    // ACTION SHEET OPTIONS
-    const actionSheetOptions = ['Take Photo', 'Choose from Gallery', 'Cancel'];
-
-
 
     const panResponder = useRef(
         PanResponder.create({
@@ -100,43 +91,97 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
     };
 
     const onSelectImage = async (type) => {
+        setAvatarUploading(true);
+
         const options = {
             mediaType: 'photo',
             quality: 0.7,
+            saveToPhotos: true,
         };
 
         try {
-            const result =
-                type === 'camera'
-                    ? await launchCamera(options)
-                    : await launchImageLibrary(options);
+            if (type === 'camera') {
+                if (Platform.OS === 'android') {
+                    const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
 
-            if (result.didCancel || result.errorCode) return;
+                    const granted = await PermissionsAndroid.request(permission, {
+                        title: 'Camera Permission',
+                        message: 'App needs access to your camera to take photos.',
+                        buttonNeutral: 'Ask Me Later',
+                        buttonNegative: 'Cancel',
+                        buttonPositive: 'OK',
+                    });
 
-            const file = result.assets[0];
-            const uri = file.uri;
-            const name = file.fileName || `avatar_${Date.now()}.jpg`;
-            const typeMime = file.type;
+                    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                        const result = await launchCamera(options);
+                        handleImageResult(result);
+                    } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
+                        Alert.alert(
+                            'Permission Required',
+                            'Camera permission is required to take a photo. Please allow it.',
+                        );
+                        setAvatarUploading(false);
+                        return;
+                    } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                        Alert.alert(
+                            'Permission Denied',
+                            'Camera permission was denied permanently. Open settings to allow access.',
+                            [
+                                { text: 'Cancel', style: 'cancel' },
+                                { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                            ]
+                        );
+                        setAvatarUploading(false);
+                        return;
+                    }
+                }
+            }
 
-            const avatarFile = {
-                uri,
-                name,
-                type: typeMime,
-            };
-
-            uploadAvatarToServer(avatarFile);
+            if (type === 'gallery') {
+                const result = await launchImageLibrary(options);
+                handleImageResult(result);
+            }
         } catch (error) {
             console.error('Image selection error:', error);
             Alert.alert('Error', 'Failed to select image.');
+            setAvatarUploading(false);
         }
     };
 
+
+    const handleImageResult = (result) => {
+        if (result.didCancel) {
+            console.log('User cancelled image picker');
+            setAvatarUploading(false);
+            return;
+        }
+
+        if (result.errorCode) {
+            console.error('Picker Error:', result.errorMessage);
+            Alert.alert('Error', result.errorMessage || 'Unknown error');
+            setAvatarUploading(false);
+            return;
+        }
+
+        const file = result.assets?.[0];
+        if (!file) {
+            Alert.alert('Error', 'No image selected');
+            setAvatarUploading(false);
+            return;
+        }
+
+        const avatarFile = {
+            uri: file.uri,
+            name: file.fileName || `avatar_${Date.now()}.jpg`,
+            type: file.type,
+        };
+
+        uploadAvatarToServer(avatarFile);
+    };
+
+
     const uploadAvatarToServer = async (avatarFile) => {
-        setAvatarUploading(true);
-        console.log('avatarFile', avatarFile);
-        console.log('userId', profileUserId);
         const formData = new FormData();
-        // formData.append('avatar', avatarFile);
         formData.append('avatar', {
             uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
             type: avatarFile.type,
@@ -149,18 +194,14 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
             const resJson = response.data;
             console.log('response avatar upload', resJson);
             if (response.status === 200) {
-                // const fullAvatar = resJson.filename.startsWith('http')
-                //     ? resJson.filename
-                //     : `https://api.streamlong.live/${resJson.filename}?t=${Date.now()}`;
-
-                // setUserProfileDetails(prev => ({
-                //     ...prev,
-                //     avatar: fullAvatar,
-                // }));
-                Alert.alert('Upload successFully', resJson.message);
+                // Alert.alert('Upload successFully', resJson.message);
+                setMessage(resJson.message);
+                setVisibleModal('message-modal');
 
             } else {
-                Alert.alert('Upload Failed', resJson.message || 'Something went wrong');
+                // Alert.alert('Upload Failed', resJson.message || 'Please try again.');
+                setMessage(resJson.message || 'Please try again.');
+                setVisibleModal('message-modal');
             }
         } catch (error) {
             console.error('Avatar upload error:', error);
@@ -407,243 +448,253 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                     <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10, marginRight: 5 }]}>
                         <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
-                    <View style={[{ marginHorizontal: 0, flex: 1 }]}>
-                        {layoutReady &&
-                            <ScrollView
-                                contentContainerStyle={{ paddingBottom: 40 }}
-                                showsVerticalScrollIndicator={true}
-                            >
-                                <>
-                                    {/* Header with Report button */}
-                                    {!isMainProfile && (
-                                        <View style={styles.psmHeader}>
-                                            <TouchableOpacity
-                                                onPress={handleReport}
-                                                style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
-                                                disabled={reportClicked}
-                                            >
-                                                <Text style={styles.psmReportButtonText}>Report</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-                                    {isUserLoading ? (
-                                        // Skeleton while loading
-                                        <View style={styles.psmProfileContainer}>
-                                            <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard, { paddingTop: 10 }]}>
-                                                <ShimmerPlaceHolder
-                                                    LinearGradient={LinearGradient}
-                                                    style={[styles.psmProfileImage, { borderRadius: 50 }]}
-                                                    shimmerStyle={{ width: 100, height: 100 }}
-                                                />
-
-                                                <ShimmerPlaceHolder
-                                                    LinearGradient={LinearGradient}
-                                                    style={{ width: 140, height: 20, marginTop: 10, borderRadius: 4 }}
-                                                />
-                                                <ShimmerPlaceHolder
-                                                    LinearGradient={LinearGradient}
-                                                    style={{ width: 100, height: 14, marginTop: 6, borderRadius: 4 }}
-                                                />
-
-                                                <View style={[styles.psmStatsContainer, { marginTop: 20 }]}>
-                                                    {[...Array(3)].map((_, i) => (
-                                                        <ShimmerPlaceHolder
-                                                            key={i}
-                                                            LinearGradient={LinearGradient}
-                                                            style={{ width: 60, height: 40, borderRadius: 8, marginHorizontal: 10 }}
-                                                        />
-                                                    ))}
-                                                </View>
+                    {avatarUploading ? (
+                        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                            <ActivityIndicator size="large" />
+                            <Text style={{ marginTop: 10 }}>Uploading...</Text>
+                        </View>
+                    ) : (
+                        <View style={[{ marginHorizontal: 0, flex: 1 }]}>
+                            {layoutReady &&
+                                <ScrollView
+                                    contentContainerStyle={{ paddingBottom: 40 }}
+                                    showsVerticalScrollIndicator={true}
+                                >
+                                    <>
+                                        {/* Header with Report button */}
+                                        {!isMainProfile && (
+                                            <View style={styles.psmHeader}>
+                                                <TouchableOpacity
+                                                    onPress={handleReport}
+                                                    style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                                    disabled={reportClicked}
+                                                >
+                                                    <Text style={styles.psmReportButtonText}>Report</Text>
+                                                </TouchableOpacity>
                                             </View>
-                                        </View>
-                                    ) : (
-                                        <>
-
+                                        )}
+                                        {isUserLoading ? (
+                                            // Skeleton while loading
                                             <View style={styles.psmProfileContainer}>
-                                                {/* Profile Content */}
-                                                <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard]}>
-                                                    {/* Profile Image */}
-                                                    <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
-                                                        <View style={styles.profileImageWrapper}>
-                                                            <Image
-                                                                source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
-                                                                    ? getGenderFallbackImage(userProfileDatails?.gender)
-                                                                    : { uri: userProfileDatails?.avatar }
-                                                                }
-                                                                style={styles.psmProfileImage}
+                                                <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard, { paddingTop: 10 }]}>
+                                                    <ShimmerPlaceHolder
+                                                        LinearGradient={LinearGradient}
+                                                        style={[styles.psmProfileImage, { borderRadius: 50 }]}
+                                                        shimmerStyle={{ width: 100, height: 100 }}
+                                                    />
+
+                                                    <ShimmerPlaceHolder
+                                                        LinearGradient={LinearGradient}
+                                                        style={{ width: 140, height: 20, marginTop: 10, borderRadius: 4 }}
+                                                    />
+                                                    <ShimmerPlaceHolder
+                                                        LinearGradient={LinearGradient}
+                                                        style={{ width: 100, height: 14, marginTop: 6, borderRadius: 4 }}
+                                                    />
+
+                                                    <View style={[styles.psmStatsContainer, { marginTop: 20 }]}>
+                                                        {[...Array(3)].map((_, i) => (
+                                                            <ShimmerPlaceHolder
+                                                                key={i}
+                                                                LinearGradient={LinearGradient}
+                                                                style={{ width: 60, height: 40, borderRadius: 8, marginHorizontal: 10 }}
                                                             />
-                                                            <TouchableOpacity
-                                                                style={styles.editIconContainer}
-                                                                onPress={handleEditAvatar}
-                                                            >
-                                                                <Ionicons name="camera" size={16} color="#fff" />
-                                                            </TouchableOpacity>
-                                                        </View>
+                                                        ))}
                                                     </View>
-
-                                                    {/* Name and ID */}
-                                                    <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDatails?.screenName}</Text>
-                                                    <Text style={styles.psmProfileId}>ID: {userProfileDatails?.userid}</Text>
-
-                                                    {/* Stats Section */}
-                                                    <View style={styles.psmStatsContainer}>
-                                                        <View style={styles.psmStatItem}>
-                                                            <Text style={styles.psmStatLabel}>STREAMS</Text>
-                                                            <Text style={styles.psmStatValue}>{userStreamRoomCount?.roomCount}</Text>
-                                                        </View>
-                                                        <View style={styles.psmStatItem}>
-                                                            <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
-                                                            <Text style={styles.psmStatValue}>{followersCountData?.followerCount}</Text>
-                                                        </View>
-                                                        <View style={styles.psmStatItem}>
-                                                            <Text style={styles.psmStatLabel}>FOLLOWING</Text>
-                                                            <Text style={styles.psmStatValue}>{followersCountData?.followingCount}</Text>
-                                                        </View>
-                                                    </View>
-                                                </View>
-                                                {/* Social Media Icons */}
-                                                <View style={styles.psmSocialContainer}>
-                                                    <TouchableOpacity
-                                                        onPress={() => handleSocialPress('Instagram')}
-                                                        style={styles.psmSocialButton}
-                                                        disabled={!socialLinks?.instagram}
-                                                    >
-                                                        <View style={styles.psmInstagramIcon}>
-                                                            <FontAwesome
-                                                                name="instagram"
-                                                                size={34}
-                                                                color={
-                                                                    socialLinks?.instagram
-                                                                        ? theme === 'dark' ? '#fff' : '#833ab4'
-                                                                        : '#A9A9A9'
-                                                                }
-                                                                style={!socialLinks?.instagram ? { opacity: 0.5 } : {}}
-                                                            />
-                                                        </View>
-                                                    </TouchableOpacity>
-
-                                                    <TouchableOpacity
-                                                        onPress={() => handleSocialPress('Facebook')}
-                                                        style={styles.psmSocialButton}
-                                                        disabled={!socialLinks?.facebook}
-                                                    >
-                                                        <View style={styles.psmFacebookIcon}>
-                                                            <FontAwesome
-                                                                name="facebook"
-                                                                size={34}
-                                                                color={
-                                                                    socialLinks?.facebook
-                                                                        ? theme === 'dark' ? '#fff' : '#445fed'
-                                                                        : '#A9A9A9'
-                                                                }
-                                                                style={!socialLinks?.facebook ? { opacity: 0.5 } : {}}
-                                                            />
-                                                        </View>
-                                                    </TouchableOpacity>
-
-                                                    <TouchableOpacity
-                                                        onPress={() => handleSocialPress('Twitter')}
-                                                        style={styles.psmSocialButton}
-                                                        disabled={!socialLinks?.twitter}
-                                                    >
-                                                        <View style={styles.psmTwitterIcon}>
-                                                            <Image
-                                                                source={require('../../assets/images/tx-logo-black.png')}
-                                                                resizeMode="contain"
-                                                                style={{
-                                                                    width: 26,
-                                                                    height: 26,
-                                                                    tintColor: socialLinks?.twitter
-                                                                        ? theme === 'dark' ? '#fff' : '#000'
-                                                                        : '#A9A9A9',
-                                                                    opacity: socialLinks?.twitter ? 1 : 0.5,
-                                                                }}
-                                                            />
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                </View>
-                                                {socialError !== '' && (
-                                                    <Text style={{ textAlign: 'center', marginTop: 8, color: 'red', fontSize: 13 }}>
-                                                        {socialError}
-                                                    </Text>
-                                                )}
-                                                {/* Top Gifters */}
-                                                <View style={styles.psmTopGiftersContainer}>
-                                                    <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
-                                                    {topGiftersData.length === 0 ? (
-                                                        <View style={{ alignItems: 'center', marginTop: 20 }}>
-                                                            <Ionicons name="gift-outline" size={50} color="#ccc" />
-                                                            <Text
-                                                                style={{
-                                                                    marginTop: 10,
-                                                                    color: '#999',
-                                                                    fontSize: 14,
-                                                                    textAlign: 'center',
-                                                                }}>
-                                                                You haven’t received any gifts during your streams yet. Start streaming and connect with your audience to receive your first gift!
-                                                            </Text>
-                                                        </View>
-                                                    ) : (
-                                                        <>
-                                                            <LinearGradient
-                                                                colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
-                                                                start={{ x: 0, y: 1 }}
-                                                                end={{ x: 0.8, y: 0.2 }}
-                                                                style={styles.psmTopGifterMainCard}
-                                                            >
-                                                                <View style={styles.psmTopGifterImageContainer}>
-                                                                    <Image
-                                                                        source={
-                                                                            topGiftersData[0]?.image === 'default' || !topGiftersData[0]?.image
-                                                                                ? getGenderFallbackImage(topGiftersData[0]?.gender)
-                                                                                : { uri: topGiftersData[0]?.image }
-                                                                        }
-                                                                        style={styles.psmTopGifterMainImage}
-                                                                    />
-                                                                </View>
-                                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                    <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.screenName}</Text>
-                                                                    <Text style={styles.psmTopGifterMainAmount}>{topGiftersData[0]?.Amount}</Text>
-                                                                </View>
-                                                            </LinearGradient>
-                                                            <View style={styles.psmOtherGiftersContainer}>
-                                                                {topGiftersData?.slice(1).map((gifter, index) => (
-                                                                    <View
-                                                                        key={gifter.id}
-                                                                        style={[styles.psmOtherGifterCard,
-                                                                        {
-                                                                            borderLeftWidth: index === 0 ? 1 : 0,
-                                                                            borderLeftColor: '#f0f0f0',
-                                                                            borderBottomLeftRadius: index === 0 ? 15 : 0,
-                                                                            borderBottomRightRadius: index === 0 ? 0 : 15,
-                                                                        }]}
-                                                                    >
-                                                                        <View style={styles.psmOtherGifterImageContainer}>
-                                                                            <Image
-                                                                                source={
-                                                                                    !gifter?.image || gifter?.image === 'default'
-                                                                                        ? getGenderFallbackImage(gifter?.gender)
-                                                                                        : { uri: gifter.image }
-                                                                                }
-                                                                                style={styles.psmOtherGifterImage}
-                                                                            />
-                                                                        </View>
-                                                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                            <Text style={styles.psmOtherGifterName}>{gifter?.screenName}</Text>
-                                                                            <Text style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
-                                                                        </View>
-                                                                    </View>
-                                                                ))}
-                                                            </View>
-                                                        </>)}
                                                 </View>
                                             </View>
-                                        </>
-                                    )}
-                                </>
-                            </ScrollView>
-                        }
-                    </View>
+                                        ) : (
+                                            <>
+
+                                                <View style={styles.psmProfileContainer}>
+                                                    {/* Profile Content */}
+                                                    <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard]}>
+                                                        {/* Profile Image */}
+                                                        <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
+                                                            <View style={styles.profileImageWrapper}>
+                                                                <Image
+                                                                    source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                        ? getGenderFallbackImage(userProfileDatails?.gender)
+                                                                        : { uri: userProfileDatails?.avatar }
+                                                                    }
+                                                                    style={styles.psmProfileImage}
+                                                                />
+                                                                {!isViewer && (
+                                                                    <TouchableOpacity
+                                                                        style={styles.editIconContainer}
+                                                                        onPress={handleEditAvatar}
+                                                                    >
+                                                                        <Ionicons name="camera" size={16} color="#fff" />
+                                                                    </TouchableOpacity>
+                                                                )}
+                                                            </View>
+                                                        </View>
+
+                                                        {/* Name and ID */}
+                                                        <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDatails?.screenName}</Text>
+                                                        <Text style={styles.psmProfileId}>ID: {userProfileDatails?.userid}</Text>
+
+                                                        {/* Stats Section */}
+                                                        <View style={styles.psmStatsContainer}>
+                                                            <View style={styles.psmStatItem}>
+                                                                <Text style={styles.psmStatLabel}>STREAMS</Text>
+                                                                <Text style={styles.psmStatValue}>{userStreamRoomCount?.roomCount}</Text>
+                                                            </View>
+                                                            <View style={styles.psmStatItem}>
+                                                                <Text style={styles.psmStatLabel}>FOLLOWERS</Text>
+                                                                <Text style={styles.psmStatValue}>{followersCountData?.followerCount}</Text>
+                                                            </View>
+                                                            <View style={styles.psmStatItem}>
+                                                                <Text style={styles.psmStatLabel}>FOLLOWING</Text>
+                                                                <Text style={styles.psmStatValue}>{followersCountData?.followingCount}</Text>
+                                                            </View>
+                                                        </View>
+                                                    </View>
+                                                    {/* Social Media Icons */}
+                                                    <View style={styles.psmSocialContainer}>
+                                                        <TouchableOpacity
+                                                            onPress={() => handleSocialPress('Instagram')}
+                                                            style={styles.psmSocialButton}
+                                                            disabled={!socialLinks?.instagram}
+                                                        >
+                                                            <View style={styles.psmInstagramIcon}>
+                                                                <FontAwesome
+                                                                    name="instagram"
+                                                                    size={34}
+                                                                    color={
+                                                                        socialLinks?.instagram
+                                                                            ? theme === 'dark' ? '#fff' : '#833ab4'
+                                                                            : '#A9A9A9'
+                                                                    }
+                                                                    style={!socialLinks?.instagram ? { opacity: 0.5 } : {}}
+                                                                />
+                                                            </View>
+                                                        </TouchableOpacity>
+
+                                                        <TouchableOpacity
+                                                            onPress={() => handleSocialPress('Facebook')}
+                                                            style={styles.psmSocialButton}
+                                                            disabled={!socialLinks?.facebook}
+                                                        >
+                                                            <View style={styles.psmFacebookIcon}>
+                                                                <FontAwesome
+                                                                    name="facebook"
+                                                                    size={34}
+                                                                    color={
+                                                                        socialLinks?.facebook
+                                                                            ? theme === 'dark' ? '#fff' : '#445fed'
+                                                                            : '#A9A9A9'
+                                                                    }
+                                                                    style={!socialLinks?.facebook ? { opacity: 0.5 } : {}}
+                                                                />
+                                                            </View>
+                                                        </TouchableOpacity>
+
+                                                        <TouchableOpacity
+                                                            onPress={() => handleSocialPress('Twitter')}
+                                                            style={styles.psmSocialButton}
+                                                            disabled={!socialLinks?.twitter}
+                                                        >
+                                                            <View style={styles.psmTwitterIcon}>
+                                                                <Image
+                                                                    source={require('../../assets/images/tx-logo-black.png')}
+                                                                    resizeMode="contain"
+                                                                    style={{
+                                                                        width: 26,
+                                                                        height: 26,
+                                                                        tintColor: socialLinks?.twitter
+                                                                            ? theme === 'dark' ? '#fff' : '#000'
+                                                                            : '#A9A9A9',
+                                                                        opacity: socialLinks?.twitter ? 1 : 0.5,
+                                                                    }}
+                                                                />
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                    {socialError !== '' && (
+                                                        <Text style={{ textAlign: 'center', marginTop: 8, color: 'red', fontSize: 13 }}>
+                                                            {socialError}
+                                                        </Text>
+                                                    )}
+                                                    {/* Top Gifters */}
+                                                    <View style={styles.psmTopGiftersContainer}>
+                                                        <Text style={styles.psmTopGiftersTitle}>Top Gifters</Text>
+                                                        {topGiftersData.length === 0 ? (
+                                                            <View style={{ alignItems: 'center', marginTop: 20 }}>
+                                                                <Ionicons name="gift-outline" size={50} color="#ccc" />
+                                                                <Text
+                                                                    style={{
+                                                                        marginTop: 10,
+                                                                        color: '#999',
+                                                                        fontSize: 14,
+                                                                        textAlign: 'center',
+                                                                    }}>
+                                                                    You haven’t received any gifts during your streams yet. Start streaming and connect with your audience to receive your first gift!
+                                                                </Text>
+                                                            </View>
+                                                        ) : (
+                                                            <>
+                                                                <LinearGradient
+                                                                    colors={['rgba(105,238,218,1)', 'rgba(114,80,228,1)']}
+                                                                    start={{ x: 0, y: 1 }}
+                                                                    end={{ x: 0.8, y: 0.2 }}
+                                                                    style={styles.psmTopGifterMainCard}
+                                                                >
+                                                                    <View style={styles.psmTopGifterImageContainer}>
+                                                                        <Image
+                                                                            source={
+                                                                                topGiftersData[0]?.image === 'default' || !topGiftersData[0]?.image
+                                                                                    ? getGenderFallbackImage(topGiftersData[0]?.gender)
+                                                                                    : { uri: topGiftersData[0]?.image }
+                                                                            }
+                                                                            style={styles.psmTopGifterMainImage}
+                                                                        />
+                                                                    </View>
+                                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                        <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.screenName}</Text>
+                                                                        <Text style={styles.psmTopGifterMainAmount}>{topGiftersData[0]?.Amount}</Text>
+                                                                    </View>
+                                                                </LinearGradient>
+                                                                <View style={styles.psmOtherGiftersContainer}>
+                                                                    {topGiftersData?.slice(1).map((gifter, index) => (
+                                                                        <View
+                                                                            key={gifter.id}
+                                                                            style={[styles.psmOtherGifterCard,
+                                                                            {
+                                                                                borderLeftWidth: index === 0 ? 1 : 0,
+                                                                                borderLeftColor: '#f0f0f0',
+                                                                                borderBottomLeftRadius: index === 0 ? 15 : 0,
+                                                                                borderBottomRightRadius: index === 0 ? 0 : 15,
+                                                                            }]}
+                                                                        >
+                                                                            <View style={styles.psmOtherGifterImageContainer}>
+                                                                                <Image
+                                                                                    source={
+                                                                                        !gifter?.image || gifter?.image === 'default'
+                                                                                            ? getGenderFallbackImage(gifter?.gender)
+                                                                                            : { uri: gifter.image }
+                                                                                    }
+                                                                                    style={styles.psmOtherGifterImage}
+                                                                                />
+                                                                            </View>
+                                                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                                                <Text style={styles.psmOtherGifterName}>{gifter?.screenName}</Text>
+                                                                                <Text style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
+                                                                            </View>
+                                                                        </View>
+                                                                    ))}
+                                                                </View>
+                                                            </>)}
+                                                    </View>
+                                                </View>
+                                            </>
+                                        )}
+                                    </>
+                                </ScrollView>
+                            }
+                        </View>
+                    )}
+
                 </Animated.View>
             </Modal>
             {visibleModal === 'message-modal' && (
@@ -685,7 +736,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile }) =>
                 onPress={(index) => {
                     if (index === 0) onSelectImage('camera');
                     if (index === 1) onSelectImage('gallery');
-                    // Cancel is handled automatically by the component
                 }}
             />
         </>
