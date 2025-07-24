@@ -2,7 +2,8 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator, Platform
+    ActivityIndicator, Platform,
+    Pressable
 } from 'react-native';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
@@ -24,6 +25,7 @@ import ReportUserModal from '../modals/ReportUserModal';
 import { giftImages, SendErrorTotheServer } from '../utils/constant';
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
+import ProfileScreenModal from '../modals/ProfileScreenModal';
 
 
 const StreamRoom = ({
@@ -78,7 +80,7 @@ const StreamRoom = ({
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
-
+    const [OpenHostPorfile,setOpenHostPorfile]=useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
     const [sendAnimationData, setSendAnimationData] = useState(null);
@@ -636,6 +638,7 @@ const StreamRoom = ({
                             },
                         ]}>
                             <View style={styles.strRoomHeader}>
+                                <Pressable onPress={()=>setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
                                     <View style={styles.strRoomHeaderLeftProfileInfo}>
@@ -648,6 +651,7 @@ const StreamRoom = ({
                                         </View>
                                     </View>
                                 </View>
+                                </Pressable>
                                <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
                                <TouchableOpacity onPress={()=>{
                                 setOpenViewerList(true)
@@ -979,6 +983,15 @@ const StreamRoom = ({
                 onComplete={handleReceiveAnimationComplete}
             />
         )}
+            {OpenHostPorfile && (
+                <ProfileScreenModal
+                    visible="true"
+                    onClose={() => setOpenHostPorfile(false)}
+                    profileData={userDetails}
+                    isMainProfile={true}
+                    isViewer={true}
+                />
+            )}
         </View>
     );
 };
