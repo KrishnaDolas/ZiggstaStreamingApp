@@ -26,7 +26,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                 //     "roomId": 955
                 // }
                 const params = {
-                    "toUserID": userDetails?.reportData?.userid,
+                    "toUserID": userDetails?.userid,
                     "roomId": RoomID
                 }
                 console.log(params);
