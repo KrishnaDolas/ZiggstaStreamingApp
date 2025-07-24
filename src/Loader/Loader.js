@@ -1,20 +1,35 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
-import { BlurView } from '@react-native-community/blur';
+import {
+  View,
+  Image,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Easing,
+  Text,
+} from 'react-native';
 import { useAppContext } from '../context/AppContext';
+
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
+
 const { width, height } = Dimensions.get('window');
 
-const Loader = ({ LoaderImage, currentStreamData }) => {
+const Loader = ({ currentStreamData }) => {
   const { setIsInStreamRoom } = useAppContext();
+
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const pulse1 = useRef(new Animated.Value(0)).current;
+  const pulse2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    setIsInStreamRoom(true); // keep global value in sync
-    return () => setIsInStreamRoom(false); // reset when unmounted
+    setIsInStreamRoom(true);
+    return () => setIsInStreamRoom(false);
   }, [setIsInStreamRoom]);
 
-
   useEffect(() => {
+    // Spinner
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
@@ -23,9 +38,47 @@ const Loader = ({ LoaderImage, currentStreamData }) => {
         useNativeDriver: true,
       })
     ).start();
+
+    // Pulses
+    const createPulse = (pulseRef, delay = 0) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(pulseRef, {
+            toValue: 1,
+            duration: 1600,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseRef, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+
+    createPulse(pulse1, 0);
+    createPulse(pulse2, 800);
   }, []);
 
-  const rotateStyle = {
+  const getGenderFallbackImage = (gender) => {
+    switch ((gender || '').toLowerCase()) {
+      case 'male':
+        return userMaleFallbackImage;
+      case 'female':
+        return userFeMaleFallbackImage;
+      default:
+        return userOtherFallbackImage;
+    }
+  };
+
+  const avatarSource =
+    !currentStreamData?.avatar || currentStreamData?.avatar === 'default'
+      ? getGenderFallbackImage(currentStreamData?.gender)
+      : { uri: currentStreamData.avatar };
+
+  const spinStyle = {
     transform: [
       {
         rotate: rotateAnim.interpolate({
@@ -36,69 +89,132 @@ const Loader = ({ LoaderImage, currentStreamData }) => {
     ],
   };
 
+  const pulseStyle = (anim) => ({
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    opacity: anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.6, 0],
+    }),
+    transform: [
+      {
+        scale: anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 2.2],
+        }),
+      },
+    ],
+  });
+
   return (
     <View style={styles.container}>
-      <Image source={LoaderImage} style={styles.backgroundImage} resizeMode="cover" />
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType="light" // or "dark", "extraLight"
-        blurAmount={9}
-        reducedTransparencyFallbackColor="white" // for Android fallback
-      />
+      <Image source={avatarSource} style={styles.backgroundImage} resizeMode="cover" />
+      <View style={styles.overlay} />
+
       <View style={styles.centerContent}>
-        <View style={styles.logoWrapper}>
-          <Image source={LoaderImage} style={styles.logo} resizeMode="cover" />
+        {/* Avatar + Pulse + Spinner inside fixed square */}
+        <View style={styles.avatarContainer}>
+          {/* Pulses */}
+          <Animated.View style={pulseStyle(pulse1)} />
+          <Animated.View style={pulseStyle(pulse2)} />
+
+          {/* Spinner */}
+          <Animated.View style={[styles.spinnerWrapper, spinStyle]}>
+            <View style={styles.spinnerRing} />
+          </Animated.View>
+
+          {/* Avatar */}
+          <View style={styles.logoWrapper}>
+            <Image source={avatarSource} style={styles.logo} resizeMode="cover" />
+          </View>
         </View>
-        <Animated.View style={[styles.spinnerBorder, rotateStyle]} />
+
+        {/* Joining text (below avatarContainer) */}
+        <Text
+          style={[
+            styles.joiningText,
+            // {
+            //   opacity: textPulse,
+            //   transform: [{ scale: textPulse }],
+            // },
+          ]}
+        >
+          Joining stream...
+        </Text>
       </View>
     </View>
   );
 };
 
+
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    height: height,
-    width: width,
-    flex: 1,
+    width,
+    height,
+    zIndex: 999,
   },
   backgroundImage: {
     position: 'absolute',
-    width: width,
-    height: height,
-    zIndex: 100
+    width,
+    height,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
   },
   centerContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
+  avatarContainer: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  spinnerWrapper: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  spinnerRing: {
+    width: 120,
+    height: 120,
+    borderRadius: 75,
+    borderWidth: 3,
+    borderTopColor: '#FFFFFF',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: 'transparent',
+  },
   logoWrapper: {
     width: 100,
     height: 100,
-    borderRadius: 40,
+    borderRadius: 50,
+    backgroundColor: '#fff',
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 101, // Bring image above spinner
+    zIndex: 2,
   },
-
   logo: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 94,
+    height: 94,
+    borderRadius: 47,
   },
-
-  spinnerBorder: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 5,
-    borderColor: 'rgba(255,255,255,0.2)',
-    borderTopColor: '#ffffff',
-    zIndex: 1,
+  joiningText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    marginTop: 20,
+    fontWeight: '600',
   },
 });
 
