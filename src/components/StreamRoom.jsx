@@ -69,7 +69,6 @@ const StreamRoom = ({
     const animatedOpacity = useRef(new Animated.Value(0)).current;
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
-    const [giftInfo,setGiftInfo]=useState(null)
     const [streamLayout, setStreamLayout] = useState([]);
     const [closeStreamModal, setCloseStreamModal] = useState(false);
     const [userDetails, setUserDetails] = useState({});
@@ -357,17 +356,11 @@ const [receiveAnimationData, setReceiveAnimationData] = useState(null);
 
     const HandleGiftReceived = (senderName, giftName) => {
         try {
-            // setMessage(`Gift Received from ${senderName}`)
-            // setVisibleModal('message-modal')
             setReceiveAnimationData({
                 giftName: giftName,
                 senderName: senderName
             });
             setShowReceiveAnimation(true);
-            // setGiftInfo({giftName:giftName,username:senderName})
-            // setTimeout(() => {
-            //     setGiftInfo(null)
-            // }, 4000);
         } catch (error) {
             SendErrorTotheServer(error,"HandleGiftReceived")
         }
@@ -938,9 +931,6 @@ const [receiveAnimationData, setReceiveAnimationData] = useState(null);
                     </View>
                 </Modal>
             )}
-            {/* {giftInfo && (
-                <AnimatedGift giftName={giftInfo.giftName} username={giftInfo.username} />
-            )} */}
             {visibleModal === 'message-modal' && (
                 <MessageModal
                     visible={visibleModal === 'message-modal'}
