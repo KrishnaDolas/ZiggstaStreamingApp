@@ -55,7 +55,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                 return (
                     <View>
                         <View>
-                            <Text style={{ fontSize: 16 }}>Gifters</Text>
+                            {/* <Text style={{ fontSize: 16 }}>Gifters</Text>
                             <FlatList
                                 data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
                                 keyExtractor={(item) => item.ViewerID.toString()}
@@ -99,7 +99,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                                         </View>
                                     </View>
                                 )}
-                            />
+                            /> */}
                         </View>
                         <View>
                             <Text style={{ fontSize: 16 }}>Viewers</Text>
