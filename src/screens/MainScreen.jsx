@@ -61,7 +61,7 @@ export const MainScreen = () => {
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
-  }, [joined]);
+  }, [joined,isSocketConnected]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -81,8 +81,6 @@ export const MainScreen = () => {
               SendErrorTotheServer(err, "handleAppStateChange");
             }
           }, 1000);
-        }else if(isStreaming){
-          setIsInStreamRoom(true); // Restore or sync with joined
         }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
@@ -187,6 +185,7 @@ export const MainScreen = () => {
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
       // If no one else, you're host
+      setIsInStreamRoom(true)
       if (users.length === 0 || IsHost) {
         setJoined(true);
         setIsLoading(false);
