@@ -23,6 +23,7 @@ import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const MainScreen = () => {
   const { userData, userAddress, setIsInStreamRoom, fetchProfileDetails } = useAppContext();
@@ -59,29 +60,41 @@ export const MainScreen = () => {
 
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
-    fetchProfileDetails()
-    return () => setIsInStreamRoom(false); // reset when unmounted
-  }, [joined]);
+    fetchProfileDetails();
+    console.log('MainScreen.jsx: isInStreamRoom set to', joined); // Debug log
+    AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined)); // Persist state
+    return () => {
+      setIsInStreamRoom(false); // Reset when unmounting
+      AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false));
+      console.log('MainScreen.jsx: isInStreamRoom reset to false on unmount');
+    };
+  }, [joined, setIsInStreamRoom]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
       console.log(`📱 App state changed to: ${nextAppState}`);
       const IsValid = isuserstreaming || isHost;
 
-      if (nextAppState === 'active' && isStreaming && IsValid) {
-        socket.emit('stream-Resume', socket.id)
-        // Optional small delay to allow app to fully resume
-        setTimeout(async () => {
-          try {
-            socket.emit('stream-negotiate')
-            setTimeout(() => {
-              HandleApprovedStream()
-            }, 1000);
-          } catch (err) {
-            handleAppStateChange(err, "handleAppStateChange")
-          }
-        }, 1000); // Delay for app stability
+      if (nextAppState === 'active') {
+        // Restore isInStreamRoom from AsyncStorage
+        const isInStreamRoomStored = await AsyncStorage.getItem('isInStreamRoom');
+        const restoredJoined = isInStreamRoomStored ? JSON.parse(isInStreamRoomStored) : joined;
+        setIsInStreamRoom(restoredJoined); // Restore or sync with joined
+        console.log('MainScreen.jsx: Restored isInStreamRoom to', restoredJoined);
 
+        if (isStreaming && IsValid) {
+          socket.emit('stream-Resume', socket.id);
+          setTimeout(async () => {
+            try {
+              socket.emit('stream-negotiate');
+              setTimeout(() => {
+                HandleApprovedStream();
+              }, 1000);
+            } catch (err) {
+              SendErrorTotheServer(err, "handleAppStateChange");
+            }
+          }, 1000);
+        }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
 
@@ -102,6 +115,9 @@ export const MainScreen = () => {
               delete peersRef.current[userId]
             }
           }
+          // Persist isInStreamRoom state
+          await AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined));
+          console.log('MainScreen.jsx: Persisted isInStreamRoom as', joined);
         } catch (err) {
           SendErrorTotheServer(err, "handleAppStateChange")
         }
@@ -113,7 +129,7 @@ export const MainScreen = () => {
     return () => {
       subscription.remove();
     };
-  }, [isStreaming, isHost, isuserstreaming, isFrontCamera]);
+  }, [isStreaming, isHost, isuserstreaming, isFrontCamera, joined, setIsInStreamRoom]);
 
   const UpdatedRoomCount = async (roomid, userid, isConnected, isCoHost) => {
     try {
@@ -162,6 +178,7 @@ export const MainScreen = () => {
       if (streamInfo) {
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
+        setIsInStreamRoom(true);
       }
     }
   }
@@ -716,7 +733,10 @@ export const MainScreen = () => {
       }
       setJoined(false);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
-      setStreamInfo(null)
+      setStreamInfo(null);
+      setIsInStreamRoom(false); // Reset isInStreamRoom
+      AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false)); // Persist reset state
+      console.log('MainScreen.jsx: isInStreamRoom reset to false in leaveRoom');
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');
     }
