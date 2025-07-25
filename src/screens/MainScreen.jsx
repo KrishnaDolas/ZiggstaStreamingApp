@@ -59,12 +59,12 @@ export const MainScreen = () => {
   const RoomIDRef = useRef(null)
 
   useEffect(() => {
-    // setIsInStreamRoom(joined); // keep global value in sync
+    setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
     console.log('MainScreen.jsx: isInStreamRoom set to', joined); // Debug log
     AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined)); // Persist state
     return () => {
-      // setIsInStreamRoom(false); // Reset when unmounting
+      setIsInStreamRoom(false); // Reset when unmounting
       AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false));
       console.log('MainScreen.jsx: isInStreamRoom reset to false on unmount');
     };
@@ -79,7 +79,7 @@ export const MainScreen = () => {
         // Restore isInStreamRoom from AsyncStorage
         const isInStreamRoomStored = await AsyncStorage.getItem('isInStreamRoom');
         const restoredJoined = isInStreamRoomStored ? JSON.parse(isInStreamRoomStored) : joined;
-        setIsInStreamRoom(true); // Restore or sync with joined
+        setIsInStreamRoom(restoredJoined); // Restore or sync with joined
         console.log('MainScreen.jsx: Restored isInStreamRoom to', restoredJoined);
 
         if (isStreaming && IsValid) {
@@ -201,7 +201,6 @@ export const MainScreen = () => {
 
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
-      setIsInStreamRoom(true);
       // If no one else, you're host
       if (users.length === 0 || IsHost) {
         setJoined(true);
