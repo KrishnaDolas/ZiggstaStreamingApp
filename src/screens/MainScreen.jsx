@@ -230,7 +230,11 @@ export const MainScreen = () => {
       });
       if (ChatMessages) {
         console.log(ChatMessages);
-        setRoomchat(ChatMessages)
+        let chat=ChatMessages.map((item)=>{
+          return{...item,  userProfile: chatimage, TYPE: "PLAYERCHAT"}
+        })
+        console.log(chat);
+        setRoomchat(chat)
       }
     } catch (error) {
       SendErrorTotheServer(error, 'HandleJoined');
