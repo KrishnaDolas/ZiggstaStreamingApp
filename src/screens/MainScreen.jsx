@@ -82,7 +82,7 @@ export const MainScreen = () => {
         setIsInStreamRoom(restoredJoined); // Restore or sync with joined
         console.log('MainScreen.jsx: Restored isInStreamRoom to', restoredJoined);
 
-        if (isStreaming && IsValid) {
+        if (isStreaming && IsValid && socket.connected) {
           socket.emit('stream-Resume', socket.id);
           setTimeout(async () => {
             try {
@@ -170,7 +170,7 @@ export const MainScreen = () => {
     console.log('✅ Connected to Socket.IO server');
     setconnectingpanel(false)
     setIsSocketConnected(true); // Update connection status
-    if (!IsIdentify.current && userData) {
+    if (!IsIdentify.current && userData &&socket.connected) {
       setTimeout(() => {
         socket.emit('identity', userData?.userid, userData?.screenName);
       }, 2000);
