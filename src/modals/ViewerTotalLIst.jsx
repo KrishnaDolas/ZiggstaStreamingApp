@@ -21,7 +21,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     const [giftersdata, setGiftersData] = useState([])
     const [totalheaderCount, setTotalHeaderCount] = useState({ Gifter: 0, Viewer: 0, TotalGifter: 0 })
     const [totalgifters, setTotalgifters] = useState([])
-
+    const [viewersList, setViewersList] = useState([]);
 
 
     const HandleGetGiftersData = async () => {
@@ -61,12 +61,25 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
             SendErrorTotheServer(error, "HandleGetGiftersdata")
         }
     }
+    const GetViewers=async()=>{
+        try {
+            const response = await Apiclient.get(`/rooms/${853}/members`)
+            if (response.data) {
+                setViewersList(response.data.members || []);
+                console.log('Viewers List:', response.data.members);
+            }
+        } catch (error) {
+            console.error('Error fetching viewers:', error);
+        }
+    }
     useEffect(() => {
         HandleGetGiftersData()
         setTotalHeaderCount((prevdata) => ({ ...prevdata, Viewer: totalRoomviewerList.length }))
         HandleTotalGifterData()
-    }, [totalRoomviewerList])
+        GetViewers()
+    }, [])
     const tabs = ['Gifters', 'Viewsers', 'Gifters List'];
+
 
     const RenderItemForGifters = ({ item }) => {
         // Handle rank images
