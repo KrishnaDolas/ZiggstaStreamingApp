@@ -84,16 +84,16 @@ export const MainScreen = () => {
 
         if (isStreaming && IsValid) {
           socket.emit('stream-Resume', socket.id);
-          setTimeout(async () => {
+          // setTimeout(async () => {
             try {
               socket.emit('stream-negotiate');
-              setTimeout(() => {
+              // setTimeout(() => {
                 HandleApprovedStream();
-              }, 1000);
+              // }, 1000);
             } catch (err) {
               SendErrorTotheServer(err, "handleAppStateChange");
             }
-          }, 1000);
+          // }, 1000);
         }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
