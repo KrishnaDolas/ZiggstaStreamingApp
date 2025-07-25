@@ -12,42 +12,119 @@ import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
 
 
-const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDetails }) => {
+const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDetails }) => {
     const { theme } = useContext(ThemeContext);
     const [activeTab, setActiveTab] = useState(0);
     const [giftersdata, setGiftersData] = useState([])
-    const [totleGiftValue, setTotalGiftValue] = useState(0)
+    const [totalheaderCount, setTotalHeaderCount] = useState({ Gifter: 0, Viewer: 0, TotalGifter: 0 })
+    const [totalgifters, setTotalgifters] = useState([])
 
-    useEffect(() => {
-        const HandleGetGiftersData = async () => {
-            try {
-                // const params = {
-                //     "toUserID": userDetails?.userid,
-                //     "roomId": RoomID
-                // }
-                const params = {
-                    "toUserID": userDetails?.userid,
-                    "roomId": RoomID
-                }
-                console.log(params);
-                const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
-                if (responce.data.success) {
-                    const data = responce.data.data;
-                    let totalAmount = data.reduce((total, item) => total + item.giftValue, 0)
-                    setTotalGiftValue(totalAmount)
-                    setGiftersData(responce.data.data)
-                }
-            } catch (error) {
-                SendErrorTotheServer(error, "HandleGetGiftersdata")
+
+
+    const HandleGetGiftersData = async () => {
+        try {
+            const params = {
+                "toUserID": userDetails?.userid,
+                "roomId": RoomID
             }
+            const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
+            if (responce.data.success) {
+                const data = responce.data.data;
+                let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.totalGiftValue), 0)
+                setTotalHeaderCount((prevdata) => ({ ...prevdata, Gifter: totalAmount }))
+                console.log('total gift value:', totalAmount);
+                setGiftersData(responce.data.data)
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, "HandleGetGiftersdata")
         }
-        HandleGetGiftersData()
-    }, [])
-    const tabs = ['This Stream', 'This Week', 'All Time'];
-
+    }
+    const HandleTotalGifterData = async () => {
+        try {
+            const params = {
+                "roomId": 955
+            }
+            const responce = await Apiclient.post(`topgifters/getAllGifters`, params)
+            if (responce.data.success) {
+                const data = responce.data.data;
+                let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.giftValue), 0)
+                setTotalHeaderCount((prevdata) => ({ ...prevdata, TotalGifter: totalAmount }))
+                console.log('total gift value:', totalAmount);
+                setTotalgifters(responce.data.data)
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, "HandleGetGiftersdata")
+        }
+    }
     useEffect(() => {
-        console.log(totalRoomviewerList);
+        HandleGetGiftersData()
+        setTotalHeaderCount((prevdata) => ({ ...prevdata, Viewer: totalRoomviewerList.length }))
+        HandleTotalGifterData()
     }, [totalRoomviewerList])
+    const tabs = ['Gifters', 'Viewsers', 'Gifters List'];
+
+    const RenderItemForGifters = ({ item }) => {
+        return (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: '15' }} >
+                <View>
+                    <Text style={{ fontSize: 19 }}>1</Text>
+                </View>
+                <Image source={chatimage} style={{ height: '60', width: '60', borderRadius: 40 }} />
+                <View style={{ marginLeft: '10' }}>
+                    <Text style={{ fontSize: 17, letterSpacing: 2, fontWeight: 500 }} >{item.screenName}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: '3', borderRadius: 20, backgroundColor: 'aqua', paddingHorizontal: '7', paddingVertical: '2' }}>
+                        <Text>
+                            <Ionicons name="diamond" size={14} color="white" />{'\t'}
+                        </Text>
+                        <Text style={{ fontSize: 14 }}>{item.totalGiftValue}</Text>
+                    </View>
+                </View>
+            </View>
+        )
+    }
+
+    const RenderItemForViewer = ({ item }) => {
+        return (
+            <View style={{ flexDirection: 'row', marginTop: '15' }} >
+                <Image source={chatimage} style={{ height: '40', width: '40', borderRadius: 20 }} />
+                <View style={{ marginLeft: '10' }}>
+                    <Text style={{ fontSize: 17 }} >{item.ViewerName}</Text>
+                    <Text style={{ fontSize: 12 }}>{`${item.country}(${item.city})`}</Text>
+                </View>
+            </View>
+        )
+    }
+    const RenderItemForGifterList = ({ item }) => {
+        return (
+            <View style={{ flexDirection: 'row', marginTop: '15' }} >
+                <Image source={chatimage} style={{ height: '40', width: '40', borderRadius: 20 }} />
+                <View style={{ marginLeft: '10' }}>
+                    <Text style={{ fontSize: 14 }} >{item.screenName}</Text>
+                </View>
+            </View>
+        )
+    }
+    const FallbackUI=(tabtype)=>{
+        return (
+            <View
+                style={{
+                    height: screenHeight * 0.2,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <Text
+                    style={{
+                        color: theme === 'light' ? '#777' : '#ccc',
+                        fontSize: 16,
+                        fontWeight: '500',
+                    }}
+                >
+                    No {tabtype} At this Movement
+                </Text>
+            </View>
+        )
+    }
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -55,114 +132,44 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                 return (
                     <View>
                         <View>
-                            {/* <Text style={{ fontSize: 16 }}>Gifters</Text>
                             <FlatList
-                                data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
-                                keyExtractor={(item) => item.ViewerID.toString()}
+                                data={giftersdata}   // your array of {ViewerName, ViewerID}
+                                keyExtractor={(item) => item?.fromUserID.toString()}
                                 nestedScrollEnabled={true}
                                 contentContainerStyle={{ paddingBottom: 8 }}
                                 style={{ height: screenHeight * 0.2 + 30 }}
-                                ListEmptyComponent={() => (
-                                    <View
-                                        style={{
-                                            height: screenHeight * 0.2,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                color: theme === 'light' ? '#777' : '#ccc',
-                                                fontSize: 16,
-                                                fontWeight: '500',
-                                            }}
-                                        >
-                                            No Viewer At this Movement
-                                        </Text>
-                                    </View>
-                                )}
-                                renderItem={({ item, index }) => (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: '15' }} >
-                                        <View>
-                                            <Text style={{ fontSize: 19 }}>{index + 1}</Text>
-                                        </View>
-                                        <Image source={chatimage} style={{ height: '60', width: '60', borderRadius: 40 }} />
-                                        <View style={{ marginLeft: '10' }}>
-                                            <Text style={{ fontSize: 17, letterSpacing: 2, fontWeight: 500 }} >{item.ViewerName}</Text>
-                                            <Text style={{ fontSize: 12 }}>{`${item.country}(${item.city})`}</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center',marginTop:'3', borderRadius: 20, backgroundColor: 'aqua', paddingHorizontal: '7', paddingVertical: '2' }}>
-                                                <Text>
-                                                    <Ionicons name="diamond" size={14} color="white" />{'\t'}
-                                                </Text>
-                                                <Text style={{ fontSize: 14 }}>5600</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-                            /> */}
-                        </View>
-                        <View>
-                            <Text style={{ fontSize: 16 }}>Viewers</Text>
-                            <FlatList
-                                data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
-                                keyExtractor={(item) => item.ViewerID.toString()}
-                                nestedScrollEnabled={true}
-                                contentContainerStyle={{ paddingBottom: 8 }}
-                                style={{ height: screenHeight * 0.2 + 30 }}
-                                ListEmptyComponent={() => (
-                                    <View
-                                        style={{
-                                            height: screenHeight * 0.2,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        <Text
-                                            style={{
-                                                color: theme === 'light' ? '#777' : '#ccc',
-                                                fontSize: 16,
-                                                fontWeight: '500',
-                                            }}
-                                        >
-                                            No Viewer At this Movement
-                                        </Text>
-                                    </View>
-                                )}
-                                renderItem={({ item, index }) => (
-                                    <View style={{ flexDirection: 'row', marginTop: '15' }} >
-                                        <Image source={chatimage} style={{ height: '40', width: '40', borderRadius: 20 }} />
-                                        <View style={{ marginLeft: '10' }}>
-                                            <Text style={{ fontSize: 17 }} >{item.ViewerName}</Text>
-                                            <Text style={{ fontSize: 12 }}>{`${item.country}(${item.city})`}</Text>
-                                        </View>
-                                    </View>
-                                )}
+                                ListEmptyComponent={()=>FallbackUI('Gifters')}
+                                renderItem={RenderItemForGifters}
                             />
                         </View>
                     </View>
                 );
             case 1:
-                const oneWeekAgo = new Date();
-                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                // Filter last 7 days transactions
-                const lastWeekTransactions = giftersdata.filter(item => new Date(item.transDate) >= oneWeekAgo);
-
-                console.log(lastWeekTransactions);
                 return (
-                    <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                        <Text style={{ color: theme === 'light' ? '#666' : '#ccc', fontSize: 16 }}>
-                            This Week viewers content
-                        </Text>
-                        {/* Add your This Week content here */}
+                    <View>
+                        <FlatList
+                            data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
+                            keyExtractor={(item) => item.ViewerID.toString()}
+                            nestedScrollEnabled={true}
+                            contentContainerStyle={{ paddingBottom: 8 }}
+                            style={{ height: screenHeight * 0.2 + 30 }}
+                            ListEmptyComponent={()=>FallbackUI('Viewers')}
+                            renderItem={RenderItemForViewer}
+                        />
                     </View>
                 );
             case 2:
                 return (
-                    <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-                        <Text style={{ color: theme === 'light' ? '#666' : '#ccc', fontSize: 16 }}>
-                            All Time viewers content
-                        </Text>
-                        {/* Add your All Time content here */}
+                    <View>
+                        <FlatList
+                            data={totalgifters}   // your array of {ViewerName, ViewerID}
+                            keyExtractor={(_, index) => index.toString()}
+                            nestedScrollEnabled={true}
+                            contentContainerStyle={{ paddingBottom: 8 }}
+                            style={{ height: screenHeight * 0.55 }}
+                            ListEmptyComponent={()=>FallbackUI('Gifters List')}
+                            renderItem={RenderItemForGifterList}
+                        />
                     </View>
                 );
             default:
@@ -221,9 +228,12 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList,RoomID,userDeta
                                 }}
                                 onPress={() => setActiveTab(index)}
                             >
-                                <Text>
-                                    <Ionicons name="diamond" size={16} color="aqua" /> {tab === 'This Stream' ? totleGiftValue : 40}
-                                </Text>
+                                {/* <View style={{flexDirection:'row', alignItems:'center'}}>
+                                    {tab === 'Gifters' ?<Text> <Ionicons name="diamond" size={16} color="aqua" />{totalheaderCount.Gifter} </Text>:
+                                     tab === 'Viewsers' ?<Text> <Ionicons name="eye" size={16} color="black" />{totalheaderCount.Viewer} </Text>:
+                                     tab === 'Gifters List' ?<Text> <Ionicons name="diamond" size={16} color="aqua" />{totalheaderCount.TotalGifter} </Text>: 0
+                                     }
+                                </View> */}
                                 <Text style={{
                                     fontSize: 14,
                                     fontWeight: activeTab === index ? '600' : '400',
