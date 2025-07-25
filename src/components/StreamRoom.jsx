@@ -362,32 +362,32 @@ const StreamRoom = ({
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
 
-    const HandleGiftReceived = (senderName, giftName) => {
-        try {
-            setReceiveAnimationData({
-                giftName: giftName,
-                senderName: senderName
-            });
-            setShowReceiveAnimation(true);
-        } catch (error) {
-            SendErrorTotheServer(error, "HandleGiftReceived")
-        }
-    }
-    const HandleRoomTotalCount = (list) => {
-        console.log(list);
-        setTotalRoomviewerList(list)
-    }
+    // const HandleGiftReceived = (senderName, giftName) => {
+    //     try {
+    //         setReceiveAnimationData({
+    //             giftName: giftName,
+    //             senderName: senderName
+    //         });
+    //         setShowReceiveAnimation(true);
+    //     } catch (error) {
+    //         SendErrorTotheServer(error, "HandleGiftReceived")
+    //     }
+    // }
+    // const HandleRoomTotalCount = (list) => {
+    //     console.log(list);
+    //     setTotalRoomviewerList(list)
+    // }
 
-    useEffect(() => {
-        socket.on('like-count', HandleLikeCount)
-        socket.on('received-Gift', HandleGiftReceived)
-        socket.on('RoomTotalCount', HandleRoomTotalCount)
-        return () => {
-            socket.off('like-count', HandleLikeCount)
-            socket.off('received-Gift', HandleGiftReceived)
-            socket.off('RoomTotalCount', HandleRoomTotalCount)
-        }
-    }, [])
+    // useEffect(() => {
+    //     socket.on('like-count', HandleLikeCount)
+    //     socket.on('received-Gift', HandleGiftReceived)
+    //     socket.on('RoomTotalCount', HandleRoomTotalCount)
+    //     return () => {
+    //         socket.off('like-count', HandleLikeCount)
+    //         socket.off('received-Gift', HandleGiftReceived)
+    //         socket.off('RoomTotalCount', HandleRoomTotalCount)
+    //     }
+    // }, [])
 
     const SendGift = async (item) => {
         try {
