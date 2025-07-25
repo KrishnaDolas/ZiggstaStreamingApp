@@ -201,6 +201,7 @@ export const MainScreen = () => {
 
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
+      setIsInStreamRoom(true);
       // If no one else, you're host
       if (users.length === 0 || IsHost) {
         setJoined(true);
