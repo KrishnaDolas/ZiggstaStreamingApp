@@ -9,7 +9,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const screenHeight = Dimensions.get('window').height;
 import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
-import { SendErrorTotheServer } from '../utils/constant';
+import rank1Img from '../../assets/images/TopGifterBedge/trophy_1.png';
+import rank2Img from '../../assets/images/TopGifterBedge/trophy_2.png';
+import rank3Img from '../../assets/images/TopGifterBedge/trophy_3.png';
+import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 
 
 const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDetails }) => {
@@ -24,8 +27,8 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     const HandleGetGiftersData = async () => {
         try {
             const params = {
-                "toUserID": userDetails?.userid,
-                "roomId": RoomID
+                "toUserID": 1,
+                "roomId": 955
             }
             const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
             if (responce.data.success) {
@@ -33,7 +36,9 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.totalGiftValue), 0)
                 setTotalHeaderCount((prevdata) => ({ ...prevdata, Gifter: totalAmount }))
                 console.log('total gift value:', totalAmount);
-                setGiftersData(responce.data.data)
+                // sort the data totalGiftValue wise
+                let sortedData = responce.data.data.sort((a, b) => parseInt(b.totalGiftValue) - parseInt(a.totalGiftValue));
+                setGiftersData(sortedData)
             }
         } catch (error) {
             SendErrorTotheServer(error, "HandleGetGiftersdata")
@@ -64,47 +69,191 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     const tabs = ['Gifters', 'Viewsers', 'Gifters List'];
 
     const RenderItemForGifters = ({ item }) => {
+        // Handle rank images
+        const getRankImage = () => {
+            if (giftersdata[0]) return rank1Img;
+            if (giftersdata[1]) return rank2Img;
+            if (giftersdata[2]) return rank3Img;
+            return null; // show number if not top 3
+        };
+
+        const rankImage = getRankImage();
+
         return (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: '15' }} >
-                <View>
-                    <Text style={{ fontSize: 19 }}>1</Text>
-                </View>
-                <Image source={chatimage} style={{ height: '60', width: '60', borderRadius: 40 }} />
-                <View style={{ marginLeft: '10' }}>
-                    <Text style={{ fontSize: 17, letterSpacing: 2, fontWeight: 500 }} >{item.screenName}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: '3', borderRadius: 20, backgroundColor: 'aqua', paddingHorizontal: '7', paddingVertical: '2' }}>
-                        <Text>
-                            <Ionicons name="diamond" size={14} color="white" />{'\t'}
+            <View
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginVertical: 12,
+                    paddingHorizontal: 12,
+                }}
+            >
+                {/* Rank Icon or Number */}
+                <View
+                    style={{
+                        width: 30,
+                        height: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: 10
+                    }}
+                >
+                    {rankImage ? (
+                        <Image
+                            source={rankImage}
+                            style={{ width: 40, height: 54, resizeMode: 'contain' }}
+                        />
+                    ) : (
+                        <Text style={{ fontSize: 16, fontWeight: '700', color: '#555' }}>
+                            {ind + 1}
                         </Text>
-                        <Text style={{ fontSize: 14 }}>{item.totalGiftValue}</Text>
+                    )}
+                </View>
+
+                {/* Avatar */}
+                <Image
+                    source={chatimage}
+                    style={{
+                        height: 50,
+                        width: 50,
+                        borderRadius: 30,
+                        backgroundColor: '#ddd'
+                    }}
+                />
+
+                {/* User Info */}
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text
+                        style={{
+                            fontSize: 14,
+                            fontWeight: '500',
+                            letterSpacing: 1,
+                            color: '#222'
+                        }}
+                    >
+                        {item.screenName}
+                    </Text>
+
+                    {/* Gift Value Badge */}
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 6,
+                            borderRadius: 20,
+                            backgroundColor: '#00C4CC',
+                            paddingHorizontal: 10,
+                            paddingVertical: 3,
+                            alignSelf: 'flex-start'
+                        }}
+                    >
+                        <Ionicons name="diamond" size={14} color="white" style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 12, fontWeight: '500', color: 'white' }}>
+                            {item.totalGiftValue}
+                        </Text>
                     </View>
                 </View>
             </View>
-        )
-    }
+        );
+    };
+
 
     const RenderItemForViewer = ({ item }) => {
         return (
-            <View style={{ flexDirection: 'row', marginTop: '15' }} >
-                <Image source={chatimage} style={{ height: '40', width: '40', borderRadius: 20 }} />
-                <View style={{ marginLeft: '10' }}>
-                    <Text style={{ fontSize: 17 }} >{item.ViewerName}</Text>
-                    <Text style={{ fontSize: 12 }}>{`${item.country}(${item.city})`}</Text>
+            <View
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginVertical: 10,
+                    paddingHorizontal: 10
+                }}
+            >
+                <Image
+                    source={chatimage}
+                    style={{
+                        height: 40,
+                        width: 40,
+                        borderRadius: 20,  // half of height & width for perfect circle
+                        backgroundColor: '#ddd' // fallback color
+                    }}
+                />
+
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text
+                        style={{
+                            fontSize: 16,
+                            fontWeight: '600',
+                            color: '#222'
+                        }}
+                    >
+                        {item.ViewerName}
+                    </Text>
+                    <Text
+                        style={{
+                            fontSize: 13,
+                            color: '#666',
+                            marginTop: 2
+                        }}
+                    >
+                        {`${item.country} (${item.city})`}
+                    </Text>
                 </View>
             </View>
-        )
-    }
+        );
+    };
+
     const RenderItemForGifterList = ({ item }) => {
         return (
-            <View style={{ flexDirection: 'row', marginTop: '15' }} >
-                <Image source={chatimage} style={{ height: '40', width: '40', borderRadius: 20 }} />
-                <View style={{ marginLeft: '10' }}>
-                    <Text style={{ fontSize: 14 }} >{item.screenName}</Text>
+            <View
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginVertical: 12,
+                    paddingHorizontal: 10
+                }}
+            >
+                <Image
+                    source={
+                        !item?.avatar || item?.avatar === 'default'
+                            ? getGenderFallbackImage(item?.gender)
+                            : { uri: item?.avatar }
+                    }
+                    style={{
+                        height: 40,
+                        width: 40,
+                        borderRadius: 20, // half of width/height for circular
+                        backgroundColor: '#ddd' // fallback bg color
+                    }}
+                />
+
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#222' }}>
+                        {item.screenName}
+                    </Text>
+
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginTop: 5,
+                            borderRadius: 12,
+                            backgroundColor: '#00C4CC',
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                            alignSelf: 'flex-start'
+                        }}
+                    >
+                        <Ionicons name="diamond" size={14} color="white" style={{ marginRight: 4 }} />
+                        <Text style={{ fontSize: 13, fontWeight: '500', color: 'white' }}>
+                            {item.giftValue}
+                        </Text>
+                    </View>
                 </View>
             </View>
-        )
-    }
-    const FallbackUI=(tabtype)=>{
+        );
+    };
+
+    const FallbackUI = (tabtype) => {
         return (
             <View
                 style={{
@@ -134,11 +283,11 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                         <View>
                             <FlatList
                                 data={giftersdata}   // your array of {ViewerName, ViewerID}
-                                keyExtractor={(item) => item?.fromUserID.toString()}
+                                keyExtractor={(item, ind) => item?.fromUserID.toString()}
                                 nestedScrollEnabled={true}
                                 contentContainerStyle={{ paddingBottom: 8 }}
                                 style={{ height: screenHeight * 0.2 + 30 }}
-                                ListEmptyComponent={()=>FallbackUI('Gifters')}
+                                ListEmptyComponent={() => FallbackUI('Gifters')}
                                 renderItem={RenderItemForGifters}
                             />
                         </View>
@@ -153,7 +302,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             nestedScrollEnabled={true}
                             contentContainerStyle={{ paddingBottom: 8 }}
                             style={{ height: screenHeight * 0.2 + 30 }}
-                            ListEmptyComponent={()=>FallbackUI('Viewers')}
+                            ListEmptyComponent={() => FallbackUI('Viewers')}
                             renderItem={RenderItemForViewer}
                         />
                     </View>
@@ -167,7 +316,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             nestedScrollEnabled={true}
                             contentContainerStyle={{ paddingBottom: 8 }}
                             style={{ height: screenHeight * 0.55 }}
-                            ListEmptyComponent={()=>FallbackUI('Gifters List')}
+                            ListEmptyComponent={() => FallbackUI('Gifters List')}
                             renderItem={RenderItemForGifterList}
                         />
                     </View>
@@ -246,7 +395,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.6 - 40, marginTop: 10 }]}>
+                    <View style={[{ height: screenHeight * 0.6 - 40, marginTop: 10 }]}>
                         {renderTabContent()}
                     </View>
                 </View>
