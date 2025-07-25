@@ -84,16 +84,16 @@ export const MainScreen = () => {
 
         if (isStreaming && IsValid) {
           socket.emit('stream-Resume', socket.id);
-          // setTimeout(async () => {
+          setTimeout(async () => {
             try {
               socket.emit('stream-negotiate');
-              // setTimeout(() => {
+              setTimeout(() => {
                 HandleApprovedStream();
-              // }, 1000);
+              }, 1000);
             } catch (err) {
               SendErrorTotheServer(err, "handleAppStateChange");
             }
-          // }, 1000);
+          }, 1000);
         }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
@@ -130,7 +130,21 @@ export const MainScreen = () => {
       subscription.remove();
     };
   }, [isStreaming, isHost, isuserstreaming, isFrontCamera, joined, setIsInStreamRoom]);
-
+  const HandleClearOldInstance = () => {
+    localStreamRef.current = null;
+    setLocalStream(null);
+    setRemoteStreams([]);
+    Object.values(peersRef.current)?.forEach(peer => peer.close());
+    peersRef.current = {};
+    pendingCandidates.current = {};
+    setIsMuted({ HostControl: false, muted: false })
+    setHasRequestedStream(false)
+    setStreamRequestList([])
+    setIsUserStreaming(false)
+    setStreamGuest([])
+    setStreamMsg(null)
+    RoomIDRef.current = null
+  }
   const UpdatedRoomCount = async (roomid, userid, isConnected, isCoHost) => {
     try {
       let params = {
@@ -176,27 +190,14 @@ export const MainScreen = () => {
       }, 2000);
       IsIdentify.current = true; // Set identify flag to true
       if (streamInfo) {
+        HandleClearOldInstance()
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
         setIsInStreamRoom(true);
       }
     }
   }
-  const HandleClearOldInstance = () => {
-    localStreamRef.current = null;
-    setLocalStream(null);
-    setRemoteStreams([]);
-    Object.values(peersRef.current)?.forEach(peer => peer.close());
-    peersRef.current = {};
-    pendingCandidates.current = {};
-    setIsMuted({ HostControl: false, muted: false })
-    setHasRequestedStream(false)
-    setStreamRequestList([])
-    setIsUserStreaming(false)
-    setStreamGuest([])
-    setStreamMsg(null)
-    RoomIDRef.current = null
-  }
+
   //Handle socket functions
 
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
