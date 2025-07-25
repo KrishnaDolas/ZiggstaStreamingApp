@@ -82,7 +82,9 @@ export const MainScreen = () => {
         setIsInStreamRoom(restoredJoined); // Restore or sync with joined
         console.log('MainScreen.jsx: Restored isInStreamRoom to', restoredJoined);
 
-        if (isStreaming && IsValid) {
+        if (isStreaming && IsValid && socket.connected) {
+          console.log('▶️ App active: resuming local stream and negotiating with peers');
+          console.log('Socket ID:', socket.id); // Debug log for socket ID
           socket.emit('stream-Resume', socket.id);
           setTimeout(async () => {
             try {
