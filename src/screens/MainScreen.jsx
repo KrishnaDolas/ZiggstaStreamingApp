@@ -26,7 +26,7 @@ import DisconnectedPanel from '../modals/DisconnectedPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const MainScreen = () => {
-  const { userData, userAddress, setIsInStreamRoom,isInStreamRoom, fetchProfileDetails } = useAppContext();
+  const { userData, userAddress, setIsInStreamRoom, fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -836,7 +836,6 @@ export const MainScreen = () => {
           streamerList={streamerList}
           isuserstreaming={isuserstreaming}
           streammsg={streammsg}
-          isInStreamRoom={isInStreamRoom}
         />)}
       </View>
     </LinearGradient>
