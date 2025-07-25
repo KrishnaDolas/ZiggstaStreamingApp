@@ -25,7 +25,7 @@ const Loader = ({ currentStreamData }) => {
 
   useEffect(() => {
     setIsInStreamRoom(true);
-    return () => setIsInStreamRoom(false);
+    // return () => setIsInStreamRoom(false);
   }, [setIsInStreamRoom]);
 
   useEffect(() => {
