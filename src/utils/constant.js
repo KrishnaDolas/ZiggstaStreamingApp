@@ -1,5 +1,8 @@
 // Socket.IO client initialization
 import { io } from 'socket.io-client';
+const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
+const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
+const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 //http://192.168.0.18:5000
 //https://streamalong.live
@@ -50,6 +53,17 @@ export function SendErrorTotheServer(error, functionname) {
     socket.emit('Clientlogs',"SendErrorTotheServer", error.message);
   }
 }
+
+export const getGenderFallbackImage = (gender) => {
+  switch (gender?.toLowerCase()) {
+    case 'male':
+      return userMaleFallbackImage;
+    case 'female':
+      return userFeMaleFallbackImage;
+    default:
+      return userOtherFallbackImage;
+  }
+};
 
 export const giftImages = {
     '420.gif': require('../../assets/images/gifts/420.gif'),

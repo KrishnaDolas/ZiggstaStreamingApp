@@ -14,11 +14,8 @@ import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import { ActivityIndicator } from 'react-native';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
-import { SendErrorTotheServer } from '../utils/constant';
+import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import MessageModal from '../modals/MessageModal';
-const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
-const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();
@@ -182,19 +179,6 @@ export const MessageListScreen = () => {
         setVisibleModal('message-modal');
     }, []);
 
-
-    const getGenderFallbackImage = (gender) => {
-        switch (gender?.toLowerCase()) {
-            case 'male':
-                return userMaleFallbackImage;
-            case 'female':
-                return userFeMaleFallbackImage;
-            default:
-                return userOtherFallbackImage;
-        }
-    };
-
-
     // Add this function
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -221,7 +205,7 @@ export const MessageListScreen = () => {
                         <Image
                             source={!item?.avatar || item?.avatar === 'default'
                                 ? getGenderFallbackImage(item?.gender)
-                                : { uri: item?.gender }
+                                : { uri: item?.avatar }
                             }
                             style={styles.messageListAvatar}
                         />
@@ -253,7 +237,7 @@ export const MessageListScreen = () => {
                     <Image
                         source={!item?.avatar || item?.avatar === 'default'
                             ? getGenderFallbackImage(item?.gender)
-                            : { uri: item?.gender }
+                            : { uri: item?.avatar }
                         }
                         style={styles.messageListAvatar}
                     />

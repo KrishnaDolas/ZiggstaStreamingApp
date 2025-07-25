@@ -405,16 +405,12 @@ const App = () => {
       const userDataStored = await AsyncStorage.getItem('UserData');
       const userAddressStored = await AsyncStorage.getItem('userAddress');
       const locationPermission = await AsyncStorage.getItem('locationPermission');
-      const isInStreamRoomStored = await AsyncStorage.getItem('isInStreamRoom');
 
       if (token) setIsAuthenticated(true);
       if (userDataStored) setUserData(JSON.parse(userDataStored));
       if (userAddressStored) {
         setUserAddress(JSON.parse(userAddressStored));
         hasFetchedAddress.current = true;
-      }
-      if (isInStreamRoomStored) {
-        setIsInStreamRoom(JSON.parse(isInStreamRoomStored)); // Restore isInStreamRoom
       }
       // Only request permission if it hasn't been set
       if (isConnected && !hasFetchedAddress.current && !locationPermission) {
@@ -449,7 +445,7 @@ const App = () => {
       console.error('Init error:', e);
       setIsLoading(false);
     }
-  }, [isConnected, isAuthenticated, setIsInStreamRoom]);
+  }, [isConnected, isAuthenticated]);
 
   useEffect(() => {
     init();
@@ -479,7 +475,7 @@ const App = () => {
       };
 
       const response = await Apiclient.post('/checkSubscription', postData);
-      console.log('Subscription check response:', response);
+      // console.log('Subscription check response:', response);
       if (response.status === 200) {
         setSubscriptionStatus(response.data);
       }

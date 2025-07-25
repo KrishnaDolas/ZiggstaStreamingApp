@@ -15,9 +15,7 @@ import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
-const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
-const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
+import { getGenderFallbackImage } from '../utils/constant';
 
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
@@ -199,16 +197,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         }, [getUserOnlineTime, isInitialLoad])
     );
 
-    const getGenderFallbackImage = (gender) => {
-        switch (gender?.toLowerCase()) {
-            case 'male':
-                return userMaleFallbackImage;
-            case 'female':
-                return userFeMaleFallbackImage;
-            default:
-                return userOtherFallbackImage;
-        }
-    };
 
 
     return (
@@ -238,7 +226,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                         <Image
                             source={!profileData?.avatar || profileData?.avatar === 'default'
                                 ? getGenderFallbackImage(profileData?.gender)
-                                : { uri: profileData?.gender }
+                                : { uri: profileData?.avatar }
                             }
                             style={styles.profileAvatar}
                         />

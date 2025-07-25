@@ -9,10 +9,7 @@ import {
   Text,
 } from 'react-native';
 import { useAppContext } from '../context/AppContext';
-
-const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
-const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
+import { getGenderFallbackImage } from '../utils/constant';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,7 +22,7 @@ const Loader = ({ currentStreamData }) => {
 
   useEffect(() => {
     setIsInStreamRoom(true);
-    return () => setIsInStreamRoom(false);
+    // return () => setIsInStreamRoom(false);
   }, [setIsInStreamRoom]);
 
   useEffect(() => {
@@ -62,16 +59,7 @@ const Loader = ({ currentStreamData }) => {
     createPulse(pulse2, 800);
   }, []);
 
-  const getGenderFallbackImage = (gender) => {
-    switch ((gender || '').toLowerCase()) {
-      case 'male':
-        return userMaleFallbackImage;
-      case 'female':
-        return userFeMaleFallbackImage;
-      default:
-        return userOtherFallbackImage;
-    }
-  };
+
 
   const avatarSource =
     !currentStreamData?.avatar || currentStreamData?.avatar === 'default'
