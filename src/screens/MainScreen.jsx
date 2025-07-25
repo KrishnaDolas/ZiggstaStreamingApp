@@ -229,6 +229,7 @@ export const MainScreen = () => {
         }
       });
       if (ChatMessages) {
+        console.log(ChatMessages);
         setRoomchat(ChatMessages)
       }
     } catch (error) {
