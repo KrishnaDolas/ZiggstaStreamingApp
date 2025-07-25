@@ -59,7 +59,10 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
     return isFocused ? '#d93a63' : (isDark ? '#fff' : 'grey');
   };
 
-  if (isInStreamRoom) return null; // <-- Hide entire tab bar
+  if (isInStreamRoom) {
+    console.log('CustomTabBar: Hiding tab bar due to isInStreamRoom = true');
+    return null; // Hide entire tab bar
+  }
 
 
   // Footer styles to match your original styling
@@ -253,6 +256,7 @@ const App = () => {
     setIpAddress,
     fetchProfileDetails,
     setSubscriptionStatus,
+    setIsInStreamRoom
   } = useAppContext();
 
 
@@ -401,6 +405,7 @@ const App = () => {
       const userDataStored = await AsyncStorage.getItem('UserData');
       const userAddressStored = await AsyncStorage.getItem('userAddress');
       const locationPermission = await AsyncStorage.getItem('locationPermission');
+      const isInStreamRoomStored = await AsyncStorage.getItem('isInStreamRoom');
 
       if (token) setIsAuthenticated(true);
       if (userDataStored) setUserData(JSON.parse(userDataStored));
@@ -408,7 +413,9 @@ const App = () => {
         setUserAddress(JSON.parse(userAddressStored));
         hasFetchedAddress.current = true;
       }
-
+      if (isInStreamRoomStored) {
+        setIsInStreamRoom(JSON.parse(isInStreamRoomStored)); // Restore isInStreamRoom
+      }
       // Only request permission if it hasn't been set
       if (isConnected && !hasFetchedAddress.current && !locationPermission) {
         const granted = await requestLocationPermission();
@@ -442,7 +449,7 @@ const App = () => {
       console.error('Init error:', e);
       setIsLoading(false);
     }
-  }, [isConnected, isAuthenticated]);
+  }, [isConnected, isAuthenticated, setIsInStreamRoom]);
 
   useEffect(() => {
     init();
