@@ -64,7 +64,7 @@ export const MainScreen = () => {
     console.log('MainScreen.jsx: isInStreamRoom set to', joined); // Debug log
     AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined)); // Persist state
     return () => {
-      setIsInStreamRoom(false); // Reset when unmounting
+      // setIsInStreamRoom(false); // Reset when unmounting
       AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false));
       console.log('MainScreen.jsx: isInStreamRoom reset to false on unmount');
     };
@@ -201,6 +201,7 @@ export const MainScreen = () => {
 
   const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
     try {
+      setIsInStreamRoom(true);
       // If no one else, you're host
       if (users.length === 0 || IsHost) {
         setJoined(true);
