@@ -7,7 +7,7 @@ import {
 import { AppState } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
-import React, { useState, useContext, useEffect, useRef, useLayoutEffect, } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
@@ -61,14 +61,7 @@ export const MainScreen = () => {
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
-    console.log('MainScreen.jsx: isInStreamRoom set to', joined); // Debug log
-    AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined)); // Persist state
-    return () => {
-      setIsInStreamRoom(false); // Reset when unmounting
-      AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false));
-      console.log('MainScreen.jsx: isInStreamRoom reset to false on unmount');
-    };
-  }, [joined, setIsInStreamRoom]);
+  }, [joined]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -76,12 +69,6 @@ export const MainScreen = () => {
       const IsValid = isuserstreaming || isHost;
 
       if (nextAppState === 'active') {
-        // Restore isInStreamRoom from AsyncStorage
-        const isInStreamRoomStored = await AsyncStorage.getItem('isInStreamRoom');
-        const restoredJoined = isInStreamRoomStored ? JSON.parse(isInStreamRoomStored) : joined;
-        setIsInStreamRoom(restoredJoined); // Restore or sync with joined
-        console.log('MainScreen.jsx: Restored isInStreamRoom to', restoredJoined);
-
         if (isStreaming && IsValid && socket.connected) {
           socket.emit('stream-Resume', socket.id);
           setTimeout(async () => {
@@ -94,6 +81,8 @@ export const MainScreen = () => {
               SendErrorTotheServer(err, "handleAppStateChange");
             }
           }, 1000);
+        }else if(isStreaming){
+          setIsInStreamRoom(true); // Restore or sync with joined
         }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
         console.log('⏸ App in background: stopping local stream');
@@ -115,9 +104,6 @@ export const MainScreen = () => {
               delete peersRef.current[userId]
             }
           }
-          // Persist isInStreamRoom state
-          await AsyncStorage.setItem('isInStreamRoom', JSON.stringify(joined));
-          console.log('MainScreen.jsx: Persisted isInStreamRoom as', joined);
         } catch (err) {
           SendErrorTotheServer(err, "handleAppStateChange")
         }
@@ -178,7 +164,6 @@ export const MainScreen = () => {
       if (streamInfo) {
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
-        setIsInStreamRoom(true);
       }
     }
   }
