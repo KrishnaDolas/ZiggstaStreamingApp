@@ -11,17 +11,12 @@ import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
-import { SendErrorTotheServer } from '../utils/constant';
+import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
-import { useNavigation } from '@react-navigation/native';
 import ReportUserModal from './ReportUserModal';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import CameraActionSheet from '../components/CameraActionSheet';
-
-const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
-const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
-const userOtherFallbackImage = require('../../assets/images/default-avatar-trans.png');
 
 
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isViewer }) => {
@@ -33,7 +28,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
     const [userProfileDatails, setUserProfileDetails] = useState({});
     const [socialLinks, setSocialLinks] = useState({});
     const [socialError, setSocialError] = useState('');
-    const [showWarning, setShowWarning] = useState(false);
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
@@ -213,33 +207,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
 
     // get profile details from API
 
-
-    // const uploadAvatarToServer = async (avatarFile) => {
-    //     const formData = new FormData();
-    //     formData.append('avatar', {
-    //         uri: avatarFile.uri,
-    //         type: avatarFile.type,
-    //         name: avatarFile.name,
-    //     });
-    //     formData.append('userId', profileUserId); // Assuming you have this
-
-    //     fetch('https://api.streamlong.live/avatar/upload', {
-    //         method: 'POST',
-    //         headers: {
-    //             'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d', // if needed
-    //         },
-    //         body: formData,
-    //     })
-    //         .then(response => response.json())
-    //         .then(result => {
-    //             console.log('Upload success:', result);
-    //         })
-    //         .catch(error => {
-    //             console.error('Upload failed:', error);
-    //         });
-
-    // };
-
     useEffect(() => {
         const fetchProfileDetails = async () => {
             setIsUserLoading(true);
@@ -399,26 +366,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
 
 
     const handleReport = () => {
-        // if (reportClicked) return; // prevent multiple triggers
-        // setReportClicked(true);
-        // setMessage(`Report feature is not implemented yet.`);
-        // setVisibleModal('message-modal');
-        // navigation.navigate('ReportUser');
-
-
         setVisibleModal('ReportUser');
     };
 
-    const getGenderFallbackImage = (gender) => {
-        switch (gender?.toLowerCase()) {
-            case 'male':
-                return userMaleFallbackImage;
-            case 'female':
-                return userFeMaleFallbackImage;
-            default:
-                return userOtherFallbackImage;
-        }
-    };
 
 
     return (

@@ -14,6 +14,7 @@ import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
+import { getGenderFallbackImage } from '../utils/constant';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -239,7 +240,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         }
     }
 
-
     const renderItem = ({ item, index }) => {
         const image = hardcodedImages[index % hardcodedImages.length];
 
@@ -250,7 +250,11 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 }
             >
                 <Image
-                    source={image}
+                    // source={image}
+                    source={!item?.avatar || item?.avatar === 'default'
+                        ? getGenderFallbackImage(item?.gender)
+                        : { uri: item?.avatar }
+                    }
                     style={[styles.streamListImage, { height: screenHeight * 0.3 - 40 }]}
                 />
                 {/* Bottom gradient overlay */}

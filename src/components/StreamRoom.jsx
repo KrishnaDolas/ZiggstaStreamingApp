@@ -57,7 +57,7 @@ const StreamRoom = ({
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
-    const { userData } = useAppContext()
+    const { userData, setIsInStreamRoom } = useAppContext()
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
     const [userChatInput, setUserChatInput] = useState('');
@@ -86,6 +86,11 @@ const StreamRoom = ({
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
     const [sendAnimationData, setSendAnimationData] = useState(null);
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
+
+
+    useEffect(() => {
+        setIsInStreamRoom(true); // keep global value in sync
+    }, []);
 
     const scrollViewRef = useRef();
     // Function to fetch gifts from the API

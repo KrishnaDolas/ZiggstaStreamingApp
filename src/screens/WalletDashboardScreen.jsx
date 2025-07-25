@@ -174,7 +174,9 @@ export const WalletDashboardScreen = () => {
                     amount: Number(selectedAmount.toFixed(2)),
                 };
                 const response = await Apiclient.post('/transfercredit', postData);
-                if (response.status === 200) {
+                console.log('response', response);
+
+                if (response.data.success) {
                     // const data = response.data || [];
                     setSuccessMessage(response.data?.message);
                     // console.log('transfercredit response', data);
@@ -195,6 +197,8 @@ export const WalletDashboardScreen = () => {
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
+        setSuccessMessage('');
+        setErrorMessage('');
         await getFriendsData();
         await getBankListData();
         setRefreshing(false);
