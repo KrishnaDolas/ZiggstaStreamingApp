@@ -184,6 +184,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           onClose={() => setVisibleModal(null)}
           profileData={userData}
           isMainProfile={true}
+          isProfileAvatarUpdate={true}
         />
       )}
     </>

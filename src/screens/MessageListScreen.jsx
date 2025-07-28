@@ -247,10 +247,10 @@ export const MessageListScreen = () => {
                         {item.username}
                     </Text>
                     <Text numberOfLines={1} style={[styles.meListMessage, themeStyles[theme].meListMessage]}>
-                        {item.message || 'Absolutely love this stream'}
+                        {item.message || 'No messages'}
                     </Text>
-                    {friendListType === 'friends' && (
-                        <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.created_date || '2:57 PM'}</Text>
+                    {friendListType === 'friends' && item.created_date !== null && (
+                        <Text style={[styles.messageListTime, themeStyles[theme].messageListTime]}>{item.created_date}</Text>
                     )}
                 </TouchableOpacity>
                 {friendListType === 'blocked' ? (

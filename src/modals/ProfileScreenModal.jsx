@@ -1,7 +1,8 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, } from 'react-native';
+import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, StatusBar } from 'react-native';
 
+import ImagePickerCrop from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
@@ -19,7 +20,8 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import CameraActionSheet from '../components/CameraActionSheet';
 
 
-const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isViewer }) => {
+
+const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
     const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
@@ -36,9 +38,66 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
     const [reportClicked, setReportClicked] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [showActionSheet, setShowActionSheet] = useState(false);
+    const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
+
+
+    // Handle status bar and navigation bar visibility
+    useEffect(() => {
+        if (isImagePickerOpen) {
+            // Hide status bar and enable fullscreen
+            StatusBar.setHidden(true, 'fade');
+
+            // For Android - hide navigation bar
+            if (Platform.OS === 'android') {
+                // This requires react-native-navigation-bar-color or similar library
+                // Or you can use react-native-immersive-mode for better control
+                try {
+                    // If you have react-native-navigation-bar-color installed
+                    // NavigationBar.hide();
+
+                    // Alternative: Use react-native-immersive-mode
+                    // ImmersiveMode.fullLayout(true);
+                    // ImmersiveMode.setBarMode('FullSticky');
+                } catch (error) {
+                    console.log('Navigation bar control not available');
+                }
+            }
+        } else {
+            // Restore status bar
+            StatusBar.setHidden(false, 'fade');
+
+            // For Android - show navigation bar
+            if (Platform.OS === 'android') {
+                try {
+                    // If you have react-native-navigation-bar-color installed
+                    // NavigationBar.show();
+
+                    // Alternative: Use react-native-immersive-mode
+                    // ImmersiveMode.fullLayout(false);
+                    // ImmersiveMode.setBarMode('Normal');
+                } catch (error) {
+                    console.log('Navigation bar control not available');
+                }
+            }
+        }
+
+        // Cleanup when component unmounts
+        return () => {
+            StatusBar.setHidden(false, 'fade');
+            if (Platform.OS === 'android') {
+                try {
+                    // Restore navigation bar
+                    // NavigationBar.show();
+                    // ImmersiveMode.fullLayout(false);
+                } catch (error) {
+                    console.log('Navigation bar control not available');
+                }
+            }
+        };
+    }, [isImagePickerOpen]);
 
     // Cleanup modals on unmount
     useEffect(() => {
@@ -84,20 +143,74 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
         setShowActionSheet(true);
     };
 
+    // const onSelectImage = async (type) => {
+    //     setAvatarUploading(true);
+
+    //     const options = {
+    //         mediaType: 'photo',
+    //         quality: 0.7,
+    //         saveToPhotos: true,
+    //     };
+
+    //     try {
+    //         if (type === 'camera') {
+    //             if (Platform.OS === 'android') {
+    //                 const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
+
+    //                 const granted = await PermissionsAndroid.request(permission, {
+    //                     title: 'Camera Permission',
+    //                     message: 'App needs access to your camera to take photos.',
+    //                     buttonNeutral: 'Ask Me Later',
+    //                     buttonNegative: 'Cancel',
+    //                     buttonPositive: 'OK',
+    //                 });
+
+    //                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+    //                     const result = await launchCamera(options);
+    //                     handleImageResult(result);
+    //                 } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
+    //                     Alert.alert(
+    //                         'Permission Required',
+    //                         'Camera permission is required to take a photo. Please allow it.',
+    //                     );
+    //                     setAvatarUploading(false);
+    //                     return;
+    //                 } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+    //                     Alert.alert(
+    //                         'Permission Denied',
+    //                         'Camera permission was denied permanently. Open settings to allow access.',
+    //                         [
+    //                             { text: 'Cancel', style: 'cancel' },
+    //                             { text: 'Open Settings', onPress: () => Linking.openSettings() },
+    //                         ]
+    //                     );
+    //                     setAvatarUploading(false);
+    //                     return;
+    //                 }
+    //             }
+    //         }
+
+    //         if (type === 'gallery') {
+    //             const result = await launchImageLibrary(options);
+    //             handleImageResult(result);
+    //         }
+    //     } catch (error) {
+    //         console.error('Image selection error:', error);
+    //         Alert.alert('Error', 'Failed to select image.');
+    //         setAvatarUploading(false);
+    //     }
+    // };
+
+
     const onSelectImage = async (type) => {
         setAvatarUploading(true);
-
-        const options = {
-            mediaType: 'photo',
-            quality: 0.7,
-            saveToPhotos: true,
-        };
-
+        setIsImagePickerOpen(true);
         try {
+            let image = null;
+
             if (type === 'camera') {
                 if (Platform.OS === 'android') {
                     const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-
                     const granted = await PermissionsAndroid.request(permission, {
                         title: 'Camera Permission',
                         message: 'App needs access to your camera to take photos.',
@@ -106,75 +219,99 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
                         buttonPositive: 'OK',
                     });
 
-                    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                        const result = await launchCamera(options);
-                        handleImageResult(result);
-                    } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
-                        Alert.alert(
-                            'Permission Required',
-                            'Camera permission is required to take a photo. Please allow it.',
-                        );
+                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                        Alert.alert('Permission Required', 'Camera permission is needed to take a photo.');
                         setAvatarUploading(false);
-                        return;
-                    } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-                        Alert.alert(
-                            'Permission Denied',
-                            'Camera permission was denied permanently. Open settings to allow access.',
-                            [
-                                { text: 'Cancel', style: 'cancel' },
-                                { text: 'Open Settings', onPress: () => Linking.openSettings() },
-                            ]
-                        );
-                        setAvatarUploading(false);
+                        setIsImagePickerOpen(false); // Reset flag
                         return;
                     }
                 }
+
+                image = await ImagePickerCrop.openCamera({
+                    width: 256,
+                    height: 256,
+                    cropping: true,
+                    hideBottomControls: true, // Android only
+                    freeStyleCropEnabled: false,
+                    compressImageQuality: 0.7,
+                    mediaType: 'photo',
+                    includeBase64: false,
+                });
+
+            } else if (type === 'gallery') {
+                image = await ImagePickerCrop.openPicker({
+                    width: 256,
+                    height: 256,
+                    cropping: true,
+                    hideBottomControls: true, // Android only
+                    freeStyleCropEnabled: false,
+                    compressImageQuality: 0.7,
+                    mediaType: 'photo',
+                    includeBase64: false,
+                });
             }
 
-            if (type === 'gallery') {
-                const result = await launchImageLibrary(options);
-                handleImageResult(result);
+            if (!image || image.cancelled) {
+                setAvatarUploading(false);
+                return;
             }
+
+            const avatarFile = {
+                uri: image.path,
+                name: image.filename || `avatar_${Date.now()}.jpg`,
+                type: image.mime,
+            };
+
+            uploadAvatarToServer(avatarFile);
+
         } catch (error) {
-            console.error('Image selection error:', error);
-            Alert.alert('Error', 'Failed to select image.');
+            if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
+                // user cancelled image picker or back pressed
+                console.log('Image selection cancelled');
+            } else {
+                console.error('Image selection error:', error);
+                Alert.alert('Error', 'Failed to select or crop image.');
+            }
             setAvatarUploading(false);
+        } finally {
+            setIsImagePickerOpen(false); // Always reset flag
         }
     };
 
 
-    const handleImageResult = (result) => {
-        if (result.didCancel) {
-            console.log('User cancelled image picker');
-            setAvatarUploading(false);
-            return;
-        }
+    // const handleImageResult = (result) => {
+    //     if (result.didCancel) {
+    //         console.log('User cancelled image picker');
+    //         setAvatarUploading(false);
+    //         return;
+    //     }
 
-        if (result.errorCode) {
-            console.error('Picker Error:', result.errorMessage);
-            Alert.alert('Error', result.errorMessage || 'Unknown error');
-            setAvatarUploading(false);
-            return;
-        }
+    //     if (result.errorCode) {
+    //         console.error('Picker Error:', result.errorMessage);
+    //         Alert.alert('Error', result.errorMessage || 'Unknown error');
+    //         setAvatarUploading(false);
+    //         return;
+    //     }
 
-        const file = result.assets?.[0];
-        if (!file) {
-            Alert.alert('Error', 'No image selected');
-            setAvatarUploading(false);
-            return;
-        }
+    //     const file = result.assets?.[0];
+    //     if (!file) {
+    //         Alert.alert('Error', 'No image selected');
+    //         setAvatarUploading(false);
+    //         return;
+    //     }
 
-        const avatarFile = {
-            uri: file.uri,
-            name: file.fileName || `avatar_${Date.now()}.jpg`,
-            type: file.type,
-        };
+    //     const avatarFile = {
+    //         uri: file.uri,
+    //         name: file.fileName || `avatar_${Date.now()}.jpg`,
+    //         type: file.type,
+    //     };
 
-        uploadAvatarToServer(avatarFile);
-    };
+    //     uploadAvatarToServer(avatarFile);
+    // };
 
 
     const uploadAvatarToServer = async (avatarFile) => {
+        setIsImagePickerOpen(false); // Reset flag when starting upload
         const formData = new FormData();
         formData.append('avatar', {
             uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
@@ -191,7 +328,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
                 // Alert.alert('Upload successFully', resJson.message);
                 setMessage(resJson.message);
                 setVisibleModal('message-modal');
-
+                setTimeout(() => {
+                    onClose();
+                }, 1500);
             } else {
                 // Alert.alert('Upload Failed', resJson.message || 'Please try again.');
                 setMessage(resJson.message || 'Please try again.');
@@ -469,7 +608,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isVi
                                                                     }
                                                                     style={styles.psmProfileImage}
                                                                 />
-                                                                {!isViewer && (
+                                                                {isProfileAvatarUpdate && (
                                                                     <TouchableOpacity
                                                                         style={styles.editIconContainer}
                                                                         onPress={handleEditAvatar}
