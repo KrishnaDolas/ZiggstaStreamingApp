@@ -1522,7 +1522,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(36, 32, 32, 0.75)',
     paddingVertical: 4,
-    paddingHorizontal: 15,
+    paddingHorizontal: 7,
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
