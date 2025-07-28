@@ -80,7 +80,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
         HandleTotalGifterData()
         GetViewers()
     }, [])
-    const tabs = ['Gifters', 'Viewsers', 'Gifters List'];
+    const tabs = ['Gifters', 'Viewers', 'Gifters List'];
 
 
     const RenderItemForGifters = ({ item }) => {

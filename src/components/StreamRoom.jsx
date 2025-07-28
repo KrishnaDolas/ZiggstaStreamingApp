@@ -23,7 +23,7 @@ import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import ReportUserModal from '../modals/ReportUserModal';
-import { giftImages, SendErrorTotheServer } from '../utils/constant';
+import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../utils/constant';
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
@@ -80,6 +80,7 @@ const StreamRoom = ({
     const [totalRoomviewerList, setTotalRoomviewerList] = useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
+    const [totalGiftValue, setTotalGiftValue] = useState(0);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const [OpenHostPorfile, setOpenHostPorfile] = useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
@@ -137,6 +138,7 @@ const StreamRoom = ({
             const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
             if (response) {
                 setGiftItems(response.data.data || []);
+                console.log(response);
             }
         } catch (error) {
             SendErrorTotheServer(error, "getGifts")
@@ -382,15 +384,20 @@ const StreamRoom = ({
         console.log(list);
         setTotalRoomviewerList(list)
     }
+    const HandleTotalGiftValue=(totalValue)=>{
+        setTotalGiftValue(totalValue)
+    }
 
     useEffect(() => {
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
         socket.on('RoomTotalCount', HandleRoomTotalCount)
+        socket.on('Total-GiftValue',HandleTotalGiftValue)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
             socket.off('RoomTotalCount', HandleRoomTotalCount)
+            socket.off('Total-GiftValue',HandleTotalGiftValue)
         }
     }, [])
 
@@ -406,7 +413,7 @@ const StreamRoom = ({
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, item?.giftIcon)
+                    socket.emit('Send-gift', userData?.screenName, item?.giftIcon,item?.giftValue)
                     setSendAnimationData({
                         giftName: item?.giftIcon,
                         recipientName: hostInfo[0]?.Name
@@ -650,14 +657,15 @@ const StreamRoom = ({
                             <View style={styles.strRoomHeader}>
                                 <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                     <View style={styles.strRoomHeaderLeft}>
-                                        <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                        <Image style={styles.strRoomHeaderLeftProfileImg}
+                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
                                         <View style={styles.strRoomHeaderLeftProfileInfo}>
                                             <Text style={[styles.strRoomHeaderLeftProfileName]}>
                                                 {userDetails?.screenName}
                                             </Text>
                                             <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                                 <Ionicons name="star" solid size={14} color="#fff" />
-                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
+                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{totalGiftValue}</Text>
                                             </View>
                                         </View>
                                     </View>
