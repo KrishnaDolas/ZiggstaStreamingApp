@@ -665,7 +665,7 @@ const StreamRoom = ({
                                             </Text>
                                             <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                                 <Ionicons name="star" solid size={14} color="#fff" />
-                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>{totalGiftValue}</Text>
+                                                <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -700,7 +700,7 @@ const StreamRoom = ({
                                             style={{ width: 14, height: 14, marginRight: 4 }}
                                             resizeMode="contain"
                                         />
-                                        <Text style={styles.strRoomHeaderRWalletInfoText}>1023</Text>
+                                        <Text style={styles.strRoomHeaderRWalletInfoText}>{totalGiftValue}</Text>
                                     </View>
                                     <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                         <Ionicons name="close" size={30} color="#fff" />
