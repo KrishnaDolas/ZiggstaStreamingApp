@@ -11,7 +11,8 @@ import Apiclient from '../utils/Apiclient';
 import rank1Img from '../../assets/images/TopGifterBedge/trophy_1.png';
 import rank2Img from '../../assets/images/TopGifterBedge/trophy_2.png';
 import rank3Img from '../../assets/images/TopGifterBedge/trophy_3.png';
-import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
+import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../utils/constant';
+import FastImage from 'react-native-fast-image';
 
 
 const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
@@ -56,6 +57,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 setTotalHeaderCount((prevdata) => ({ ...prevdata, TotalGifter: totalAmount }))
                 console.log('total gift value:', totalAmount);
                 setTotalgifters(responce.data.data)
+                console.log('total gifters data:', responce.data.data);
             }
         } catch (error) {
             SendErrorTotheServer(error, "HandleGetGiftersdata")
@@ -154,7 +156,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             alignItems: 'center',
                             marginTop: 0,
                             borderRadius: 20,
-                            backgroundColor: '#00C4CC',
+                            backgroundColor: '#d93a63',
                             paddingHorizontal: 10,
                             paddingVertical: 3,
                             alignSelf: 'flex-start'
@@ -208,8 +210,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             marginTop: 2
                         }}
                     >
-                        pune,India
-                        {/* {`${item.country} (${item.city})`} */}
+                       {item?.location}
                     </Text>
                 </View>
             </View>
@@ -217,6 +218,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     };
 
     const RenderItemForGifterList = ({ item }) => {
+        const GiftImage= giftImages[item?.giftIcon] || require('../../assets/images/gifts/diamond3.gif');
         return (
             <View
                 style={{
@@ -253,8 +255,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             alignItems: 'center',
                             marginTop: 5,
                             borderRadius: 12,
-                            backgroundColor: '#00C4CC',
-                            paddingHorizontal: 15,
+                            backgroundColor: '#d93a63',
+                            paddingHorizontal: 9,
                             paddingVertical: 4,
                         }}
                     >
@@ -262,6 +264,16 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         <Text style={{ fontSize: 13, fontWeight: '500', color: 'white' }}>
                             {item.giftValue}
                         </Text>
+                    </View>
+                </View>
+                <View style={{ marginLeft: 12}}>
+                    <View style={{flexDirection: 'row'}}
+                    >
+                        <FastImage
+                            style={{height:"40",width:'40'}}
+                            source={GiftImage}
+                            resizeMode={FastImage.resizeMode.contain}
+                        />
                     </View>
                 </View>
             </View>
