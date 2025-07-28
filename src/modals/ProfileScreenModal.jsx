@@ -1,7 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, StatusBar } from 'react-native';
-
 import ImagePickerCrop from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -16,13 +15,14 @@ import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant'
 import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
 import ReportUserModal from './ReportUserModal';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import CameraActionSheet from '../components/CameraActionSheet';
+import { useAppContext } from '../context/AppContext';
 
 
 
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
     const { theme } = useContext(ThemeContext);
+    const { fetchProfileDetails } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -202,81 +202,81 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     // };
 
 
-    const onSelectImage = async (type) => {
-        setAvatarUploading(true);
-        setIsImagePickerOpen(true);
-        try {
-            let image = null;
+    // const onSelectImage = async (type) => {
+    //     setAvatarUploading(true);
+    //     setIsImagePickerOpen(true);
+    //     try {
+    //         let image = null;
 
-            if (type === 'camera') {
-                if (Platform.OS === 'android') {
-                    const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-                    const granted = await PermissionsAndroid.request(permission, {
-                        title: 'Camera Permission',
-                        message: 'App needs access to your camera to take photos.',
-                        buttonNeutral: 'Ask Me Later',
-                        buttonNegative: 'Cancel',
-                        buttonPositive: 'OK',
-                    });
+    //         if (type === 'camera') {
+    //             if (Platform.OS === 'android') {
+    //                 const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
+    //                 const granted = await PermissionsAndroid.request(permission, {
+    //                     title: 'Camera Permission',
+    //                     message: 'App needs access to your camera to take photos.',
+    //                     buttonNeutral: 'Ask Me Later',
+    //                     buttonNegative: 'Cancel',
+    //                     buttonPositive: 'OK',
+    //                 });
 
-                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                        Alert.alert('Permission Required', 'Camera permission is needed to take a photo.');
-                        setAvatarUploading(false);
-                        setIsImagePickerOpen(false); // Reset flag
-                        return;
-                    }
-                }
+    //                 if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+    //                     Alert.alert('Permission Required', 'Camera permission is needed to take a photo.');
+    //                     setAvatarUploading(false);
+    //                     setIsImagePickerOpen(false); // Reset flag
+    //                     return;
+    //                 }
+    //             }
 
-                image = await ImagePickerCrop.openCamera({
-                    width: 256,
-                    height: 256,
-                    cropping: true,
-                    hideBottomControls: true, // Android only
-                    freeStyleCropEnabled: false,
-                    compressImageQuality: 0.7,
-                    mediaType: 'photo',
-                    includeBase64: false,
-                });
+    //             image = await ImagePickerCrop.openCamera({
+    //                 width: 256,
+    //                 height: 256,
+    //                 cropping: true,
+    //                 hideBottomControls: true, // Android only
+    //                 freeStyleCropEnabled: false,
+    //                 compressImageQuality: 0.7,
+    //                 mediaType: 'photo',
+    //                 includeBase64: false,
+    //             });
 
-            } else if (type === 'gallery') {
-                image = await ImagePickerCrop.openPicker({
-                    width: 256,
-                    height: 256,
-                    cropping: true,
-                    hideBottomControls: true, // Android only
-                    freeStyleCropEnabled: false,
-                    compressImageQuality: 0.7,
-                    mediaType: 'photo',
-                    includeBase64: false,
-                });
-            }
+    //         } else if (type === 'gallery') {
+    //             image = await ImagePickerCrop.openPicker({
+    //                 width: 256,
+    //                 height: 256,
+    //                 cropping: true,
+    //                 hideBottomControls: true, // Android only
+    //                 freeStyleCropEnabled: false,
+    //                 compressImageQuality: 0.7,
+    //                 mediaType: 'photo',
+    //                 includeBase64: false,
+    //             });
+    //         }
 
-            if (!image || image.cancelled) {
-                setAvatarUploading(false);
-                return;
-            }
+    //         if (!image || image.cancelled) {
+    //             setAvatarUploading(false);
+    //             return;
+    //         }
 
-            const avatarFile = {
-                uri: image.path,
-                name: image.filename || `avatar_${Date.now()}.jpg`,
-                type: image.mime,
-            };
+    //         const avatarFile = {
+    //             uri: image.path,
+    //             name: image.filename || `avatar_${Date.now()}.jpg`,
+    //             type: image.mime,
+    //         };
 
-            uploadAvatarToServer(avatarFile);
+    //         uploadAvatarToServer(avatarFile);
 
-        } catch (error) {
-            if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
-                // user cancelled image picker or back pressed
-                console.log('Image selection cancelled');
-            } else {
-                console.error('Image selection error:', error);
-                Alert.alert('Error', 'Failed to select or crop image.');
-            }
-            setAvatarUploading(false);
-        } finally {
-            setIsImagePickerOpen(false); // Always reset flag
-        }
-    };
+    //     } catch (error) {
+    //         if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
+    //             // user cancelled image picker or back pressed
+    //             console.log('Image selection cancelled');
+    //         } else {
+    //             console.error('Image selection error:', error);
+    //             Alert.alert('Error', 'Failed to select or crop image.');
+    //         }
+    //         setAvatarUploading(false);
+    //     } finally {
+    //         setIsImagePickerOpen(false); // Always reset flag
+    //     }
+    // };
 
 
     // const handleImageResult = (result) => {
@@ -309,6 +309,105 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     //     uploadAvatarToServer(avatarFile);
     // };
 
+    const onSelectImage = async (type) => {
+        setAvatarUploading(true);
+        setIsImagePickerOpen(true);
+
+        try {
+            let image = null;
+
+            if (type === 'camera') {
+                if (Platform.OS === 'android') {
+                    const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
+                    const granted = await PermissionsAndroid.request(permission, {
+                        title: 'Camera Permission',
+                        message: 'App needs access to your camera to take photos.',
+                        buttonNeutral: 'Ask Me Later',
+                        buttonNegative: 'Cancel',
+                        buttonPositive: 'OK',
+                    });
+
+                    if (granted === PermissionsAndroid.RESULTS.DENIED) {
+                        Alert.alert(
+                            'Permission Required',
+                            'Camera permission is required to take a photo. Please allow it.'
+                        );
+                        setAvatarUploading(false);
+                        setIsImagePickerOpen(false);
+                        return;
+                    }
+
+                    if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                        Alert.alert(
+                            'Permission Denied',
+                            'Camera permission was denied permanently. Open settings to allow access.',
+                            [
+                                { text: 'Cancel', style: 'cancel' },
+                                { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                            ]
+                        );
+                        setAvatarUploading(false);
+                        setIsImagePickerOpen(false);
+                        return;
+                    }
+
+                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                        setAvatarUploading(false);
+                        setIsImagePickerOpen(false);
+                        return;
+                    }
+                }
+
+                image = await ImagePickerCrop.openCamera({
+                    width: 256,
+                    height: 256,
+                    cropping: true,
+                    hideBottomControls: true,
+                    freeStyleCropEnabled: false,
+                    compressImageQuality: 0.7,
+                    mediaType: 'photo',
+                    includeBase64: false,
+                });
+
+            } else if (type === 'gallery') {
+                image = await ImagePickerCrop.openPicker({
+                    width: 256,
+                    height: 256,
+                    cropping: true,
+                    hideBottomControls: true,
+                    freeStyleCropEnabled: false,
+                    compressImageQuality: 0.7,
+                    mediaType: 'photo',
+                    includeBase64: false,
+                });
+            }
+
+            if (!image || image.cancelled) {
+                setAvatarUploading(false);
+                return;
+            }
+
+            const avatarFile = {
+                uri: image.path,
+                name: image.filename || `avatar_${Date.now()}.jpg`,
+                type: image.mime,
+            };
+
+            uploadAvatarToServer(avatarFile);
+
+        } catch (error) {
+            if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
+                console.log('Image selection cancelled');
+            } else {
+                console.error('Image selection error:', error);
+                Alert.alert('Error', 'Failed to select or crop image.');
+            }
+            setAvatarUploading(false);
+        } finally {
+            setIsImagePickerOpen(false);
+        }
+    };
+
 
     const uploadAvatarToServer = async (avatarFile) => {
         setIsImagePickerOpen(false); // Reset flag when starting upload
@@ -330,6 +429,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 setVisibleModal('message-modal');
                 setTimeout(() => {
                     onClose();
+                    fetchProfileDetails();
                 }, 1500);
             } else {
                 // Alert.alert('Upload Failed', resJson.message || 'Please try again.');
@@ -347,7 +447,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     // get profile details from API
 
     useEffect(() => {
-        const fetchProfileDetails = async () => {
+        const fetchUserProfileDetails = async () => {
             setIsUserLoading(true);
             setIsUserError('');
             try {
@@ -364,12 +464,12 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 }
             } catch (err) {
                 setIsUserError('Error fetching user profile details: ' + err.message);
-                SendErrorTotheServer(err, 'fetchProfileDetails');
+                SendErrorTotheServer(err, 'fetchUserProfileDetails');
             } finally {
                 setIsUserLoading(false);
             }
         };
-        fetchProfileDetails();
+        fetchUserProfileDetails();
     }, [profileUserId]);
 
 
