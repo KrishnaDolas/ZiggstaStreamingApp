@@ -39,6 +39,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 // sort the data totalGiftValue wise
                 let sortedData = responce.data.data.sort((a, b) => parseInt(b.totalGiftValue) - parseInt(a.totalGiftValue));
                 setGiftersData(sortedData)
+                console.log(sortedData);
             }
         } catch (error) {
             SendErrorTotheServer(error, "HandleGetGiftersdata")
@@ -97,8 +98,9 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginVertical: 12,
-                    paddingHorizontal: 12,
+                    paddingHorizontal:'5',
+                    backgroundColor: theme === 'light' ? 'pink' : '#2a2a2a',
+                    paddingVertical:'5'
                 }}
             >
                 {/* Rank Icon or Number */}
@@ -125,7 +127,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
 
                 {/* Avatar */}
                 <Image
-                    source={chatimage}
+                    source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item?.gender) : { uri: item?.avatar }}
                     style={{
                         height: 50,
                         width: 50,
@@ -135,7 +137,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 />
 
                 {/* User Info */}
-                <View style={{ marginLeft: 12, flex: 1 }}>
+                <View style={{ marginLeft: 10, flex: 1 }}>
                     <Text
                         style={{
                             fontSize: 14,
@@ -146,13 +148,13 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                     >
                         {item.screenName}
                     </Text>
-
-                    {/* Gift Value Badge */}
+                </View>
+                <View>
                     <View
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            marginTop: 6,
+                            marginTop: 0,
                             borderRadius: 20,
                             backgroundColor: '#00C4CC',
                             paddingHorizontal: 10,
@@ -160,7 +162,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             alignSelf: 'flex-start'
                         }}
                     >
-                        <Ionicons name="diamond" size={14} color="white" style={{ marginRight: 4 }} />
+                        <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
                         <Text style={{ fontSize: 12, fontWeight: '500', color: 'white' }}>
                             {item.totalGiftValue}
                         </Text>
@@ -221,6 +223,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
+                    justifyContent: 'space-around',
                     marginVertical: 12,
                     paddingHorizontal: 10
                 }}
@@ -239,11 +242,12 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                     }}
                 />
 
-                <View style={{ marginLeft: 12, flex: 1 }}>
+                <View style={{ marginLeft: 25, flex: 1 }}>
                     <Text style={{ fontSize: 14, fontWeight: '600', color: '#222' }}>
                         {item.screenName}
                     </Text>
-
+                </View>
+                <View style={{ marginLeft: 12}}>
                     <View
                         style={{
                             flexDirection: 'row',
@@ -251,12 +255,11 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             marginTop: 5,
                             borderRadius: 12,
                             backgroundColor: '#00C4CC',
-                            paddingHorizontal: 8,
-                            paddingVertical: 2,
-                            alignSelf: 'flex-start'
+                            paddingHorizontal: 15,
+                            paddingVertical: 4,
                         }}
                     >
-                        <Ionicons name="diamond" size={14} color="white" style={{ marginRight: 4 }} />
+                        <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
                         <Text style={{ fontSize: 13, fontWeight: '500', color: 'white' }}>
                             {item.giftValue}
                         </Text>
@@ -292,18 +295,16 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
         switch (activeTab) {
             case 0:
                 return (
-                    <View>
-                        <View>
-                            <FlatList
-                                data={giftersdata}   // your array of {ViewerName, ViewerID}
-                                keyExtractor={(item, ind) => item?.fromUserID.toString()}
-                                nestedScrollEnabled={true}
-                                contentContainerStyle={{ paddingBottom: 8 }}
-                                style={{ height: screenHeight * 0.2 + 30 }}
-                                ListEmptyComponent={() => FallbackUI('Gifters')}
-                                renderItem={RenderItemForGifters}
-                            />
-                        </View>
+                    <View >
+                        <FlatList
+                            data={giftersdata}   // your array of {ViewerName, ViewerID}
+                            keyExtractor={(item, ind) => item?.fromUserID.toString()}
+                            nestedScrollEnabled={true}
+                            contentContainerStyle={{ paddingBottom: 8 }}
+                            style={{ height: screenHeight * 0.2 + 30 }}
+                            ListEmptyComponent={() => FallbackUI('Gifters')}
+                            renderItem={RenderItemForGifters}
+                        />
                     </View>
                 );
             case 1:
@@ -360,7 +361,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 <View style={{
                     width: '100%', // like drawer
                     backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
-                    padding: 16,
+                    padding: 5,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },
                     shadowOpacity: 0.15,
@@ -391,9 +392,9 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                                 onPress={() => setActiveTab(index)}
                             >
                                 {/* <View style={{flexDirection:'row', alignItems:'center'}}>
-                                    {tab === 'Gifters' ?<Text> <Ionicons name="diamond" size={16} color="aqua" />{totalheaderCount.Gifter} </Text>:
+                                    {tab === 'Gifters' ?<Text> <Ionicons name="star" size={16} color="aqua" />{totalheaderCount.Gifter} </Text>:
                                      tab === 'Viewsers' ?<Text> <Ionicons name="eye" size={16} color="black" />{totalheaderCount.Viewer} </Text>:
-                                     tab === 'Gifters List' ?<Text> <Ionicons name="diamond" size={16} color="aqua" />{totalheaderCount.TotalGifter} </Text>: 0
+                                     tab === 'Gifters List' ?<Text> <Ionicons name="star" size={16} color="aqua" />{totalheaderCount.TotalGifter} </Text>: 0
                                      }
                                 </View> */}
                                 <Text style={{
