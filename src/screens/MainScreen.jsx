@@ -54,6 +54,7 @@ export const MainScreen = () => {
   const [streamerList, setStrimerList] = useState([])
   const [streammsg, setStreamMsg] = useState(null);
   const [currentStreamData, setCurrentStreamData] = useState({});
+  const [totalGiftValue, setTotalGiftValue] = useState(0);
   const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
   const RoomIDRef = useRef(null)
@@ -434,6 +435,9 @@ export const MainScreen = () => {
       setRoomchat(prev => [...prev, data]);
     }
   }
+  const HandleTotalGiftValue=(totalValue)=>{
+    setTotalGiftValue(totalValue)
+}
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -508,6 +512,7 @@ export const MainScreen = () => {
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined', HandlenewUserJoined)
       socket.on('user-leftStream', HandleUserLeftStream)
+      socket.on('Total-GiftValue',HandleTotalGiftValue)
     }
 
     return () => {
@@ -538,6 +543,7 @@ export const MainScreen = () => {
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined', HandlenewUserJoined)
+        socket.off('Total-GiftValue',HandleTotalGiftValue)
       }
     }
   }, [isHost, isSocketConnected]);
@@ -783,6 +789,7 @@ export const MainScreen = () => {
           isuserstreaming={isuserstreaming}
           streammsg={streammsg}
           isInStreamRoom={isInStreamRoom}
+          totalGiftValue={totalGiftValue}
         />)}
       </View>
     </LinearGradient>

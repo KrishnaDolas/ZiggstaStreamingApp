@@ -50,7 +50,8 @@ const StreamRoom = ({
     socket,
     hasRequestedStream,
     streamerList,
-    streammsg
+    streammsg,
+    totalGiftValue
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
@@ -80,7 +81,6 @@ const StreamRoom = ({
     const [totalRoomviewerList, setTotalRoomviewerList] = useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
-    const [totalGiftValue, setTotalGiftValue] = useState(0);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const [OpenHostPorfile, setOpenHostPorfile] = useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
@@ -384,20 +384,15 @@ const StreamRoom = ({
         console.log(list);
         setTotalRoomviewerList(list)
     }
-    const HandleTotalGiftValue=(totalValue)=>{
-        setTotalGiftValue(totalValue)
-    }
 
     useEffect(() => {
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
         socket.on('RoomTotalCount', HandleRoomTotalCount)
-        socket.on('Total-GiftValue',HandleTotalGiftValue)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
             socket.off('RoomTotalCount', HandleRoomTotalCount)
-            socket.off('Total-GiftValue',HandleTotalGiftValue)
         }
     }, [])
 
