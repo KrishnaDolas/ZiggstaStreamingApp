@@ -971,7 +971,6 @@ const StreamRoom = ({
                 <ViewerTotalLIst
                     visible={OpenViewerLIst}
                     onClose={() => setOpenViewerList(false)}
-                    totalRoomviewerList={totalRoomviewerList}
                     userDetails={userDetails}
                     RoomID={streamInfo?.roomID}
                 />

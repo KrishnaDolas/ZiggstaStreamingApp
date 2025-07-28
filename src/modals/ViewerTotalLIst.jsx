@@ -7,7 +7,6 @@ import { Dimensions } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 const screenHeight = Dimensions.get('window').height;
-import chatimage from '../../assets/images/LS-2.jpg';
 import Apiclient from '../utils/Apiclient';
 import rank1Img from '../../assets/images/TopGifterBedge/trophy_1.png';
 import rank2Img from '../../assets/images/TopGifterBedge/trophy_2.png';
@@ -15,7 +14,7 @@ import rank3Img from '../../assets/images/TopGifterBedge/trophy_3.png';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 
 
-const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDetails }) => {
+const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     const { theme } = useContext(ThemeContext);
     const [activeTab, setActiveTab] = useState(0);
     const [giftersdata, setGiftersData] = useState([])
