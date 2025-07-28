@@ -83,7 +83,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     const tabs = ['Gifters', 'Viewers', 'Gifters List'];
 
 
-    const RenderItemForGifters = ({ item }) => {
+    const RenderItemForGifters = (item,ind) => {
         // Handle rank images
         const getRankImage = () => {
             if (giftersdata[0]) return rank1Img;
@@ -100,8 +100,9 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal:'5',
-                    backgroundColor: `${giftersdata[0]? '#f8bddd':giftersdata[1]?'#f0caae':giftersdata[2]?'#b6d6cf':'#cacaca'}`,
-                    paddingVertical:'5'
+                    backgroundColor: `${ind===0? '#ffcbed':ind===1?'#fdd7bb':ind===2?'#c5e6de':'#d9d9d9'}`,
+                    paddingVertical:'5',
+                    marginBottom:'5'
                 }}
             >
                 {/* Rank Icon or Number */}
@@ -116,7 +117,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 >
                     {rankImage ? (
                         <Image
-                            source={rankImage}
+                            source={ind===0 ? rank1Img : ind===1 ? rank2Img : ind===2 ? rank3Img : null}//giftersdata[0] ? rank1Img : giftersdata[1] ? rank2Img : giftersdata[2] ? rank3Img : null}
                             style={{ width: 40, height: 54, resizeMode: 'contain' }}
                         />
                     ) : (
@@ -180,7 +181,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     flexDirection: 'row',
                     alignItems: 'center',
                     marginVertical: 10,
-                    paddingHorizontal: 10
+                    paddingHorizontal: 10,
+                    paddingVertical: 5,
+                    borderBottomWidth:1,
+                    borderBottomColor: "#d9d9d9"
                 }}
             >
                 <Image
@@ -196,13 +200,15 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text
                         style={{
-                            fontSize: 16,
-                            fontWeight: '600',
+                            fontSize: 15,
+                            fontWeight: '400',
                             color: '#222'
                         }}
                     >
                         {item.username}
                     </Text>
+                </View>
+                <View style={{ marginLeft: 12, flex: 1 }}>
                     <Text
                         style={{
                             fontSize: 13,
@@ -226,7 +232,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     alignItems: 'center',
                     justifyContent: 'space-around',
                     marginVertical: 12,
-                    paddingHorizontal: 10
+                    paddingHorizontal: 10,
+                    paddingVertical: 7,
+                    borderBottomWidth:1, // optional: to give a border effect
+                    borderBottomColor: "#d9d9d9"
                 }}
             >
                 <Image
@@ -314,7 +323,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             contentContainerStyle={{ paddingBottom: 8 }}
                             style={{ height: screenHeight * 0.2 + 30 }}
                             ListEmptyComponent={() => FallbackUI('Gifters')}
-                            renderItem={RenderItemForGifters}
+                            renderItem={({ item, index }) => RenderItemForGifters(item, index)}
                         />
                     </View>
                 );
