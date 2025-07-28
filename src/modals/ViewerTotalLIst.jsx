@@ -65,8 +65,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
         try {
             const response = await Apiclient.get(`/rooms/${RoomID}/members`)
             if (response.data) {
-                setViewersList(response.data.members || []);
-                console.log('Viewers List:', response.data.members);
+                setViewersList(response.data?.members || []);
+                console.log('Viewers List:', response.data?.members);
             }
         } catch (error) {
             console.error('Error fetching viewers:', error);
