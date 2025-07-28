@@ -115,36 +115,6 @@ export const MainScreen = () => {
     };
   }, [isStreaming, isHost, isuserstreaming, isFrontCamera, joined, setIsInStreamRoom]);
 
-  const UpdatedRoomCount = async (roomid, userid, isConnected, isCoHost) => {
-    try {
-      let params = {
-        user_id: userid,
-        isCoHost: isCoHost,
-        isConnected: isConnected
-      }
-      const response = await Apiclient.post(`/rooms/${roomid}/join`, params)
-      if (response) {
-        const user = response.data;
-      }
-    } catch (error) {
-      SendErrorTotheServer(error, "UpdatedRoomCount")
-    }
-  }
-  const UpdatedCoHost = async (roomid, userid, isCoHost) => {
-    try {
-      let params = {
-        roomId: roomid,
-        userId: userid,
-        makeCoHost: isCoHost
-      }
-      const response = await Apiclient.post(`/rooms/updateTocoHost`, params)
-      if (response) {
-        const user = response.data;
-      }
-    } catch (error) {
-      SendErrorTotheServer(error, "UpdatedRoomCount")
-    }
-  }
   const connectSocket = () => {
     socket.connect();
     setIsSocketConnected(true); // Update connection status
@@ -194,10 +164,6 @@ export const MainScreen = () => {
         await startLocalStream();
         socket.emit('assignHost');
       } else {
-        if (roomID) {
-          //roomid, userid, isConnected, isCoHost
-          UpdatedRoomCount(roomID, userData?.userid, "Y", "N")
-        }
         setIsLoading(true);
         setTimeout(() => {
           setJoined(true);
@@ -298,10 +264,6 @@ export const MainScreen = () => {
 
   const HandleApprovedStream = async () => {
     try {
-      //roomid, userid, isCoHost
-      // if (RoomIDRef.current) {
-      //   UpdatedCoHost(RoomIDRef.current, userData?.userid, "Y")
-      // }
       await startLocalStream();
       // Add tracks to existing peer connections
       for (const userId in peersRef.current) {
@@ -435,9 +397,6 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
-        // if (RoomIDRef.current) {
-        //   UpdatedCoHost(RoomIDRef.current, userData?.userid, "N")
-        // }
         setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
       }
@@ -717,8 +676,6 @@ export const MainScreen = () => {
       if (streamInfo?.hostID === userData?.userid) {
         socket.emit('Hostleft')
         HandleSetLivestatus(streamInfo?.roomID);
-      } else {
-        UpdatedRoomCount(streamInfo?.roomID, userData?.userid, "N", "N")
       }
       setJoined(false);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
