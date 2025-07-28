@@ -18,11 +18,13 @@ import { ThemeContext } from '../context/ThemeContext';
 import ReportUserModal from './ReportUserModal';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import CameraActionSheet from '../components/CameraActionSheet';
+import { useAppContext } from '../context/AppContext';
 
 
 
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
     const { theme } = useContext(ThemeContext);
+    const { fetchProfileDetails } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
@@ -330,6 +332,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 setVisibleModal('message-modal');
                 setTimeout(() => {
                     onClose();
+                    fetchProfileDetails();
                 }, 1500);
             } else {
                 // Alert.alert('Upload Failed', resJson.message || 'Please try again.');
