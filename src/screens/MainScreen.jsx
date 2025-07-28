@@ -299,9 +299,9 @@ export const MainScreen = () => {
   const HandleApprovedStream = async () => {
     try {
       //roomid, userid, isCoHost
-      if (RoomIDRef.current) {
-        UpdatedCoHost(RoomIDRef.current, userData?.userid, "Y")
-      }
+      // if (RoomIDRef.current) {
+      //   UpdatedCoHost(RoomIDRef.current, userData?.userid, "Y")
+      // }
       await startLocalStream();
       // Add tracks to existing peer connections
       for (const userId in peersRef.current) {
@@ -435,9 +435,9 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
-        if (RoomIDRef.current) {
-          UpdatedCoHost(RoomIDRef.current, userData?.userid, "N")
-        }
+        // if (RoomIDRef.current) {
+        //   UpdatedCoHost(RoomIDRef.current, userData?.userid, "N")
+        // }
         setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
       }

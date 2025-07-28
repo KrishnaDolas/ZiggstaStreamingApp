@@ -75,7 +75,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     }
     useEffect(() => {
         HandleGetGiftersData()
-        setTotalHeaderCount((prevdata) => ({ ...prevdata, Viewer: totalRoomviewerList.length }))
+        setTotalHeaderCount((prevdata) => ({ ...prevdata, Viewer: viewersList.length }))
         HandleTotalGifterData()
         GetViewers()
     }, [])
@@ -99,7 +99,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal:'5',
-                    backgroundColor: theme === 'light' ? 'pink' : '#2a2a2a',
+                    backgroundColor: `${giftersdata[0]? '#f8bddd':giftersdata[1]?'#f0caae':giftersdata[2]?'#b6d6cf':'#cacaca'}`,
                     paddingVertical:'5'
                 }}
             >
@@ -141,8 +141,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                     <Text
                         style={{
                             fontSize: 14,
-                            fontWeight: '500',
-                            letterSpacing: 1,
+                            fontWeight: '400',
                             color: '#222'
                         }}
                     >
@@ -184,7 +183,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 }}
             >
                 <Image
-                    source={chatimage}
+                    source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item?.gender) : { uri: item?.avatar }}
                     style={{
                         height: 40,
                         width: 40,
@@ -201,7 +200,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             color: '#222'
                         }}
                     >
-                        {item.ViewerName}
+                        {item.username}
                     </Text>
                     <Text
                         style={{
@@ -210,7 +209,8 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                             marginTop: 2
                         }}
                     >
-                        {`${item.country} (${item.city})`}
+                        pune,India
+                        {/* {`${item.country} (${item.city})`} */}
                     </Text>
                 </View>
             </View>
@@ -311,8 +311,8 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
                 return (
                     <View>
                         <FlatList
-                            data={totalRoomviewerList}   // your array of {ViewerName, ViewerID}
-                            keyExtractor={(item) => item.ViewerID.toString()}
+                            data={viewersList}   // your array of {ViewerName, ViewerID}
+                            keyExtractor={(item) => item.user_id.toString()}
                             nestedScrollEnabled={true}
                             contentContainerStyle={{ paddingBottom: 8 }}
                             style={{ height: screenHeight * 0.2 + 30 }}
