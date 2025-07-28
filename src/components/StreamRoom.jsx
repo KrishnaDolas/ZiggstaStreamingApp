@@ -415,6 +415,9 @@ const StreamRoom = ({
                     });
                     setShowSendAnimation(true);
                     setGiftModalVisible(false);
+                }else if(Responce.data.message){
+                    setMessage(Responce.data.message)
+                    setVisibleModal('message-modal')
                 }
             }
         } catch (error) {
