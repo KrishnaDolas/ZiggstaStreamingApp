@@ -27,8 +27,8 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     const HandleGetGiftersData = async () => {
         try {
             const params = {
-                "toUserID": 1,
-                "roomId": 955
+                "toUserID": userDetails?.userid,
+                "roomId": RoomID
             }
             const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
             if (responce.data.success) {
@@ -48,7 +48,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     const HandleTotalGifterData = async () => {
         try {
             const params = {
-                "roomId": 955
+                "roomId": RoomID
             }
             const responce = await Apiclient.post(`topgifters/getAllGifters`, params)
             if (responce.data.success) {
@@ -64,7 +64,7 @@ const ViewerTotalLIst = ({ visible, onClose, totalRoomviewerList, RoomID, userDe
     }
     const GetViewers=async()=>{
         try {
-            const response = await Apiclient.get(`/rooms/${853}/members`)
+            const response = await Apiclient.get(`/rooms/${RoomID}/members`)
             if (response.data) {
                 setViewersList(response.data.members || []);
                 console.log('Viewers List:', response.data.members);
