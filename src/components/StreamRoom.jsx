@@ -532,7 +532,7 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.threeUserColumnRight}>
                                     {streamLayout.slice(1, 3).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={{ flex: 1, position: 'relative' }}>
+                                        <View key={index} style={{ flex: 1, position: 'relative' }}>
                                             <RTCView
                                                 streamURL={streamData.stream.toURL()}
                                                 style={styles.streamVideoHalf}
@@ -565,7 +565,7 @@ const StreamRoom = ({
                             <View style={styles.fiveUserWrapper}>
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(0, 2).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol50}>
+                                        <View key={index} style={styles.fiveUserCol50}>
                                             <View style={styles.videoContainer}>
                                                 <RTCView
                                                     streamURL={streamData.stream.toURL()}
@@ -597,7 +597,7 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(2, 5).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol33}>
+                                        <View key={index} style={styles.fiveUserCol33}>
                                             <View style={styles.videoContainer}>
                                                 <RTCView
                                                     streamURL={streamData.stream.toURL()}
@@ -654,7 +654,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={18} color="#fff" />
+                                                                <Ionicons name="person-add" size={20} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     )}
