@@ -14,7 +14,7 @@ import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
-import { getGenderFallbackImage } from '../utils/constant';
+import { getGenderFallbackImage, requestPermissions } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 
 const hardcodedImages = [
@@ -193,12 +193,16 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     }, [filteredRooms, isNearBy, refreshlobby, leaveroomrefresh]);
 
     // Function to create a room
-    const submitroomnameandcreateroom = () => {
+    const submitroomnameandcreateroom = async() => {
+        const IsAccepted= await requestPermissions();
         if (roomIdInput.trim() === '') {
             Alert.alert('Error', 'Please enter the stream description before creating stream.');
             return;
         } else if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
+            return;
+        }else if(!IsAccepted){
+            showPermissionAlert()
             return;
         }
         callapiforcreateroom();
@@ -224,6 +228,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
             const response = await Apiclient.post('/rooms', roomData);
             if (response.data.roomID) {
+                setIsDisable(false); // Enable button after room creation
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
