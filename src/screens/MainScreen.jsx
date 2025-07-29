@@ -91,7 +91,6 @@ export const MainScreen = () => {
             localStreamRef.current.getTracks().forEach(track => track.stop());
             localStreamRef.current = null;
             setLocalStream(null);
-            setHasRequestedStream(false);
             // Stop InCallManager
             InCallManager.stop();
           }
