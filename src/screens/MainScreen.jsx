@@ -673,6 +673,7 @@ export const MainScreen = () => {
       setJoined(false);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setStreamInfo(null);
+      setIsHost(false);
       setIsInStreamRoom(false); // Reset isInStreamRoom
       AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false)); // Persist reset state
       console.log('MainScreen.jsx: isInStreamRoom reset to false in leaveRoom');
