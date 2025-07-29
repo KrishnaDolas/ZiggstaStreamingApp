@@ -14,7 +14,7 @@ import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
-import { getGenderFallbackImage, requestPermissions } from '../utils/constant';
+import { getGenderFallbackImage, requestPermissions, showPermissionAlert } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 
 const hardcodedImages = [
