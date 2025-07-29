@@ -738,7 +738,7 @@ const StreamRoom = ({
                             >
                                 <>
                                     <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer]}>
+                                        <View style={[styles.streamChatContainer,{display:openMoreSettingList ? 'none' : 'flex'}]}>
                                             <ScrollView
                                                 ref={scrollViewRef}
                                                 showsVerticalScrollIndicator={false}
