@@ -510,8 +510,8 @@ const StreamRoom = ({
                                         objectFit="cover"
                                         mirror={streamLayout[0].type === 'local' && isFrontCamera}
                                     />
-                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                        <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                    <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
+                                        <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                     </View>
                                     {streamLayout[0]?.type !== 'local' && (
                                         <View style={styles.videoOverlay}>
@@ -523,7 +523,7 @@ const StreamRoom = ({
                                                     style={styles.friendRequestIcon}
                                                     onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                                 >
-                                                    <Ionicons name="person-add" size={16} color="#fff" />
+                                                    <Ionicons name="person-add" size={18} color="#fff" />
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -539,7 +539,7 @@ const StreamRoom = ({
                                                 mirror={streamData.type === 'local' && isFrontCamera}
                                             />
                                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                             </View>
                                             {streamData?.type !== 'local' && (
                                                 <View style={styles.videoOverlay}>
@@ -551,7 +551,7 @@ const StreamRoom = ({
                                                             style={styles.friendRequestIcon}
                                                             onPress={() => handleFriendRequest(streamData?.userId)}
                                                         >
-                                                            <Ionicons name="person-add" size={14} color="#fff" />
+                                                            <Ionicons name="person-add" size={18} color="#fff" />
                                                         </TouchableOpacity>
                                                     </View>
                                                 </View>
@@ -573,7 +573,7 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
@@ -585,7 +585,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={14} color="#fff" />
+                                                                <Ionicons name="person-add" size={16} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     </View>
@@ -605,7 +605,7 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
@@ -617,7 +617,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={12} color="#fff" />
+                                                                <Ionicons name="person-add" size={16} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     </View>
@@ -640,8 +640,8 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
-                                                <View style={{ position: 'absolute', left: '30%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={80} color="#fff" />}</Text>
+                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={streamLayout.length==6 ||streamLayout.length==4 ?40:80} color="#fff" />}</Text>
                                                 </View>
                                                 <View style={styles.videoOverlay}>
                                                     {streamData?.type !== 'local' && (
@@ -653,7 +653,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={20} color="#fff" />
+                                                                <Ionicons name="person-add" size={streamLayout.length==6 ||streamLayout.length==4 ?16:20} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     )}
