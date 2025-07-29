@@ -3,7 +3,7 @@ import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
     ActivityIndicator, Platform,
-    Pressable
+    Pressable,BackHandler
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -91,6 +91,30 @@ const StreamRoom = ({
 
     useEffect(() => {
         setIsInStreamRoom(true); // keep global value in sync
+
+        const backAction = () => {
+            Alert.alert(
+                "Close Stream",
+                "Do you want to close The stream ?",
+                [
+                    { text: "Cancel", onPress: () => null, style: "cancel" },
+                    {
+                        text: "Yes", onPress: () => {
+                            leaveRoom()
+                        }
+                    }
+                ]
+            );
+            return true; // Prevent default back button behavior
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove(); // Cleanup on unmount
+
     }, []);
 
     const scrollViewRef = useRef();
@@ -726,7 +750,7 @@ const StreamRoom = ({
                                                             <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
-                                                            <Text numberOfLines={8} style={styles.streamChatMessage}>
+                                                            <Text numberOfLines={3} style={styles.streamChatMessage}>
                                                                 { chat?.message}
                                                             </Text>
                                                         </View>
