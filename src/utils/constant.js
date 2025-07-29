@@ -1,4 +1,5 @@
 // Socket.IO client initialization
+import { Alert, PermissionsAndroid, Platform,Linking  } from 'react-native';
 import { io } from 'socket.io-client';
 const userMaleFallbackImage = require('../../assets/images/default_avatar_male.png');
 const userFeMaleFallbackImage = require('../../assets/images/default_avatar_female.png');
@@ -63,6 +64,43 @@ export const getGenderFallbackImage = (gender) => {
     default:
       return userOtherFallbackImage;
   }
+};
+export const requestPermissions = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+      ]);
+
+      // Check each permission status
+      const cameraPermission = granted[PermissionsAndroid.PERMISSIONS.CAMERA];
+      const audioPermission = granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO];
+
+      if (cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
+        audioPermission === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Camera and Audio permissions granted');
+        return true;
+      } else {
+        console.log('One or both permissions denied');
+        return false;
+      }
+    }
+    return true; // iOS handles permissions differently
+  } catch (error) {
+    SendErrorTotheServer(error, 'requestPermissions');
+    return false;
+  }
+};
+export const showPermissionAlert = () => {
+  Alert.alert(
+    'Permission Required',
+    'Camera and Audio permissions are required for Create Stream. Please enable them in Settings.',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Open Settings', onPress: () => Linking.openSettings() },
+    ]
+  );
 };
 
 export const giftImages = {

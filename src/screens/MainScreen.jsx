@@ -1,7 +1,5 @@
 import { View, StatusBar } from 'react-native';
 import {
-  PermissionsAndroid,
-  Platform,
   Alert,
 } from 'react-native';
 import { AppState } from 'react-native';
@@ -15,7 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { iceServers, preferVP8, SendErrorTotheServer, socket } from '../utils/constant';
+import { iceServers, preferVP8, requestPermissions, SendErrorTotheServer, showPermissionAlert, socket } from '../utils/constant';
 import chatimage from '../../assets/images/LS-2.jpg';
 import joinImage from '../../assets/images/LS-1.jpg';
 
@@ -160,7 +158,6 @@ export const MainScreen = () => {
         setJoined(true);
         setIsLoading(false);
         setIsHost(true);
-        await requestPermissions();
         await startLocalStream();
         socket.emit('assignHost');
       } else {
@@ -586,18 +583,6 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'createPeer');
     }
   };
-  const requestPermissions = async () => {
-    try {
-      if (Platform.OS === 'android') {
-        await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
-        ]);
-      }
-    } catch (error) {
-      SendErrorTotheServer(error, 'requestPermissions');
-    }
-  };
 
   const joinRoom = (roomID, RoomInfo) => {
     try {
@@ -621,7 +606,6 @@ export const MainScreen = () => {
       HandleClearOldInstance()
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
-      const isaccepted = await requestPermissions();
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
       socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address);
     } catch (err) {
@@ -631,7 +615,11 @@ export const MainScreen = () => {
   const requestStreamPermission = async () => {
     try {
       if (!hasRequestedStream) {
-        await requestPermissions();
+       const IsAccepted= await requestPermissions();
+        if (!IsAccepted) {
+          showPermissionAlert();
+          return;
+        }
         const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);

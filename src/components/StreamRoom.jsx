@@ -162,7 +162,6 @@ const StreamRoom = ({
             const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
             if (response) {
                 setGiftItems(response.data.data || []);
-                console.log(response);
             }
         } catch (error) {
             SendErrorTotheServer(error, "getGifts")
