@@ -3,7 +3,7 @@ import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
     ActivityIndicator, Platform,
-    Pressable
+    Pressable,BackHandler
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -91,6 +91,30 @@ const StreamRoom = ({
 
     useEffect(() => {
         setIsInStreamRoom(true); // keep global value in sync
+
+        const backAction = () => {
+            Alert.alert(
+                "Close Stream",
+                "Do you want to close The stream ?",
+                [
+                    { text: "Cancel", onPress: () => null, style: "cancel" },
+                    {
+                        text: "Yes", onPress: () => {
+                            leaveRoom()
+                        }
+                    }
+                ]
+            );
+            return true; // Prevent default back button behavior
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove(); // Cleanup on unmount
+
     }, []);
 
     const scrollViewRef = useRef();
@@ -508,7 +532,7 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.threeUserColumnRight}>
                                     {streamLayout.slice(1, 3).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={{ flex: 1, position: 'relative' }}>
+                                        <View key={index} style={{ flex: 1, position: 'relative' }}>
                                             <RTCView
                                                 streamURL={streamData.stream.toURL()}
                                                 style={styles.streamVideoHalf}
@@ -541,7 +565,7 @@ const StreamRoom = ({
                             <View style={styles.fiveUserWrapper}>
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(0, 2).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol50}>
+                                        <View key={index} style={styles.fiveUserCol50}>
                                             <View style={styles.videoContainer}>
                                                 <RTCView
                                                     streamURL={streamData.stream.toURL()}
@@ -573,7 +597,7 @@ const StreamRoom = ({
                                 </View>
                                 <View style={styles.fiveUserRow}>
                                     {streamLayout.slice(2, 5).map((streamData, index) => (
-                                        <View key={streamData.type === 'local' ? 'local' : streamData.userId} style={styles.fiveUserCol33}>
+                                        <View key={index} style={styles.fiveUserCol33}>
                                             <View style={styles.videoContainer}>
                                                 <RTCView
                                                     streamURL={streamData.stream.toURL()}
@@ -630,7 +654,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={18} color="#fff" />
+                                                                <Ionicons name="person-add" size={20} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     )}
@@ -714,7 +738,7 @@ const StreamRoom = ({
                             >
                                 <>
                                     <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer]}>
+                                        <View style={[styles.streamChatContainer,{display:openMoreSettingList ? 'none' : 'flex'}]}>
                                             <ScrollView
                                                 ref={scrollViewRef}
                                                 showsVerticalScrollIndicator={false}
@@ -726,8 +750,8 @@ const StreamRoom = ({
                                                             <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
-                                                            <Text numberOfLines={2} style={styles.streamChatMessage}>
-                                                                {chat.message?.length > 80 ? chat.message?.slice(0, 80) + '...' : chat?.message}
+                                                            <Text numberOfLines={3} style={styles.streamChatMessage}>
+                                                                { chat?.message}
                                                             </Text>
                                                         </View>
                                                     </View>

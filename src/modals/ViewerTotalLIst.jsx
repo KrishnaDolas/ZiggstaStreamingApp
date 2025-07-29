@@ -118,7 +118,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     {rankImage ? (
                         <Image
                             source={ind===0 ? rank1Img : ind===1 ? rank2Img : ind===2 ? rank3Img : null}//giftersdata[0] ? rank1Img : giftersdata[1] ? rank2Img : giftersdata[2] ? rank3Img : null}
-                            style={{ width: 40, height: 54, resizeMode: 'contain' }}
+                            style={{ width: 40, height: 40, resizeMode: 'contain' }}
                         />
                     ) : (
                         <Text style={{ fontSize: 16, fontWeight: '700', color: '#555' }}>
@@ -131,21 +131,17 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 <Image
                     source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item?.gender) : { uri: item?.avatar }}
                     style={{
-                        height: 50,
-                        width: 50,
+                        height: 40,
+                        width: 40,
                         borderRadius: 30,
                         backgroundColor: '#ddd'
                     }}
                 />
 
                 {/* User Info */}
-                <View style={{ marginLeft: 10, flex: 1 }}>
+                <View style={{ marginLeft: 29, flex: 1 }}>
                     <Text
-                        style={{
-                            fontSize: 14,
-                            fontWeight: '400',
-                            color: '#222'
-                        }}
+                        style={{ fontSize: 14, fontWeight: '600', color: '#222' }}
                     >
                         {item.screenName}
                     </Text>
@@ -155,12 +151,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            marginTop: 0,
                             borderRadius: 20,
                             backgroundColor: '#d93a63',
                             paddingHorizontal: 10,
                             paddingVertical: 3,
-                            alignSelf: 'flex-start'
                         }}
                     >
                         <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
@@ -180,11 +174,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    marginVertical: 10,
                     paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderBottomWidth:1,
-                    borderBottomColor: "#d9d9d9"
+                    borderBottomWidth:1, // optional: to give a border effect
+                    borderBottomColor: "#d9d9d9",
+                    paddingVertical: 10,
                 }}
             >
                 <Image
@@ -197,18 +190,14 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     }}
                 />
 
-                <View style={{ marginLeft: 12, flex: 1 }}>
+                <View style={{ marginLeft: 15, flex: 1 }}>
                     <Text
-                        style={{
-                            fontSize: 15,
-                            fontWeight: '400',
-                            color: '#222'
-                        }}
+                        style={{ fontSize: 14, fontWeight: '600', color: '#222' }}
                     >
                         {item.username}
                     </Text>
                 </View>
-                <View style={{ marginLeft: 12, flex: 1 }}>
+                <View style={{ marginLeft: 12 }}>
                     <Text
                         style={{
                             fontSize: 13,
@@ -230,12 +219,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'space-around',
-                    marginVertical: 12,
                     paddingHorizontal: 10,
-                    paddingVertical: 7,
                     borderBottomWidth:1, // optional: to give a border effect
-                    borderBottomColor: "#d9d9d9"
+                    borderBottomColor: "#d9d9d9",
+                    paddingVertical: 10,
                 }}
             >
                 <Image
@@ -252,17 +239,16 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     }}
                 />
 
-                <View style={{ marginLeft: 25, flex: 1 }}>
+                <View style={{ marginLeft: 15, flex: 1 }}>
                     <Text style={{ fontSize: 14, fontWeight: '600', color: '#222' }}>
                         {item.screenName}
                     </Text>
                 </View>
-                <View style={{ marginLeft: 12}}>
+                <View style={{ marginRight: 15}}>
                     <View
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            marginTop: 5,
                             borderRadius: 12,
                             backgroundColor: '#d93a63',
                             paddingHorizontal: 9,
@@ -394,7 +380,6 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     <View style={{
                         flexDirection: 'row',
                         marginTop: 15,
-                        marginBottom: 10,
                         borderBottomWidth: 1,
                         borderBottomColor: theme === 'light' ? '#e0e0e0' : '#404040',
                     }}>
@@ -411,15 +396,9 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                                 }}
                                 onPress={() => setActiveTab(index)}
                             >
-                                {/* <View style={{flexDirection:'row', alignItems:'center'}}>
-                                    {tab === 'Gifters' ?<Text> <Ionicons name="star" size={16} color="aqua" />{totalheaderCount.Gifter} </Text>:
-                                     tab === 'Viewsers' ?<Text> <Ionicons name="eye" size={16} color="black" />{totalheaderCount.Viewer} </Text>:
-                                     tab === 'Gifters List' ?<Text> <Ionicons name="star" size={16} color="aqua" />{totalheaderCount.TotalGifter} </Text>: 0
-                                     }
-                                </View> */}
                                 <Text style={{
-                                    fontSize: 14,
-                                    fontWeight: activeTab === index ? '600' : '400',
+                                    fontSize: 16,
+                                    fontWeight: activeTab === index ? '700' : '400',
                                     color: activeTab === index
                                         ? (theme === 'light' ? '#007AFF' : '#0A84FF')
                                         : (theme === 'light' ? '#666' : '#999'),
@@ -429,7 +408,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <View style={[{ height: screenHeight * 0.6 - 40, marginTop: 10 }]}>
+                    <View style={[{ height: screenHeight * 0.6 - 40}]}>
                         {renderTabContent()}
                     </View>
                 </View>
