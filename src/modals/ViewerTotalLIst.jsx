@@ -139,7 +139,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 />
 
                 {/* User Info */}
-                <View style={{ marginLeft: 10, flex: 1 }}>
+                <View style={{ marginLeft: 29, flex: 1 }}>
                     <Text
                         style={{ fontSize: 14, fontWeight: '600', color: '#222' }}
                     >
@@ -151,12 +151,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            marginTop: 0,
                             borderRadius: 20,
                             backgroundColor: '#d93a63',
                             paddingHorizontal: 10,
                             paddingVertical: 3,
-                            alignSelf: 'flex-start'
                         }}
                     >
                         <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
@@ -246,7 +244,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         {item.screenName}
                     </Text>
                 </View>
-                <View style={{ marginLeft: 12}}>
+                <View style={{ marginRight: 15}}>
                     <View
                         style={{
                             flexDirection: 'row',
