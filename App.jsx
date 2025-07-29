@@ -9,6 +9,9 @@ import {
   PermissionsAndroid,
   TouchableOpacity,
   Image,
+  Alert,
+  BackHandler,
+  LogBox,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -249,6 +252,9 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
+  const navigationRef = useRef();
+  const [currentRouteName, setCurrentRouteName] = useState(null);
+  const [isNavigationReady, setIsNavigationReady] = useState(false);
   const {
     userAddress,
     setUserAddress,
@@ -516,13 +522,47 @@ const App = () => {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    const onBackPress = () => {
+      if (currentRouteName === 'Main' || currentRouteName === 'Profile' || currentRouteName === 'Stats' || currentRouteName === 'Messages' || currentRouteName === 'WalletDashboard') {
+        Alert.alert(
+          'Exit Ziggsta',
+          'Do you want to close Ziggsta?',
+          [
+            { text: 'No', onPress: () => null, style: 'cancel' },
+            { text: 'Yes', onPress: () => BackHandler.exitApp() },
+          ],
+          { cancelable: false }
+        );
+        return true; // prevent default back action
+      }
+      return false; // allow default back behavior
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+    return () => subscription.remove();
+  }, [currentRouteName]);
+
+  useEffect(() => {
+    LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore specific warning
+  }, []);
 
 
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
         <ThemeProvider >
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef} onReady={() => {
+            setIsNavigationReady(true);
+            setCurrentRouteName(navigationRef.current.getCurrentRoute()?.name);
+          }}
+            onStateChange={async () => {
+              if (isNavigationReady && navigationRef.current) {
+                const currentRoute = navigationRef.current.getCurrentRoute();
+                setCurrentRouteName(currentRoute?.name);
+              }
+            }}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
               {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}

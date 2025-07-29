@@ -13,7 +13,7 @@ export const AppProvider = ({ children }) => {
     const [profileData, setProfileData] = useState({});
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [isInStreamRoom, setIsInStreamRoom] = useState(false);
-
+    const [headerMainTab, setHeaderMainTab] = useState('foryou');
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
         try {
@@ -47,6 +47,8 @@ export const AppProvider = ({ children }) => {
             setSubscriptionStatus,
             isInStreamRoom,
             setIsInStreamRoom,
+            headerMainTab,
+            setHeaderMainTab,
         }}>
             {children}
         </AppContext.Provider>

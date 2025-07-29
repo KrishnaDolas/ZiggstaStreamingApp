@@ -5,7 +5,7 @@ import Modal from 'react-native-modal';
 import { format } from 'date-fns';
 import { StreamListHeader } from './StreamListHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Footer from './Footer';
+// import Footer from './Footer';
 import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
@@ -15,6 +15,7 @@ import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage } from '../utils/constant';
+import { LeaderBoards } from './LeaderBoards';
 
 const hardcodedImages = [
     require('../../assets/images/LS-1.jpg'),
@@ -29,7 +30,10 @@ const hardcodedImages = [
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
-    const { userData, userAddress, subscriptionStatus } = useAppContext()
+    const { userData,
+        userAddress,
+        subscriptionStatus,
+        headerMainTab } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -355,193 +359,198 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 searchFilteredData={searchFilteredData}
                 setSearchFilteredData={setSearchFilteredData}
             />
-            <View
-                style={[
-                    styles.streamListMainCardLayout,
-                    themeStyles[theme].streamListMainCardLayout,
-                ]}>
-                <Text
-                    style={[
-                        styles.streamListMainTitle,
-                        themeStyles[theme].streamListMainTitle,
-                    ]}>
-                    For You
-                </Text>
-                {isFiltering && (
-                    <View style={styles.isFilteringOverlay}>
-                        <View style={[styles.isFilteringBlurBackground, themeStyles[theme].isFilteringBlurBackground]} />
-                        <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} />
-                    </View>
-                )}
-
-
-                {isInitialLoading ? (
-                    <StreamListSkeleton count={6} columns={2} />
-                ) : apiRooms.length === 0 && searchFilteredData.length > 0 ? (
-                    <ScrollView
-                        contentContainerStyle={{
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: screenHeight * 0.5,
-                            paddingHorizontal: 20,
-                        }}
-                        refreshControl={
-                            <RefreshControl
-                                refreshing={refreshing}
-                                onRefresh={handleRefresh}
-                                colors={['#d93a63']}
-                                tintColor="#d93a63"
-                            />
-                        }
-                    >
-                        <Image
-                            source={require('../../assets/images/default-streamer.jpg')}
+            {headerMainTab === 'foryou' ? (
+                <>
+                    <View
+                        style={[
+                            styles.streamListMainCardLayout,
+                            themeStyles[theme].streamListMainCardLayout,
+                        ]}>
+                        <Text
                             style={[
-                                styles.streamListImage,
-                                { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
-                            ]}
-                        />
-                        <Text style={{
-                            marginTop: 16,
-                            fontSize: 16,
-                            color: '#666',
-                            textAlign: 'center'
-                        }}>
-                            No rooms found for this search.
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                            ]}>
+                            For You
                         </Text>
-                    </ScrollView>
-                ) : apiRooms.length === 0 ? (
-                    <ScrollView
-                        contentContainerStyle={{
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: screenHeight * 0.5,
-                            paddingHorizontal: 20,
-                        }}
-                        refreshControl={
-                            <RefreshControl
+                        {isFiltering && (
+                            <View style={styles.isFilteringOverlay}>
+                                <View style={[styles.isFilteringBlurBackground, themeStyles[theme].isFilteringBlurBackground]} />
+                                <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} />
+                            </View>
+                        )}
+
+
+                        {isInitialLoading ? (
+                            <StreamListSkeleton count={6} columns={2} />
+                        ) : apiRooms.length === 0 && searchFilteredData.length > 0 ? (
+                            <ScrollView
+                                contentContainerStyle={{
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: screenHeight * 0.5,
+                                    paddingHorizontal: 20,
+                                }}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={handleRefresh}
+                                        colors={['#d93a63']}
+                                        tintColor="#d93a63"
+                                    />
+                                }
+                            >
+                                <Image
+                                    source={require('../../assets/images/default-streamer.jpg')}
+                                    style={[
+                                        styles.streamListImage,
+                                        { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
+                                    ]}
+                                />
+                                <Text style={{
+                                    marginTop: 16,
+                                    fontSize: 16,
+                                    color: '#666',
+                                    textAlign: 'center'
+                                }}>
+                                    No rooms found for this search.
+                                </Text>
+                            </ScrollView>
+                        ) : apiRooms.length === 0 ? (
+                            <ScrollView
+                                contentContainerStyle={{
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    height: screenHeight * 0.5,
+                                    paddingHorizontal: 20,
+                                }}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={handleRefresh}
+                                        colors={['#d93a63']}
+                                        tintColor="#d93a63"
+                                    />
+                                }
+                            >
+                                <Image
+                                    source={require('../../assets/images/NoStreamAvailable.png')}
+                                    style={[
+                                        styles.streamListImage,
+                                        { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
+                                    ]}
+                                />
+                            </ScrollView>
+                        ) : (
+                            <FlatList
+                                data={apiRooms}
+                                keyExtractor={item => item.roomID.toString()}
+                                showsVerticalScrollIndicator={false}
+                                contentContainerStyle={styles.streamListScrollContainer}
+                                initialNumToRender={8}
+                                numColumns={2}
+                                columnWrapperStyle={styles.streamListGrid}
+                                renderItem={renderItem}
                                 refreshing={refreshing}
                                 onRefresh={handleRefresh}
-                                colors={['#d93a63']}
-                                tintColor="#d93a63"
-                            />
-                        }
-                    >
-                        <Image
-                            source={require('../../assets/images/NoStreamAvailable.png')}
-                            style={[
-                                styles.streamListImage,
-                                { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
-                            ]}
-                        />
-                    </ScrollView>
-                ) : (
-                    <FlatList
-                        data={apiRooms}
-                        keyExtractor={item => item.roomID.toString()}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.streamListScrollContainer}
-                        initialNumToRender={8}
-                        numColumns={2}
-                        columnWrapperStyle={styles.streamListGrid}
-                        renderItem={renderItem}
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                    />)}
-            </View>
+                            />)}
+                    </View>
 
-            <View style={[
-                styles.streamListFiltersBtnGroup,
-                insets.bottom > 0 && { paddingBottom: insets.bottom },
-            ]}>
-                {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+                    <View style={[
+                        styles.streamListFiltersBtnGroup,
+                        insets.bottom > 0 && { paddingBottom: insets.bottom },
+                    ]}>
+                        {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="wrench" size={24} color="#262628" />
                 </TouchableOpacity> */}
-                <TouchableOpacity
-                    style={styles.streamListFiltersColorBtn}
-                    onPress={() => setOpenStreamInputModal(true)}>
-                    <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
-                </TouchableOpacity>
-                {!subscriptionStatus?.success && (
-                    <GoogleBannerAd />
-                )}
-                {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
+                        <TouchableOpacity
+                            style={styles.streamListFiltersColorBtn}
+                            onPress={() => setOpenStreamInputModal(true)}>
+                            <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
+                        </TouchableOpacity>
+                        {!subscriptionStatus?.success && (
+                            <GoogleBannerAd />
+                        )}
+                        {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
                 </TouchableOpacity> */}
-            </View>
+                    </View>
+                </>
+            ) : headerMainTab === 'leaderboards' ? (
+                <LeaderBoards />
+            ) : null}
 
             {openStreamInputModal && (
                 <Modal isVisible={openStreamInputModal}
-                    // onBackdropPress={onClose}
+                    onBackdropPress={() => setOpenStreamInputModal(false)}
                     animationIn="slideInUp"
                     animationOut="slideOutDown"
-                    animationInTiming={400}
-                    animationOutTiming={300}
-                    backdropOpacity={0.4}
-                    style={[styles.halfScreenModalMain]}
+                    animationInTiming={300}
+                    animationOutTiming={200}
                     useNativeDriver={true}
+                    avoidKeyboard={false}
+                    backdropOpacity={0}
+                    style={[styles.profileModalMain]}
                 >
-                    <View style={[styles.halfScreenModalOverlay, { paddingHorizontal: 4 }]}>
+                    <View style={[styles.profileModalOverlay,
+                    themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.7 }]}>
 
-                        <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.6 }]}>
-                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
-                                <TouchableOpacity
-                                    onPress={() => setOpenStreamInputModal(false)}
-                                    style={[styles.modalCloseBtn]}
-                                >
-                                    <Ionicons name="close" size={24} color="#333" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.strHedSearchModalForm}>
-                                <TextInput
-                                    placeholder="Enter Stream Description"
-                                    placeholderTextColor="#888"
-                                    value={roomIdInput}
-                                    onChangeText={setRoomIdInput}
-                                    style={[styles.strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
-                                />
-                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
-                                    <LinearGradient
-                                        colors={['#de0037', '#de0037']}
-                                        start={{ x: 0.15, y: 1 }}
-                                        end={{ x: 1, y: 0 }}
-                                        style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
-                                        <Text
-                                            style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                            Start Stream
-                                        </Text>
-                                    </LinearGradient>
-                                </TouchableOpacity>
-                            </View>
-                            <Text style={[styles.modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
-                            {isInterestLoading ? (
-                                <View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                                    <ActivityIndicator size="large" color="#d93a63" />
-                                </View>
-                            ) :
-                                <ScrollView
-                                    showsVerticalScrollIndicator={false}
-                                >
-                                    <View style={styles.modalCategoryContainer}>
-                                        {categoryData.map((category, index) => {
-                                            const isSelected = selectedCategoryIndices.includes(category.categoryID);
-                                            return (
-                                                <TouchableOpacity
-                                                    key={category.categoryID}
-                                                    onPress={() => toggleCategory(category.categoryID)}
-                                                    style={[
-                                                        styles.modalCategoryButton,
-                                                        isSelected && styles.modalCategoryButtonActive,
-                                                    ]}>
-                                                    <Text style={styles.modalCategoryText}>{category.categoryName}</Text>
-                                                </TouchableOpacity>
-                                            );
-                                        })}
-                                    </View>
-                                </ScrollView>
-                            }
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                            <TouchableOpacity
+                                onPress={() => setOpenStreamInputModal(false)}
+                                style={[styles.modalCloseBtn]}
+                            >
+                                <Ionicons name="close" size={24} color={theme === 'light' ? '#333' : '#fff'} />
+                            </TouchableOpacity>
                         </View>
-
+                        <View style={styles.strHedSearchModalForm}>
+                            <TextInput
+                                placeholder="Enter Stream Description"
+                                placeholderTextColor="#888"
+                                value={roomIdInput}
+                                onChangeText={setRoomIdInput}
+                                style={[styles.strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
+                            />
+                            <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
+                                <LinearGradient
+                                    colors={['#de0037', '#de0037']}
+                                    start={{ x: 0.15, y: 1 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
+                                    <Text
+                                        style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
+                                        Start Stream
+                                    </Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </View>
+                        <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
+                        {isInterestLoading ? (
+                            <View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                                <ActivityIndicator size="large" color="#d93a63" />
+                            </View>
+                        ) :
+                            <ScrollView
+                                showsVerticalScrollIndicator={false}
+                            >
+                                <View style={styles.modalCategoryContainer}>
+                                    {categoryData.map((category, index) => {
+                                        const isSelected = selectedCategoryIndices.includes(category.categoryID);
+                                        return (
+                                            <TouchableOpacity
+                                                key={category.categoryID}
+                                                onPress={() => toggleCategory(category.categoryID)}
+                                                style={[
+                                                    styles.modalCategoryButton,
+                                                    isSelected && styles.modalCategoryButtonActive,
+                                                ]}>
+                                                <Text style={styles.modalCategoryText}>{category.categoryName}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </ScrollView>
+                        }
                     </View>
                 </Modal>
             )

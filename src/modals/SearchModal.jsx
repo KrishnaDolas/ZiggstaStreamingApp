@@ -16,7 +16,9 @@ const SearchModal = ({ visible, onClose,
     setSearchFilteredData, categoryData }) => {
     const screenHeight = Dimensions.get('window').height;
     const { theme } = useContext(ThemeContext);
-    const { userAddress } = useAppContext()
+    const {
+        userAddress,
+        setHeaderMainTab, } = useAppContext();
     const [searchText, setSearchText] = useState('');
     const [searchBy, setSearchBy] = useState('user');
     const [layoutReady, setLayoutReady] = useState(false);
@@ -39,7 +41,7 @@ const SearchModal = ({ visible, onClose,
     // Function to fetch searches data from the API
 
     const handleSearchByUser = async () => {
-        if (searchText === '') {
+        if (searchBy === 'user' && searchText === '') {
             setSearchFilteredData([]);
             setIsError('Please enter a valid search term.');
             return;
@@ -50,9 +52,9 @@ const SearchModal = ({ visible, onClose,
 
         const filteredCategories = selectedCategory.sort((a, b) => a - b).join(',');
         const getIsVerified = await AsyncStorage.getItem('onlyProfileVerified');
-        const getMaxDistance = await AsyncStorage.getItem('distanceRange');
-        const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
-        const userLocation = `${userAddress.latitude},${userAddress.longitude}`;
+        // const getMaxDistance = await AsyncStorage.getItem('distanceRange');
+        // const checkLocationPermission = await AsyncStorage.getItem('locationPermission');
+        // const userLocation = `${userAddress.latitude},${userAddress.longitude}`;
         const isVerifiedValue = getIsVerified === 'true' ? 1 : 0;
 
 
@@ -70,9 +72,11 @@ const SearchModal = ({ visible, onClose,
             if (Array.isArray(data) && data.length > 0) {
                 setSearchFilteredData(data);
                 setSearchText('');
+                setHeaderMainTab('foryou');
                 onClose(); // ✅ Only close if successful
             } else {
                 setIsError('No rooms found for this username.');
+                setHeaderMainTab('foryou');
             }
         } catch (error) {
             const message = error?.response?.data?.error || 'Failed to fetch search results.';
@@ -129,7 +133,7 @@ const SearchModal = ({ visible, onClose,
                     <View style={[styles.profileModalOverlay, themeStyles[theme].profileModalOverlay, { height: screenHeight * 0.6 }]}>
                         {/* close modal */}
                         <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
-                            <Ionicons name="close" size={23} color={theme === 'light' ? '#333' : '#fff'} />
+                            <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                         </TouchableOpacity>
                         <View style={[styles.profileSettingModalBody]}>
                             <ScrollView

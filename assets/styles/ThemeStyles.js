@@ -1397,7 +1397,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 10,
-    borderBottomColor: '#dbdbdb',
     borderBottomWidth: 1,
   },
   messageListAvatar: {
@@ -2439,6 +2438,186 @@ export const styles = StyleSheet.create({
     width: 320,
     height: 50,
   },
+
+  // leader board
+  leaderBoardContainer: {
+    flex: 1,
+  },
+  leaderBoardHeader: {
+    paddingHorizontal: 15,
+    paddingVertical: 15,
+  },
+  leaderBoardFilterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  leaderBoardFilterButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    // backgroundColor: '#fff',
+    alignItems: 'center',
+    position: 'relative',
+    borderBottomWidth: 1,
+    // borderBottomColor: '#333',
+  },
+  leaderBoardActiveFilter: {
+    borderBottomColor: '#d93a63',
+    borderBottomWidth: 2,
+  },
+  leaderBoardFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
+    // color: '#000',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  leaderBoardActiveFilterText: {
+    color: '#d93a63',
+    fontWeight: '800',
+  },
+  leaderBoardListContainer: {
+    paddingHorizontal: 0,
+    paddingBottom: 120,
+  },
+  leaderboardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    // backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    // borderBottomColor: '#d9d9d9',
+  },
+  lbRankBadge: {
+    width: 33,
+    height: 33,
+    // borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    position: 'relative',
+  },
+  lbRankText: {
+    fontSize: 14,
+    fontWeight: '500',
+    // color: '#000',
+  },
+
+  lbSparkleContainer: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+  },
+  lbSparkle: {
+    fontSize: 12,
+  },
+  lbAvatarSection: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  lbAvatarContainer: {
+    position: 'relative',
+  },
+  lbTopThreeAvatar: {
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  lbAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    // backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ccc',
+  },
+  lbCrownContainer: {
+    position: 'absolute',
+    top: -12,
+    alignSelf: 'center',
+  },
+  lbCrown: {
+    fontSize: 20,
+  },
+  lbLiveIndicator: {
+    position: 'absolute',
+    bottom: -5,
+    left: -2,
+    right: -2,
+    backgroundColor: '#ff4444',
+    borderRadius: 10,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ff4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  lbLiveText: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  lbUserInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  lbUsername: {
+    fontSize: 14,
+    fontWeight: '600',
+    // color: '#000',
+    letterSpacing: 0.3,
+  },
+  lbLocation: {
+    fontSize: 12,
+    // color: '#999',
+    fontWeight: '400',
+    marginBottom: 3,
+  },
+  lbAmountSection: {
+    marginRight: 12,
+  },
+  lbDiamondBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#d93a63',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 15,
+    shadowColor: '#d93a63',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+    flexShrink: 1,
+    maxWidth: '40%',
+  },
+  lbAmountText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+    marginLeft: 4,
+  },
+  lbStarButton: {
+    width: 29,
+    height: 29,
+    borderRadius: 22,
+    // backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    // borderColor: '#bdbdbdff',
+  },
+
 });
 
 // Theme Styles
@@ -2590,6 +2769,7 @@ export const themeStyles = {
     },
     messageListContainer: {
       backgroundColor: '#fcfcfc',
+      borderBottomColor: '#d9d9d9',
     },
     messageListName: {
       color: '#000',
@@ -2691,6 +2871,40 @@ export const themeStyles = {
     footer: {
       backgroundColor: '#fff',
       borderTopColor: '#ddd', // optional: a light border color
+    },
+    // leader board
+    leaderBoardContainer: {
+      backgroundColor: '#fff',
+    },
+    leaderBoardHeader: {
+      backgroundColor: '#fff',
+    },
+    leaderBoardFilterButton: {
+      backgroundColor: '#fff',
+      borderBottomColor: '#333',
+    },
+    leaderBoardFilterText: {
+      color: '#000',
+    },
+    leaderboardItem: {
+      backgroundColor: '#fff',
+      borderBottomColor: '#d9d9d9',
+    },
+    lbRankText: {
+      color: '#000',
+    },
+    lbAvatar: {
+      backgroundColor: '#fff',
+    },
+    lbUsername: {
+      color: '#000',
+    },
+    lbLocation: {
+      color: '#999',
+    },
+    lbStarButton: {
+      backgroundColor: '#fff',
+      borderColor: '#bdbdbdff',
     },
   },
   dark: {
@@ -2834,6 +3048,7 @@ export const themeStyles = {
     },
     messageListContainer: {
       backgroundColor: '#2a2a2a',
+      borderBottomColor: '#4e4e4eff',
     },
     messageListName: {
       color: '#fff',
@@ -2935,6 +3150,40 @@ export const themeStyles = {
     footer: {
       backgroundColor: '#2a2a2a',
       borderTopColor: '#323232', // optional: a light border color
+    },
+    // leader board
+    leaderBoardContainer: {
+      backgroundColor: '#2a2a2a',
+    },
+    leaderBoardHeader: {
+      backgroundColor: '#2a2a2a',
+    },
+    leaderBoardFilterButton: {
+      backgroundColor: '#2a2a2a',
+      borderBottomColor: '#333',
+    },
+    leaderBoardFilterText: {
+      color: '#fff',
+    },
+    leaderboardItem: {
+      backgroundColor: '#2a2a2a',
+      borderBottomColor: '#4e4e4eff',
+    },
+    lbRankText: {
+      color: '#fff',
+    },
+    lbAvatar: {
+      backgroundColor: '#2a2a2a',
+    },
+    lbUsername: {
+      color: '#fff',
+    },
+    lbLocation: {
+      color: '#d4d4d4ff',
+    },
+    lbStarButton: {
+      backgroundColor: '#2a2a2a',
+      borderColor: '#bdbdbdff',
     },
   },
 };
