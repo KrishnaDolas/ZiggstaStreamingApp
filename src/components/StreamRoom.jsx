@@ -726,8 +726,8 @@ const StreamRoom = ({
                                                             <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
-                                                            <Text numberOfLines={2} style={styles.streamChatMessage}>
-                                                                {chat.message?.length > 80 ? chat.message?.slice(0, 80) + '...' : chat?.message}
+                                                            <Text numberOfLines={8} style={styles.streamChatMessage}>
+                                                                { chat?.message}
                                                             </Text>
                                                         </View>
                                                     </View>

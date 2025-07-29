@@ -721,25 +721,40 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'switchCamera');
     }
   };
-  const HandleChatmessages = (message) => {
+  const HandleChatmessages = (msg) => {
     try {
-      if (message.trim()) {
-        let formattedMessage = message;
-        if (message.length >= 40) {
-          formattedMessage = message.match(/.{1,40}/g).join('\n');
+      const maxLength = 40;
+      let formatted = "";
+      
+      while (msg.length > 0) {
+        let chunk = msg.slice(0, maxLength);
+  
+        // If word is cut in the middle, break at last space
+        if (msg.length > maxLength && msg[maxLength] !== " ") {
+          const lastSpace = chunk.lastIndexOf(" ");
+          if (lastSpace !== -1) {
+            chunk = chunk.slice(0, lastSpace);
+          }
         }
+  
+        formatted += chunk.trim() + "\n";
+        msg = msg.slice(chunk.length).trim();
+      }
+  
         const newMessage = {
           userName: userData?.screenName,
-          message: formattedMessage,
+          message:  formatted.trim(),
           id: userData.userid,
           timestamp: new Date().toLocaleTimeString(),
         };
+  
         socket.emit('send-message', newMessage);
-      }
+      
     } catch (error) {
       SendErrorTotheServer(error, 'HandleChatmessages');
     }
-  }
+  };
+  
   const HandleSetLivestatus = async (roomID) => {
     try {
       const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
