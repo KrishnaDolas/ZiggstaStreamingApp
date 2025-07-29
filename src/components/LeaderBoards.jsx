@@ -53,14 +53,14 @@ export const LeaderBoards = () => {
                 ...(isLive ? { isLive: true } : { transDateFilter: activeFilter, isLive: false }),
                 page: reset ? 1 : page,
             };
-            console.log('giftLeaderboard payload', postData);
+            // console.log('giftLeaderboard payload', postData);
 
             const response = await Apiclient.post(
                 '/topGifters/giftLeaderboard',
                 postData,
                 { signal: controller.signal } // <-- attach signal
             );
-            console.log('response giftLeaderboard', response.data);
+            // console.log('response giftLeaderboard', response.data);
             if (response.status === 200) {
                 const newData = response.data?.data || [];
                 if (reset) {
