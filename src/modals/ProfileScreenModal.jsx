@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, StatusBar } from 'react-native';
 import ImagePickerCrop from 'react-native-image-crop-picker';
 import Modal from 'react-native-modal';
@@ -39,9 +39,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
+    const [profileUserData, setProfileUserData] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
-    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? null;
+    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? null;
 
 
     // Handle status bar and navigation bar visibility
@@ -142,172 +143,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const handleEditAvatar = () => {
         setShowActionSheet(true);
     };
-
-    // const onSelectImage = async (type) => {
-    //     setAvatarUploading(true);
-
-    //     const options = {
-    //         mediaType: 'photo',
-    //         quality: 0.7,
-    //         saveToPhotos: true,
-    //     };
-
-    //     try {
-    //         if (type === 'camera') {
-    //             if (Platform.OS === 'android') {
-    //                 const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-
-    //                 const granted = await PermissionsAndroid.request(permission, {
-    //                     title: 'Camera Permission',
-    //                     message: 'App needs access to your camera to take photos.',
-    //                     buttonNeutral: 'Ask Me Later',
-    //                     buttonNegative: 'Cancel',
-    //                     buttonPositive: 'OK',
-    //                 });
-
-    //                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    //                     const result = await launchCamera(options);
-    //                     handleImageResult(result);
-    //                 } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
-    //                     Alert.alert(
-    //                         'Permission Required',
-    //                         'Camera permission is required to take a photo. Please allow it.',
-    //                     );
-    //                     setAvatarUploading(false);
-    //                     return;
-    //                 } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-    //                     Alert.alert(
-    //                         'Permission Denied',
-    //                         'Camera permission was denied permanently. Open settings to allow access.',
-    //                         [
-    //                             { text: 'Cancel', style: 'cancel' },
-    //                             { text: 'Open Settings', onPress: () => Linking.openSettings() },
-    //                         ]
-    //                     );
-    //                     setAvatarUploading(false);
-    //                     return;
-    //                 }
-    //             }
-    //         }
-
-    //         if (type === 'gallery') {
-    //             const result = await launchImageLibrary(options);
-    //             handleImageResult(result);
-    //         }
-    //     } catch (error) {
-    //         console.error('Image selection error:', error);
-    //         Alert.alert('Error', 'Failed to select image.');
-    //         setAvatarUploading(false);
-    //     }
-    // };
-
-
-    // const onSelectImage = async (type) => {
-    //     setAvatarUploading(true);
-    //     setIsImagePickerOpen(true);
-    //     try {
-    //         let image = null;
-
-    //         if (type === 'camera') {
-    //             if (Platform.OS === 'android') {
-    //                 const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-    //                 const granted = await PermissionsAndroid.request(permission, {
-    //                     title: 'Camera Permission',
-    //                     message: 'App needs access to your camera to take photos.',
-    //                     buttonNeutral: 'Ask Me Later',
-    //                     buttonNegative: 'Cancel',
-    //                     buttonPositive: 'OK',
-    //                 });
-
-    //                 if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-    //                     Alert.alert('Permission Required', 'Camera permission is needed to take a photo.');
-    //                     setAvatarUploading(false);
-    //                     setIsImagePickerOpen(false); // Reset flag
-    //                     return;
-    //                 }
-    //             }
-
-    //             image = await ImagePickerCrop.openCamera({
-    //                 width: 256,
-    //                 height: 256,
-    //                 cropping: true,
-    //                 hideBottomControls: true, // Android only
-    //                 freeStyleCropEnabled: false,
-    //                 compressImageQuality: 0.7,
-    //                 mediaType: 'photo',
-    //                 includeBase64: false,
-    //             });
-
-    //         } else if (type === 'gallery') {
-    //             image = await ImagePickerCrop.openPicker({
-    //                 width: 256,
-    //                 height: 256,
-    //                 cropping: true,
-    //                 hideBottomControls: true, // Android only
-    //                 freeStyleCropEnabled: false,
-    //                 compressImageQuality: 0.7,
-    //                 mediaType: 'photo',
-    //                 includeBase64: false,
-    //             });
-    //         }
-
-    //         if (!image || image.cancelled) {
-    //             setAvatarUploading(false);
-    //             return;
-    //         }
-
-    //         const avatarFile = {
-    //             uri: image.path,
-    //             name: image.filename || `avatar_${Date.now()}.jpg`,
-    //             type: image.mime,
-    //         };
-
-    //         uploadAvatarToServer(avatarFile);
-
-    //     } catch (error) {
-    //         if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
-    //             // user cancelled image picker or back pressed
-    //             console.log('Image selection cancelled');
-    //         } else {
-    //             console.error('Image selection error:', error);
-    //             Alert.alert('Error', 'Failed to select or crop image.');
-    //         }
-    //         setAvatarUploading(false);
-    //     } finally {
-    //         setIsImagePickerOpen(false); // Always reset flag
-    //     }
-    // };
-
-
-    // const handleImageResult = (result) => {
-    //     if (result.didCancel) {
-    //         console.log('User cancelled image picker');
-    //         setAvatarUploading(false);
-    //         return;
-    //     }
-
-    //     if (result.errorCode) {
-    //         console.error('Picker Error:', result.errorMessage);
-    //         Alert.alert('Error', result.errorMessage || 'Unknown error');
-    //         setAvatarUploading(false);
-    //         return;
-    //     }
-
-    //     const file = result.assets?.[0];
-    //     if (!file) {
-    //         Alert.alert('Error', 'No image selected');
-    //         setAvatarUploading(false);
-    //         return;
-    //     }
-
-    //     const avatarFile = {
-    //         uri: file.uri,
-    //         name: file.fileName || `avatar_${Date.now()}.jpg`,
-    //         type: file.type,
-    //     };
-
-    //     uploadAvatarToServer(avatarFile);
-    // };
 
     const onSelectImage = async (type) => {
         setAvatarUploading(true);
@@ -608,7 +443,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         setVisibleModal('ReportUser');
     };
 
-
+    const handleProfileOpen = useCallback((item) => {
+        setProfileUserData(item);
+        setVisibleModal('profile-screen-modal');
+    }, []);
 
     return (
         <>
@@ -633,10 +471,23 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     ]}
                     {...panResponder.panHandlers}
                 >
-                    {/* close modal */}
-                    <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 10, marginRight: 5 }]}>
-                        <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', justifyContent: isMainProfile ? 'flex-end' : 'space-between', alignItems: 'center' }}>
+                        {/* Header with Report button */}
+                        {!isMainProfile && (
+                            <TouchableOpacity
+                                onPress={handleReport}
+                                style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                disabled={reportClicked}
+                            >
+                                <Text style={styles.psmReportButtonText}>Report</Text>
+                            </TouchableOpacity>
+                        )}
+                        {/* close modal */}
+                        <TouchableOpacity onPress={onClose}>
+                            <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
+                        </TouchableOpacity>
+                    </View>
+
                     {avatarUploading ? (
                         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                             <ActivityIndicator size="large" />
@@ -650,18 +501,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                     showsVerticalScrollIndicator={true}
                                 >
                                     <>
-                                        {/* Header with Report button */}
-                                        {!isMainProfile && (
-                                            <View style={styles.psmHeader}>
-                                                <TouchableOpacity
-                                                    onPress={handleReport}
-                                                    style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
-                                                    disabled={reportClicked}
-                                                >
-                                                    <Text style={styles.psmReportButtonText}>Report</Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        )}
                                         {isUserLoading ? (
                                             // Skeleton while loading
                                             <View style={styles.psmProfileContainer}>
@@ -829,7 +668,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                     end={{ x: 0.8, y: 0.2 }}
                                                                     style={styles.psmTopGifterMainCard}
                                                                 >
-                                                                    <View style={styles.psmTopGifterImageContainer}>
+                                                                    <TouchableOpacity
+                                                                        // onPress={() => handleProfileOpen(topGiftersData[0])}
+                                                                        style={styles.psmTopGifterImageContainer}
+                                                                    >
                                                                         <Image
                                                                             source={
                                                                                 topGiftersData[0]?.image === 'default' || !topGiftersData[0]?.image
@@ -838,7 +680,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                             }
                                                                             style={styles.psmTopGifterMainImage}
                                                                         />
-                                                                    </View>
+                                                                    </TouchableOpacity>
                                                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                                         <Text style={styles.psmTopGifterMainName}>{topGiftersData[0]?.screenName}</Text>
                                                                         <Text style={styles.psmTopGifterMainAmount}>{topGiftersData[0]?.Amount}</Text>
@@ -867,8 +709,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                                 />
                                                                             </View>
                                                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                                                <Text style={styles.psmOtherGifterName}>{gifter?.screenName}</Text>
-                                                                                <Text style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
+                                                                                <Text numberOfLines={1}
+                                                                                    ellipsizeMode="tail" style={styles.psmOtherGifterName}>{gifter?.screenName} </Text>
+                                                                                <Text numberOfLines={1}
+                                                                                    ellipsizeMode="tail" style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
                                                                             </View>
                                                                         </View>
                                                                     ))}
@@ -927,6 +771,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     if (index === 1) onSelectImage('gallery');
                 }}
             />
+            {visibleModal === 'profile-screen-modal' && (
+                <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
+            )}
         </>
 
     );
