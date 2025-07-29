@@ -27,6 +27,7 @@ import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../uti
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
+import Sound from 'react-native-sound';
 
 
 const StreamRoom = ({
@@ -382,7 +383,22 @@ const StreamRoom = ({
             socket.emit('like-count')
         }
     }
-
+    const playGiftSound = () => {
+        try {
+          const sound = new Sound('gift_received.mp3', Sound.MAIN_BUNDLE, (error) => {
+            if (error) {
+              console.log('Failed to load sound', error);
+              return;
+            }
+            sound.play(() => {
+              sound.release(); 
+            });
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
     const HandleReport = () => {
         setVisibleModal('ReportVideo')
     }
@@ -394,6 +410,7 @@ const StreamRoom = ({
 
     const HandleGiftReceived = (senderName, giftName) => {
         try {
+            playGiftSound()
             setReceiveAnimationData({
                 giftName: giftName,
                 senderName: senderName
