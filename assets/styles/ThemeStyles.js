@@ -2275,6 +2275,7 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#333',
+    maxWidth: '60%',
   },
 
   // Other Gifter Amount
@@ -2283,6 +2284,7 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#666',
     marginLeft: 5,
+    maxWidth: '40%',
   },
 
   // report modal
@@ -2597,8 +2599,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 4,
-    flexShrink: 1,
-    maxWidth: '40%',
+    alignSelf: 'flex-start',
   },
   lbAmountText: {
     color: '#fff',
@@ -2606,6 +2607,7 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.3,
     marginLeft: 4,
+    flexShrink: 1,
   },
   lbStarButton: {
     width: 29,
@@ -2881,7 +2883,7 @@ export const themeStyles = {
     },
     leaderBoardFilterButton: {
       backgroundColor: '#fff',
-      borderBottomColor: '#333',
+      borderBottomColor: '#d9d9d9',
     },
     leaderBoardFilterText: {
       color: '#000',

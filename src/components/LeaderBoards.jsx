@@ -1,27 +1,31 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image, ActivityIndicator, ScrollView, RefreshControl, Alert } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Apiclient from '../utils/Apiclient';
+import ProfileScreenModal from '../modals/ProfileScreenModal';
+
+const ITEMS_PER_PAGE = 100;
 
 export const LeaderBoards = () => {
     const { theme } = useContext(ThemeContext);
-    const [selectedFilter, setSelectedFilter] = useState('Today');
-    const [isLive, setIsLive] = useState(false);
+    const [activeFilter, setActiveFilter] = useState('Today');
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [leaderBoardsData, setLeaderBoardsData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [profileUserData, setProfileUserData] = useState({});
+    const [visibleModal, setVisibleModal] = useState(null);
 
     const debounceRef = useRef(null);
     const isFirstRender = useRef(true);
     const abortControllerRef = useRef(null);
 
 
-    const getLeaderBoards = useCallback(async (reset = false) => {
+    const getLeaderBoards = useCallback(async (reset = false, triggeredByUser = false) => {
         if (loading || (!reset && !hasMore)) return;
 
 
@@ -38,14 +42,15 @@ export const LeaderBoards = () => {
             setHasMore(true);
         }
 
+        if (triggeredByUser) setRefreshing(true); // Only set when pull-to-refresh
+
         setLoading(true);
-        if (reset) setRefreshing(true);
 
         try {
 
+            const isLive = activeFilter === 'Live';
             const postData = {
-                ...(selectedFilter && { transDateFilter: selectedFilter }),
-                isLive,
+                ...(isLive ? { isLive: true } : { transDateFilter: activeFilter, isLive: false }),
                 page: reset ? 1 : page,
             };
             console.log('giftLeaderboard payload', postData);
@@ -64,8 +69,8 @@ export const LeaderBoards = () => {
                     setLeaderBoardsData(prev => [...prev, ...newData]);
                 }
 
-                setHasMore(newData.length > 0);
-                if (!reset) setPage(prev => prev + 1);
+                setHasMore(newData.length === ITEMS_PER_PAGE);
+                // if (!reset) setPage(prev => prev + 1);
             }
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -76,31 +81,45 @@ export const LeaderBoards = () => {
             }
         } finally {
             setLoading(false);
-            if (reset) setRefreshing(false);
+            if (triggeredByUser) setRefreshing(false);
         }
-    }, [selectedFilter, isLive, page, loading, hasMore]);
+    }, [activeFilter, hasMore, loading, page]);
 
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
-            getLeaderBoards(true); // Initial load
+            getLeaderBoards(true); // keep triggeredByUser = false
             return;
         }
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
         debounceRef.current = setTimeout(() => {
-            getLeaderBoards(true);
-        }, 100); // short delay to avoid double call
+            getLeaderBoards(true); // keep triggeredByUser = false
+        }, 100);
 
         return () => {
             if (debounceRef.current) clearTimeout(debounceRef.current);
         };
-    }, [selectedFilter, isLive]);
+    }, [activeFilter]);
 
+    useEffect(() => {
+        if (page > 1) {
+            getLeaderBoards();
+        }
+    }, [page]);
+
+    const joinRoom = () => {
+        console.log('user joined');
+    }
+
+    const handleProfileOpen = useCallback((item) => {
+        setProfileUserData(item);
+        setVisibleModal('profile-screen-modal');
+    }, []);
 
     const handleRefresh = () => {
-        getLeaderBoards(true);
+        getLeaderBoards(true, true); // set triggeredByUser = true
     };
 
     const renderItem = useCallback(({ item, index }) => {
@@ -113,6 +132,13 @@ export const LeaderBoards = () => {
                     themeStyles[theme].leaderboardItem,
                 ]}
                 activeOpacity={0.8}
+                onPress={() => {
+                    if (item.isLive === 1) {
+                        joinRoom(item);
+                    } else {
+                        handleProfileOpen(item);
+                    }
+                }}
             >
                 {/* Rank Badge */}
                 <View style={[styles.lbRankBadge, themeStyles[theme].lbRankBadge]}>
@@ -142,7 +168,7 @@ export const LeaderBoards = () => {
                             style={[styles.lbAvatar, themeStyles[theme].lbAvatar]}
                         />
                         {isTopThree && (
-                            <View style={styles.lbCrownContainer}>
+                            <View style={[styles.lbCrownContainer]}>
                                 <Text style={styles.lbCrown}>👑</Text>
                             </View>
                         )}
@@ -187,9 +213,12 @@ export const LeaderBoards = () => {
                 <TouchableOpacity
                     style={[
                         styles.lbStarButton,
-                        themeStyles[theme].lbStarButton
+                        themeStyles[theme].lbStarButton,
                     ]}
                     activeOpacity={0.7}
+                    onPress={() => {
+                        alert('Not implemented');
+                    }}
                 >
                     <FontAwesome5 name="star" size={12} solid color={theme === 'light' ? 'gray' : '#fafafa'} />
                 </TouchableOpacity>
@@ -207,18 +236,18 @@ export const LeaderBoards = () => {
         );
     };
 
-    useEffect(() => {
-        console.log('isLive', isLive);
-    }, [isLive]);
+    // useEffect(() => {
+    //     console.log('isLive', isLive);
+    // }, [isLive]);
 
 
-    useEffect(() => {
-        console.log('selectedFilter', selectedFilter);
-    }, [selectedFilter]);
+    // useEffect(() => {
+    //     console.log('selectedFilter', selectedFilter);
+    // }, [selectedFilter]);
 
 
     const renderFilterButton = (title) => {
-        const isActive = selectedFilter === title;
+        const isActive = activeFilter === title;
         return (
             <TouchableOpacity
                 key={title}
@@ -229,9 +258,8 @@ export const LeaderBoards = () => {
                     isActive && themeStyles[theme].leaderBoardActiveFilter,
                 ]}
                 onPress={() => {
-                    if (selectedFilter !== title || isLive) {
-                        setSelectedFilter(title);
-                        setIsLive(false);
+                    if (activeFilter !== title) {
+                        setActiveFilter(title);
                     }
                 }}
                 activeOpacity={0.8}
@@ -256,31 +284,7 @@ export const LeaderBoards = () => {
             {/* Header with Gradient Background */}
             <View style={[styles.leaderBoardHeader, themeStyles[theme].leaderBoardHeader]}>
                 <View style={[styles.leaderBoardFilterContainer, themeStyles[theme].leaderBoardFilterContainer]}>
-                    {['Today', 'Last Week', 'All Time'].map(renderFilterButton)}
-                    <TouchableOpacity
-                        style={[
-                            styles.leaderBoardFilterButton,
-                            themeStyles[theme].leaderBoardFilterButton,
-                            isLive && styles.leaderBoardActiveFilter,
-                            isLive && themeStyles[theme].leaderBoardActiveFilter,
-                        ]}
-                        onPress={() => {
-                            if (!isLive) {
-                                setIsLive(true);
-                                setSelectedFilter('');
-                            }
-                        }}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={[
-                            styles.leaderBoardFilterText,
-                            themeStyles[theme].leaderBoardFilterText,
-                            isLive && styles.leaderBoardActiveFilterText,
-                            isLive && themeStyles[theme].leaderBoardActiveFilterText,
-                        ]}>
-                            Live Now
-                        </Text>
-                    </TouchableOpacity>
+                    {['Today', 'Last Week', 'All Time', 'Live'].map(renderFilterButton)}
                 </View>
             </View>
 
@@ -325,13 +329,20 @@ export const LeaderBoards = () => {
                             showsVerticalScrollIndicator={false}
                             ListFooterComponent={renderFooter}
                             onEndReachedThreshold={0.3}
-                            onEndReached={() => getLeaderBoards()}
-                            refreshing={refreshing} // <-- Add this
-                            onRefresh={handleRefresh} // <-- And this
+                            onEndReached={() => {
+                                if (!loading && hasMore && leaderBoardsData.length >= page * ITEMS_PER_PAGE) {
+                                    setPage(prev => prev + 1);
+                                }
+                            }}
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
                         />
                     )}
 
                 </>
+            )}
+            {visibleModal === 'profile-screen-modal' && (
+                <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
             )}
         </View>
     );
