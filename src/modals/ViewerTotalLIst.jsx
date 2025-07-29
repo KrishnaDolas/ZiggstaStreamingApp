@@ -118,7 +118,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     {rankImage ? (
                         <Image
                             source={ind===0 ? rank1Img : ind===1 ? rank2Img : ind===2 ? rank3Img : null}//giftersdata[0] ? rank1Img : giftersdata[1] ? rank2Img : giftersdata[2] ? rank3Img : null}
-                            style={{ width: 40, height: 54, resizeMode: 'contain' }}
+                            style={{ width: 40, height: 40, resizeMode: 'contain' }}
                         />
                     ) : (
                         <Text style={{ fontSize: 16, fontWeight: '700', color: '#555' }}>
@@ -131,8 +131,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 <Image
                     source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item?.gender) : { uri: item?.avatar }}
                     style={{
-                        height: 50,
-                        width: 50,
+                        height: 40,
+                        width: 40,
                         borderRadius: 30,
                         backgroundColor: '#ddd'
                     }}
