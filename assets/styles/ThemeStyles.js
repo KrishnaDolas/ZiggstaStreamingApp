@@ -1529,6 +1529,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderRWalletInfoText: {
     color: '#ffea23',
     marginLeft: 5,
+    paddingHorizontal:5
   },
   strRoomHeaderRIconBox: {
     marginLeft: 18,
