@@ -159,7 +159,6 @@ export const MainScreen = () => {
         setIsLoading(false);
         setIsHost(true);
         await startLocalStream();
-        socket.emit('assignHost');
       } else {
         setIsLoading(true);
         setTimeout(() => {
