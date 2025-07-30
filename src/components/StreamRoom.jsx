@@ -467,6 +467,10 @@ const StreamRoom = ({
     }
     const handleFriendRequest = async (userid) => {
         try {
+            if(!userData?.userid && !userid){
+                socket.emit('Clientlogs',"handleFriendRequest",`userData?.userid--${userData?.userid}, userid--${userid}`);
+                return;
+            }
             const params = {
                 requesterID: userData?.userid,
                 receiverID: userid
