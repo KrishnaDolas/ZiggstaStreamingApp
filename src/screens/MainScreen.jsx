@@ -568,7 +568,10 @@ export const MainScreen = () => {
             return prev.map(s => s.id === socketId ? { id: socketId, stream } : s);
           }
           return [...prev, { id: socketId, stream }];
-        });
+        });  
+      // Route audio to speaker because it's a video call
+      InCallManager.start({ media: 'video', auto: true });
+      InCallManager.setForceSpeakerphoneOn(true);
       };
 
       peer.onicecandidate = (event) => {
@@ -639,10 +642,9 @@ export const MainScreen = () => {
       // ✅ Start InCallManager and route audio to speaker
       if (!isMuted.muted) {
         stream.getTracks().forEach(track => track.enabled = true); // 🔊 ensure unmuted
-        InCallManager.start({ media: 'audio' }); // or 'video' if you have both
+        InCallManager.start({ media: 'video', auto: true}); // Start InCallManager
+        InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
       }
-      InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
-      InCallManager.setSpeakerphoneOn(true);      // For Android
     } catch (error) {
       SendErrorTotheServer(error, 'startLocalStream');
     }
