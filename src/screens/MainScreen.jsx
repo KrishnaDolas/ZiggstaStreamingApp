@@ -280,11 +280,7 @@ export const MainScreen = () => {
   }
   const HandleStreamReject = (Name) => {
     setHasRequestedStream(false);
-    Alert.alert(
-      'Stream Request Rejected',
-      `Host ${Name} has rejected your stream request.`,
-      [{ text: 'OK' }]
-    );
+    setStreamMsg(`${Name} has rejected your stream request.`);
   }
   const HandlereconnectWithNewPeer = async ({ socketId }) => {
     // Only run if I'm host OR viewer and it's not my own socket
