@@ -224,6 +224,8 @@ export const MainScreen = () => {
       } else if (data.type === 'answer') {
         if (!peer.remoteDescription) {
           await peer.setRemoteDescription(new RTCSessionDescription(data));
+          (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+           pendingCandidates.current[from] = [];
         }
       } else if (data.candidate) {
         const candidate = new RTCIceCandidate(data.candidate);
