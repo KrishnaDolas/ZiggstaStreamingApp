@@ -40,6 +40,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
     const [profileUserData, setProfileUserData] = useState({});
+    const [showAvatarPreview, setShowAvatarPreview] = useState(false);
+    const [avatarToPreview, setAvatarToPreview] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? null;
@@ -290,7 +292,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     userid: profileUserId,
                 };
                 const response = await Apiclient.post('/getUserDetails', formData);
-                console.log('response user profile data', response.data.user);
+                // console.log('response user profile data', response.data.user);
 
                 if (response.status === 200) {
                     setUserProfileDetails(response.data.user || {});
@@ -446,7 +448,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const handleProfileOpen = useCallback((item) => {
         setProfileUserData(item);
         setVisibleModal('profile-screen-modal');
+
     }, []);
+
 
     return (
         <>
@@ -507,7 +511,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                 <View style={[styles.psmProfileTopCard, themeStyles[theme].psmProfileTopCard, { paddingTop: 10 }]}>
                                                     <ShimmerPlaceHolder
                                                         LinearGradient={LinearGradient}
-                                                        style={[styles.psmProfileImage, { borderRadius: 50 }]}
+                                                        style={[styles.psmProfileImage, { borderRadius: 100 }]}
                                                         shimmerStyle={{ width: 100, height: 100 }}
                                                     />
 
@@ -540,13 +544,26 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                         {/* Profile Image */}
                                                         <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
                                                             <View style={styles.profileImageWrapper}>
-                                                                <Image
-                                                                    source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
-                                                                        ? getGenderFallbackImage(userProfileDatails?.gender)
-                                                                        : { uri: userProfileDatails?.avatar }
-                                                                    }
-                                                                    style={styles.psmProfileImage}
-                                                                />
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
+                                                                        const uri = !userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                            ? null
+                                                                            : userProfileDatails.avatar;
+                                                                        if (uri) {
+                                                                            setAvatarToPreview(uri);
+                                                                            setShowAvatarPreview(true);
+                                                                        }
+                                                                    }}
+                                                                    activeOpacity={0.9}
+                                                                >
+                                                                    <Image
+                                                                        source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                            ? getGenderFallbackImage(userProfileDatails?.gender)
+                                                                            : { uri: userProfileDatails?.avatar }
+                                                                        }
+                                                                        style={styles.psmProfileImage}
+                                                                    />
+                                                                </TouchableOpacity>
                                                                 {isProfileAvatarUpdate && (
                                                                     <TouchableOpacity
                                                                         style={styles.editIconContainer}
@@ -669,14 +686,14 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                     style={styles.psmTopGifterMainCard}
                                                                 >
                                                                     <TouchableOpacity
-                                                                        // onPress={() => handleProfileOpen(topGiftersData[0])}
+                                                                        onPress={() => handleProfileOpen(topGiftersData[0])}
                                                                         style={styles.psmTopGifterImageContainer}
                                                                     >
                                                                         <Image
                                                                             source={
-                                                                                topGiftersData[0]?.image === 'default' || !topGiftersData[0]?.image
+                                                                                topGiftersData[0]?.avatar === 'default' || !topGiftersData[0]?.avatar
                                                                                     ? getGenderFallbackImage(topGiftersData[0]?.gender)
-                                                                                    : { uri: topGiftersData[0]?.image }
+                                                                                    : { uri: topGiftersData[0]?.avatar }
                                                                             }
                                                                             style={styles.psmTopGifterMainImage}
                                                                         />
@@ -688,8 +705,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                 </LinearGradient>
                                                                 <View style={styles.psmOtherGiftersContainer}>
                                                                     {topGiftersData?.slice(1).map((gifter, index) => (
-                                                                        <View
+                                                                        <TouchableOpacity
                                                                             key={index}
+                                                                            onPress={() => handleProfileOpen(gifter)}
                                                                             style={[styles.psmOtherGifterCard,
                                                                             {
                                                                                 borderLeftWidth: index === 0 ? 1 : 0,
@@ -701,9 +719,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                             <View style={styles.psmOtherGifterImageContainer}>
                                                                                 <Image
                                                                                     source={
-                                                                                        !gifter?.image || gifter?.image === 'default'
+                                                                                        !gifter?.avatar || gifter?.avatar === 'default'
                                                                                             ? getGenderFallbackImage(gifter?.gender)
-                                                                                            : { uri: gifter.image }
+                                                                                            : { uri: gifter.avatar }
                                                                                     }
                                                                                     style={styles.psmOtherGifterImage}
                                                                                 />
@@ -714,7 +732,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                                 <Text numberOfLines={1}
                                                                                     ellipsizeMode="tail" style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
                                                                             </View>
-                                                                        </View>
+                                                                        </TouchableOpacity>
                                                                     ))}
                                                                 </View>
                                                             </>)}
@@ -750,16 +768,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     reportType="User"
                 />
             )}
-            {/* <ActionSheet
-                ref={actionSheetRef}
-                title={'Update Profile Picture'}
-                options={actionSheetOptions}
-                cancelButtonIndex={2}
-                onPress={(index) => {
-                    if (index === 0) onSelectImage('camera');
-                    if (index === 1) onSelectImage('gallery');
-                }}
-            /> */}
             <CameraActionSheet
                 visible={showActionSheet}
                 onClose={() => setShowActionSheet(false)}
@@ -774,6 +782,31 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
             {visibleModal === 'profile-screen-modal' && (
                 <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
             )}
+            <Modal
+                isVisible={showAvatarPreview}
+                onBackdropPress={() => setShowAvatarPreview(false)}
+                useNativeDriver
+                style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
+            >
+                <View style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#fff', padding: 10, borderRadius: 10 }}>
+                    <Image
+                        source={{ uri: avatarToPreview }}
+                        style={{
+                            width: Dimensions.get('window').width * 0.8,
+                            height: Dimensions.get('window').width * 0.8,
+                            borderRadius: 10,
+                            resizeMode: 'contain',
+                        }}
+                    />
+                    <TouchableOpacity
+                        onPress={() => setShowAvatarPreview(false)}
+                        style={{ marginTop: 10, alignSelf: 'center' }}
+                    >
+                        <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
+
         </>
 
     );

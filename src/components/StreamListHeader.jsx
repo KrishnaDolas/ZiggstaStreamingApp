@@ -46,6 +46,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
     const handleClearFilter = () => {
         setGetselectcategory([]);
         setIsFavourite(false);
+        setIsNearBy(false);
     };
 
     const handleConnect = useCallback((item) => {

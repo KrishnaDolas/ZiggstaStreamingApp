@@ -38,18 +38,16 @@ import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
 import ProfileScreenModal from './src/modals/ProfileScreenModal';
 import { ThemeContext } from './src/context/ThemeContext';
 import { themeStyles } from './assets/styles/ThemeStyles';
-import NoNetworkComponent from './src/components/NoNetworkComponent';
-import useNetworkRetry from './src/utils/useNetworkRetry';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// const NetworkCheck = () => (
-//   <View style={styles.center}>
-//     <ActivityIndicator size="large" color="#0000ff" />
-//     <Text style={styles.text}>No Internet Connection</Text>
-//   </View>
-// );
+const NetworkCheck = () => (
+  <View style={styles.center}>
+    <ActivityIndicator size="large" color="#0000ff" />
+    <Text style={styles.text}>No Internet Connection</Text>
+  </View>
+);
 
 // Custom Tab Bar Component to handle Profile Modal
 const CustomTabBar = ({ state, descriptors, navigation }) => {
@@ -268,7 +266,6 @@ const App = () => {
     setSubscriptionStatus,
     setIsInStreamRoom
   } = useAppContext();
-  const { retryConnection, isRetrying, retryCount, maxRetries, retryStatus } = useNetworkRetry(setIsConnected);
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
 
@@ -568,21 +565,7 @@ const App = () => {
               }
             }}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {!isConnected && <Stack.Screen
-                name="NetworkCheck"
-                options={{ gestureEnabled: false }}
-              >
-                {(props) => (
-                  <NoNetworkComponent
-                    {...props}
-                    onRetry={retryConnection}
-                    isRetrying={isRetrying}
-                    retryCount={retryCount}
-                    maxRetries={maxRetries}
-                    retryStatus={retryStatus}
-                  />
-                )}
-              </Stack.Screen>}
+              {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
               {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
               {isAuthenticated ? (
                 <>

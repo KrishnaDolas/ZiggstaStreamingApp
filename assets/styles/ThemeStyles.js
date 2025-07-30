@@ -3145,7 +3145,7 @@ export const themeStyles = {
       color: '#fff',
     },
     reportCategoryCard: {
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#333333ff',
     },
     reportCategoryTitle: {
       color: '#fff',
@@ -3154,7 +3154,7 @@ export const themeStyles = {
       color: '#fff',
     },
     reportSubCategoryCard: {
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#333333ff',
       borderColor: '#333',
     },
     reportSelectedSubCategoryCard: {
@@ -3165,13 +3165,13 @@ export const themeStyles = {
       color: '#fff',
     },
     reportLoadingContainer: {
-      backgroundColor: '#0f0f0f',
+      backgroundColor: '#2a2a2a',
     },
     reportDescriptionLabel: {
       color: '#fff',
     },
     reportDescriptionInput: {
-      backgroundColor: '#1a1a1a',
+      backgroundColor: '#333333ff',
       color: '#fff',
     },
     googleAdContainer: {
