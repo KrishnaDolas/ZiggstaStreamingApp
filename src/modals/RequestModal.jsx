@@ -27,6 +27,12 @@ const RequestModal = ({
           socket.emit('rejectStream', requesterId)
         }
       }
+      const RemoveAllRequest=()=>{
+        StreamRequestList.forEach((item) => {
+            socket.emit('rejectStream', item.ID);
+        });
+        onClose();
+      }
     return (
         <Modal
             isVisible={visible}
@@ -41,7 +47,15 @@ const RequestModal = ({
         >
             <View style={{ backgroundColor: '#fff', padding: 20, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%' }}>
                 {/* Section 1: Stream Requests */}
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Requests</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Requests</Text>
+                    {StreamRequestList?.length > 0 && (
+                        <View style={{ borderRadius: "10%", backgroundColor: '#f2f2f2', paddingHorizontal: 10, paddingVertical: 0, flexDirection: 'row', alignItems: 'center', height: '25',marginBottom:20 }}>
+                            <TouchableOpacity onPress={RemoveAllRequest}>
+                                <Text style={{ fontSize: 12, color: 'red' }}>Remove ALL</Text>
+                            </TouchableOpacity>
+                        </View>)}
+                </View>
                 {StreamRequestList.length === 0 ? (
                     <Text style={{ marginBottom: 20 }}>No Pending Requests at this time</Text>
                 ) : (

@@ -522,6 +522,7 @@ export const MainScreen = () => {
         socket.off('new-message', HandleNewMessage);
         socket.off('streamRequest', HandleStreamRequest);
         socket.off('streamApproved', HandleApprovedStream);
+        socket.off('streamRejected', HandleStreamReject)
         socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
         socket.off('approvedStreamers', HandleGetListStreamers);
         socket.off('host-action', HandleHostAction);
