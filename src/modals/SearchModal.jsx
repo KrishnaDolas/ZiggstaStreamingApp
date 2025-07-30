@@ -65,6 +65,8 @@ const SearchModal = ({ visible, onClose,
         //     queryParams += `&maxDistance=${Number(getMaxDistance)}&userLocation=${userLocation}`;
         // }
 
+        // console.log('queryParams', queryParams);
+
         try {
             const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?${queryParams}`);
             const data = response?.data?.data;

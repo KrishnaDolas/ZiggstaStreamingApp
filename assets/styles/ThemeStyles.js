@@ -1529,7 +1529,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderRWalletInfoText: {
     color: '#ffea23',
     marginLeft: 5,
-    paddingHorizontal:5
+    paddingHorizontal: 5
   },
   strRoomHeaderRIconBox: {
     marginLeft: 18,
@@ -2491,6 +2491,34 @@ export const styles = StyleSheet.create({
     // backgroundColor: '#fff',
     borderBottomWidth: 1,
     // borderBottomColor: '#d9d9d9',
+    position: 'relative',
+    zIndex: 10,
+  },
+  lbRankBgContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 4,
+    bottom: 0,
+    zIndex: 1,
+  },
+  lbRankBgImage: {
+    height: '100%',
+    width: 115,
+    resizeMode: 'contain',
+  },
+  lbRankTrophyBgContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 14,
+    bottom: 0,
+    zIndex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lbRankTrophyBgImage: {
+    height: 30,
+    width: 30,
+    resizeMode: 'contain',
   },
   lbRankBadge: {
     width: 33,
@@ -2518,6 +2546,7 @@ export const styles = StyleSheet.create({
   lbAvatarSection: {
     position: 'relative',
     marginRight: 12,
+    zIndex: 99,
   },
   lbAvatarContainer: {
     position: 'relative',
@@ -2532,7 +2561,7 @@ export const styles = StyleSheet.create({
   lbAvatar: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 40,
     // backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -2572,6 +2601,7 @@ export const styles = StyleSheet.create({
   lbUserInfo: {
     flex: 1,
     marginRight: 12,
+    zIndex: 99,
   },
   lbUsername: {
     fontSize: 14,
@@ -2593,7 +2623,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#d93a63',
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 1,
     borderRadius: 15,
     shadowColor: '#d93a63',
     shadowOffset: { width: 0, height: 2 },
@@ -2604,8 +2634,8 @@ export const styles = StyleSheet.create({
   },
   lbAmountText: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '500',
     letterSpacing: 0.3,
     marginLeft: 4,
     flexShrink: 1,

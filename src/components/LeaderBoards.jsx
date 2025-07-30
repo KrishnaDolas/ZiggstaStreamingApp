@@ -8,6 +8,14 @@ import Apiclient from '../utils/Apiclient';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 
 const ITEMS_PER_PAGE = 100;
+const rankBg1 = require('../../assets/images/TopGifterBedge/top_gifters_leftbg1.png');
+const rankBg2 = require('../../assets/images/TopGifterBedge/top_gifters_leftbg2.png');
+const rankBg3 = require('../../assets/images/TopGifterBedge/top_gifters_leftbg3.png');
+
+const rankTrophy1 = require('../../assets/images/TopGifterBedge/rank_1.png');
+const rankTrophy2 = require('../../assets/images/TopGifterBedge/rank_2.png');
+const rankTrophy3 = require('../../assets/images/TopGifterBedge/rank_3.png');
+
 
 export const LeaderBoards = () => {
     const { theme } = useContext(ThemeContext);
@@ -109,8 +117,8 @@ export const LeaderBoards = () => {
         }
     }, [page]);
 
-    const joinRoom = () => {
-        console.log('user joined');
+    const joinRoom = (item) => {
+        console.log('user joined', item);
     }
 
     const handleProfileOpen = useCallback((item) => {
@@ -140,6 +148,34 @@ export const LeaderBoards = () => {
                     }
                 }}
             >
+                {isTopThree && (
+                    <View style={[styles.lbRankBgContainer]}>
+                        <Image
+                            source={
+                                index === 0
+                                    ? rankBg1
+                                    : index === 1
+                                        ? rankBg2
+                                        : rankBg3
+                            }
+                            style={[styles.lbRankBgImage]}
+                        />
+                    </View>
+                )}
+                {isTopThree && (
+                    <View style={[styles.lbRankTrophyBgContainer]}>
+                        <Image
+                            source={
+                                index === 0
+                                    ? rankTrophy1
+                                    : index === 1
+                                        ? rankTrophy2
+                                        : rankTrophy3
+                            }
+                            style={[styles.lbRankTrophyBgImage]}
+                        />
+                    </View>
+                )}
                 {/* Rank Badge */}
                 <View style={[styles.lbRankBadge, themeStyles[theme].lbRankBadge]}>
                     <Text style={[
@@ -167,11 +203,11 @@ export const LeaderBoards = () => {
                             }
                             style={[styles.lbAvatar, themeStyles[theme].lbAvatar]}
                         />
-                        {isTopThree && (
+                        {/* {isTopThree && (
                             <View style={[styles.lbCrownContainer]}>
                                 <Text style={styles.lbCrown}>👑</Text>
                             </View>
-                        )}
+                        )} */}
                     </View>
                     {item.isLive === 1 && (
                         <View style={styles.lbLiveIndicator}>
@@ -190,7 +226,7 @@ export const LeaderBoards = () => {
                     </Text>
                     <Text numberOfLines={1} style={[
                         styles.lbLocation,
-                        themeStyles[theme].lbLocation
+                        themeStyles[theme].lbLocation,
                     ]}>
                         {item.location}
                     </Text>
@@ -199,7 +235,7 @@ export const LeaderBoards = () => {
                     ]}>
                         <Image
                             source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                            style={{ width: 12, height: 12 }}
+                            style={{ width: 10, height: 10 }}
                             resizeMode="contain"
                         />
                         <Text style={[
