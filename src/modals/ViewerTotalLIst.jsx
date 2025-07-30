@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, FlatList, Image } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { View, TouchableOpacity, Text, FlatList, Image, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions } from 'react-native';
@@ -19,13 +19,24 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     const { theme } = useContext(ThemeContext);
     const [activeTab, setActiveTab] = useState(0);
     const [giftersdata, setGiftersData] = useState([])
-    const [totalheaderCount, setTotalHeaderCount] = useState({ Gifter: 0, Viewer: 0, TotalGifter: 0 })
     const [totalgifters, setTotalgifters] = useState([])
     const [viewersList, setViewersList] = useState([]);
+    const LoaderRef = useRef(false)
+    const [tabs] = useState(['Gifters', 'Viewers', 'Gifters List']);
 
+    useEffect(() => {
+        if (activeTab === 0) {
+            HandleGetGiftersData();
+        } else if (activeTab === 1) {
+            GetViewers();
+        } else if (activeTab === 2) {
+            HandleTotalGifterData();
+        }
+    }, [activeTab]);
 
     const HandleGetGiftersData = async () => {
         try {
+            LoaderRef.current = true
             const params = {
                 "toUserID": userDetails?.userid,
                 "roomId": RoomID
@@ -34,19 +45,22 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             if (responce.data.success) {
                 const data = responce.data.data;
                 let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.totalGiftValue), 0)
-                setTotalHeaderCount((prevdata) => ({ ...prevdata, Gifter: totalAmount }))
                 console.log('total gift value:', totalAmount);
+                // setLoader((prevdata) => ({ ...prevdata, GifterListLoader: false }))
                 // sort the data totalGiftValue wise
                 let sortedData = responce.data.data.sort((a, b) => parseInt(b.totalGiftValue) - parseInt(a.totalGiftValue));
                 setGiftersData(sortedData)
+                LoaderRef.current = false
                 console.log(sortedData);
             }
         } catch (error) {
+            LoaderRef.current = false
             SendErrorTotheServer(error, "HandleGetGiftersdata")
         }
     }
     const HandleTotalGifterData = async () => {
         try {
+            LoaderRef.current = true
             const params = {
                 "roomId": RoomID
             }
@@ -54,36 +68,32 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             if (responce.data.success) {
                 const data = responce.data.data;
                 let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.giftValue), 0)
-                setTotalHeaderCount((prevdata) => ({ ...prevdata, TotalGifter: totalAmount }))
                 console.log('total gift value:', totalAmount);
                 setTotalgifters(responce.data.data)
+                LoaderRef.current = false
                 console.log('total gifters data:', responce.data.data);
             }
         } catch (error) {
+            LoaderRef.current = false
             SendErrorTotheServer(error, "HandleGetGiftersdata")
         }
     }
-    const GetViewers=async()=>{
+    const GetViewers = async () => {
         try {
+            LoaderRef.current = true
             const response = await Apiclient.get(`/rooms/${RoomID}/members`)
             if (response.data) {
                 setViewersList(response.data?.members || []);
+                LoaderRef.current = false
                 console.log('Viewers List:', response.data?.members);
             }
         } catch (error) {
+            LoaderRef.current = false
             console.error('Error fetching viewers:', error);
         }
     }
-    useEffect(() => {
-        HandleGetGiftersData()
-        setTotalHeaderCount((prevdata) => ({ ...prevdata, Viewer: viewersList.length }))
-        HandleTotalGifterData()
-        GetViewers()
-    }, [])
-    const tabs = ['Gifters', 'Viewers', 'Gifters List'];
 
-
-    const RenderItemForGifters = (item,ind) => {
+    const RenderItemForGifters = (item, ind) => {
         // Handle rank images
         const getRankImage = () => {
             if (giftersdata[0]) return rank1Img;
@@ -99,10 +109,10 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    paddingHorizontal:'5',
-                    backgroundColor: `${ind===0? '#ffcbed':ind===1?'#fdd7bb':ind===2?'#c5e6de':'#d9d9d9'}`,
-                    paddingVertical:'5',
-                    marginBottom:'5'
+                    paddingHorizontal: '5',
+                    backgroundColor: `${ind === 0 ? '#ffcbed' : ind === 1 ? '#fdd7bb' : ind === 2 ? '#c5e6de' : '#d9d9d9'}`,
+                    paddingVertical: '5',
+                    marginBottom: '5'
                 }}
             >
                 {/* Rank Icon or Number */}
@@ -117,7 +127,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 >
                     {rankImage ? (
                         <Image
-                            source={ind===0 ? rank1Img : ind===1 ? rank2Img : ind===2 ? rank3Img : null}//giftersdata[0] ? rank1Img : giftersdata[1] ? rank2Img : giftersdata[2] ? rank3Img : null}
+                            source={ind === 0 ? rank1Img : ind === 1 ? rank2Img : ind === 2 ? rank3Img : null}//giftersdata[0] ? rank1Img : giftersdata[1] ? rank2Img : giftersdata[2] ? rank3Img : null}
                             style={{ width: 40, height: 40, resizeMode: 'contain' }}
                         />
                     ) : (
@@ -175,7 +185,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 10,
-                    borderBottomWidth:1, // optional: to give a border effect
+                    borderBottomWidth: 1, // optional: to give a border effect
                     borderBottomColor: "#d9d9d9",
                     paddingVertical: 10,
                 }}
@@ -205,7 +215,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             marginTop: 2
                         }}
                     >
-                       {item?.location}
+                        {item?.location}
                     </Text>
                 </View>
             </View>
@@ -213,14 +223,14 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     };
 
     const RenderItemForGifterList = ({ item }) => {
-        const GiftImage= giftImages[item?.giftIcon] || require('../../assets/images/gifts/diamond3.gif');
+        const GiftImage = giftImages[item?.giftIcon] || require('../../assets/images/gifts/diamond3.gif');
         return (
             <View
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingHorizontal: 10,
-                    borderBottomWidth:1, // optional: to give a border effect
+                    borderBottomWidth: 1, // optional: to give a border effect
                     borderBottomColor: "#d9d9d9",
                     paddingVertical: 10,
                 }}
@@ -244,7 +254,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         {item.screenName}
                     </Text>
                 </View>
-                <View style={{ marginRight: 15}}>
+                <View style={{ marginRight: 15 }}>
                     <View
                         style={{
                             flexDirection: 'row',
@@ -261,11 +271,11 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         </Text>
                     </View>
                 </View>
-                <View style={{ marginLeft: 12}}>
-                    <View style={{flexDirection: 'row'}}
+                <View style={{ marginLeft: 12 }}>
+                    <View style={{ flexDirection: 'row' }}
                     >
                         <FastImage
-                            style={{height:"40",width:'40'}}
+                            style={{ height: "40", width: '40' }}
                             source={GiftImage}
                             resizeMode={FastImage.resizeMode.contain}
                         />
@@ -291,60 +301,55 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         fontWeight: '500',
                     }}
                 >
-                    No {tabtype} At this Movement
+                    {LoaderRef.current ? <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} /> : `No ${tabtype} found`}
                 </Text>
             </View>
         )
     }
 
-    const renderTabContent = () => {
+    const renderTabContent = useCallback(() => {
         switch (activeTab) {
             case 0:
                 return (
-                    <View >
-                        <FlatList
-                            data={giftersdata}   // your array of {ViewerName, ViewerID}
-                            keyExtractor={(item, ind) => item?.fromUserID.toString()}
-                            nestedScrollEnabled={true}
-                            contentContainerStyle={{ paddingBottom: 8 }}
-                            style={{ height: screenHeight * 0.2 + 30 }}
-                            ListEmptyComponent={() => FallbackUI('Gifters')}
-                            renderItem={({ item, index }) => RenderItemForGifters(item, index)}
-                        />
-                    </View>
+                    <FlatList
+                        data={giftersdata}
+                        keyExtractor={(item) => item?.fromUserID.toString()}
+                        nestedScrollEnabled
+                        contentContainerStyle={{ paddingBottom: 8 }}
+                        style={{ height: screenHeight * 0.2 + 30 }}
+                        ListEmptyComponent={() => FallbackUI('Gifters')}
+                        renderItem={({ item, index }) => RenderItemForGifters(item, index)}
+                    />
                 );
             case 1:
                 return (
-                    <View>
-                        <FlatList
-                            data={viewersList}   // your array of {ViewerName, ViewerID}
-                            keyExtractor={(item) => item.user_id.toString()}
-                            nestedScrollEnabled={true}
-                            contentContainerStyle={{ paddingBottom: 8 }}
-                            style={{ height: screenHeight * 0.2 + 30 }}
-                            ListEmptyComponent={() => FallbackUI('Viewers')}
-                            renderItem={RenderItemForViewer}
-                        />
-                    </View>
+                    <FlatList
+                        data={viewersList}
+                        keyExtractor={(item) => item.user_id.toString()}
+                        nestedScrollEnabled
+                        contentContainerStyle={{ paddingBottom: 8 }}
+                        style={{ height: screenHeight * 0.2 + 30 }}
+                        ListEmptyComponent={() => FallbackUI('Viewers')}
+                        renderItem={RenderItemForViewer}
+                    />
                 );
             case 2:
                 return (
-                    <View>
-                        <FlatList
-                            data={totalgifters}   // your array of {ViewerName, ViewerID}
-                            keyExtractor={(_, index) => index.toString()}
-                            nestedScrollEnabled={true}
-                            contentContainerStyle={{ paddingBottom: 8 }}
-                            style={{ height: screenHeight * 0.55 }}
-                            ListEmptyComponent={() => FallbackUI('Gifters List')}
-                            renderItem={RenderItemForGifterList}
-                        />
-                    </View>
+                    <FlatList
+                        data={totalgifters}
+                        keyExtractor={(_, index) => index.toString()}
+                        nestedScrollEnabled
+                        contentContainerStyle={{ paddingBottom: 8 }}
+                        style={{ height: screenHeight * 0.55 }}
+                        ListEmptyComponent={() => FallbackUI('Gifters List')}
+                        renderItem={RenderItemForGifterList}
+                    />
                 );
             default:
                 return null;
         }
-    };
+    }, [activeTab, giftersdata, viewersList, totalgifters]);
+
 
     return (
         <>
@@ -408,7 +413,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             </TouchableOpacity>
                         ))}
                     </View>
-                    <View style={[{ height: screenHeight * 0.6 - 40}]}>
+                    <View style={[{ height: screenHeight * 0.6 - 40 }]}>
                         {renderTabContent()}
                     </View>
                 </View>
