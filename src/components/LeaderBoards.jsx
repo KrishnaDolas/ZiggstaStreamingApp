@@ -194,7 +194,17 @@ export const LeaderBoards = () => {
                 <View style={[styles.lbAvatarSection, themeStyles[theme].lbAvatarSection]}>
                     <View style={[
                         styles.lbAvatarContainer,
-                        isTopThree && styles.lbTopThreeAvatar
+                        isTopThree && styles.lbTopThreeAvatar,
+                        isTopThree && {
+                            borderWidth: 2,
+                            borderColor:
+                                index === 0
+                                    ? '#ffefa5'
+                                    : index === 1
+                                        ? '#a8e3fa'
+                                        : '#f9bbd8',
+                            borderRadius: 100,
+                        }
                     ]}>
                         <Image
                             source={!item?.avatar || item?.avatar === 'default'
@@ -271,15 +281,6 @@ export const LeaderBoards = () => {
             </View>
         );
     };
-
-    // useEffect(() => {
-    //     console.log('isLive', isLive);
-    // }, [isLive]);
-
-
-    // useEffect(() => {
-    //     console.log('selectedFilter', selectedFilter);
-    // }, [selectedFilter]);
 
 
     const renderFilterButton = (title) => {
