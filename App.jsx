@@ -225,6 +225,7 @@ const BottomTabNavigator = ({ onLogout, userData, userAddress }) => {
           {(props) => (
             <MainScreen
               {...props}
+              userData={userData}
               isAuthenticated={true}
             />
           )}
