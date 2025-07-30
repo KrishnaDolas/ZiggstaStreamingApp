@@ -320,7 +320,7 @@ export const MainScreen = () => {
   }
   const HandleHostLeft = () => {
     try {
-      Alert.alert('Host Left', 'The host has left the room. You will be disconnected.', [{ text: 'OK' }]);
+      Alert.alert('Host Left', 'The host has left the Stream. You will be disconnected.', [{ text: 'OK' }]);
       // Stop local stream if exists
       setRoomchat([])
       setHasRequestedStream(false);

@@ -480,7 +480,8 @@ const StreamRoom = ({
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
             } else {
-                console.log(responce);
+                setMessage(`${responce.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
+                setVisibleModal('message-modal')
             }
         } catch (error) {
             setMessage(`Request Already Sent`)
