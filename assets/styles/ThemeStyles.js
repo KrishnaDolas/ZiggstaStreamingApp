@@ -2458,11 +2458,9 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    // backgroundColor: '#fff',
     alignItems: 'center',
     position: 'relative',
     borderBottomWidth: 1,
-    // borderBottomColor: '#333',
   },
   leaderBoardActiveFilter: {
     borderBottomColor: '#d93a63',
@@ -2509,7 +2507,7 @@ export const styles = StyleSheet.create({
   lbRankTrophyBgContainer: {
     position: 'absolute',
     top: 0,
-    left: 14,
+    left: 12,
     bottom: 0,
     zIndex: 1,
     justifyContent: 'center',
