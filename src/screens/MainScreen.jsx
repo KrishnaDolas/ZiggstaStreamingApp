@@ -326,7 +326,9 @@ export const MainScreen = () => {
   }
   const HandleUserLeft = (socketId, userinfo) => {
     try {
-      HandleUserLeftStream(userinfo)
+      if(userinfo){
+        HandleUserLeftStream(userinfo)
+      }
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
         delete peersRef.current[socketId];
