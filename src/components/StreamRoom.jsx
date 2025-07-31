@@ -80,6 +80,8 @@ const StreamRoom = ({
     const [OpenViewerLIst, setOpenViewerList] = useState(false)
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
+    const [openChatUserProfile, setOpenChatUserProfile] = useState(false);
+    const [SelectedUser, setSelectedUser] = useState({});
     const blinkingAnim = useRef(new Animated.Value(1)).current;
     const [OpenHostPorfile, setOpenHostPorfile] = useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
@@ -497,6 +499,11 @@ const StreamRoom = ({
         setReceiveAnimationData(null);
     };
 
+    const HandleOpenChatUserProfile=(data)=>{
+        setOpenChatUserProfile(!openChatUserProfile)
+        setSelectedUser(data)
+    }
+
     return (
         <View style={[styles.roomInfo]}>
             <View style={[styles.streamBox]}>
@@ -757,7 +764,7 @@ const StreamRoom = ({
                                             >
                                                 {roomchat.map((chat, ind) => (
                                                     <View key={ind} style={styles.streamChatItem}>
-                                                       <TouchableOpacity onPress={()=>console.log(chat.userID)}>
+                                                       <TouchableOpacity onPress={()=>HandleOpenChatUserProfile(chat)}>
                                                             <Image style={styles.streamChatItemProfileImg}
                                                                 source={!chat.userProfile || chat.userProfile === 'default'
                                                                     ? getGenderFallbackImage(chat.userProfile)
@@ -1054,6 +1061,15 @@ const StreamRoom = ({
                     visible="true"
                     onClose={() => setOpenHostPorfile(false)}
                     profileData={userDetails}
+                    isMainProfile={true}
+                    isViewer={true}
+                />
+            )}
+            {openChatUserProfile && (
+                <ProfileScreenModal
+                    visible="true"
+                    onClose={() => setOpenChatUserProfile(false)}
+                    profileData={SelectedUser}
                     isMainProfile={true}
                     isViewer={true}
                 />
