@@ -457,6 +457,7 @@ export const MainScreen = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
     setconnectingpanel(true)
+    setHasRequestedStream(false)
     IsIdentify.current = false; // Reset identify flag
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach(track => track.stop());
