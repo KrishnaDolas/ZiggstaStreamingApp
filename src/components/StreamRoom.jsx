@@ -385,20 +385,20 @@ const StreamRoom = ({
     }
     const playGiftSound = () => {
         try {
-          const sound = new Sound('gift_received.mp3', Sound.MAIN_BUNDLE, (error) => {
-            if (error) {
-              console.log('Failed to load sound', error);
-              return;
-            }
-            sound.play(() => {
-              sound.release(); 
+            const sound = new Sound('gift_received.mp3', Sound.MAIN_BUNDLE, (error) => {
+                if (error) {
+                    console.log('Failed to load sound', error);
+                    return;
+                }
+                sound.play(() => {
+                    sound.release();
+                });
             });
-          });
         } catch (error) {
-          console.log(error);
+            console.log(error);
         }
-      };
-      
+    };
+
     const HandleReport = () => {
         setVisibleModal('ReportVideo')
     }
@@ -663,7 +663,7 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={streamLayout.length==6 ||streamLayout.length==4 ?40:80} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
                                                 </View>
                                                 <View style={styles.videoOverlay}>
                                                     {streamData?.type !== 'local' && (
@@ -675,7 +675,7 @@ const StreamRoom = ({
                                                                 style={styles.friendRequestIcon}
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
-                                                                <Ionicons name="person-add" size={streamLayout.length==6 ||streamLayout.length==4 ?16:20} color="#fff" />
+                                                                <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
                                                     )}
@@ -702,7 +702,7 @@ const StreamRoom = ({
                                 <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                     <View style={styles.strRoomHeaderLeft}>
                                         <Image style={styles.strRoomHeaderLeftProfileImg}
-                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
+                                            source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
                                         <View style={styles.strRoomHeaderLeftProfileInfo}>
                                             <Text style={[styles.strRoomHeaderLeftProfileName]}>
                                                 {userDetails?.screenName}
@@ -752,14 +752,14 @@ const StreamRoom = ({
                                 </View>
                             </View>
                             <LinearGradient
-                                colors={streamLayout.length > 1 ? ['#1d1d1d', '#1d1d1d'] : ['rgba(141, 124, 124, 0)', 'rgba(255, 255, 255, 0)']}
+                                colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
                                 start={{ x: 0.5, y: 1 }}
                                 end={{ x: 0.5, y: 0 }}
-                                style={styles.strRoomFooter}
+                                style={[styles.strRoomFooter]}
                             >
                                 <>
                                     <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer,{display:openMoreSettingList ? 'none' : 'flex'}]}>
+                                        <View style={[styles.streamChatContainer, { display: openMoreSettingList ? 'none' : 'flex' }]}>
                                             <ScrollView
                                                 ref={scrollViewRef}
                                                 showsVerticalScrollIndicator={false}
@@ -772,7 +772,7 @@ const StreamRoom = ({
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
                                                             <Text numberOfLines={3} style={styles.streamChatMessage}>
-                                                                { chat?.message}
+                                                                {chat?.message}
                                                             </Text>
                                                         </View>
                                                     </View>
@@ -788,61 +788,68 @@ const StreamRoom = ({
                                             {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                                 <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                             </TouchableOpacity>)}
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn}>
+                                            <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn,{ display: openMoreSettingList ? 'none' : 'flex' }]}>
                                                 <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
                                 </>
                                 {openMoreSettingList && (
-                                    <Animated.View
-                                        style={[
-                                            styles.strMoreSettingListContainer,
-                                            {
-                                                opacity: animatedOpacity,
-                                                transform: [{ translateY: animatedTranslateY }],
-                                            },
-                                        ]}
+                                    <LinearGradient
+                                        colors={['rgba(8, 8, 8, 0.28)', 'rgba(8, 8, 8, 0)']}
+                                        start={{ x: 0.5, y: 1 }}
+                                        end={{ x: 0.5, y: 0 }}
+                                        style={{ minHeight: 400 }}
                                     >
-                                        {/* {localStream || isHost && ( */}
-                                        <TouchableOpacity onPress={() => {
-                                            switchCamera();
-                                            HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
-                                            <Ionicons name="camera-reverse" size={20} color="#fff" />
-                                        </TouchableOpacity>
-                                        {/* // )} */}
-                                        {!isHost && (
+                                        <Animated.View
+                                            style={[
+                                                styles.strMoreSettingListContainer,
+                                                {
+                                                    opacity: animatedOpacity,
+                                                    transform: [{ translateY: animatedTranslateY }],
+                                                },
+                                            ]}
+                                        >
+                                            {/* {localStream || isHost && ( */}
                                             <TouchableOpacity onPress={() => {
-                                                requestStreamPermission(),
-                                                    HidesettingPanel(),
-                                                    setVisibleModal('message-modal'),
-                                                    setMessage('Request Send To the Host')
-                                            }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
-                                                <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
-                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
-                                            </TouchableOpacity>
-                                        )}
-                                        {/* {localStream || isHost && ( */}
-                                        <TouchableOpacity onPress={() => {
-                                            toggleMute(),
+                                                switchCamera();
                                                 HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
-                                            {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
-                                        </TouchableOpacity>
-                                        {/* )} */}
-                                        {!isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                HidesettingPanel()
-                                                HandleReport()
                                             }} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Report</Text>
-                                                <Ionicons name="flag" size={20} color="#dc3131" />
+                                                <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
+                                                <Ionicons name="camera-reverse" size={20} color="#fff" />
                                             </TouchableOpacity>
-                                        )}
-                                    </Animated.View>
+                                            {/* // )} */}
+                                            {!isHost && (
+                                                <TouchableOpacity onPress={() => {
+                                                    requestStreamPermission(),
+                                                        HidesettingPanel(),
+                                                        setVisibleModal('message-modal'),
+                                                        setMessage('Request Send To the Host')
+                                                }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
+                                                    <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
+                                                    <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
+                                                </TouchableOpacity>
+                                            )}
+                                            {/* {localStream || isHost && ( */}
+                                            <TouchableOpacity onPress={() => {
+                                                toggleMute(),
+                                                    HidesettingPanel()
+                                            }} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Mute {!isMuted?.muted ? 'OFF' : 'ON'}</Text>
+                                                {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                            </TouchableOpacity>
+                                            {/* )} */}
+                                            {!isHost && (
+                                                <TouchableOpacity onPress={() => {
+                                                    HidesettingPanel()
+                                                    HandleReport()
+                                                }} style={styles.strMoreSettingListItem}>
+                                                    <Text style={styles.strMoreSettingListItemText}>Report</Text>
+                                                    <Ionicons name="flag" size={20} color="#dc3131" />
+                                                </TouchableOpacity>
+                                            )}
+                                        </Animated.View>
+                                    </LinearGradient>
                                 )}
                                 <View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
                                     <TextInput

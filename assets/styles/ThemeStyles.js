@@ -1763,6 +1763,9 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     marginRight: 14,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 
   // wallet dashboard screen
