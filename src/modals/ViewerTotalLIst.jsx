@@ -83,7 +83,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             LoaderRef.current = true
             const response = await Apiclient.get(`/rooms/${RoomID}/members`)
             if (response.data) {
-                setViewersList(response.data?.members || []);
+                let RemoveHostFromViewerList= response.data?.members?.filter((item) => item.user_id !== userDetails?.userid)
+                setViewersList(RemoveHostFromViewerList || []);
                 LoaderRef.current = false
                 console.log('Viewers List:', response.data?.members);
             }
