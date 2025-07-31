@@ -289,7 +289,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
         return (
             <View
                 style={{
-                    height: screenHeight * 0.2,
+                    height: screenHeight * 0.4 + 30,
                     justifyContent: 'center',
                     alignItems: 'center',
                 }}
