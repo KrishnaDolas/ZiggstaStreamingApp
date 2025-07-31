@@ -243,7 +243,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         setCurrentStreamData(item);
         const roomId = item.roomID.toString();
         if (item.hostID === userData.userid) {
-            joinRoom(roomId, item);
+            Alert.alert('Stream Ended','This stream has ended. You cannot join your own stream.', [{ text: 'OK' }])
         } else {
             joinRoom(roomId, item);
         }

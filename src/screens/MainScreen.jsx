@@ -69,6 +69,13 @@ export const MainScreen = () => {
 
       if (nextAppState === 'active') {
         if (isStreaming && IsValid && socket.connected) {
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach(track => track.stop());
+            localStreamRef.current = null;
+            setLocalStream(null);
+            // Stop InCallManager
+            InCallManager.stop();
+          }
           socket.emit('stream-Resume', socket.id);
           setTimeout(async () => {
             try {
@@ -85,13 +92,6 @@ export const MainScreen = () => {
         console.log('⏸ App in background: stopping local stream');
 
         try {
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-            localStreamRef.current = null;
-            setLocalStream(null);
-            // Stop InCallManager
-            InCallManager.stop();
-          }
           setRemoteStreams([])
           peersRef.current = {};
           for (const [userId, peer] of Object.entries(peersRef.current)) {
