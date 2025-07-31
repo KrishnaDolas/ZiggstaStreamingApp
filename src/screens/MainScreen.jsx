@@ -117,6 +117,22 @@ export const MainScreen = () => {
     socket.connect();
     setIsSocketConnected(true); // Update connection status
   };
+  const requestStreamPermission = async () => {
+    try {
+      if (!hasRequestedStream) {
+       const IsAccepted= await requestPermissions();
+        if (!IsAccepted) {
+          showPermissionAlert();
+          return;
+        }
+        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
+        socket.emit('requestStream', Address);
+        setHasRequestedStream(true);
+      }
+    } catch (error) {
+      SendErrorTotheServer(error, 'requestStreamPermission');
+    }
+  };
   const HandleConnect = () => {
     clearInterval(countdownRef.current);
     console.log('✅ Connected to Socket.IO server');
@@ -131,6 +147,11 @@ export const MainScreen = () => {
         console.log(`IsusersStreaming --->`,isuserstreaming);
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
+        if(isuserstreaming){
+          setTimeout(() => {
+            requestStreamPermission();
+          }, 1000);
+        }
       }
     }
   }
@@ -614,22 +635,7 @@ export const MainScreen = () => {
       SendErrorTotheServer(err, 'CreateRoom');
     }
   }
-  const requestStreamPermission = async () => {
-    try {
-      if (!hasRequestedStream) {
-       const IsAccepted= await requestPermissions();
-        if (!IsAccepted) {
-          showPermissionAlert();
-          return;
-        }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-        socket.emit('requestStream', Address);
-        setHasRequestedStream(true);
-      }
-    } catch (error) {
-      SendErrorTotheServer(error, 'requestStreamPermission');
-    }
-  };
+
 
   const startLocalStream = async () => {
     try {
