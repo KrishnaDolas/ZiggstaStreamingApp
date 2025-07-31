@@ -44,7 +44,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [avatarToPreview, setAvatarToPreview] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
-    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? null;
+    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ??profileData?.user_id??profileData.fromUserID?? null;
 
 
     // Handle status bar and navigation bar visibility

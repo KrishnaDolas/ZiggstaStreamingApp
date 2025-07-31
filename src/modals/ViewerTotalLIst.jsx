@@ -13,6 +13,7 @@ import rank2Img from '../../assets/images/TopGifterBedge/trophy_2.png';
 import rank3Img from '../../assets/images/TopGifterBedge/trophy_3.png';
 import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../utils/constant';
 import FastImage from 'react-native-fast-image';
+import ProfileScreenModal from './ProfileScreenModal';
 
 
 const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
@@ -21,6 +22,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     const [giftersdata, setGiftersData] = useState([])
     const [totalgifters, setTotalgifters] = useState([])
     const [viewersList, setViewersList] = useState([]);
+    const [isopenuserProfile, setIsOpenUserProfile] = useState(false);
+    const [openUserProfileData, setOpenUserProfileData] = useState({});
     const LoaderRef = useRef(false)
     const [tabs] = useState(['Gifters', 'Viewers', 'Gifters List']);
 
@@ -93,6 +96,11 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             console.error('Error fetching viewers:', error);
         }
     }
+    const handleUserProfileOpen = (userData) => {
+        console.log(userData);
+        setOpenUserProfileData(userData);
+        setIsOpenUserProfile(true);
+    }
 
     const RenderItemForGifters = (item, ind) => {
         // Handle rank images
@@ -106,7 +114,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
         const rankImage = getRankImage();
 
         return (
-            <View
+            <TouchableOpacity
+            onPress={()=>handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -174,14 +183,15 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         </Text>
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
 
     const RenderItemForViewer = ({ item }) => {
         return (
-            <View
+            <TouchableOpacity
+            onPress={()=>handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -219,14 +229,15 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         {item?.location}
                     </Text>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
     const RenderItemForGifterList = ({ item }) => {
         const GiftImage = giftImages[item?.giftIcon] || require('../../assets/images/gifts/diamond3.gif');
         return (
-            <View
+            <TouchableOpacity
+            onPress={()=>handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -282,7 +293,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         />
                     </View>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
@@ -418,6 +429,15 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         {renderTabContent()}
                     </View>
                 </View>
+                {isopenuserProfile&& (
+                    <ProfileScreenModal
+                    visible="true"
+                    onClose={() => setIsOpenUserProfile(false)}
+                    profileData={openUserProfileData}
+                    isMainProfile={true}
+                    isViewer={true}
+                />
+                )}
             </Modal>
         </>
     );
