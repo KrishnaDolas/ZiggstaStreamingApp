@@ -835,7 +835,7 @@ const StreamRoom = ({
                                                     HidesettingPanel()
                                             }} style={styles.strMoreSettingListItem}>
                                                 <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
-                                                {!isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                                {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                             </TouchableOpacity>
                                             {/* )} */}
                                             {!isHost && (

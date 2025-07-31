@@ -53,9 +53,7 @@ export const MainScreen = () => {
   const [streammsg, setStreamMsg] = useState(null);
   const [currentStreamData, setCurrentStreamData] = useState({});
   const [totalGiftValue, setTotalGiftValue] = useState(0);
-  const countdownRef = useRef(null);
   const IsIdentify = useRef(false)
-  const RoomIDRef = useRef(null)
 
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
@@ -134,7 +132,6 @@ export const MainScreen = () => {
     }
   };
   const HandleConnect = () => {
-    clearInterval(countdownRef.current);
     console.log('✅ Connected to Socket.IO server');
     setconnectingpanel(false)
     setIsSocketConnected(true); // Update connection status
@@ -168,7 +165,6 @@ export const MainScreen = () => {
     setIsUserStreaming(false)
     setStreamGuest([])
     setStreamMsg(null)
-    RoomIDRef.current = null
   }
   //Handle socket functions
 
@@ -367,7 +363,6 @@ export const MainScreen = () => {
     }
   }
   const HandleRoomInfo = (info) => {
-    RoomIDRef.current = info?.roomID;
     setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount, TotalViewerCount: info?.TotalViewerCount })
   }
   const HandleNewStream = () => {
