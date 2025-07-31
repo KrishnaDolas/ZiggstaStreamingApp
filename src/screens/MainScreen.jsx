@@ -197,7 +197,7 @@ export const MainScreen = () => {
       if (ChatMessages) {
         console.log(ChatMessages);
         let chat = ChatMessages.map((item) => {
-          return { ...item, userProfile: chatimage, TYPE: "PLAYERCHAT" }
+          return { ...item, userProfile: item?.userProfile,userID: item?.id, TYPE: "PLAYERCHAT" }
         })
         console.log(chat);
         setRoomchat(chat)
@@ -260,13 +260,13 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleSignal');
     }
   }
-  const HandleNewMessage = ({ userName, message, id }) => {
+  const HandleNewMessage = ({ userName, message, id,userProfile }) => {
     try {
       let own = userName
       if (userName === userData?.screenName) {
         own = "You"
       }
-      const data = { id: id, userProfile: chatimage, userName: own, message: message, TYPE: "PLAYERCHAT" }
+      const data = { userID: id, userProfile: userProfile, userName: own, message: message, TYPE: "PLAYERCHAT" }
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
@@ -440,12 +440,12 @@ export const MainScreen = () => {
     setStrimerList(list)
   }
   const HandlenewUserJoined = (userinfo) => {
-    const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
+    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.CustomID, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
-      const data = { id: userinfo?.customid || 1, userProfile: joinImage, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
+      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.CustomID, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
   }
@@ -619,7 +619,7 @@ export const MainScreen = () => {
       }
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address);
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address,userData?.avatar);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -741,6 +741,7 @@ export const MainScreen = () => {
         message: formatted.trim(),
         id: userData.userid,
         timestamp: new Date().toLocaleTimeString(),
+        userProfile:userData?.avatar
       };
 
       socket.emit('send-message', newMessage);
