@@ -7,7 +7,7 @@ const userOtherFallbackImage = require('../../assets/images/default-avatar-trans
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-  export const socket = io('https://streamalong.live', {
+  export const socket = io('http://192.168.0.18:5000', {
     transports: ['polling','websocket'], // Include both for fallback testing
     reconnection: true,
     reconnectionAttempts: Infinity,
