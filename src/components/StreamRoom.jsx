@@ -758,8 +758,8 @@ const StreamRoom = ({
                                 style={[styles.strRoomFooter]}
                             >
                                 <>
-                                    <View style={styles.strRoomFooterChatOrActionsBox}>
-                                        <View style={[styles.streamChatContainer, { display: openMoreSettingList ? 'none' : 'flex' }]}>
+                                    <View style={[styles.strRoomFooterChatOrActionsBox, { display: openMoreSettingList ? 'none' : 'flex' }]}>
+                                        <View style={[styles.streamChatContainer]}>
                                             <ScrollView
                                                 ref={scrollViewRef}
                                                 showsVerticalScrollIndicator={false}
@@ -799,7 +799,7 @@ const StreamRoom = ({
                                         colors={['rgba(8, 8, 8, 0.28)', 'rgba(8, 8, 8, 0)']}
                                         start={{ x: 0.5, y: 1 }}
                                         end={{ x: 0.5, y: 0 }}
-                                        style={{ minHeight: 400 }}
+                                        style={{ minHeight: 200 }}
                                     >
                                         <Animated.View
                                             style={[
