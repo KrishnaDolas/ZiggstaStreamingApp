@@ -14,7 +14,7 @@ import themeColors from '../../assets/styles/Colors';
 import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
-import { getGenderFallbackImage, requestPermissions, showPermissionAlert } from '../utils/constant';
+import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 
 const hardcodedImages = [
@@ -201,7 +201,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         } else if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
             return;
-        }else if(!IsAccepted){
+        }else if(!IsAccepted && socket?.connected){
             showPermissionAlert()
             return;
         }
