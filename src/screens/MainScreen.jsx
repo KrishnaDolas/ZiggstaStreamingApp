@@ -128,6 +128,7 @@ export const MainScreen = () => {
       }, 2000);
       IsIdentify.current = true; // Set identify flag to true
       if (streamInfo) {
+        console.log(`IsusersStreaming --->`,isuserstreaming);
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
       }
