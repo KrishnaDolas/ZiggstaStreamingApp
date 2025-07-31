@@ -421,11 +421,9 @@ const StreamRoom = ({
     useEffect(() => {
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
-        socket.on('RoomTotalCount', HandleRoomTotalCount)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
-            socket.off('RoomTotalCount', HandleRoomTotalCount)
         }
     }, [])
 
