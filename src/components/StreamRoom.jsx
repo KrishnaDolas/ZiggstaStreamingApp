@@ -3,7 +3,7 @@ import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
     ActivityIndicator, Platform,
-    Pressable,BackHandler
+    Pressable, BackHandler
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -78,7 +78,6 @@ const StreamRoom = ({
     const [togglerequest, setTogglerequest] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
     const [OpenViewerLIst, setOpenViewerList] = useState(false)
-    const [totalRoomviewerList, setTotalRoomviewerList] = useState([]) //{ ViewerName: 'vikram', ViewerID: '12',country:'India',city:'pune' }
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const blinkingAnim = useRef(new Animated.Value(1)).current;
@@ -402,7 +401,6 @@ const StreamRoom = ({
         setVisibleModal('ReportVideo')
     }
 
-    // scoketevents
     const HandleLikeCount = (count) => {
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
@@ -418,10 +416,6 @@ const StreamRoom = ({
         } catch (error) {
             SendErrorTotheServer(error, "HandleGiftReceived")
         }
-    }
-    const HandleRoomTotalCount = (list) => {
-        console.log(list);
-        setTotalRoomviewerList(list)
     }
 
     useEffect(() => {
@@ -447,14 +441,14 @@ const StreamRoom = ({
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, item?.giftIcon,item?.giftValue)
+                    socket.emit('Send-gift', userData?.screenName, item?.giftIcon, item?.giftValue)
                     setSendAnimationData({
                         giftName: item?.giftIcon,
                         recipientName: hostInfo[0]?.Name
                     });
                     setShowSendAnimation(true);
                     setGiftModalVisible(false);
-                }else if(Responce.data.message){
+                } else if (Responce.data.message) {
                     setMessage(Responce.data.message)
                     setVisibleModal('message-modal')
                     setGiftModalVisible(false);
@@ -466,8 +460,8 @@ const StreamRoom = ({
     }
     const handleFriendRequest = async (userid) => {
         try {
-            if(!userData?.userid && !userid){
-                socket.emit('Clientlogs',"handleFriendRequest",`userData?.userid--${userData?.userid}, userid--${userid}`);
+            if (!userData?.userid && !userid) {
+                socket.emit('Clientlogs', "handleFriendRequest", `userData?.userid--${userData?.userid}, userid--${userid}`);
                 return;
             }
             const params = {
@@ -787,7 +781,7 @@ const StreamRoom = ({
                                             {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                                 <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                             </TouchableOpacity>)}
-                                            <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn,{ display: openMoreSettingList ? 'none' : 'flex' }]}>
+                                            <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
                                                 <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                             </TouchableOpacity>
                                         </View>
