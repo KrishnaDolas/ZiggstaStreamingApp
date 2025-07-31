@@ -172,7 +172,7 @@ export const MainScreen = () => {
   }
   //Handle socket functions
 
-  const HandleJoined = async ({ users, IsHost, ChatMessages, roomID }) => {
+  const HandleJoined = async ({ users, IsHost, ChatMessages,IsReconnect }) => {
     try {
       // If no one else, you're host
       setIsInStreamRoom(true)
@@ -182,7 +182,9 @@ export const MainScreen = () => {
         setIsHost(true);
         await startLocalStream();
       } else {
-        setIsLoading(true);
+        if(!IsReconnect){
+          setIsLoading(true);
+        }
         setTimeout(() => {
           setJoined(true);
           setIsLoading(false);
