@@ -4,7 +4,6 @@ import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity,
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
-import Footer from '../components/Footer';
 import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,10 +15,12 @@ import { ActivityIndicator } from 'react-native';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import MessageModal from '../modals/MessageModal';
+import { useNavigation } from '@react-navigation/native';
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();
     const insetsTop = useSafeAreaInsets();
+    const navigation = useNavigation();
     const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
     const [menuVisible, setMenuVisible] = useState(false);
@@ -175,9 +176,13 @@ export const MessageListScreen = () => {
 
 
     const handleChatOpen = useCallback((item) => {
-        setMessage(`Chat feature is not implemented yet.`)
-        setVisibleModal('message-modal');
-    }, []);
+        // setMessage(`Chat feature is not implemented yet.`)
+        // setVisibleModal('message-modal');
+        // Navigate to ChatScreen instead of showing message modal
+        navigation.navigate('ChatScreen', {
+            chatUser: item,
+        });
+    }, [navigation]);
 
     // Add this function
     const handleRefresh = useCallback(async () => {

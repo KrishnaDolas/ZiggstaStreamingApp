@@ -38,6 +38,7 @@ import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
 import ProfileScreenModal from './src/modals/ProfileScreenModal';
 import { ThemeContext } from './src/context/ThemeContext';
 import { themeStyles } from './assets/styles/ThemeStyles';
+import { ChatScreen } from './src/screens/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -582,6 +583,14 @@ const App = () => {
                   <Stack.Screen name="TermsOfUse">
                     {(props) => (
                       <TermsOfUseScreen
+                        {...props}
+                        userData={userData}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="ChatScreen">
+                    {(props) => (
+                      <ChatScreen
                         {...props}
                         userData={userData}
                       />

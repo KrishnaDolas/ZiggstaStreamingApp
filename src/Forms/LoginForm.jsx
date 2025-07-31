@@ -58,7 +58,7 @@ export const LoginForm = ({
 
         const userDataString = JSON.stringify(res.data.user);
         await AsyncStorage.setItem('UserData', userDataString);
-        Alert.alert('Success', `LogIn Success.`, [{ text: 'OK' }]);
+        // Alert.alert('Success', `LogIn Success.`, [{ text: 'OK' }]);
       } else {
         setError(res.data.message);
       }

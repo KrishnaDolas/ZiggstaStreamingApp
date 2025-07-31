@@ -1046,9 +1046,9 @@ export const RegisterForm = ({
       },
     );
     if (res.data.message === 'Login successful') {
-      Alert.alert('Welcome!', 'You’ve successfully logged in.', [
-        { text: 'Continue' },
-      ]);
+      // Alert.alert('Welcome!', 'You’ve successfully logged in.', [
+      //   { text: 'Continue' },
+      // ]);
       setUserData(res.data.user);
       await AsyncStorage.setItem('token', res.data.token);
       await AsyncStorage.setItem('UserData', JSON.stringify(res.data.user));
