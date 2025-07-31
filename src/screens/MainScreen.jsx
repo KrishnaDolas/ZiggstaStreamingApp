@@ -440,12 +440,13 @@ export const MainScreen = () => {
     setStrimerList(list)
   }
   const HandlenewUserJoined = (userinfo) => {
-    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.CustomID, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
+    console.log('New user joined:', userinfo);
+    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
-      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.CustomID, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
+      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
   }
