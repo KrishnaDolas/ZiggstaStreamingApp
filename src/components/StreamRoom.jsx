@@ -23,7 +23,7 @@ import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import ReportUserModal from '../modals/ReportUserModal';
-import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../utils/constant';
+import { getGenderFallbackImage, giftImages, SendErrorTotheServer, socket } from '../utils/constant';
 import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
@@ -48,7 +48,6 @@ const StreamRoom = ({
     streamInfo,
     streamrequestlist,
     streamGuest,
-    socket,
     hasRequestedStream,
     streamerList,
     streammsg,
@@ -1010,7 +1009,7 @@ const StreamRoom = ({
                     onClose={() => setVisibleModal(null)}
                 />
             )}
-            {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} socket={socket} />}
+            {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} />}
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />

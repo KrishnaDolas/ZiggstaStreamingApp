@@ -4,12 +4,12 @@ import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { useAppContext } from '../context/AppContext';
+import { socket } from '../utils/constant';
 const RequestModal = ({
     visible,
     onClose,
     StreamRequestList = [],
     streamGuest = [],
-    socket
 }) => {
     const {userAddress}= useAppContext();
     const GetAction=(targetId,action)=>{

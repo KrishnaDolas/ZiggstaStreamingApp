@@ -796,7 +796,6 @@ export const MainScreen = () => {
           streamInfo={streamInfo}
           streamrequestlist={streamrequestlist}
           streamGuest={streamGuest}
-          socket={socket}
           hasRequestedStream={hasRequestedStream}
           streamerList={streamerList}
           isuserstreaming={isuserstreaming}
