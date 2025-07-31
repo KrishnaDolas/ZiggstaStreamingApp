@@ -17,16 +17,6 @@ import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 
-const hardcodedImages = [
-    require('../../assets/images/LS-1.jpg'),
-    require('../../assets/images/LS-2.jpg'),
-    require('../../assets/images/LS-3.jpg'),
-    require('../../assets/images/LS-4.jpg'),
-    require('../../assets/images/LS-5.jpg'),
-    require('../../assets/images/LS-6.jpg'),
-];
-
-
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
@@ -250,7 +240,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     }
 
     const renderItem = ({ item, index }) => {
-        const image = hardcodedImages[index % hardcodedImages.length];
 
         return (
             <TouchableOpacity
