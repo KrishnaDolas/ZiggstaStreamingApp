@@ -24,7 +24,7 @@ import DisconnectedPanel from '../modals/DisconnectedPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const MainScreen = () => {
-  const { userData, userAddress, setIsInStreamRoom,isInStreamRoom, fetchProfileDetails } = useAppContext();
+  const { userData, userAddress, setIsInStreamRoom, isInStreamRoom, fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
   const [localStream, setLocalStream] = useState(null);
   const [isHost, setIsHost] = useState(false);
@@ -58,7 +58,7 @@ export const MainScreen = () => {
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
-  }, [joined,isSocketConnected]);
+  }, [joined, isSocketConnected]);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
@@ -118,7 +118,7 @@ export const MainScreen = () => {
   const requestStreamPermission = async () => {
     try {
       if (!hasRequestedStream) {
-       const IsAccepted= await requestPermissions();
+        const IsAccepted = await requestPermissions();
         if (!IsAccepted) {
           showPermissionAlert();
           return;
@@ -135,16 +135,16 @@ export const MainScreen = () => {
     console.log('✅ Connected to Socket.IO server');
     setconnectingpanel(false)
     setIsSocketConnected(true); // Update connection status
-    if (!IsIdentify.current && userData &&socket.connected) {
+    if (!IsIdentify.current && userData && socket.connected) {
       setTimeout(() => {
         socket.emit('identity', userData?.userid, userData?.screenName);
       }, 2000);
       IsIdentify.current = true; // Set identify flag to true
       if (streamInfo) {
-        console.log(`IsusersStreaming --->`,isuserstreaming);
+        console.log(`IsusersStreaming --->`, isuserstreaming);
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
-        if(isuserstreaming){
+        if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
           }, 1000);
@@ -168,7 +168,7 @@ export const MainScreen = () => {
   }
   //Handle socket functions
 
-  const HandleJoined = async ({ users, IsHost, ChatMessages,IsReconnect }) => {
+  const HandleJoined = async ({ users, IsHost, ChatMessages, IsReconnect }) => {
     try {
       // If no one else, you're host
       setIsInStreamRoom(true)
@@ -178,7 +178,7 @@ export const MainScreen = () => {
         setIsHost(true);
         await startLocalStream();
       } else {
-        if(!IsReconnect){
+        if (!IsReconnect) {
           setIsLoading(true);
         }
         setTimeout(() => {
@@ -196,8 +196,8 @@ export const MainScreen = () => {
       });
       if (ChatMessages) {
         console.log(ChatMessages);
-        let chat=ChatMessages.map((item)=>{
-          return{...item,  userProfile: chatimage, TYPE: "PLAYERCHAT"}
+        let chat = ChatMessages.map((item) => {
+          return { ...item, userProfile: chatimage, TYPE: "PLAYERCHAT" }
         })
         console.log(chat);
         setRoomchat(chat)
@@ -245,7 +245,7 @@ export const MainScreen = () => {
         if (!peer.remoteDescription) {
           await peer.setRemoteDescription(new RTCSessionDescription(data));
           (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
-           pendingCandidates.current[from] = [];
+          pendingCandidates.current[from] = [];
         }
       } else if (data.candidate) {
         const candidate = new RTCIceCandidate(data.candidate);
@@ -447,9 +447,9 @@ export const MainScreen = () => {
       setRoomchat(prev => [...prev, data]);
     }
   }
-  const HandleTotalGiftValue=(totalValue)=>{
+  const HandleTotalGiftValue = (totalValue) => {
     setTotalGiftValue(totalValue)
-}
+  }
   const HandleDisconnected = () => {
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
@@ -525,7 +525,7 @@ export const MainScreen = () => {
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined', HandlenewUserJoined)
       socket.on('user-leftStream', HandleUserLeftStream)
-      socket.on('Total-GiftValue',HandleTotalGiftValue)
+      socket.on('Total-GiftValue', HandleTotalGiftValue)
     }
 
     return () => {
@@ -557,7 +557,7 @@ export const MainScreen = () => {
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined', HandlenewUserJoined)
-        socket.off('Total-GiftValue',HandleTotalGiftValue)
+        socket.off('Total-GiftValue', HandleTotalGiftValue)
       }
     }
   }, [isHost, isSocketConnected]);
@@ -587,10 +587,10 @@ export const MainScreen = () => {
             return prev.map(s => s.id === socketId ? { id: socketId, stream } : s);
           }
           return [...prev, { id: socketId, stream }];
-        });  
-      // Route audio to speaker because it's a video call
-      InCallManager.start({ media: 'video', auto: true });
-      InCallManager.setForceSpeakerphoneOn(true);
+        });
+        // Route audio to speaker because it's a video call
+        InCallManager.start({ media: 'video', auto: true });
+        InCallManager.setForceSpeakerphoneOn(true);
       };
 
       peer.onicecandidate = (event) => {
@@ -646,7 +646,7 @@ export const MainScreen = () => {
       // ✅ Start InCallManager and route audio to speaker
       if (!isMuted.muted) {
         stream.getTracks().forEach(track => track.enabled = true); // 🔊 ensure unmuted
-        InCallManager.start({ media: 'video', auto: true}); // Start InCallManager
+        InCallManager.start({ media: 'video', auto: true }); // Start InCallManager
         InCallManager.setForceSpeakerphoneOn(true); // Force speaker output
       }
     } catch (error) {
@@ -718,10 +718,10 @@ export const MainScreen = () => {
     try {
       const maxLength = 40;
       let formatted = "";
-      
+
       while (msg.length > 0) {
         let chunk = msg.slice(0, maxLength);
-  
+
         // If word is cut in the middle, break at last space
         if (msg.length > maxLength && msg[maxLength] !== " ") {
           const lastSpace = chunk.lastIndexOf(" ");
@@ -729,25 +729,25 @@ export const MainScreen = () => {
             chunk = chunk.slice(0, lastSpace);
           }
         }
-  
+
         formatted += chunk.trim() + "\n";
         msg = msg.slice(chunk.length).trim();
       }
-  
-        const newMessage = {
-          userName: userData?.screenName,
-          message:  formatted.trim(),
-          id: userData.userid,
-          timestamp: new Date().toLocaleTimeString(),
-        };
-  
-        socket.emit('send-message', newMessage);
-      
+
+      const newMessage = {
+        userName: userData?.screenName,
+        message: formatted.trim(),
+        id: userData.userid,
+        timestamp: new Date().toLocaleTimeString(),
+      };
+
+      socket.emit('send-message', newMessage);
+
     } catch (error) {
       SendErrorTotheServer(error, 'HandleChatmessages');
     }
   };
-  
+
   const HandleSetLivestatus = async (roomID) => {
     try {
       const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
