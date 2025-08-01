@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
@@ -158,7 +158,18 @@ const RequestModal = ({
 
                                     {/* Remove Button with Icon */}
                                     <TouchableOpacity
-                                        onPress={() => GetAction(item.ID,'stop-stream')}
+                                        onPress={() =>Alert.alert(
+                                            'Remove Guest',
+                                            `Are you sure you want to remove ${item.Name} from the stream?`,
+                                            [
+                                                { text: 'Cancel', style: 'cancel' },
+                                                {
+                                                    text: 'Remove',
+                                                    onPress: () => GetAction(item.ID,'stop-stream')
+                                                },
+                                            ],
+                                            { cancelable: true },   
+                                        )}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',

@@ -353,6 +353,9 @@ const StreamRoom = ({
         if (streamrequestlist.length > 0) {
             playNotification()
             setShowTooltip(true)
+           setTimeout(() => {
+            setShowTooltip(false)
+           }, 2000);
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(blinkingAnim, {
