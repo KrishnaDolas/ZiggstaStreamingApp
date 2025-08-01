@@ -1638,7 +1638,7 @@ export const styles = StyleSheet.create({
 
   // gift modal
   giftModalCategoryMainLayout: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     paddingVertical: 13,
     paddingHorizontal: 15,
     overflow: 'hidden',
@@ -1661,25 +1661,25 @@ export const styles = StyleSheet.create({
     paddingBottom: 5,
   },
   giftModalCatTab: {
-    backgroundColor: '#ebebeb',
+    // backgroundColor: '#ebebeb',
     paddingVertical: 5,
     paddingHorizontal: 25,
     borderRadius: 7,
     marginRight: 20,
     // iOS shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 1, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 1, height: 1 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 3,
 
-    // Android shadow
-    elevation: 3,
+    // // Android shadow
+    // elevation: 3,
   },
   giftModalCatTabActive: {
     backgroundColor: '#d93a63',
   },
   giftModalCatTabText: {
-    color: '#232323',
+    // color: '#232323',
     fontSize: 16,
     fontWeight: '500',
   },
@@ -1687,12 +1687,12 @@ export const styles = StyleSheet.create({
     color: '#fff',
   },
   giftModalItemsMainLayout: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     marginTop: 0,
     borderRadius: 8,
     height: 200,
     marginHorizontal: 7,
-    borderColor: '#d9d9d9',
+    // borderColor: '#d9d9d9',
     borderWidth: 1,
   },
   giftModalCategoryItemsContainer: {
@@ -2981,6 +2981,27 @@ export const themeStyles = {
       backgroundColor: '#fff',
       borderColor: '#bdbdbdff',
     },
+    giftModalCatTab: {
+      backgroundColor: '#ebebeb',
+      // iOS shadow
+      shadowColor: '#000',
+      shadowOffset: { width: 1, height: 1 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+
+      // Android shadow
+      elevation: 3,
+    },
+    giftModalCatTabText: {
+      color: '#232323',
+    },
+    giftModalCategoryMainLayout: {
+      backgroundColor: '#fff',
+    },
+    giftModalItemsMainLayout: {
+      backgroundColor: '#fff',
+      borderColor: '#d9d9d9',
+    },
   },
   dark: {
     // splash screen
@@ -3318,6 +3339,19 @@ export const themeStyles = {
       color: '#d4d4d4ff',
     },
     lbStarButton: {
+      backgroundColor: Colors.blackCardColor,
+      borderColor: Colors.blackDividers,
+    },
+    giftModalCategoryMainLayout: {
+      backgroundColor: Colors.blackCardColor,
+    },
+    giftModalCatTab: {
+      backgroundColor: Colors.blackBtnBg,
+    },
+    giftModalCatTabText: {
+      color: '#fff',
+    },
+    giftModalItemsMainLayout: {
       backgroundColor: Colors.blackCardColor,
       borderColor: Colors.blackDividers,
     },

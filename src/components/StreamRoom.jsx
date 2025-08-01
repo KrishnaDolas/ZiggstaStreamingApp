@@ -6,12 +6,12 @@ import {
     Pressable, BackHandler
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useRef, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
@@ -29,6 +29,7 @@ import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 import Sound from 'react-native-sound';
 import AnimatedNotification from './AnimatedNotification';
+import { ThemeContext } from '../context/ThemeContext';
 
 
 const StreamRoom = ({
@@ -56,6 +57,7 @@ const StreamRoom = ({
 }) => {
     const insets = useSafeAreaInsets();
     const insetsTop = useSafeAreaInsets();
+    const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
@@ -154,18 +156,18 @@ const StreamRoom = ({
 
     const showNotification = (message, type = 'info') => {
         setNotification({
-          isVisible: true,
-          message,
-          type,
+            isVisible: true,
+            message,
+            type,
         });
-      };
-      const hideNotification = () => {
+    };
+    const hideNotification = () => {
         setNotification({
-          isVisible: false,
-          message: '',
-          type: 'info',
+            isVisible: false,
+            message: '',
+            type: 'info',
         });
-      };
+    };
     useEffect(() => {
         getGiftsCategory();
     }, [giftModalVisible])
@@ -374,9 +376,9 @@ const StreamRoom = ({
             showNotification("Someone wants to join as a guest", "")
             playNotification()
             setShowTooltip(true)
-           setTimeout(() => {
-            setShowTooltip(false)
-           }, 2000);
+            setTimeout(() => {
+                setShowTooltip(false)
+            }, 2000);
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(blinkingAnim, {
@@ -395,32 +397,32 @@ const StreamRoom = ({
             ).start();
             Animated.sequence([
                 Animated.timing(shakeAnim, {
-                  toValue: 5, // Move right
-                  duration: 50,
-                  useNativeDriver: true,
+                    toValue: 5, // Move right
+                    duration: 50,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(shakeAnim, {
-                  toValue: -5, // Move left
-                  duration: 50,
-                  useNativeDriver: true,
+                    toValue: -5, // Move left
+                    duration: 50,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(shakeAnim, {
-                  toValue: 4, // Slightly right
-                  duration: 50,
-                  useNativeDriver: true,
+                    toValue: 4, // Slightly right
+                    duration: 50,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(shakeAnim, {
-                  toValue: -4, // Slightly left
-                  duration: 50,
-                  useNativeDriver: true,
+                    toValue: -4, // Slightly left
+                    duration: 50,
+                    useNativeDriver: true,
                 }),
                 Animated.timing(shakeAnim, {
-                  toValue: 0, // Back to center
-                  duration: 50,
-                  useNativeDriver: true,
+                    toValue: 0, // Back to center
+                    duration: 50,
+                    useNativeDriver: true,
                 }),
-              ])
-              .start();
+            ])
+                .start();
 
 
         } else {
@@ -846,7 +848,7 @@ const StreamRoom = ({
                                                                     : { uri: chat.userProfile }
                                                                 }
                                                             />
-                                                       </TouchableOpacity>
+                                                        </TouchableOpacity>
                                                         <View numberOfLines={1} style={styles.streamChatMessageBox}>
                                                             <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
@@ -968,39 +970,39 @@ const StreamRoom = ({
                                                 <TouchableOpacity onPress={() => {
                                                     setTogglerequest(!togglerequest)
                                                     setShowTooltip(false)
-                                                    }} style={styles.strRoomBottomBoxIconBox}>
+                                                }} style={styles.strRoomBottomBoxIconBox}>
                                                     <Ionicons name="people" size={30} color="#fff" />
                                                     {streamrequestlist.length > 0 && (
                                                         <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
                                                     )}
                                                 </TouchableOpacity>
                                             )}
-                                                {showTooltip && streamrequestlist.length > 0 && (
-                                                    <View
-                                                        style={{
-                                                            position: "absolute",
+                                            {showTooltip && streamrequestlist.length > 0 && (
+                                                <View
+                                                    style={{
+                                                        position: "absolute",
                                                             bottom:30,  // position above the icon
-                                                            right: 30,
-                                                            paddingHorizontal: 8,
-                                                            paddingVertical: 7,
-                                                            borderRadius: 9,
-                                                            minWidth: 60,
-                                                            alignItems: "center",
-                                                            justifyContent: "center",
-                                                            zIndex: 999,
+                                                        right: 30,
+                                                        paddingHorizontal: 8,
+                                                        paddingVertical: 7,
+                                                        borderRadius: 9,
+                                                        minWidth: 60,
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        zIndex: 999,
+                                                    }}
+                                                >
+                                                    <Animated.Image
+                                                        source={require("../../assets/images/icons/user_request_alert.png")}
+                                                        resizeMethod="resize"
+                                                        style={{
+                                                            height: 60,
+                                                            width: 65,
+                                                            transform: [{ translateX: shakeAnim }],
                                                         }}
-                                                    >
-                                                        <Animated.Image
-                                                            source={require("../../assets/images/icons/user_request_alert.png")}
-                                                            resizeMethod="resize"
-                                                            style={{
-                                                                height: 60,
-                                                                width: 65,
-                                                                transform: [{ translateX: shakeAnim }],
-                                                            }}
-                                                        />
-                                                    </View>
-                                                )}
+                                                    />
+                                                </View>
+                                            )}
                                         </>
                                     )}
                                 </View>
@@ -1014,100 +1016,100 @@ const StreamRoom = ({
                     isVisible={giftModalVisible}
                     animationIn="slideInUp"
                     animationOut="slideOutDown"
-                    animationInTiming={700}
-                    animationOutTiming={500}
-                    backdropOpacity={0.4}
-                    style={[styles.halfScreenModalMain]}
+                    animationInTiming={300}
+                    animationOutTiming={200}
                     useNativeDriver={true}
+                    avoidKeyboard={false}
+                    backdropOpacity={0}
+                    style={[styles.profileModalMain]}
                 >
-                    <View style={[styles.halfScreenModalOverlay]}>
-                        <View style={{ maxHeight: screenHeight * 0.5 }}>
-                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
-                                <TouchableOpacity
-                                    onPress={() => setGiftModalVisible(false)}
-                                    style={[styles.modalCloseBtn]}
+                    <View style={[styles.profileModalOverlay,
+                    themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                            <TouchableOpacity
+                                onPress={() => setGiftModalVisible(false)}
+                                style={[styles.modalCloseBtn]}
+                            >
+                                <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={[styles.giftModalCategoryMainLayout, themeStyles[theme].giftModalCategoryMainLayout]}>
+                            <ScrollView
+                                ref={scrollRef}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
+                            >
+                                <View style={styles.giftModalCategoryContainer}>
+                                    {Array.from(
+                                        new Map(
+                                            giftsCategoryData
+                                                .sort((a, b) => a.giftValue - b.giftValue)
+                                                .map(gift => [gift.giftValue, gift])
+                                        ).values()
+                                    ).map((category, index) => {
+                                        const isSelected = selectedGiftCategory === category.giftValue;
+                                        return (
+                                            <TouchableOpacity key={index}
+                                                onPress={() => setSelectedGiftCategory(category.giftValue)}
+                                                style={[
+                                                    styles.giftModalCatTab, themeStyles[theme].giftModalCatTab,
+                                                    isSelected && styles.giftModalCatTabActive,
+                                                ]}
+                                            >
+                                                <Text style={[styles.giftModalCatTabText, themeStyles[theme].giftModalCatTabText, isSelected && styles.giftModalCatTabActiveText]}>{category.giftValue}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </ScrollView>
+                            {giftModalVisible && showArrow && (
+                                <Animated.View
+                                    style={[
+                                        styles.giftModalCatRightArrow,
+                                        { transform: [{ translateX: arrowAnim }] },
+                                    ]}
+                                    pointerEvents="none"
                                 >
-                                    <Ionicons name="close" size={22} color="#333" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.giftModalCategoryMainLayout}>
+                                    <Ionicons name="chevron-forward" size={16} color="#fff" />
+                                </Animated.View>
+                            )}
+                        </View>
+                        <View style={[styles.giftModalItemsMainLayout, themeStyles[theme].giftModalItemsMainLayout]}>
+                            {giftsData.length > 0 ? (
                                 <ScrollView
-                                    ref={scrollRef}
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    onScroll={handleScroll}
-                                    scrollEventThrottle={16}
+                                    showsVerticalScrollIndicator={true}
+                                    indicatorStyle="#d9d9d9"
                                 >
-                                    <View style={styles.giftModalCategoryContainer}>
-                                        {Array.from(
-                                            new Map(
-                                                giftsCategoryData
-                                                    .sort((a, b) => a.giftValue - b.giftValue)
-                                                    .map(gift => [gift.giftValue, gift])
-                                            ).values()
-                                        ).map((category, index) => {
-                                            const isSelected = selectedGiftCategory === category.giftValue;
+                                    <View style={styles.giftModalCategoryItemsContainer}>
+                                        {giftDataLoading ? (
+                                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
+                                                <ActivityIndicator size="large" />
+                                            </View>
+                                        ) : giftsData.map((item, index) => {
+                                            const localImage = giftImages[item.giftIcon];
+                                            if (!localImage) return null;
                                             return (
                                                 <TouchableOpacity key={index}
-                                                    onPress={() => setSelectedGiftCategory(category.giftValue)}
-                                                    style={[
-                                                        styles.giftModalCatTab,
-                                                        isSelected && styles.giftModalCatTabActive,
-                                                    ]}
+                                                    style={styles.giftModalCatItem}
+                                                    onPress={() => SendGift(item)}
                                                 >
-                                                    <Text style={[styles.giftModalCatTabText, isSelected && styles.giftModalCatTabActiveText]}>{category.giftValue}</Text>
+                                                    <FastImage
+                                                        style={[styles.giftModalCatItemImage]}
+                                                        source={localImage}
+                                                        resizeMode={FastImage.resizeMode.contain}
+                                                    />
                                                 </TouchableOpacity>
                                             );
                                         })}
                                     </View>
                                 </ScrollView>
-                                {giftModalVisible && showArrow && (
-                                    <Animated.View
-                                        style={[
-                                            styles.giftModalCatRightArrow,
-                                            { transform: [{ translateX: arrowAnim }] },
-                                        ]}
-                                        pointerEvents="none"
-                                    >
-                                        <Ionicons name="chevron-forward" size={16} color="#fff" />
-                                    </Animated.View>
-                                )}
-                            </View>
-                            <View style={[styles.giftModalItemsMainLayout]}>
-                                {giftsData.length > 0 ? (
-                                    <ScrollView
-                                        showsVerticalScrollIndicator={true}
-                                        indicatorStyle="#d9d9d9"
-                                    >
-                                        <View style={styles.giftModalCategoryItemsContainer}>
-                                            {giftDataLoading ? (
-                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
-                                                    <ActivityIndicator size="large" />
-                                                </View>
-                                            ) : giftsData.map((item, index) => {
-                                                const localImage = giftImages[item.giftIcon];
-                                                if (!localImage) return null;
-                                                return (
-                                                    <TouchableOpacity key={index}
-                                                        style={styles.giftModalCatItem}
-                                                        onPress={() => SendGift(item)}
-                                                    >
-                                                        <FastImage
-                                                            style={[styles.giftModalCatItemImage]}
-                                                            source={localImage}
-                                                            resizeMode={FastImage.resizeMode.contain}
-                                                        />
-                                                    </TouchableOpacity>
-                                                );
-                                            })}
-                                        </View>
-                                    </ScrollView>
-                                ) : (
-                                    <View style={styles.noGiftsTextContainer}>
-                                        <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>
-                                    </View>
-                                )}
-                            </View>
+                            ) : (
+                                <View style={styles.noGiftsTextContainer}>
+                                    <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>
+                                </View>
+                            )}
                         </View>
                     </View>
                 </Modal>
@@ -1180,12 +1182,12 @@ const StreamRoom = ({
                 />
             )}
             {notification.isVisible &&(
-                      <AnimatedNotification
-                      message={notification.message}
-                      isVisible={notification.isVisible}
-                      onHide={hideNotification}
-                      type={notification.type}
-                    />
+                <AnimatedNotification
+                    message={notification.message}
+                    isVisible={notification.isVisible}
+                    onHide={hideNotification}
+                    type={notification.type}
+                />
             )}
         </View>
     );
