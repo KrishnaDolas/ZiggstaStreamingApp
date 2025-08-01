@@ -66,6 +66,7 @@ const StreamRoom = ({
     const [giftModalVisible, setGiftModalVisible] = useState(false);
     const [selectedGiftCategory, setSelectedGiftCategory] = useState('');
     const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(true);
     const scrollRef = useRef(null);
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
@@ -350,6 +351,8 @@ const StreamRoom = ({
 
     useEffect(() => {
         if (streamrequestlist.length > 0) {
+            playNotification()
+            setShowTooltip(true)
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(blinkingAnim, {
@@ -398,6 +401,21 @@ const StreamRoom = ({
             console.log(error);
         }
     };
+    const playNotification = () => {
+        try {
+            const sound = new Sound('notification.mp3', Sound.MAIN_BUNDLE, (error) => {
+                if (error) {
+                    console.log('Failed to load sound', error);
+                    return;
+                }
+                sound.play(() => {
+                    sound.release();
+                });
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
     const HandleReport = () => {
         setVisibleModal('ReportVideo')
@@ -409,6 +427,7 @@ const StreamRoom = ({
 
     const HandleGiftReceived = (senderName, giftName) => {
         try {
+            if(userData?.screenName===senderName) return
             playGiftSound()
             setReceiveAnimationData({
                 giftName: giftName,
@@ -878,7 +897,7 @@ const StreamRoom = ({
                                                 setOpenMoreSettingList(!openMoreSettingList);
                                             }} style={styles.strRoomBottomBoxIconBox}>
                                                 <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                                                    {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Ionicons name="add-outline" size={30} color="#fff" />}
+                                                    {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{height:'30',width:'30'}} /> }
                                                 </Animated.View>
                                             </TouchableOpacity>
                                             {!isHost && (<>
@@ -890,13 +909,48 @@ const StreamRoom = ({
                                                 </TouchableOpacity>
                                             </>)}
                                             {isHost && (
-                                                <TouchableOpacity onPress={() => setTogglerequest(!togglerequest)} style={styles.strRoomBottomBoxIconBox}>
+                                                <TouchableOpacity onPress={() => {
+                                                    setTogglerequest(!togglerequest)
+                                                    setShowTooltip(false)
+                                                    }} style={styles.strRoomBottomBoxIconBox}>
                                                     <Ionicons name="people" size={30} color="#fff" />
                                                     {streamrequestlist.length > 0 && (
                                                         <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
                                                     )}
                                                 </TouchableOpacity>
                                             )}
+                                                {showTooltip && streamrequestlist.length > 0 && (
+                                                    <View
+                                                        style={{
+                                                            position: "absolute",
+                                                            bottom: 50,  // position above the icon
+                                                            right: 10,
+                                                            backgroundColor: "#d93a63",
+                                                            paddingHorizontal: 8,
+                                                            paddingVertical: 7,
+                                                            borderRadius: 9,
+                                                            minWidth: 60,
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            zIndex: 999,
+                                                        }}
+                                                    >
+                                                        <View
+                                                            style={{
+                                                                width: 14,
+                                                                height: 14,
+                                                                backgroundColor: "#d93a63",
+                                                                transform: [{ rotate: "45deg" }],
+                                                                position: "absolute",
+                                                                bottom: -7, // half height
+                                                                right: 10,  // move arrow to bottom-right
+                                                            }}
+                                                        />
+                                                        <Text style={{ color: "#fff", fontSize: 13 }}>
+                                                            Someone wants to join as a guest
+                                                        </Text>
+                                                    </View>
+                                                )}
                                         </>
                                     )}
                                 </View>
