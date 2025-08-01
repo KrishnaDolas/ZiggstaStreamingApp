@@ -43,7 +43,7 @@ const SearchModal = ({ visible, onClose,
 
     const handleSearchByUser = async () => {
         if (searchBy === 'user' && searchText === '') {
-            setSearchFilteredData([]);
+            // setSearchFilteredData([]);
             setIsError('Please enter a valid search term.');
             return;
         }
@@ -71,7 +71,6 @@ const SearchModal = ({ visible, onClose,
         try {
             const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?${queryParams}`);
             const data = response?.data?.data;
-
             if (Array.isArray(data) && data.length > 0) {
                 setSearchFilteredData(data);
                 setSearchText('');
