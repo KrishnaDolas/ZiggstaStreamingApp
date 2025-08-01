@@ -3,7 +3,6 @@ import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBa
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { ActivityIndicator } from 'react-native';
-import Footer from '../components/Footer';
 import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
@@ -68,13 +67,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
             setLiveOnlineTime(formatSecondsToTime(updatedTime));
             lastTimerSecondsRef.current = updatedTime; // Update the last timer value
         }, 1000);
-    };
-
-    const stopLiveTimer = () => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
     };
 
     // Handle app state changes (foreground/background)
@@ -308,7 +300,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 </>
                             </> : topGiftersData.map((item, index) => {
                                 return (
-                                    <View key={index} style={styles.profileTableRow}>
+                                    <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
                                         <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
                                         <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
                                         <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>

@@ -183,15 +183,15 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     }, [filteredRooms, isNearBy, refreshlobby, leaveroomrefresh]);
 
     // Function to create a room
-    const submitroomnameandcreateroom = async() => {
-        const IsAccepted= await requestPermissions();
+    const submitroomnameandcreateroom = async () => {
+        const IsAccepted = await requestPermissions();
         if (roomIdInput.trim() === '') {
             Alert.alert('Error', 'Please enter the stream description before creating stream.');
             return;
         } else if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
             return;
-        }else if(!IsAccepted && socket?.connected){
+        } else if (!IsAccepted && socket?.connected) {
             showPermissionAlert()
             return;
         }
@@ -233,7 +233,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         setCurrentStreamData(item);
         const roomId = item.roomID.toString();
         if (item.hostID === userData.userid) {
-            Alert.alert('Stream Ended','This stream has ended. You cannot join your own stream.', [{ text: 'OK' }])
+            Alert.alert('Stream Ended', 'This stream has ended. You cannot join your own stream.', [{ text: 'OK' }])
         } else {
             joinRoom(roomId, item);
         }
@@ -503,7 +503,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 placeholderTextColor="#888"
                                 value={roomIdInput}
                                 onChangeText={setRoomIdInput}
-                                style={[styles.strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
+                                style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
                             />
                             <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
                                 <LinearGradient

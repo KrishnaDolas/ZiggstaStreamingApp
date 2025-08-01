@@ -135,14 +135,14 @@ const BalanceHistoryModal = ({ visible, onClose }) => {
                                         </>
                                     </> : balanceHistoryData?.map((item, index) => {
                                         return (
-                                            <View key={index} style={styles.profileTableRow}>
+                                            <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
                                                 <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
                                                 <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell, { flex: 1.3 }]}>{item.Username}</Text>
                                                 <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell, { flex: 1, textAlign: 'center' }]}>{item.Amount}</Text>
                                                 <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell, {
                                                     flex: 0.9,
                                                     textAlign: 'center',
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     fontWeight: '500',
                                                     color: getStatusColor(item.Status),
                                                 }]}>{item.Status}</Text>

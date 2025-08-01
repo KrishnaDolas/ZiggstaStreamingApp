@@ -5,6 +5,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import Modal from 'react-native-modal';
+import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Picker } from '@react-native-picker/picker';
@@ -305,7 +306,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -317,7 +318,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Routing Number (ABA):</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.routingNumber}
                             onChangeText={(text) => handleInputChange('routingNumber', text)}
                             autoCapitalize="none"
@@ -333,7 +334,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>IBAN:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.iban}
                             onChangeText={(text) => handleInputChange('iban', text)}
                             autoCapitalize={getAutoCapitalize('iban')}
@@ -344,7 +345,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>BIC/SWIFT Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
@@ -359,7 +360,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Sort Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.sortCode}
                             onChangeText={(text) => handleInputChange('sortCode', text)}
                             autoCapitalize="none"
@@ -371,7 +372,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -387,7 +388,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -399,7 +400,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>IFSC Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.ifscCode}
                             onChangeText={(text) => handleInputChange('ifscCode', text)}
                             autoCapitalize={getAutoCapitalize('ifscCode')}
@@ -414,7 +415,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>BSB Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             placeholder="e.g. 123-456"
                             placeholderTextColor="gray"
                             value={formData.bsbCode}
@@ -427,7 +428,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -443,7 +444,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -455,7 +456,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Code (if applicable):</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             placeholder="e.g. BSA, BDO, DBS etc."
                             placeholderTextColor="gray"
                             value={formData.bsbCode}
@@ -468,7 +469,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>SWIFT/BIC Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
@@ -483,7 +484,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     <>
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Number / IBAN:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.accountNumber}
                             onChangeText={(text) => handleInputChange('accountNumber', text)}
                             autoCapitalize={getAutoCapitalize('accountNumber')}
@@ -494,7 +495,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                         <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>SWIFT/BIC Code:</Text>
                         <TextInput
-                            style={styles.bdInput}
+                            style={[styles.bdInput, themeStyles[theme].bdInput]}
                             value={formData.bicSwiftCode}
                             onChangeText={(text) => handleInputChange('bicSwiftCode', text)}
                             autoCapitalize={getAutoCapitalize('bicSwiftCode')}
@@ -508,6 +509,18 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                 return null;
         }
     };
+
+
+    const regions = [
+        { label: '-- Select Region --', value: '' },
+        { label: 'United States', value: 'us' },
+        { label: 'European Union', value: 'eu' },
+        { label: 'United Kingdom', value: 'uk' },
+        { label: 'India', value: 'in' },
+        { label: 'Australia', value: 'au' },
+        { label: 'SE Asia', value: 'sea' },
+        { label: 'Other International', value: 'intl' },
+    ];
 
     return (
         <>
@@ -544,7 +557,49 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 keyboardShouldPersistTaps="handled"
                             >
                                 <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Select Region:</Text>
-                                <View style={styles.bdPickerWrapper}>
+                                <View style={[styles.wdPickerWrapper, themeStyles[theme].wdPickerWrapper, { borderRadius: 30, borderColor: theme === 'light' && '#eaeaeb' }]}>
+                                    <Dropdown
+                                        style={[styles.wdDropdown, themeStyles[theme].wdDropdown, { borderRadius: 30 }]}
+                                        data={regions}
+                                        labelField="label"
+                                        valueField="value"
+                                        placeholder="-- Select Region --"
+                                        value={selectedRegion}
+                                        onChange={(item) => {
+                                            setSelectedRegion(item.value);
+                                            setErrors(prev => ({ ...prev, selectedRegion: '' }));
+                                        }}
+                                        placeholderStyle={{ color: theme === 'light' ? '#858585' : '#8b8b8bff' }}
+                                        selectedTextStyle={{ color: theme === 'light' ? '#414141' : '#fff' }}
+                                        iconColor="#414141"
+                                        renderItem={(item) => {
+                                            const isSelected = item.value === selectedRegion;
+                                            return (
+                                                <View
+                                                    style={{
+                                                        paddingVertical: 14,
+                                                        paddingHorizontal: 14,
+                                                        backgroundColor: isSelected
+                                                            ? theme === 'light' ? '#e3ddff' : '#333360'
+                                                            : theme === 'light' ? '#fff' : '#212121',
+                                                    }}
+                                                >
+                                                    <Text
+                                                        style={{
+                                                            color: isSelected
+                                                                ? theme === 'light' ? '#000' : '#fff'
+                                                                : theme === 'light' ? '#000' : '#ccc',
+                                                            fontWeight: isSelected ? '600' : '400',
+                                                        }}
+                                                    >
+                                                        {item.label}
+                                                    </Text>
+                                                </View>
+                                            );
+                                        }}
+                                    />
+                                </View>
+                                {/* <View style={styles.bdPickerWrapper}>
                                     <Picker
                                         selectedValue={selectedRegion}
                                         onValueChange={(value) => {
@@ -565,12 +620,12 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                         <Picker.Item label="Other International" value="intl" />
                                     </Picker>
 
-                                </View>
+                                </View> */}
                                 <ErrorText field="selectedRegion" />
 
                                 <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Holder Name:</Text>
                                 <TextInput
-                                    style={styles.bdInput}
+                                    style={[styles.bdInput, themeStyles[theme].bdInput]}
                                     value={formData.accountHolder}
                                     onChangeText={(text) => handleInputChange('accountHolder', text)}
                                     autoCapitalize="words"
@@ -581,7 +636,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
 
                                 <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Name:</Text>
                                 <TextInput
-                                    style={styles.bdInput}
+                                    style={[styles.bdInput, themeStyles[theme].bdInput]}
                                     value={formData.bankName}
                                     onChangeText={(text) => handleInputChange('bankName', text)}
                                     autoCapitalize="words"
@@ -591,7 +646,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                 <ErrorText field="bankName" />
                                 <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Address:</Text>
                                 <TextInput
-                                    style={styles.bdInput}
+                                    style={[styles.bdInput, themeStyles[theme].bdInput]}
                                     value={formData.bankAddress}
                                     onChangeText={(text) => handleInputChange('bankAddress', text)}
                                     autoCapitalize="words"

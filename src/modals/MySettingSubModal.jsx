@@ -4,7 +4,7 @@ import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import Slider from '@react-native-community/slider';
 import ChangeEmailModal from './ChangeEmailModal';
@@ -210,9 +210,9 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                     </View>
                     <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.3 - 10 }]}>
                         <ScrollView showsVerticalScrollIndicator={false}>
-                            <View style={[styles.profileSettingMDivider]} />
+                            <View style={[styles.profileSettingMDivider, themeStyles[theme].profileSettingMDivider]} />
                             {menuItems.map((item, index) => (
-                                <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, {
+                                <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, themeStyles[theme].profileSettingMMenuList, {
                                     borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                                 }]}>
                                     <View style={styles.profileSettingMMenuListItem}>

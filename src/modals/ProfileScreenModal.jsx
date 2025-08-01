@@ -17,6 +17,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import ReportUserModal from './ReportUserModal';
 import CameraActionSheet from '../components/CameraActionSheet';
 import { useAppContext } from '../context/AppContext';
+import Colors from '../../assets/styles/Colors';
 
 
 
@@ -44,7 +45,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [avatarToPreview, setAvatarToPreview] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
-    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ??profileData?.user_id??profileData.fromUserID?? null;
+    const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
 
 
     // Handle status bar and navigation bar visibility
@@ -480,10 +481,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                         {!isMainProfile && (
                             <TouchableOpacity
                                 onPress={handleReport}
-                                style={[styles.psmReportButton, reportClicked && { opacity: 0.6 }]}
+                                style={[styles.psmReportButton, themeStyles[theme].psmReportButton, reportClicked && { opacity: 0.6 }]}
                                 disabled={reportClicked}
                             >
-                                <Text style={styles.psmReportButtonText}>Report</Text>
+                                <Text style={[styles.psmReportButtonText, themeStyles[theme].psmReportButtonText]}>Report</Text>
                             </TouchableOpacity>
                         )}
                         {/* close modal */}
@@ -708,10 +709,10 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                         <TouchableOpacity
                                                                             key={index}
                                                                             onPress={() => handleProfileOpen(gifter)}
-                                                                            style={[styles.psmOtherGifterCard,
+                                                                            style={[styles.psmOtherGifterCard, themeStyles[theme].psmOtherGifterCard,
                                                                             {
                                                                                 borderLeftWidth: index === 0 ? 1 : 0,
-                                                                                borderLeftColor: '#f0f0f0',
+                                                                                borderLeftColor: theme === 'light' ? '#f0f0f0' : Colors.blackDividers,
                                                                                 borderBottomLeftRadius: index === 0 ? 15 : 0,
                                                                                 borderBottomRightRadius: index === 0 ? 0 : 15,
                                                                             }]}
@@ -728,9 +729,18 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                             </View>
                                                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                                                 <Text numberOfLines={1}
-                                                                                    ellipsizeMode="tail" style={styles.psmOtherGifterName}>{gifter?.screenName} </Text>
-                                                                                <Text numberOfLines={1}
-                                                                                    ellipsizeMode="tail" style={styles.psmOtherGifterAmount}>{gifter?.Amount}</Text>
+                                                                                    ellipsizeMode="tail"
+                                                                                    style={[styles.psmOtherGifterName, themeStyles[theme].psmOtherGifterName]}
+                                                                                >
+                                                                                    {gifter?.screenName}
+                                                                                </Text>
+                                                                                <Text
+                                                                                    numberOfLines={1}
+                                                                                    ellipsizeMode="tail"
+                                                                                    style={[styles.psmOtherGifterAmount, themeStyles[theme].psmOtherGifterAmount]}
+                                                                                >
+                                                                                    {gifter?.Amount}
+                                                                                </Text>
                                                                             </View>
                                                                         </TouchableOpacity>
                                                                     ))}
@@ -788,7 +798,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 useNativeDriver
                 style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
             >
-                <View style={{ backgroundColor: theme === 'dark' ? '#2a2a2a' : '#fff', padding: 10, borderRadius: 10 }}>
+                <View style={{ backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#fff', padding: 10, borderRadius: 10 }}>
                     <Image
                         source={{ uri: avatarToPreview }}
                         style={{

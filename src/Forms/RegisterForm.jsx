@@ -762,7 +762,7 @@ export const RegisterForm = ({
       return (
         <View>
           <TextInput
-            style={[globalStyles.input]}
+            style={[styles.input, themeStyles[theme].input, { marginVertical: 0 }]}
             placeholder={question.placeholder}
             placeholderTextColor="#9d9d9d"
             value={formData.location}
@@ -911,8 +911,8 @@ export const RegisterForm = ({
         <View style={{ position: 'relative' }}>
           <TextInput
             style={[
-              globalStyles.input,
-              usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1 },
+              styles.input, themeStyles[theme].input, { marginVertical: 0 },
+              usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1, },
             ]}
             placeholder={question.placeholder}
             placeholderTextColor="#9d9d9d"
@@ -921,7 +921,7 @@ export const RegisterForm = ({
           />
           {usernameStatus === 'checking' && (
             <ActivityIndicator
-              style={{ position: 'absolute', right: 10, top: 10 }}
+              style={{ position: 'absolute', right: 13, top: 13 }}
               size="small"
               color="#666"
             />
@@ -931,7 +931,7 @@ export const RegisterForm = ({
               name="check"
               size={20}
               color="green"
-              style={{ position: 'absolute', right: 10, top: 10 }}
+              style={{ position: 'absolute', right: 13, top: 13 }}
             />
           )}
           {errors[question.field] && (
@@ -946,7 +946,7 @@ export const RegisterForm = ({
     return (
       <>
         <TextInput
-          style={globalStyles.input}
+          style={[styles.input, themeStyles[theme].input, { marginVertical: 0 }]}
           placeholder={question.placeholder}
           placeholderTextColor="#9d9d9d"
           value={formData[question.field]}

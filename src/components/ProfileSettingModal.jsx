@@ -5,7 +5,6 @@ import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
@@ -139,10 +138,10 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                                     </View>
                                 </View>
                                 {/* Divider */}
-                                <View style={[styles.profileSettingMDivider]} />
+                                <View style={[styles.profileSettingMDivider, themeStyles[theme].profileSettingMDivider]} />
                                 {/* Menu Items */}
                                 {menuItems.map((item, index) => (
-                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, {
+                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList,themeStyles[theme].profileSettingMMenuList, {
                                         borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                                     }]}>
                                         <View style={styles.profileSettingMMenuListItem}>

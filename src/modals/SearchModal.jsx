@@ -11,6 +11,7 @@ import Apiclient from '../utils/Apiclient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 
 const SearchModal = ({ visible, onClose,
     setSearchFilteredData, categoryData }) => {
@@ -153,13 +154,13 @@ const SearchModal = ({ visible, onClose,
                                             }}
                                             style={[
                                                 styles.strHedSearchTabAction,
-                                                { backgroundColor: searchBy === type ? '#d93a63' : '#fff' },
+                                                { backgroundColor: searchBy === type ? '#d93a63' : (theme === 'dark' ? Colors.blackBtnBg : '#fff') },
                                             ]}
                                         >
                                             <Text
                                                 style={[
                                                     styles.strHedSearchTabActionText,
-                                                    { color: searchBy === type ? '#fff' : '#d93a63' },
+                                                    { color: searchBy === type ? '#fff' : (theme === 'dark' ? '#fff' : '#d93a63') },
                                                 ]}
                                             >
                                                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -185,7 +186,7 @@ const SearchModal = ({ visible, onClose,
                                         placeholderTextColor="#888"
                                         value={searchText}
                                         onChangeText={setSearchText}
-                                        style={[styles.strHedSearchModalInput, { flex: 1 }]}
+                                        style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1 }]}
                                     />
                                     {/* {searchText.length > 0 && (
                                         <TouchableOpacity onPress={handleClearSearch} style={{ padding: 10 }}>

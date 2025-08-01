@@ -1,6 +1,6 @@
 // components/ProfileSocialsModal.js
 import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image } from 'react-native';
+import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image, Dimensions } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +9,7 @@ import Apiclient from '../utils/Apiclient';
 import { useAppContext } from '../context/AppContext';
 // import { SendErrorTotheServer } from '../utils/constant';
 import { ThemeContext } from '../context/ThemeContext';
+const screenHeight = Dimensions.get('window').height;
 
 
 const ProfileSocialsModal = ({ visible, onClose }) => {
@@ -128,10 +129,12 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                     </TouchableOpacity>
                     <View style={[styles.profileMSocialBox]}>
                         {loading ? (
-                            <ActivityIndicator size="large" />
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: screenHeight * 0.3 }}>
+                                <ActivityIndicator size="large" />
+                            </View>
                         ) : socials.map((item, i) => {
                             return (
-                                <View key={i} style={[styles.profileMSocialBoxItem]}>
+                                <View key={i} style={[styles.profileMSocialBoxItem, themeStyles[theme].profileMSocialBoxItem]}>
                                     {item.type === 'icon' ? (
                                         <FontAwesome5
                                             name={item.icon}
@@ -164,7 +167,7 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                                         }}
                                         placeholderTextColor="#999"
                                         placeholder={item.placeholder}
-                                        style={[styles.profileMSocialBoxItemInput]}
+                                        style={[styles.profileMSocialBoxItemInput, themeStyles[theme].profileMSocialBoxItemInput]}
                                     />
                                 </View>
                             )

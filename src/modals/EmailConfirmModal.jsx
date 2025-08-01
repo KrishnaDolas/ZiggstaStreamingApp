@@ -6,6 +6,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 
 const EmailConfirmModal = ({ visible, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
@@ -29,7 +30,7 @@ const EmailConfirmModal = ({ visible, onClose, userData }) => {
         >
             <View style={{
                 width: '100%', // like drawer
-                backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
+                backgroundColor: theme === 'light' ? '#fff' : Colors.blackCardColor,
                 padding: 16,
                 shadowColor: '#000',
                 shadowOffset: { width: -3, height: 0 },

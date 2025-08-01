@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import Colors from '../../assets/styles/Colors';
 
 
 const CameraActionSheet = ({
@@ -81,7 +82,7 @@ const CameraActionSheet = ({
                     style={[
                         styles.container,
                         {
-                            backgroundColor: theme === 'dark' ? '#2C2C2E' : '#FFFFFF',
+                            backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#FFFFFF',
                             transform: [{ translateY }],
                             opacity,
                         }
@@ -156,7 +157,7 @@ const CameraActionSheet = ({
                         style={[
                             styles.cancelButton,
                             {
-                                backgroundColor: theme === 'dark' ? '#1C1C1E' : '#F2F2F7',
+                                backgroundColor: theme === 'dark' ? Colors.blackBtnBg : '#F2F2F7',
                                 marginTop: 12
                             }
                         ]}

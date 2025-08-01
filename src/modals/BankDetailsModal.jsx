@@ -7,6 +7,7 @@ import BankAddModal from './BankAddModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 
 const BankDetailsModal = ({ visible, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
@@ -181,7 +182,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                                     key={item.id}
                                                     style={{
                                                         padding: 15,
-                                                        backgroundColor: theme === 'dark' ? '#323232d9' : '#f4f4f4',
+                                                        backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#f4f4f4',
                                                         borderRadius: 10,
                                                         marginBottom: 10,
                                                     }}

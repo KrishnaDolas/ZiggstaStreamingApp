@@ -1,20 +1,24 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, Image } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ScrollView } from 'react-native';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 import MessageModal from './MessageModal';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import ProfileScreenModal from './ProfileScreenModal';
+import { ThemeContext } from '../context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
 
 
 const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
+    const navigation = useNavigation();
+    const { theme } = useContext(ThemeContext);
     const { userData } = useAppContext();
     const [isModalRendered, setIsModalRendered] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
@@ -93,8 +97,11 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
 
 
     const handleChat = async () => {
-        setMessage('Not implemented yet');
-        setVisibleModal('message-modal');
+        // setMessage('Not implemented yet');
+        // setVisibleModal('message-modal');
+        navigation.navigate('ChatScreen', {
+            chatUser: friendInfo,
+        });
     };
 
 
@@ -126,7 +133,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
     ];
 
 
- 
+
 
 
 
@@ -151,7 +158,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                 {isModalRendered &&
 
                     <View style={{
-                        backgroundColor: '#fff',
+                        backgroundColor: theme === 'light' ? '#fff' : '#212121',
                         borderTopLeftRadius: 15,
                         borderTopRightRadius: 15,
                         padding: 10,
@@ -186,7 +193,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={onClose}>
-                                <Ionicons name="close" size={28} color="#333" />
+                                <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                             </TouchableOpacity>
                         </View>
                         <View style={[styles.profileSettingModalBody]}>
@@ -195,17 +202,17 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                 showsVerticalScrollIndicator={true}
                             >
                                 {/* Divider */}
-                                <View style={[styles.profileSettingMDivider]} />
+                                <View style={[styles.profileSettingMDivider, themeStyles[theme].profileSettingMDivider]} />
                                 {/* Menu Items */}
                                 {menuItems.map((item, index) => (
-                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, {
+                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, themeStyles[theme].profileSettingMMenuList, {
                                         borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                                     }]}>
-                                        <View style={styles.profileSettingMMenuListItem}>
+                                        <View style={[styles.profileSettingMMenuListItem]}>
                                             {item.lib === 'ionicons' ? (
                                                 <Ionicons name={item.icon}
                                                     size={20}
-                                                    color="#232323"
+                                                    color={theme === 'light' ? '#232323' : '#fff'}
                                                     style={{
                                                         width: 30,
                                                         textShadowColor: '#000',
@@ -213,9 +220,9 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                                         textShadowRadius: 1,
                                                     }} />
                                             ) : (
-                                                <FontAwesome5 name={item.icon} size={18} color="#232323" style={{ width: 30 }} />
+                                                <FontAwesome5 name={item.icon} size={18} color={theme === 'light' ? '#232323' : '#fff'} style={{ width: 30 }} />
                                             )}
-                                            <Text style={{ fontSize: 15, color: '#000', fontWeight: '400' }}>{item.label}</Text>
+                                            <Text style={{ fontSize: 15, color: theme === 'light' ? '#000' : '#fff', fontWeight: '400' }}>{item.label}</Text>
                                         </View>
                                     </TouchableOpacity>
                                 ))}

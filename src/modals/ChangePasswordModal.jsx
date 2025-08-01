@@ -3,11 +3,12 @@ import React, { useContext, useState } from 'react';
 import { View, TouchableOpacity, Text, TextInput, ActivityIndicator } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { globalStyles } from '../../assets/styles/GlobalStyles';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 
 const ChangePasswordModal = ({ visible, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
@@ -53,20 +54,6 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
-    // const handleSave = () => {
-    //     if (validate()) {
-    //         // Proceed to save
-    //         console.log('Changing password:', { currentPassword, newPassword });
-    //         // reset state if needed
-    //         setCurrentPassword('');
-    //         setNewPassword('');
-    //         setConfirmPassword('');
-    //         setErrors({});
-    //         onClose(); // Close modal after saving
-    //     }
-    // };
-
 
     const handleSave = async () => {
         if (submitting) return;
@@ -121,7 +108,7 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
         >
             <View style={{
                 width: '100%', // like drawer
-                backgroundColor:  theme === 'light' ? '#fff' : '#2a2a2a',
+                backgroundColor: theme === 'light' ? '#fff' : Colors.blackCardColor,
                 padding: 16,
                 shadowColor: '#000',
                 shadowOffset: { width: -3, height: 0 },
@@ -147,7 +134,7 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
+                                    style={[styles.input, themeStyles[theme].input, { flex: 1, paddingRight: 35, marginVertical: 0, borderRadius: 30 }]}
                                     placeholder="Current Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={currentPassword}
@@ -176,7 +163,7 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
+                                    style={[styles.input, themeStyles[theme].input, { flex: 1, paddingRight: 35, marginVertical: 0, borderRadius: 30 }]}
                                     placeholder="New Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={newPassword}
@@ -205,7 +192,7 @@ const ChangePasswordModal = ({ visible, onClose, userData }) => {
                         <View style={{ marginVertical: 10 }}>
                             <View style={[globalStyles.inputContainer, { flexDirection: 'row', alignItems: 'center' }]}>
                                 <TextInput
-                                    style={[globalStyles.input, { flex: 1, paddingRight: 35 }]}
+                                    style={[styles.input, themeStyles[theme].input, { flex: 1, paddingRight: 35, marginVertical: 0, borderRadius: 30 }]}
                                     placeholder="Confirm New Password"
                                     placeholderTextColor="#9d9d9d"
                                     value={confirmPassword}

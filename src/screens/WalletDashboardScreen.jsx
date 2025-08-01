@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image, RefreshControl, TextInput } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -36,6 +36,7 @@ export const WalletDashboardScreen = () => {
     const [visibleModal, setVisibleModal] = useState(null);
     const [loadingSubmit, setLoadingSubmit] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [searchText, setSearchText] = useState('');
 
     const amounts = [5, 10, 20, 50, 100, 500, 1000];
     const methods = ['Bank to Bank', 'Crypto', 'Case'];
@@ -204,6 +205,10 @@ export const WalletDashboardScreen = () => {
         setRefreshing(false);
     }, [getFriendsData, getBankListData]);
 
+    const filteredFriendsData = friendsData.filter(friend =>
+        friend.username.toLowerCase().includes(searchText.toLowerCase())
+    );
+
     return (
         <LinearGradient
             style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
@@ -298,9 +303,9 @@ export const WalletDashboardScreen = () => {
                             <View style={[styles.wDFormContainer, themeStyles[theme].wDFormContainer]}>
                                 {/* if tab is deposit */}
                                 {activeTab === 'Deposit' ? (
-                                    <View style={styles.wdPickerWrapper}>
+                                    <View style={[styles.wdPickerWrapper, themeStyles[theme].wdPickerWrapper]}>
                                         <Dropdown
-                                            style={styles.wdDropdown}
+                                            style={[styles.wdDropdown, themeStyles[theme].wdDropdown]}
                                             data={methods.map((item) => ({ label: item, value: item }))}
                                             labelField="label"
                                             valueField="value"
@@ -308,18 +313,43 @@ export const WalletDashboardScreen = () => {
                                             value={paymentMethod}
                                             onChange={(item) => setPaymentMethod(item.value)}
                                             // search
-                                            placeholderStyle={{ color: '#858585' }}
-                                            selectedTextStyle={{ color: '#414141' }}
+                                            placeholderStyle={{ color: theme === 'light' ? '#858585' : '#8b8b8bff' }}
+                                            selectedTextStyle={{ color: theme === 'light' ? '#414141' : '#fff' }}
                                             iconColor="#414141"
+                                            renderItem={(item) => {
+                                                const isSelected = item.value === paymentMethod;
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            paddingVertical: 14,
+                                                            paddingHorizontal: 14,
+                                                            backgroundColor: isSelected
+                                                                ? theme === 'light' ? '#e3ddff' : '#333360'
+                                                                : theme === 'light' ? '#fff' : '#212121',
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={{
+                                                                color: isSelected
+                                                                    ? theme === 'light' ? '#000' : '#fff'
+                                                                    : theme === 'light' ? '#000' : '#ccc',
+                                                                fontWeight: isSelected ? '600' : '400',
+                                                            }}
+                                                        >
+                                                            {item.label}
+                                                        </Text>
+                                                    </View>
+                                                );
+                                            }}
                                         />
                                     </View>
 
                                 ) : activeTab === 'Withdraw' ? (
                                     <>
                                         {/* if tab is withdraw */}
-                                        <View style={styles.wdPickerWrapper}>
+                                        <View style={[styles.wdPickerWrapper, themeStyles[theme].wdPickerWrapper]}>
                                             <Dropdown
-                                                style={styles.wdDropdown}
+                                                style={[styles.wdDropdown, themeStyles[theme].wdDropdown]}
                                                 data={
                                                     bankListData.length > 0
                                                         ? bankListData.map((item) => ({ label: item.bankName, value: item.BankID }))
@@ -334,21 +364,48 @@ export const WalletDashboardScreen = () => {
                                                         setSelectBankName(item.value);
                                                     }
                                                 }}
-                                                placeholderStyle={{ color: '#858585' }}
-                                                selectedTextStyle={{ color: '#414141' }}
+                                                placeholderStyle={{ color: theme === 'light' ? '#858585' : '#8b8b8bff' }}
+                                                selectedTextStyle={{ color: theme === 'light' ? '#414141' : '#fff' }}
                                                 iconColor="#414141"
+                                                renderItem={(item) => {
+                                                    const isSelected = item.value === selectBankName;
+                                                    return (
+                                                        <View
+                                                            style={{
+                                                                paddingVertical: 14,
+                                                                paddingHorizontal: 14,
+                                                                backgroundColor: isSelected
+                                                                    ? theme === 'light' ? '#e3ddff' : '#333360'
+                                                                    : theme === 'light' ? '#fff' : '#212121',
+                                                            }}
+                                                        >
+                                                            <Text
+                                                                style={{
+                                                                    color: isSelected
+                                                                        ? theme === 'light' ? '#000' : '#fff'
+                                                                        : theme === 'light' ? '#000' : '#ccc',
+                                                                    fontWeight: isSelected ? '600' : '400',
+                                                                }}
+                                                            >
+                                                                {item.label}
+                                                            </Text>
+                                                        </View>
+                                                    );
+                                                }}
                                             />
                                         </View>
                                     </>
                                 ) : <>
-                                    <View style={styles.wdPickerWrapper}>
+                                    <View style={[styles.wdPickerWrapper, themeStyles[theme].wdPickerWrapper]}>
                                         <Dropdown
-                                            style={styles.wdDropdown}
-                                            data={friendsData.length > 0 ? friendsData.map((friend) => ({
-                                                label: friend.username,
-                                                value: friend.userid,
-                                                full: friend,
-                                            })) : [{ label: 'No friends are available', value: null }]}
+                                            style={[styles.wdDropdown, themeStyles[theme].wdDropdown]}
+                                            data={filteredFriendsData.length > 0
+                                                ? filteredFriendsData.map((friend) => ({
+                                                    label: friend.username,
+                                                    value: friend.userid,
+                                                    full: friend,
+                                                }))
+                                                : [{ label: 'No friends are available', value: null }]}
                                             search
                                             labelField="label"
                                             valueField="value"
@@ -369,10 +426,61 @@ export const WalletDashboardScreen = () => {
                                                 setUserName(item.label);
                                                 setSelectedFriend(item.full);
                                             }}
-                                            placeholderStyle={{ color: '#858585' }}
-                                            selectedTextStyle={{ color: '#414141' }}
+                                            placeholderStyle={{ color: theme === 'light' ? '#858585' : '#8b8b8bff' }}
+                                            selectedTextStyle={{ color: theme === 'light' ? '#414141' : '#fff' }}
                                             iconColor="#414141"
                                             itemTextStyle={{ color: '#000' }}
+                                            renderInputSearch={() => (
+                                                <View
+                                                    style={{
+                                                        backgroundColor: theme === 'light' ? '#f7f7f7' : '#1a1a1a',
+                                                        padding: 8,
+                                                        borderBottomWidth: 1,
+                                                        borderColor: theme === 'light' ? '#ccc' : '#444',
+                                                    }}
+                                                >
+                                                    <TextInput
+                                                        placeholder="Type username"
+                                                        placeholderTextColor={theme === 'light' ? '#999' : '#aaa'}
+                                                        style={{
+                                                            backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
+                                                            color: theme === 'light' ? '#000' : '#fff',
+                                                            paddingHorizontal: 12,
+                                                            paddingVertical: 10,
+                                                            borderRadius: 8,
+                                                            borderColor: theme === 'light' ? '#ddd' : '#555',
+                                                            borderWidth: 1,
+                                                        }}
+                                                        onChangeText={text => setSearchText(text)}
+                                                        value={searchText}
+                                                    />
+                                                </View>
+                                            )}
+                                            renderItem={(item) => {
+                                                const isSelected = item.value === selectedFriend?.userid;
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            paddingVertical: 14,
+                                                            paddingHorizontal: 14,
+                                                            backgroundColor: isSelected
+                                                                ? theme === 'light' ? '#e3ddff' : '#333360'
+                                                                : theme === 'light' ? '#fff' : '#212121',
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={{
+                                                                color: isSelected
+                                                                    ? theme === 'light' ? '#000' : '#fff'
+                                                                    : theme === 'light' ? '#000' : '#ccc',
+                                                                fontWeight: isSelected ? '600' : '400',
+                                                            }}
+                                                        >
+                                                            {item.label}
+                                                        </Text>
+                                                    </View>
+                                                );
+                                            }}
                                         />
                                     </View>
                                 </>}

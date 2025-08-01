@@ -18,10 +18,12 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAppContext } from '../context/AppContext';
 import { getGenderFallbackImage } from '../utils/constant';
+import Colors from '../../assets/styles/Colors';
 
 const { width, height } = Dimensions.get('window');
 
@@ -155,11 +157,11 @@ export const ChatScreen = ({ route, navigation }) => {
     const getStatusIcon = useCallback((status) => {
         switch (status) {
             case 'sent':
-                return <Feather name="check" size={14} color="#999" />;
+                return <Feather name="check" size={18} solid color="#999999" />;
             case 'delivered':
-                return <Feather name="check-circle" size={14} color="#999" />;
+                return <Ionicons name="checkmark-done" size={18} solid color="#999999" />;
             case 'read':
-                return <Feather name="check-circle" size={14} color="#4CAF50" />;
+                return <Ionicons name="checkmark-done" size={18} solid color="#34B7F1" />;
             default:
                 return null;
         }
@@ -177,7 +179,7 @@ export const ChatScreen = ({ route, navigation }) => {
                 {item.replyTo && (
                     <View style={[
                         chatStyles.replyContainer,
-                        { backgroundColor: isMe ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)' }
+                        { backgroundColor: isMe ? 'rgba(0, 0, 0, 0.31)' : 'rgba(0,0,0,0.1)' }
                     ]}>
                         <View style={chatStyles.replyBorder} />
                         <Text style={[chatStyles.replyText, { color: isMe ? '#fff' : '#666' }]}>
@@ -191,7 +193,7 @@ export const ChatScreen = ({ route, navigation }) => {
                     style={[
                         chatStyles.messageBubble,
                         isMe ? chatStyles.myMessageBubble : chatStyles.otherMessageBubble,
-                        { backgroundColor: isMe ? '#d93a63' : (theme === 'dark' ? '#2a2a2a' : '#f0f0f0') }
+                        { backgroundColor: isMe ? '#d93a63' : (theme === 'dark' ? Colors.blackCardColor : '#f0f0f0') }
                     ]}
                 >
                     <Text style={[
@@ -223,9 +225,9 @@ export const ChatScreen = ({ route, navigation }) => {
         <View style={[
             chatStyles.header,
             {
-                backgroundColor: theme === 'dark' ? '#1a1a1a' : '#fff',
+                backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
                 paddingTop: insets.top,
-                borderBottomColor: theme === 'dark' ? '#333' : '#e0e0e0'
+                borderBottomColor: theme === 'dark' ? Colors.blackDividers : '#e0e0e0'
             }
         ]}>
             <View style={chatStyles.headerContent}>
@@ -314,14 +316,14 @@ export const ChatScreen = ({ route, navigation }) => {
         <View style={[
             chatStyles.inputContainer,
             {
-                backgroundColor: theme === 'dark' ? '#1a1a1a' : '#fff',
-                borderTopColor: theme === 'dark' ? '#333' : '#e0e0e0'
+                backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
+                borderTopColor: theme === 'dark' ? Colors.blackDividers : '#e0e0e0'
             }
         ]}>
             {replyingTo && (
                 <View style={[
                     chatStyles.replyPreview,
-                    { backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f5f5f5' }
+                    { backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#f5f5f5' }
                 ]}>
                     <View style={chatStyles.replyPreviewContent}>
                         <Feather name="corner-up-left" size={16} color="#d93a63" />
@@ -345,7 +347,7 @@ export const ChatScreen = ({ route, navigation }) => {
 
                 <View style={[
                     chatStyles.textInputContainer,
-                    { backgroundColor: theme === 'dark' ? '#2a2a2a' : '#f5f5f5' }
+                    { backgroundColor: theme === 'dark' ? Colors.blackInputBgColor : '#f5f5f5' }
                 ]}>
                     <TextInput
                         ref={inputRef}
@@ -383,7 +385,7 @@ export const ChatScreen = ({ route, navigation }) => {
     return (
         <SafeAreaView style={[
             chatStyles.container,
-            { backgroundColor: theme === 'dark' ? '#000' : '#fff', paddingBottom: insets.bottom, }
+            { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff', paddingBottom: insets.bottom, }
         ]}>
             <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
 
@@ -395,7 +397,7 @@ export const ChatScreen = ({ route, navigation }) => {
             >
                 <View style={[
                     chatStyles.messagesContainer,
-                    { backgroundColor: theme === 'dark' ? '#111' : '#f8f8f8' }
+                    { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#f8f8f8' }
                 ]}>
                     <FlatList
                         ref={flatListRef}

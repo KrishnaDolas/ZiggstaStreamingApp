@@ -228,8 +228,8 @@ export const MessageListScreen = () => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => handleDelete(item.RequesterID)}
-                            style={styles.frActionDeleteBtn}>
-                            <Text style={[styles.frActionBtnText, { color: '#111' }]}>Delete</Text>
+                            style={[styles.frActionDeleteBtn, themeStyles[theme].frActionDeleteBtn]}>
+                            <Text style={[styles.frActionBtnText, { color: theme === 'light' ? '#111' : '#fff' }]}>Delete</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -261,8 +261,8 @@ export const MessageListScreen = () => {
                 {friendListType === 'blocked' ? (
                     <TouchableOpacity
                         onPress={() => handleUnBlock(item.userid)}
-                        style={styles.frActionDeleteBtn}>
-                        <Text style={[styles.frActionBtnText, { color: '#111' }]}>Unblock</Text>
+                        style={[styles.frActionDeleteBtn, themeStyles[theme].frActionDeleteBtn]}>
+                        <Text style={[styles.frActionBtnText, { color: theme === 'light' ? '#111' : '#fff' }]}>Unblock</Text>
                     </TouchableOpacity>
                 ) : (
                     <>
@@ -321,7 +321,12 @@ export const MessageListScreen = () => {
                                     setMenuVisible(false);
                                 }}
                                 style={[styles.messListFilterTabBTn, {
-                                    backgroundColor: friendListType === type ? '#d93a63' : '#f3f3f3',
+                                    backgroundColor:
+                                        friendListType === type
+                                            ? '#d93a63'
+                                            : theme === 'dark'
+                                                ? '#323232'
+                                                : '#f3f3f3',
                                     marginRight: index === 2 ? 0 : 8,
                                 }]}
                             >
@@ -329,7 +334,9 @@ export const MessageListScreen = () => {
                                     style={{
                                         fontSize: 14,
                                         fontWeight: '500',
-                                        color: friendListType === type ? '#fff' : '#333',
+                                        color: friendListType === type ? '#fff' : theme === 'dark'
+                                            ? '#FFFFFF'
+                                            : '#333333',
                                         textAlign: 'center',
                                     }}
                                 >

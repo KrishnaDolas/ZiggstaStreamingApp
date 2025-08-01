@@ -6,6 +6,7 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Colors from '../../assets/styles/Colors';
 const screenHeight = Dimensions.get('window').height;
 
 const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, setGetselectcategory }) => {
@@ -61,7 +62,7 @@ const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, se
             >
                 <View style={{
                     width: '100%', // like drawer
-                    backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
+                    backgroundColor: theme === 'light' ? '#fff' : Colors.blackCardColor,
                     padding: 16,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },

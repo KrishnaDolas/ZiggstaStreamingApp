@@ -1,5 +1,6 @@
 import { StyleSheet, Platform } from 'react-native';
 import { Dimensions } from 'react-native';
+import Colors from './Colors';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
@@ -100,7 +101,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 20,
     padding: 12,
-    width: '98%',
+    width: '100%',
     marginVertical: 10,
     fontSize: 16,
   },
@@ -649,11 +650,6 @@ export const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.46,
-    shadowRadius: 5,
-    elevation: 5,
   },
 
   profileStatLabel: {
@@ -662,22 +658,19 @@ export const styles = StyleSheet.create({
   },
 
   profileStatValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 
   profileTable: {
     borderRadius: 12,
     marginBottom: 24,
-    borderColor: '#d9d9d9',
-    borderWidth: 0.3,
     overflow: 'hidden',
   },
 
   profileTableHeader: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#d1d5db',
     paddingVertical: 10,
   },
 
@@ -690,7 +683,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
   },
 
   profileTableCell: {
@@ -787,7 +779,6 @@ export const styles = StyleSheet.create({
   },
 
   profileModalOverlay: {
-    // backgroundColor: 'white',
     padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -816,7 +807,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    // borderBottomColor: '#eee',
     borderRadius: 30,
     paddingHorizontal: 15,
     // marginBottom: 10,
@@ -830,11 +821,11 @@ export const styles = StyleSheet.create({
   profileMSocialBoxItemInput: {
     flex: 1,
     height: 40,
-    borderColor: '#a5a5a5',
+    // borderColor: '#a5a5a5',
     borderWidth: 0.4,
-    backgroundColor: '#f7f7f7',
+    // backgroundColor: '#f7f7f7',
     borderRadius: 20,
-    color: '#414141',
+    // color: '#414141',
     paddingHorizontal: 13,
     fontSize: 15,
   },
@@ -873,7 +864,6 @@ export const styles = StyleSheet.create({
 
   profileSettingMDivider: {
     height: 1,
-    backgroundColor: '#eee',
     marginBottom: 2,
   },
 
@@ -882,7 +872,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 17,
-    borderColor: '#eee',
+    // borderColor: '#eee',
   },
 
   profileSettingMMenuListItem: {
@@ -1176,13 +1166,13 @@ export const styles = StyleSheet.create({
 
   strHedSearchModalInput: {
     // flex: 1,
-    backgroundColor: '#f7f7f7',
+    // backgroundColor: '#f7f7f7',
     height: 50,
     borderRadius: 25,
     paddingHorizontal: 16,
-    borderColor: '#eaeaeb',
+    // borderColor: '#eaeaeb',
     borderWidth: 1,
-    color: '#414141',
+    // color: '#414141',
     fontWeight: '300',
     fontSize: 15,
   },
@@ -1210,7 +1200,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 5,
     borderRadius: 30,
-    backgroundColor: '#ebebeb',
     marginRight: 10,
     // Shadow for iOS
     shadowColor: '#000',
@@ -1438,7 +1427,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
   frActionDeleteBtn: {
-    backgroundColor: '#f1f1f1',
+    // backgroundColor: '#f1f1f1',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
@@ -1789,7 +1778,6 @@ export const styles = StyleSheet.create({
     borderWidth: 2,
   },
   wdTabText: {
-    // color: '#333',
     fontWeight: '600',
   },
   wdActiveTabText: {
@@ -1803,26 +1791,19 @@ export const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   wdAmountButton: {
-    // width: 60,
-    // padding: 10,
     paddingHorizontal: 22,
     paddingVertical: 10,
-    // backgroundColor: '#e6f0ff',
     margin: 5,
     borderRadius: 5,
     alignItems: 'center',
   },
   wdAmountSelected: {
-    // backgroundColor: '#004080',
     borderWidth: 2,
-    // borderColor: '#007bff',
   },
   wdAmountText: {
-    // color: '#004080',
     fontWeight: '500',
   },
   wdAmountTextSelected: {
-    // color: '#fff',
     fontWeight: 'bold',
   },
   wDFormContainer: {
@@ -1833,20 +1814,16 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
   wdPickerWrapper: {
-    backgroundColor: '#f7f7f7',
     borderRadius: 5,
     overflow: 'hidden',
     marginBottom: 5,
     borderWidth: 1,
-    borderColor: '#ccc',
     paddingLeft: 4,
   },
   wdDropdown: {
     height: 52,
     borderRadius: 5,
     paddingHorizontal: 8,
-    backgroundColor: '#f7f7f7',
-    color: '#414141',
   },
   wdPicker: {
     height: 52,
@@ -1910,18 +1887,11 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   wdRefStateCard: {
-    // backgroundColor: '#f5f5f5',
     borderRadius: 8,
     paddingVertical: 5,
     height: 70,
     alignItems: 'center',
     justifyContent: 'space-between',
-    // Box shadow equivalent
-    // shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2, // Required for Android
   },
   wdRefStateTitle: {
     fontSize: 14,
@@ -2003,15 +1973,15 @@ export const styles = StyleSheet.create({
     backgroundColor: Platform.OS === 'android' ? '#f7f7f7' : 'transparent',
   },
   bdInput: {
-    borderRadius: 20,
-    backgroundColor: '#f7f7f7',
-    borderColor: '#eaeaeb',
+    borderRadius: 30,
+    // backgroundColor: '#f7f7f7',
+    // borderColor: '#eaeaeb',
     borderWidth: 1,
     padding: 12,
     width: '100%',
     fontSize: 15,
     marginBottom: 10,
-    color: '#414141',
+    // color: '#414141',
   },
 
   // profile screen modal main
@@ -2023,13 +1993,13 @@ export const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   psmReportButton: {
-    backgroundColor: '#e6f0ff',
+    // backgroundColor: '#e6f0ff',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 6,
   },
   psmReportButtonText: {
-    color: '#004080',
+    // color: '#004080',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -2246,14 +2216,14 @@ export const styles = StyleSheet.create({
 
   // Other Gifter Card
   psmOtherGifterCard: {
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     padding: 15,
     alignItems: 'center',
     flex: 1,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    // borderBottomColor: '#f0f0f0',
     borderRightWidth: 1,
-    borderRightColor: '#f0f0f0',
+    // borderRightColor: '#f0f0f0',
   },
 
   // Other Gifter Image Container
@@ -2278,7 +2248,7 @@ export const styles = StyleSheet.create({
   psmOtherGifterName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    // color: '#333',
     maxWidth: '60%',
   },
 
@@ -2286,7 +2256,7 @@ export const styles = StyleSheet.create({
   psmOtherGifterAmount: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    // color: '#666',
     marginLeft: 5,
     maxWidth: '40%',
   },
@@ -2489,9 +2459,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 10,
-    // backgroundColor: '#fff',
     borderBottomWidth: 1,
-    // borderBottomColor: '#d9d9d9',
     position: 'relative',
     zIndex: 10,
   },
@@ -2684,6 +2652,12 @@ export const themeStyles = {
     profileModalOverlay: {
       backgroundColor: 'white',
     },
+    psmReportButton: {
+      backgroundColor: '#e6f0ff',
+    },
+    psmReportButtonText: {
+      color: '#004080',
+    },
     psmProfileTopCard: {
       backgroundColor: '#fff',
       // iOS Shadow
@@ -2698,6 +2672,17 @@ export const themeStyles = {
       // Android Shadow
       elevation: 10, // approximate effect, tweak as needed
     },
+
+    profileMSocialBoxItemInput: {
+      borderColor: '#a5a5a5',
+      backgroundColor: '#f7f7f7',
+      color: '#414141',
+    },
+
+    profileMSocialBoxItem: {
+      borderBottomColor: '#eee',
+    },
+
     psmProfileImageContainer: {
       backgroundColor: '#fff',
     },
@@ -2707,6 +2692,20 @@ export const themeStyles = {
     psmProfileName: {
       color: '#333',
     },
+    psmOtherGifterCard: {
+      backgroundColor: '#fff',
+      borderBottomColor: '#f0f0f0',
+      borderRightColor: '#f0f0f0',
+    },
+    psmOtherGifterName: {
+      color: '#333',
+    },
+
+    // Other Gifter Amount
+    psmOtherGifterAmount: {
+      color: '#666',
+    },
+
     pSettingMDarkLightSTitle: {
       color: '#232323',
     },
@@ -2715,6 +2714,14 @@ export const themeStyles = {
     },
     modalSmallTitle: {
       color: '#000',
+    },
+
+    profileSettingMDivider: {
+      backgroundColor: '#eee',
+    },
+
+    profileSettingMMenuList: {
+      borderColor: '#eee',
     },
 
     // profile css
@@ -2736,6 +2743,11 @@ export const themeStyles = {
     },
     profileStatCard: {
       backgroundColor: '#fff',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.46,
+      shadowRadius: 12,
+      elevation: 5,
     },
     profileStatLabel: {
       color: 'rgb(136, 136, 136)',
@@ -2745,9 +2757,12 @@ export const themeStyles = {
     },
     profileTableHeader: {
       backgroundColor: '#f0f0f0',
+      borderBottomColor: '#d1d5db',
     },
     profileTable: {
       backgroundColor: '#f9fafb',
+      borderColor: '#d9d9d9',
+      borderWidth: 0.3,
     },
     profileTableHeaderText: {
       color: '#1f2937',
@@ -2757,6 +2772,7 @@ export const themeStyles = {
     },
     profileTableRow: {
       backgroundColor: '#fff',
+      borderBottomColor: '#e5e7eb',
     },
     profileActionButtonText: {
       color: '#000',
@@ -2796,6 +2812,11 @@ export const themeStyles = {
     streamListName: {
       color: '#fff',
     },
+    strHedSearchModalInput: {
+      backgroundColor: '#f7f7f7',
+      borderColor: '#eaeaeb',
+      color: '#414141',
+    },
     // message list
 
     messageListMainCardLayout: {
@@ -2807,6 +2828,9 @@ export const themeStyles = {
     },
     messageListName: {
       color: '#000',
+    },
+    frActionDeleteBtn: {
+      backgroundColor: '#f1f1f1',
     },
     meListMessage: {
       color: '#646464',
@@ -2840,6 +2864,10 @@ export const themeStyles = {
     wdRefStateCard: {
       backgroundColor: '#f5f5f5',
       shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2, // Required for Android
     },
     wdRefStateTitle: {
       color: '#555',
@@ -2860,9 +2888,22 @@ export const themeStyles = {
     wdAmountTextSelected: {
       color: '#fff',
     },
+    wdPickerWrapper: {
+      backgroundColor: '#f7f7f7',
+      borderColor: '#ccc',
+    },
+    wdDropdown: {
+      backgroundColor: '#f7f7f7',
+      color: '#414141',
+    },
     // bank details modal
     bdLabel: {
       color: '#717580',
+    },
+    bdInput: {
+      backgroundColor: '#f7f7f7',
+      borderColor: '#eaeaeb',
+      color: '#414141',
     },
     // report modal
     reportSectionTitle: {
@@ -2944,13 +2985,13 @@ export const themeStyles = {
   dark: {
     // splash screen
     SplashScreen: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     // common styles
-    container: { backgroundColor: '#121212' },
-    formContainer: { backgroundColor: '#1e1e1e' },
+    container: { backgroundColor: Colors.blackBgColor },
+    formContainer: { backgroundColor: Colors.blackCardColor, borderWidth: 2, borderColor: Colors.blackCardBorderColor },
     text: { color: '#fff' },
-    input: { borderColor: '#444', backgroundColor: '#2a2a2a', color: 'white' },
+    input: { borderColor: Colors.blackInputBorderColor, backgroundColor: Colors.blackInputBgColor, color: 'white' },
     button: { color: 'black' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -2967,28 +3008,65 @@ export const themeStyles = {
     },
     // modal css
     profileModalOverlay: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
+    },
+    psmReportButton: {
+      backgroundColor: Colors.blackBtnBg,
+    },
+    profileMSocialBoxItemInput: {
+      borderColor: Colors.blackDividers,
+      backgroundColor: Colors.blackInputBgColor,
+      color: '#FFFFFF',
+    },
+
+    profileMSocialBoxItem: {
+      borderBottomColor: Colors.blackDividers,
+    },
+
+    psmReportButtonText: {
+      color: '#fff',
     },
     psmProfileTopCard: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
     },
     psmProfileImageContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
     },
     psmTopGiftersContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
     },
     psmProfileName: {
       color: '#fff',
     },
+    psmOtherGifterName: {
+      color: '#fff',
+    },
+
+    // Other Gifter Amount
+    psmOtherGifterAmount: {
+      color: '#fff',
+    },
+
+    psmOtherGifterCard: {
+      backgroundColor: Colors.blackCardColor,
+      borderBottomColor: Colors.blackDividers,
+      borderRightColor: Colors.blackDividers,
+    },
     pSettingMDarkLightSTitle: {
       color: '#fff',
+    },
+    profileSettingMDivider: {
+      backgroundColor: Colors.blackDividers,
+    },
+
+    profileSettingMMenuList: {
+      borderColor: Colors.blackDividers,
     },
     profileErrorBoxMain: {
       backgroundColor: '#2a2a2a',
     },
     fullScreenModalOverlay: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     modalSmallTitle: {
       color: '#fff',
@@ -2996,12 +3074,12 @@ export const themeStyles = {
 
     // profile css
     profileHeader: {
-      backgroundColor: '#2a2a2a',
-      borderBottomColor: '#d9d9d9',
+      backgroundColor: Colors.blackBgColor,
+      borderBottomColor: Colors.blackDividers,
       borderBottomWidth: 1,
     },
     profileScrollContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     profileMainText: {
       color: '#fff',
@@ -3016,14 +3094,16 @@ export const themeStyles = {
       color: '#fff',
     },
     profileStatCard: {
-      backgroundColor: '#2a2a2a',
-      shadowColor: '#fff',
+      backgroundColor: Colors.blackCardColor,
     },
     profileTable: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
+      borderColor: Colors.blackCardBorderColor,
+      borderWidth: 1,
     },
     profileTableHeader: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
+      borderBottomColor: Colors.blackCardBorderColor,
     },
     profileTableHeaderText: {
       color: '#fff',
@@ -3032,24 +3112,25 @@ export const themeStyles = {
       color: '#fff',
     },
     profileTableRow: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
+      borderBottomColor: Colors.blackCardBorderColor,
     },
     profileActionButtonText: {
       color: '#fff',
     },
     profileActionBtnBox: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
     },
     // stream list
 
     streamListHeader: {
-      backgroundColor: '#2a2a2a',
-      borderBottomColor: '#323232',
+      backgroundColor: Colors.blackBgColor,
+      borderBottomColor: Colors.blackDividers,
       borderBottomWidth: 1,
     },
     strHeaderCategoryButton: {
-      backgroundColor: '#2a2a2a',
-      shadowColor: '#fff',
+      backgroundColor: Colors.blackBtnBg,
+      // shadowColor: '#fff',
     },
     strHeaderCategoryText: {
       color: '#fff',
@@ -3058,8 +3139,13 @@ export const themeStyles = {
       color: '#fff',
       // backgroundColor: '#2a2a2a'
     },
+    strHedSearchModalInput: {
+      backgroundColor: Colors.blackInputBgColor,
+      borderColor: Colors.blackDividers,
+      color: '#fff',
+    },
     streamListMainCardLayout: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     isFilteringBlurBackground: {
       backgroundColor: 'rgba(19, 19, 19, 0.3)', // subtle blur feel using transparency
@@ -3078,14 +3164,17 @@ export const themeStyles = {
     // message list
 
     messageListMainCardLayout: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     messageListContainer: {
-      backgroundColor: '#2a2a2a',
-      borderBottomColor: '#4e4e4eff',
+      backgroundColor: Colors.blackBgColor,
+      borderBottomColor: Colors.blackDividers,
     },
     messageListName: {
       color: '#fff',
+    },
+    frActionDeleteBtn: {
+      backgroundColor: Colors.blackBtnBg,
     },
     meListMessage: {
       color: '#fff',
@@ -3095,16 +3184,16 @@ export const themeStyles = {
     },
     // wallet dashboard
     wdTabContainer: {
-      backgroundColor: '#323232d9',
+      backgroundColor: Colors.blackCardColor,
     },
     wDFormContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackCardColor,
     },
     wdFormInfoText: {
       color: '#fff',
     },
     wdTabButton: {
-      backgroundColor: '#2c2c2c',
+      backgroundColor: Colors.blackBtnBg,
     },
     wdActiveTab: {
       backgroundColor: '#1a1a1a',
@@ -3117,8 +3206,8 @@ export const themeStyles = {
       color: '#fff', // pure white for active tab text
     },
     wdRefStateCard: {
-      backgroundColor: '#2a2a2a',
-      shadowColor: '#fff',
+      backgroundColor: Colors.blackCardColor,
+      // shadowColor: '#fff',
     },
     wdRefStateTitle: {
       color: '#ccccccff',
@@ -3127,7 +3216,7 @@ export const themeStyles = {
       color: '#fff',
     },
     wdAmountButton: {
-      backgroundColor: '#333c4a',
+      backgroundColor: Colors.blackBtnBg,
     },
     wdAmountSelected: {
       backgroundColor: '#1a2b44',
@@ -3139,8 +3228,21 @@ export const themeStyles = {
     wdAmountTextSelected: {
       color: '#fff',
     },
+    wdPickerWrapper: {
+      backgroundColor: Colors.blackInputBgColor,
+      borderColor: Colors.blackDividers,
+    },
+    wdDropdown: {
+      backgroundColor: Colors.blackInputBgColor,
+      color: '#fff',
+    },
     // bank details modal
     bdLabel: {
+      color: '#fff',
+    },
+    bdInput: {
+      backgroundColor: Colors.blackInputBgColor,
+      borderColor: Colors.blackDividers,
       color: '#fff',
     },
     // report modal
@@ -3148,7 +3250,7 @@ export const themeStyles = {
       color: '#fff',
     },
     reportCategoryCard: {
-      backgroundColor: '#333333ff',
+      backgroundColor: Colors.blackBtnBg,
     },
     reportCategoryTitle: {
       color: '#fff',
@@ -3157,51 +3259,51 @@ export const themeStyles = {
       color: '#fff',
     },
     reportSubCategoryCard: {
-      backgroundColor: '#333333ff',
+      backgroundColor: Colors.blackBtnBg,
       borderColor: '#333',
     },
     reportSelectedSubCategoryCard: {
-      backgroundColor: '#2a2a2a',
-      borderColor: '#d93a63',
+      backgroundColor: Colors.blackBtnBg,
+      borderColor: '#fff',
     },
     reportSubCategoryTitle: {
       color: '#fff',
     },
     reportLoadingContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     reportDescriptionLabel: {
       color: '#fff',
     },
     reportDescriptionInput: {
-      backgroundColor: '#333333ff',
+      backgroundColor: Colors.blackInputBgColor,
       color: '#fff',
     },
     googleAdContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     // footer
     footer: {
-      backgroundColor: '#2a2a2a',
-      borderTopColor: '#323232', // optional: a light border color
+      backgroundColor: Colors.blackBgColor,
+      borderTopColor: Colors.blackDividers, // optional: a light border color
     },
     // leader board
     leaderBoardContainer: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     leaderBoardHeader: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
     },
     leaderBoardFilterButton: {
-      backgroundColor: '#2a2a2a',
+      backgroundColor: Colors.blackBgColor,
       borderBottomColor: '#333',
     },
     leaderBoardFilterText: {
       color: '#fff',
     },
     leaderboardItem: {
-      backgroundColor: '#2a2a2a',
-      borderBottomColor: '#4e4e4eff',
+      backgroundColor: Colors.blackBgColor,
+      borderBottomColor: Colors.blackDividers,
     },
     lbRankText: {
       color: '#fff',
@@ -3216,8 +3318,8 @@ export const themeStyles = {
       color: '#d4d4d4ff',
     },
     lbStarButton: {
-      backgroundColor: '#2a2a2a',
-      borderColor: '#bdbdbdff',
+      backgroundColor: Colors.blackCardColor,
+      borderColor: Colors.blackDividers,
     },
   },
 };
