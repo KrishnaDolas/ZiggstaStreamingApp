@@ -428,13 +428,15 @@ const StreamRoom = ({
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
 
-    const HandleGiftReceived = (senderName, giftName) => {
+    const HandleGiftReceived = (senderName,receiverName, giftName) => {
         try {
             if(userData?.screenName===senderName) return
             playGiftSound()
+            console.log(receiverName);
             setReceiveAnimationData({
                 giftName: giftName,
-                senderName: senderName
+                senderName: senderName,
+                ReceiverName:receiverName
             });
             setShowReceiveAnimation(true);
         } catch (error) {
@@ -463,7 +465,7 @@ const StreamRoom = ({
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, item?.giftIcon, item?.giftValue)
+                    socket.emit('Send-gift', userData?.screenName,hostInfo[0].Name, item?.giftIcon, item?.giftValue)
                     setSendAnimationData({
                         giftName: item?.giftIcon,
                         recipientName: hostInfo[0]?.Name
@@ -900,7 +902,7 @@ const StreamRoom = ({
                                                 setOpenMoreSettingList(!openMoreSettingList);
                                             }} style={styles.strRoomBottomBoxIconBox}>
                                                 <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                                                    {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{height:'30',width:'30'}} /> }
+                                                    {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{height:'35',width:'35'}} /> }
                                                 </Animated.View>
                                             </TouchableOpacity>
                                             {!isHost && (<>
@@ -1110,6 +1112,7 @@ const StreamRoom = ({
                 <GiftReceiveAnimation
                     giftName={receiveAnimationData.giftName}
                     senderName={receiveAnimationData.senderName}
+                    ReceiverName={receiveAnimationData.ReceiverName}
                     onComplete={handleReceiveAnimationComplete}
                 />
             )}

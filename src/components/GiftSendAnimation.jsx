@@ -211,7 +211,7 @@ export const GiftSendAnimation = ({ giftName, recipientName, onComplete }) => {
 };
 
 // GiftReceiveAnimation.js - Animation for the gift receiver
-export const GiftReceiveAnimation = ({ giftName, senderName, onComplete }) => {
+export const GiftReceiveAnimation = ({ giftName, senderName,ReceiverName, onComplete }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const bounceAnim = useRef(new Animated.Value(0)).current;
@@ -418,6 +418,7 @@ export const GiftReceiveAnimation = ({ giftName, senderName, onComplete }) => {
         >
           <Text style={styles.receiveTitle}>🎉 Gift Received! 🎉</Text>
           <Text style={styles.receiveSender}>From: {senderName}</Text>
+          <Text style={styles.receiveSender}>To: {ReceiverName}</Text>
           <Text style={styles.receiveThankYou}>Thank you! ❤️</Text>
         </Animated.View>
       </Animated.View>
@@ -442,14 +443,14 @@ const styles = {
   sendAnimationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
-    padding: 20,
+    padding: 30,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 15,
-    minWidth: 200,
+    minWidth: 250,
   },
   sparkleContainer: {
     position: 'absolute',
@@ -465,8 +466,8 @@ const styles = {
     position: 'relative',
   },
   sendGiftImage: {
-    width: 60,
-    height: 60,
+    width: 80,
+    height: 80,
   },
   heartEffect: {
     position: 'absolute',

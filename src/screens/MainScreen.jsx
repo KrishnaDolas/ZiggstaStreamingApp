@@ -384,8 +384,6 @@ export const MainScreen = () => {
         setLocalStream(null);
         setHasRequestedStream(false);
         setIsUserStreaming(false); // Reset user streaming status
-        // Stop InCallManager
-        InCallManager.stop();
       }
       // setRemoteStreams([])
       peersRef.current = {};
