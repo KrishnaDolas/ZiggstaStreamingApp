@@ -71,6 +71,7 @@ const StreamRoom = ({
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;
+    const shakeAnim = useRef(new Animated.Value(0)).current;
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const [streamLayout, setStreamLayout] = useState([]);
@@ -354,7 +355,7 @@ const StreamRoom = ({
             playNotification()
             setShowTooltip(true)
            setTimeout(() => {
-            setShowTooltip(false)
+            // setShowTooltip(false)
            }, 2000);
             Animated.loop(
                 Animated.sequence([
@@ -372,10 +373,40 @@ const StreamRoom = ({
                     }),
                 ])
             ).start();
+            Animated.sequence([
+                Animated.timing(shakeAnim, {
+                  toValue: 5, // Move right
+                  duration: 50,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(shakeAnim, {
+                  toValue: -5, // Move left
+                  duration: 50,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(shakeAnim, {
+                  toValue: 4, // Slightly right
+                  duration: 50,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(shakeAnim, {
+                  toValue: -4, // Slightly left
+                  duration: 50,
+                  useNativeDriver: true,
+                }),
+                Animated.timing(shakeAnim, {
+                  toValue: 0, // Back to center
+                  duration: 50,
+                  useNativeDriver: true,
+                }),
+              ])
+              .start();
+
+
         } else {
             blinkingAnim.setValue(1); // reset if no requests
         }
-    }, [streamrequestlist.length]);
+    }, [streamrequestlist.length,showTooltip]);
 
     const HidesettingPanel = () => {
         setOpenMoreSettingList(false)
@@ -928,9 +959,8 @@ const StreamRoom = ({
                                                     <View
                                                         style={{
                                                             position: "absolute",
-                                                            bottom: 50,  // position above the icon
-                                                            right: 10,
-                                                            backgroundColor: "#d93a63",
+                                                            bottom:30,  // position above the icon
+                                                            right: 30,
                                                             paddingHorizontal: 8,
                                                             paddingVertical: 7,
                                                             borderRadius: 9,
@@ -940,20 +970,15 @@ const StreamRoom = ({
                                                             zIndex: 999,
                                                         }}
                                                     >
-                                                        <View
+                                                        <Animated.Image
+                                                            source={require("../../assets/images/icons/user_request_alert.png")}
+                                                            resizeMethod="resize"
                                                             style={{
-                                                                width: 14,
-                                                                height: 14,
-                                                                backgroundColor: "#d93a63",
-                                                                transform: [{ rotate: "45deg" }],
-                                                                position: "absolute",
-                                                                bottom: -7, // half height
-                                                                right: 10,  // move arrow to bottom-right
+                                                                height: 60,
+                                                                width: 65,
+                                                                transform: [{ translateX: shakeAnim }],
                                                             }}
                                                         />
-                                                        <Text style={{ color: "#fff", fontSize: 13 }}>
-                                                            Someone wants to join as a guest
-                                                        </Text>
                                                     </View>
                                                 )}
                                         </>
