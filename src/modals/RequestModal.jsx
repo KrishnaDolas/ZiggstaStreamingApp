@@ -1,27 +1,27 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { useAppContext } from '../context/AppContext';
-import { socket } from '../utils/constant';
+import { getGenderFallbackImage, socket } from '../utils/constant';
 const RequestModal = ({
     visible,
     onClose,
     StreamRequestList = [],
     streamGuest = [],
 }) => {
-    const {userAddress}= useAppContext();
+    const {userData,userAddress}= useAppContext();
     const GetAction=(targetId,action)=>{
        socket.emit('host-control', {action: action,targetId: targetId}
        )
     }
-    const AcceptStream=(action,requesterId,name,CustomID)=>{
+    const AcceptStream=(action,requesterId,name,CustomID,item)=>{
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
         if(action === 'approve') {
             const Address=userAddress ?{country:userAddress?.country,city:userAddress?.city} : {country:'India',city:'Pune'}
             console.log(Address);
-        socket.emit('approveStream', requesterId,Address,name,CustomID)
+        socket.emit('approveStream', requesterId,Address,name,CustomID,item?.avatar)
         }
         if( action === 'reject') {
           socket.emit('rejectStream', requesterId)
@@ -71,7 +71,9 @@ const RequestModal = ({
                                 padding: 10,
                             }}>
                                 <View style={{position:'relative'}}>
-                                <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                <Image style={styles.strRoomHeaderLeftProfileImg}
+                                 source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
+                                  />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
                                 <Text style={{ fontSize: 16 }}>{item.Name}</Text>
@@ -79,7 +81,7 @@ const RequestModal = ({
                                 </View>
                                 <TouchableOpacity
                                 disabled={streamGuest.length>=6?true:false}
-                                onPress={() => AcceptStream("approve", item.ID,item.Name,item?.CustomID)}
+                                onPress={() => AcceptStream("approve", item.ID,item.Name,item?.CustomID,item)}
                                 style={{
                                     backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
                                     paddingVertical: 4,
@@ -128,7 +130,9 @@ const RequestModal = ({
                                 padding: 10,
                             }}>
                                 <View style={{position:'relative'}}>
-                                <Image style={styles.strRoomHeaderLeftProfileImg} source={require('../../assets/images/LS-3.jpg')} />
+                                <Image style={styles.strRoomHeaderLeftProfileImg}
+                                 source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
+                                  />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
                                 <Text style={{ fontSize: 16 }}>{item.Name}</Text>

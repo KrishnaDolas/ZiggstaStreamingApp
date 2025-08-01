@@ -123,7 +123,7 @@ export const MainScreen = () => {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
+        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city,avatar:userData?.avatar } : { country: 'India', city: 'Pune' }
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);
       }
@@ -143,7 +143,7 @@ export const MainScreen = () => {
       if (streamInfo) {
         console.log(`IsusersStreaming --->`, isuserstreaming);
         const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost)
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost,userData?.avatar)
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
