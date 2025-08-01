@@ -28,6 +28,7 @@ import ViewerTotalLIst from '../modals/ViewerTotalLIst';
 import { GiftReceiveAnimation, GiftSendAnimation } from './GiftSendAnimation';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 import Sound from 'react-native-sound';
+import AnimatedNotification from './AnimatedNotification';
 
 
 const StreamRoom = ({
@@ -90,7 +91,11 @@ const StreamRoom = ({
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
     const [sendAnimationData, setSendAnimationData] = useState(null);
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
-
+    const [notification, setNotification] = useState({
+        isVisible: false,
+        message: '',
+        type: 'info',
+    });
 
     useEffect(() => {
         setIsInStreamRoom(true); // keep global value in sync
@@ -147,6 +152,20 @@ const StreamRoom = ({
         }
     }, []);
 
+    const showNotification = (message, type = 'info') => {
+        setNotification({
+          isVisible: true,
+          message,
+          type,
+        });
+      };
+      const hideNotification = () => {
+        setNotification({
+          isVisible: false,
+          message: '',
+          type: 'info',
+        });
+      };
     useEffect(() => {
         getGiftsCategory();
     }, [giftModalVisible])
@@ -352,6 +371,7 @@ const StreamRoom = ({
 
     useEffect(() => {
         if (streamrequestlist.length > 0) {
+            showNotification("Someone wants to join as a guest", "")
             playNotification()
             setShowTooltip(true)
            setTimeout(() => {
@@ -1158,6 +1178,14 @@ const StreamRoom = ({
                     isMainProfile={true}
                     isViewer={true}
                 />
+            )}
+            {notification.isVisible &&(
+                      <AnimatedNotification
+                      message={notification.message}
+                      isVisible={notification.isVisible}
+                      onHide={hideNotification}
+                      type={notification.type}
+                    />
             )}
         </View>
     );
