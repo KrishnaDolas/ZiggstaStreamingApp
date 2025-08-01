@@ -46,15 +46,9 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             }
             const responce = await Apiclient.post(`topgifters/getGiftsByRoom`, params)
             if (responce.data.success) {
-                const data = responce.data.data;
-                let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.totalGiftValue), 0)
-                console.log('total gift value:', totalAmount);
-                // setLoader((prevdata) => ({ ...prevdata, GifterListLoader: false }))
-                // sort the data totalGiftValue wise
                 let sortedData = responce.data.data.sort((a, b) => parseInt(b.totalGiftValue) - parseInt(a.totalGiftValue));
                 setGiftersData(sortedData)
                 LoaderRef.current = false
-                console.log(sortedData);
             }
         } catch (error) {
             LoaderRef.current = false
@@ -69,12 +63,8 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             }
             const responce = await Apiclient.post(`topgifters/getAllGifters`, params)
             if (responce.data.success) {
-                const data = responce.data.data;
-                let totalAmount = data.reduce((total, item) => parseInt(total) + parseInt(item.giftValue), 0)
-                console.log('total gift value:', totalAmount);
                 setTotalgifters(responce.data.data)
                 LoaderRef.current = false
-                console.log('total gifters data:', responce.data.data);
             }
         } catch (error) {
             LoaderRef.current = false
@@ -89,15 +79,13 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 let RemoveHostFromViewerList= response.data?.members?.filter((item) => item.user_id !== userDetails?.userid)
                 setViewersList(RemoveHostFromViewerList || []);
                 LoaderRef.current = false
-                console.log('Viewers List:', response.data?.members);
             }
         } catch (error) {
             LoaderRef.current = false
-            console.error('Error fetching viewers:', error);
+           SendErrorTotheServer(error, "GetViewers")
         }
     }
     const handleUserProfileOpen = (userData) => {
-        console.log(userData);
         setOpenUserProfileData(userData);
         setIsOpenUserProfile(true);
     }
