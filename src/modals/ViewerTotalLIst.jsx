@@ -76,13 +76,13 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             LoaderRef.current = true
             const response = await Apiclient.get(`/rooms/${RoomID}/members`)
             if (response.data) {
-                let RemoveHostFromViewerList= response.data?.members?.filter((item) => item.user_id !== userDetails?.userid)
+                let RemoveHostFromViewerList = response.data?.members?.filter((item) => item.user_id !== userDetails?.userid)
                 setViewersList(RemoveHostFromViewerList || []);
                 LoaderRef.current = false
             }
         } catch (error) {
             LoaderRef.current = false
-           SendErrorTotheServer(error, "GetViewers")
+            SendErrorTotheServer(error, "GetViewers")
         }
     }
     const handleUserProfileOpen = (userData) => {
@@ -103,7 +103,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
 
         return (
             <TouchableOpacity
-            onPress={()=>handleUserProfileOpen(item)}
+                onPress={() => handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -179,7 +179,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
     const RenderItemForViewer = ({ item }) => {
         return (
             <TouchableOpacity
-            onPress={()=>handleUserProfileOpen(item)}
+                onPress={() => handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -201,7 +201,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
 
                 <View style={{ marginLeft: 15, flex: 1 }}>
                     <Text
-                        style={{ fontSize: 14, fontWeight: '600', color: '#222' }}
+                        style={{ fontSize: 14, fontWeight: '600', color: theme === 'light' ? '#222' : '#fff' }}
                     >
                         {item.username}
                     </Text>
@@ -210,7 +210,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     <Text
                         style={{
                             fontSize: 13,
-                            color: '#666',
+                            color: theme === 'light' ? '#666' : '#fff',
                             marginTop: 2
                         }}
                     >
@@ -225,7 +225,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
         const GiftImage = giftImages[item?.giftIcon] || require('../../assets/images/gifts/diamond3.gif');
         return (
             <TouchableOpacity
-            onPress={()=>handleUserProfileOpen(item)}
+                onPress={() => handleUserProfileOpen(item)}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -250,7 +250,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                 />
 
                 <View style={{ marginLeft: 15, flex: 1 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#222' }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: theme === 'light' ? '#222' : '#fff' }}>
                         {item.screenName}
                     </Text>
                 </View>
@@ -417,14 +417,14 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         {renderTabContent()}
                     </View>
                 </View>
-                {isopenuserProfile&& (
+                {isopenuserProfile && (
                     <ProfileScreenModal
-                    visible="true"
-                    onClose={() => setIsOpenUserProfile(false)}
-                    profileData={openUserProfileData}
-                    isMainProfile={true}
-                    isViewer={true}
-                />
+                        visible="true"
+                        onClose={() => setIsOpenUserProfile(false)}
+                        profileData={openUserProfileData}
+                        isMainProfile={true}
+                        isViewer={true}
+                    />
                 )}
             </Modal>
         </>
