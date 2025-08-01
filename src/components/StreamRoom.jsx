@@ -355,7 +355,7 @@ const StreamRoom = ({
             playNotification()
             setShowTooltip(true)
            setTimeout(() => {
-            // setShowTooltip(false)
+            setShowTooltip(false)
            }, 2000);
             Animated.loop(
                 Animated.sequence([
@@ -406,7 +406,7 @@ const StreamRoom = ({
         } else {
             blinkingAnim.setValue(1); // reset if no requests
         }
-    }, [streamrequestlist.length,showTooltip]);
+    }, [streamrequestlist.length]);
 
     const HidesettingPanel = () => {
         setOpenMoreSettingList(false)
