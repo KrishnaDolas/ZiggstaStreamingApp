@@ -222,8 +222,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: 'transparent',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
     borderRadius: 6,
     zIndex:45
   },
@@ -232,14 +230,13 @@ export const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
-    flex: 1,
-    marginRight: 3,
+    flexShrink: 1,
   },
 
   friendRequestIcon: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
-    padding: 10,
+    padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex:50

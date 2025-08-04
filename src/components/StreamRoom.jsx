@@ -30,7 +30,7 @@ import ProfileScreenModal from '../modals/ProfileScreenModal';
 import Sound from 'react-native-sound';
 import AnimatedNotification from './AnimatedNotification';
 import { ThemeContext } from '../context/ThemeContext';
-
+import GiftIcon from '../../assets/images/icons/icon_gift.png'
 
 const StreamRoom = ({
     remoteStreams,
@@ -217,7 +217,7 @@ const StreamRoom = ({
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name} (HOST)` });
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 } else {
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
                 }
@@ -536,6 +536,9 @@ const StreamRoom = ({
             SendErrorTotheServer(error, "SendGift")
         }
     }
+    const HnadleSendGiftToCoHost=(UserID,UserName)=>{
+        console.log(UserID,UserName);
+    }
     const handleFriendRequest = async (userid) => {
         try {
             if (!userData?.userid || !userid) {
@@ -616,6 +619,11 @@ const StreamRoom = ({
                                     {streamLayout[0]?.type !== 'local' && (
                                         <View style={styles.videoOverlay}>
                                             <View style={styles.userInfoContainer}>
+                                                    <TouchableOpacity
+                                                        onPress={() => HnadleSendGiftToCoHost(streamLayout[0]?.userId, streamLayout[0]?.Name)}
+                                                    >
+                                                        <Image source={GiftIcon} height={35} width={35} />
+                                                    </TouchableOpacity>
                                                 <Text style={styles.userName}>
                                                     {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
                                                 </Text>
@@ -644,6 +652,11 @@ const StreamRoom = ({
                                             {streamData?.type !== 'local' && (
                                                 <View style={styles.videoOverlay}>
                                                     <View style={styles.userInfoContainer}>
+                                                        <TouchableOpacity
+                                                            onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                        >
+                                                            <Image source={GiftIcon} height={25} width={25} />
+                                                        </TouchableOpacity>
                                                         <Text style={styles.userName}>
                                                             {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                         </Text>
@@ -678,6 +691,11 @@ const StreamRoom = ({
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
+                                                            <TouchableOpacity
+                                                                onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                            >
+                                                                <Image source={GiftIcon} style={{height:'35',width:'35'}} />
+                                                            </TouchableOpacity>
                                                             <Text style={styles.userName}>
                                                                 {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                             </Text>
@@ -710,6 +728,11 @@ const StreamRoom = ({
                                                 {streamData?.type !== 'local' && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
+                                                            <TouchableOpacity
+                                                                onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                            >
+                                                                <Image source={GiftIcon} style={{height:'25',width:'25'}} />
+                                                            </TouchableOpacity>
                                                             <Text style={styles.userName}>
                                                                 {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                             </Text>
@@ -746,6 +769,11 @@ const StreamRoom = ({
                                                 <View style={styles.videoOverlay}>
                                                     {streamData?.type !== 'local' && (
                                                         <View style={styles.userInfoContainer}>
+                                                            <TouchableOpacity
+                                                                onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                            >
+                                                                <Image source={GiftIcon} height={35} width={35} />
+                                                            </TouchableOpacity>
                                                             <Text style={styles.userName}>
                                                                 {streamData?.Name || streamData?.Name || 'Unknown User'}
                                                             </Text>
