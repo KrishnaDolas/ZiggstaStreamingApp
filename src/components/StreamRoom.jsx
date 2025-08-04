@@ -93,6 +93,7 @@ const StreamRoom = ({
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
     const [sendAnimationData, setSendAnimationData] = useState(null);
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
+    const [showUI, setShowUI] = useState(true);
     const [notification, setNotification] = useState({
         isVisible: false,
         message: '',
@@ -578,9 +579,13 @@ const StreamRoom = ({
         setOpenChatUserProfile(!openChatUserProfile)
         setSelectedUser(data)
     }
+    const HandleShowUi=()=>{
+        setShowUI(!showUI)
+        console.log("Pressed")
+    }
 
     return (
-        <View style={[styles.roomInfo]}>
+        <Pressable onPress={HandleShowUi}>
             <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <View style={styles.videoContainer}>
@@ -761,7 +766,7 @@ const StreamRoom = ({
                         )}
                     </View>
                 )}
-                {isStreaming && (
+                {isStreaming&& showUI && (
                     <>
                         <View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
@@ -1178,7 +1183,7 @@ const StreamRoom = ({
                     type={notification.type}
                 />
             )}
-        </View>
+        </Pressable>
     );
 };
 
