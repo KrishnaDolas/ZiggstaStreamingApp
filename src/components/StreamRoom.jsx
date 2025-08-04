@@ -537,6 +537,7 @@ const StreamRoom = ({
     }
     const handleFriendRequest = async (userid) => {
         try {
+            console.log("Hi");
             if (!userData?.userid && !userid) {
                 socket.emit('Clientlogs', "handleFriendRequest", `userData?.userid--${userData?.userid}, userid--${userid}`);
                 return;
@@ -989,7 +990,7 @@ const StreamRoom = ({
                                                         minWidth: 60,
                                                         alignItems: "center",
                                                         justifyContent: "center",
-                                                        zIndex: 999,
+                                                        zIndex: 9,
                                                     }}
                                                 >
                                                     <Animated.Image

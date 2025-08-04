@@ -180,12 +180,14 @@ export const styles = StyleSheet.create({
     width: '100%',
     height: screenHeight * 0.5 + 40,
     overflow: 'hidden',
+    zIndex: 10,
   },
   streamVideosInnerGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     width: '100%',
     height: '100%',
+    zIndex:15
     // justifyContent: 'center', // optional: space-around, space-evenly
   },
   streamVideo: {
@@ -204,6 +206,7 @@ export const styles = StyleSheet.create({
     // flex: 1,
     width: '100%',
     height: '100%',
+    zIndex: 19,
   },
 
   videoOverlay: {
@@ -211,7 +214,7 @@ export const styles = StyleSheet.create({
     bottom: 8,
     left: 8,
     right: 8,
-    zIndex: 10,
+    zIndex: 25,
   },
 
   userInfoContainer: {
@@ -222,7 +225,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
-    zIndex: 99
+    zIndex:45
   },
 
   userName: {
@@ -236,9 +239,10 @@ export const styles = StyleSheet.create({
   friendRequestIcon: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
-    padding: 4,
+    padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex:50
   },
   // stream third row 
   threeUserRow: {
@@ -315,15 +319,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#000',
   },
-  strMuteOffIconBoxOverlay: {
-    position: 'absolute',
-    height: screenHeight * 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: screenWidth * 1,
-    zIndex: 1100,
-  },
   controls: {
     position: 'absolute',
     height: screenHeight * 1,
@@ -332,7 +327,7 @@ export const styles = StyleSheet.create({
     width: screenWidth * 1,
     // paddingVertical: 10,
     // backgroundColor: 'transparent',
-    zIndex: 1000,
+    zIndex: 2,
   },
   streamControls: {
     flexDirection: 'row',
