@@ -327,7 +327,7 @@ export const styles = StyleSheet.create({
     width: screenWidth * 1,
     // paddingVertical: 10,
     // backgroundColor: 'transparent',
-    zIndex: 2,
+    zIndex: 10,
   },
   streamControls: {
     flexDirection: 'row',
@@ -1460,6 +1460,10 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignItems: 'center',
     paddingTop: 8,
+    position: 'absolute',
+    zIndex: 99,
+    top:0,
+    width: '100%',
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',
@@ -1550,6 +1554,10 @@ export const styles = StyleSheet.create({
     position: 'relative',
     // paddingBottom: 20,
     paddingVertical: 20,
+    position: 'absolute',
+    zIndex: 99,
+    bottom:0,
+    width: '100%',
   },
   strRoomFooterChatOrActionsBox: {
     flexDirection: 'row',

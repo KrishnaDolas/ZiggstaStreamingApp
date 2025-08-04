@@ -766,14 +766,14 @@ const StreamRoom = ({
                 )}
                 {isStreaming && (
                     <>
-                        <View style={[
+                        {/* <View style={[
                             styles.controls,
                             {
                                 bottom: 0,
                                 paddingBottom: insets.bottom > 0 ? insets.bottom : 0,
                                 paddingTop: insetsTop.top > 0 ? insetsTop.top : 0,
                             },
-                        ]}>
+                        ]}> */}
                             <View style={styles.strRoomHeader}>
                                 <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                     <View style={styles.strRoomHeaderLeft}>
@@ -1008,7 +1008,7 @@ const StreamRoom = ({
                                     )}
                                 </View>
                             </LinearGradient>
-                        </View>
+                        {/* </View> */}
                     </>
                 )}
             </View>
