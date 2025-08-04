@@ -103,35 +103,37 @@ const StreamRoom = ({
     const opacityAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        Animated.loop(
-          Animated.sequence([
-            Animated.parallel([
-              Animated.timing(scaleAnim1, {
-                toValue: 2.6,          // how big the ring grows
-                duration: 1500,
-                useNativeDriver: true,
-              }),
-              Animated.timing(opacityAnim, {
-                toValue: 0.5,          // fade out
-                duration: 1500,
-                useNativeDriver: true,
-              }),
-            ]),
-            Animated.parallel([
-              Animated.timing(scaleAnim1, {
-                toValue: 0,
-                duration: 0,
-                useNativeDriver: true,
-              }),
-              Animated.timing(opacityAnim, {
-                toValue: 1,
-                duration: 0,
-                useNativeDriver: true,
-              }),
-            ]),
-          ])
-        ).start();
-      }, [scaleAnim1, opacityAnim]);
+        if(showTooltip){
+            Animated.loop(
+                Animated.sequence([
+                  Animated.parallel([
+                    Animated.timing(scaleAnim1, {
+                      toValue: 2.6,          // how big the ring grows
+                      duration: 1500,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(opacityAnim, {
+                      toValue: 0.5,          // fade out
+                      duration: 1500,
+                      useNativeDriver: true,
+                    }),
+                  ]),
+                  Animated.parallel([
+                    Animated.timing(scaleAnim1, {
+                      toValue: 0,
+                      duration: 0,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(opacityAnim, {
+                      toValue: 1,
+                      duration: 0,
+                      useNativeDriver: true,
+                    }),
+                  ]),
+                ])
+              ).start();
+        }
+      }, [scaleAnim1, opacityAnim,showTooltip]);
 
 
     useEffect(() => {
@@ -411,57 +413,6 @@ const StreamRoom = ({
             showNotification("Someone wants to join as a guest", "")
             playNotification()
             setShowTooltip(true)
-            setTimeout(() => {
-                setShowTooltip(false)
-            }, 2000);
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(blinkingAnim, {
-                        toValue: 0,
-                        duration: 500,
-                        easing: Easing.linear,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(blinkingAnim, {
-                        toValue: 1,
-                        duration: 500,
-                        easing: Easing.linear,
-                        useNativeDriver: true,
-                    }),
-                ])
-            ).start();
-            Animated.sequence([
-                Animated.timing(shakeAnim, {
-                    toValue: 5, // Move right
-                    duration: 50,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(shakeAnim, {
-                    toValue: -5, // Move left
-                    duration: 50,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(shakeAnim, {
-                    toValue: 4, // Slightly right
-                    duration: 50,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(shakeAnim, {
-                    toValue: -4, // Slightly left
-                    duration: 50,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(shakeAnim, {
-                    toValue: 0, // Back to center
-                    duration: 50,
-                    useNativeDriver: true,
-                }),
-            ])
-                .start();
-
-
-        } else {
-            blinkingAnim.setValue(1); // reset if no requests
         }
     }, [streamrequestlist.length]);
 
@@ -1028,7 +979,8 @@ const StreamRoom = ({
                                                 setTogglerequest(!togglerequest)
                                                 setShowTooltip(false)
                                             }} style={styles.strRoomBottomBoxIconBox}>
-                                                    <Animated.View
+                                                    {showTooltip && streamrequestlist.length > 0 && (
+                                                        <Animated.View
                                                         style={[
                                                             {
                                                                 position: 'absolute',
@@ -1046,39 +998,11 @@ const StreamRoom = ({
                                                                 transform: [{ scale: scaleAnim1 }],
                                                             },
                                                         ]}
-                                                    />
+                                                    />)}
 
                                                 <Ionicons name="people" size={30} color="#fff" />
-                                                {streamrequestlist.length > 0 && (
-                                                    <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
-                                                )}
+                                                
                                             </TouchableOpacity>
-                                        )}
-                                        {showTooltip && streamrequestlist.length > 0 && (
-                                            <View
-                                                style={{
-                                                    position: "absolute",
-                                                    bottom: 30,  // position above the icon
-                                                    right: 30,
-                                                    paddingHorizontal: 8,
-                                                    paddingVertical: 7,
-                                                    borderRadius: 9,
-                                                    minWidth: 60,
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    zIndex: 9,
-                                                }}
-                                            >
-                                                <Animated.Image
-                                                    source={require("../../assets/images/icons/user_request_alert.png")}
-                                                    resizeMethod="resize"
-                                                    style={{
-                                                        height: 60,
-                                                        width: 65,
-                                                        transform: [{ translateX: shakeAnim }],
-                                                    }}
-                                                />
-                                            </View>
                                         )}
                                     </>
                                 )}
