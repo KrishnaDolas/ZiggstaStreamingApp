@@ -211,7 +211,7 @@ export const styles = StyleSheet.create({
 
   videoOverlay: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 5,
     left: 8,
     right: 8,
     zIndex: 25,
