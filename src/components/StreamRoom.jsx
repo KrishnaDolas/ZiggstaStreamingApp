@@ -214,6 +214,9 @@ const StreamRoom = ({
         if (scrollViewRef.current) {
             scrollViewRef.current.scrollToEnd({ animated: true });
         }
+        if(!showUI){
+            setShowUI(true)
+        }
     }, [roomchat]);
 
     // Function to fetch gifts from the API
@@ -410,6 +413,7 @@ const StreamRoom = ({
 
     useEffect(() => {
         if (streamrequestlist.length > 0) {
+            setShowUI(true)
             showNotification("Someone wants to join as a guest", "")
             playNotification()
             setShowTooltip(true)
@@ -584,7 +588,7 @@ const StreamRoom = ({
                             mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
                         />
                         <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                            <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                            <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                         </View>
                     </View>
                 ) : (
@@ -599,9 +603,9 @@ const StreamRoom = ({
                                         mirror={streamLayout[0].type === 'local' && isFrontCamera}
                                     />
                                     <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
-                                        <Text>{streamLayout[0]?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                        <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                     </View>
-                                    {streamLayout[0]?.type !== 'local' && (
+                                    {streamLayout[0]?.type !== 'local' &&showUI && (
                                         <View style={styles.videoOverlay}>
                                             <View style={styles.userInfoContainer}>
                                                     <TouchableOpacity
@@ -632,9 +636,9 @@ const StreamRoom = ({
                                                 mirror={streamData.type === 'local' && isFrontCamera}
                                             />
                                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                             </View>
-                                            {streamData?.type !== 'local' && (
+                                            {streamData?.type !== 'local'&&showUI && (
                                                 <View style={styles.videoOverlay}>
                                                     <View style={styles.userInfoContainer}>
                                                         <TouchableOpacity
@@ -671,9 +675,9 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
-                                                {streamData?.type !== 'local' && (
+                                                {streamData?.type !== 'local' &&showUI && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
                                                             <TouchableOpacity
@@ -708,9 +712,9 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
-                                                {streamData?.type !== 'local' && (
+                                                {streamData?.type !== 'local' && showUI && (
                                                     <View style={styles.videoOverlay}>
                                                         <View style={styles.userInfoContainer}>
                                                             <TouchableOpacity
@@ -749,10 +753,10 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
                                                 </View>
                                                 <View style={styles.videoOverlay}>
-                                                    {streamData?.type !== 'local' && (
+                                                    {streamData?.type !== 'local' &&showUI && (
                                                         <View style={styles.userInfoContainer}>
                                                             <TouchableOpacity
                                                                 onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
