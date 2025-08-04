@@ -99,6 +99,40 @@ const StreamRoom = ({
         message: '',
         type: 'info',
     });
+    const scaleAnim1 = useRef(new Animated.Value(0)).current;
+    const opacityAnim = useRef(new Animated.Value(1)).current;
+
+    useEffect(() => {
+        Animated.loop(
+          Animated.sequence([
+            Animated.parallel([
+              Animated.timing(scaleAnim1, {
+                toValue: 2.6,          // how big the ring grows
+                duration: 1500,
+                useNativeDriver: true,
+              }),
+              Animated.timing(opacityAnim, {
+                toValue: 0.5,          // fade out
+                duration: 1500,
+                useNativeDriver: true,
+              }),
+            ]),
+            Animated.parallel([
+              Animated.timing(scaleAnim1, {
+                toValue: 0,
+                duration: 0,
+                useNativeDriver: true,
+              }),
+              Animated.timing(opacityAnim, {
+                toValue: 1,
+                duration: 0,
+                useNativeDriver: true,
+              }),
+            ]),
+          ])
+        ).start();
+      }, [scaleAnim1, opacityAnim]);
+
 
     useEffect(() => {
         setIsInStreamRoom(true); // keep global value in sync
@@ -994,6 +1028,26 @@ const StreamRoom = ({
                                                 setTogglerequest(!togglerequest)
                                                 setShowTooltip(false)
                                             }} style={styles.strRoomBottomBoxIconBox}>
+                                                    <Animated.View
+                                                        style={[
+                                                            {
+                                                                position: 'absolute',
+                                                                top: '22%',
+                                                                left: '22%',
+                                                                width: 15,
+                                                                height: 15,
+                                                                borderWidth: 1,
+                                                                borderColor: '#00F043',
+                                                                borderRadius: 15,
+                                                                transform: [{ translateX: -5 }, { translateY: -5 }], // center ring
+                                                              },
+                                                            {
+                                                                opacity: opacityAnim,
+                                                                transform: [{ scale: scaleAnim1 }],
+                                                            },
+                                                        ]}
+                                                    />
+
                                                 <Ionicons name="people" size={30} color="#fff" />
                                                 {streamrequestlist.length > 0 && (
                                                     <Animated.View style={[globalStyles.notificationDot, { opacity: blinkingAnim }]} />
