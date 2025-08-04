@@ -137,7 +137,7 @@ const UserInterestUpdateModal = ({ visible, onClose }) => {
             >
                 <View style={{
                     width: '100%', // like drawer
-                    backgroundColor: theme === 'light' ? '#fff' : Colors.blackCardColor,
+                    backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor,
                     padding: 16,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },

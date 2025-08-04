@@ -3029,7 +3029,7 @@ export const themeStyles = {
     },
     // modal css
     profileModalOverlay: {
-      backgroundColor: Colors.blackCardColor,
+      backgroundColor: Colors.blackModalBgColor,
     },
     psmReportButton: {
       backgroundColor: Colors.blackBtnBg,
@@ -3048,13 +3048,13 @@ export const themeStyles = {
       color: '#fff',
     },
     psmProfileTopCard: {
-      backgroundColor: Colors.blackCardColor,
+      backgroundColor: Colors.blackModalBgColor,
     },
     psmProfileImageContainer: {
-      backgroundColor: Colors.blackCardColor,
+      backgroundColor: Colors.blackModalBgColor,
     },
     psmTopGiftersContainer: {
-      backgroundColor: Colors.blackCardColor,
+      backgroundColor: Colors.blackModalBgColor,
     },
     psmProfileName: {
       color: '#fff',
@@ -3069,7 +3069,7 @@ export const themeStyles = {
     },
 
     psmOtherGifterCard: {
-      backgroundColor: Colors.blackCardColor,
+      backgroundColor: Colors.blackModalBgColor,
       borderBottomColor: Colors.blackDividers,
       borderRightColor: Colors.blackDividers,
     },

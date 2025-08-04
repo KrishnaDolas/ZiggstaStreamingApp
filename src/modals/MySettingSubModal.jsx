@@ -15,6 +15,7 @@ import { useAppContext } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 import UserInterestUpdateModal from './UserInterestUpdateModal';
 import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 
 const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
@@ -194,7 +195,7 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
             >
                 <View style={{
                     width: '100%',
-                    backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
+                    backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor,
                     padding: 16,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },

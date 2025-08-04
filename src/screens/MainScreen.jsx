@@ -1,4 +1,4 @@
-import { View, StatusBar } from 'react-native';
+import { View, StatusBar, SafeAreaView } from 'react-native';
 import {
   Alert,
 } from 'react-native';
@@ -122,7 +122,7 @@ export const MainScreen = () => {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city,avatar:userData?.avatar } : { country: 'India', city: 'Pune' }
+        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar } : { country: 'India', city: 'Pune' }
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);
       }
@@ -142,7 +142,7 @@ export const MainScreen = () => {
       if (streamInfo) {
         console.log(`IsusersStreaming --->`, isuserstreaming);
         const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost,userData?.avatar)
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar)
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
@@ -196,7 +196,7 @@ export const MainScreen = () => {
       if (ChatMessages) {
         console.log(ChatMessages);
         let chat = ChatMessages.map((item) => {
-          return { ...item, userProfile: item?.userProfile,userID: item?.id, TYPE: "PLAYERCHAT" }
+          return { ...item, userProfile: item?.userProfile, userID: item?.id, TYPE: "PLAYERCHAT" }
         })
         console.log(chat);
         setRoomchat(chat)
@@ -259,7 +259,7 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleSignal');
     }
   }
-  const HandleNewMessage = ({ userName, message, id,userProfile }) => {
+  const HandleNewMessage = ({ userName, message, id, userProfile }) => {
     try {
       let own = userName
       if (userName === userData?.screenName) {
@@ -325,7 +325,7 @@ export const MainScreen = () => {
   }
   const HandleUserLeft = (socketId, userinfo) => {
     try {
-      if(userinfo){
+      if (userinfo) {
         HandleUserLeftStream(userinfo)
       }
       if (peersRef.current[socketId]) {
@@ -438,12 +438,12 @@ export const MainScreen = () => {
   }
   const HandlenewUserJoined = (userinfo) => {
     console.log('New user joined:', userinfo);
-    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
+    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, userID: userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
-      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,userID:userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
+      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, userID: userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
   }
@@ -617,7 +617,7 @@ export const MainScreen = () => {
       }
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address,userData?.avatar);
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -739,7 +739,7 @@ export const MainScreen = () => {
         message: formatted.trim(),
         id: userData.userid,
         timestamp: new Date().toLocaleTimeString(),
-        userProfile:userData?.avatar
+        userProfile: userData?.avatar
       };
 
       socket.emit('send-message', newMessage);
@@ -763,43 +763,47 @@ export const MainScreen = () => {
   };
 
   return (
-    <LinearGradient colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
-      <StatusBar
-        hidden={false}
-        barStyle="dark-content"
-        backgroundColor="#fff"
-      />
-      {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
-      <View style={[styles.container]}>
-        {isloading ? (<Loader LoaderImage={chatimage} currentStreamData={currentStreamData} />) : null}
-        {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
-        ) : (<StreamRoom
-          remoteStreams={remoteStreams}
-          localStream={localStream}
-          isStreaming={isStreaming}
-          requestStreamPermission={requestStreamPermission}
-          isFrontCamera={isFrontCamera}
-          Streamupdated={Streamupdated}
-          setStreamupdated={setStreamupdated}
-          toggleMute={toggleMute}
-          switchCamera={switchCamera}
-          leaveRoom={leaveRoom}
-          isMuted={isMuted}
-          isHost={isHost}
-          HandleChatmessages={HandleChatmessages}
-          roomchat={roomchat}
-          streamInfo={streamInfo}
-          streamrequestlist={streamrequestlist}
-          streamGuest={streamGuest}
-          hasRequestedStream={hasRequestedStream}
-          streamerList={streamerList}
-          isuserstreaming={isuserstreaming}
-          streammsg={streammsg}
-          isInStreamRoom={isInStreamRoom}
-          totalGiftValue={totalGiftValue}
-        />)}
-      </View>
-    </LinearGradient>
+    <SafeAreaView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
+        start={{ x: 0.5, y: 0 }} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
+        <StatusBar
+          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+          backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+          translucent={false}
+        />
+        {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
+        <View style={[styles.container]}>
+          {isloading ? (<Loader LoaderImage={chatimage} currentStreamData={currentStreamData} />) : null}
+          {!joined ? (
+            <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
+          ) : (<StreamRoom
+            remoteStreams={remoteStreams}
+            localStream={localStream}
+            isStreaming={isStreaming}
+            requestStreamPermission={requestStreamPermission}
+            isFrontCamera={isFrontCamera}
+            Streamupdated={Streamupdated}
+            setStreamupdated={setStreamupdated}
+            toggleMute={toggleMute}
+            switchCamera={switchCamera}
+            leaveRoom={leaveRoom}
+            isMuted={isMuted}
+            isHost={isHost}
+            HandleChatmessages={HandleChatmessages}
+            roomchat={roomchat}
+            streamInfo={streamInfo}
+            streamrequestlist={streamrequestlist}
+            streamGuest={streamGuest}
+            hasRequestedStream={hasRequestedStream}
+            streamerList={streamerList}
+            isuserstreaming={isuserstreaming}
+            streammsg={streammsg}
+            isInStreamRoom={isInStreamRoom}
+            totalGiftValue={totalGiftValue}
+          />)}
+        </View>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };

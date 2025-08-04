@@ -14,22 +14,19 @@ import {
     Animated,
     Dimensions,
 } from 'react-native';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import { useAppContext } from '../context/AppContext';
 import { getGenderFallbackImage } from '../utils/constant';
 import Colors from '../../assets/styles/Colors';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export const ChatScreen = ({ route, navigation }) => {
     const { chatUser } = route.params; // User data passed from MessageListScreen
-    const { userData } = useAppContext();
 
     const { theme } = useContext(ThemeContext);
     const insets = useSafeAreaInsets();
@@ -387,8 +384,11 @@ export const ChatScreen = ({ route, navigation }) => {
             chatStyles.container,
             { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff', paddingBottom: insets.bottom, }
         ]}>
-            <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
-
+            <StatusBar
+                barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+                backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+                translucent={false}
+            />
             {renderHeader()}
 
             <KeyboardAvoidingView

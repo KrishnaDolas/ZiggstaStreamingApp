@@ -10,6 +10,7 @@ import Apiclient from '../utils/Apiclient';
 import { useAppContext } from '../context/AppContext';
 import SentIcon from '../../assets/images/icons/Sent.png';
 import ReceivedIcon from '../../assets/images/icons/Received.png';
+import Colors from '../../assets/styles/Colors';
 
 const BalanceHistoryModal = ({ visible, onClose }) => {
     const { theme } = useContext(ThemeContext);
@@ -93,8 +94,7 @@ const BalanceHistoryModal = ({ visible, onClose }) => {
                 backdropOpacity={0}
                 style={[styles.profileModalMain]}
             >
-                <View style={[styles.profileModalOverlay,
-                themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.7, padding: 0 }]}>
+                <View style={[styles.profileModalOverlay, { backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#fff' }, { flex: 1, maxHeight: screenHeight * 0.7, padding: 0 }]}>
                     {/* close modal */}
                     <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginRight: 10, marginTop: 10 }]}>
                         <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />

@@ -82,7 +82,7 @@ const CameraActionSheet = ({
                     style={[
                         styles.container,
                         {
-                            backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#FFFFFF',
+                            backgroundColor: theme === 'dark' ? Colors.blackModalBgColor : '#FFFFFF',
                             transform: [{ translateY }],
                             opacity,
                         }

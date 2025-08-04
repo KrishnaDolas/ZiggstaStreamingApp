@@ -130,9 +130,16 @@ const SearchModal = ({ visible, onClose,
                     useNativeDriver={true}
                     avoidKeyboard={false}
                     backdropOpacity={0}
-                    style={[styles.profileModalMain, { margin: 0 }]}
+                    style={[styles.profileModalMain]}
                 >
-                    <View style={[styles.profileModalOverlay, themeStyles[theme].profileModalOverlay, { height: screenHeight * 0.6 }]}>
+                    <View
+                        // style={[styles.profileModalOverlay, themeStyles[theme].profileModalOverlay, { height: screenHeight * 0.6 }]}
+                        style={[
+                            styles.profileModalOverlay,
+                            themeStyles[theme].profileModalOverlay,
+                            { flex: 1, maxHeight: screenHeight * 0.7 },
+                        ]}
+                    >
                         {/* close modal */}
                         <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
                             <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />

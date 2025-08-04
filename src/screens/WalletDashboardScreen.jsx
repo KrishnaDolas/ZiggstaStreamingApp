@@ -210,16 +210,16 @@ export const WalletDashboardScreen = () => {
     );
 
     return (
-        <LinearGradient
-            style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
-            colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}>
-            <SafeAreaView style={[styles.messageListSafeView]}>
+        <SafeAreaView style={[styles.messageListSafeView]}>
+            <LinearGradient
+                style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
+                colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}>
                 <StatusBar
-                    hidden={false} // Show the status bar
-                    barStyle="dark-content"
-                    backgroundColor="#fff"
+                    barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+                    backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+                    translucent={false}
                 />
                 <StreamListHeader />
                 <View
@@ -570,8 +570,8 @@ export const WalletDashboardScreen = () => {
                     <BalanceHistoryModal visible="true" onClose={() => setVisibleModal(null)} />
                 )}
                 {/* <Footer /> */}
-            </SafeAreaView>
-        </LinearGradient>
+            </LinearGradient>
+        </SafeAreaView>
 
     );
 };

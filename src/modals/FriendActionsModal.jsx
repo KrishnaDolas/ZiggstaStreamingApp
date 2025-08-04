@@ -14,6 +14,7 @@ import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant'
 import ProfileScreenModal from './ProfileScreenModal';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import Colors from '../../assets/styles/Colors';
 
 
 const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
@@ -158,7 +159,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                 {isModalRendered &&
 
                     <View style={{
-                        backgroundColor: theme === 'light' ? '#fff' : '#212121',
+                        backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor,
                         borderTopLeftRadius: 15,
                         borderTopRightRadius: 15,
                         padding: 10,

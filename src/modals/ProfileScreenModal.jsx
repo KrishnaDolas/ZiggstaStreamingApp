@@ -798,7 +798,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 useNativeDriver
                 style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
             >
-                <View style={{ backgroundColor: theme === 'dark' ? Colors.blackCardColor : '#fff', padding: 10, borderRadius: 10 }}>
+                <View style={{ backgroundColor: theme === 'dark' ? Colors.blackModalBgColor : '#fff', padding: 10, borderRadius: 10 }}>
                     <Image
                         source={{ uri: avatarToPreview }}
                         style={{

@@ -293,15 +293,16 @@ export const MessageListScreen = () => {
     }, [friendListType]);
 
     return (
-        <LinearGradient
-            style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
-            colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}>
-            <SafeAreaView style={styles.messageListSafeView}>
+        <SafeAreaView style={styles.messageListSafeView}>
+            <LinearGradient
+                style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
+                colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}>
                 <StatusBar
-                    hidden={false} // Show the status bar
-                    barStyle="dark-content"
+                    barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+                    backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+                    translucent={false}
                 />
                 <StreamListHeader userData={userData} />
                 <View
@@ -418,8 +419,8 @@ export const MessageListScreen = () => {
                         onClose={() => setVisibleModal(null)}
                     />
                 )}
-            </SafeAreaView>
-        </LinearGradient>
+            </LinearGradient>
+        </SafeAreaView>
 
     );
 };
