@@ -584,9 +584,9 @@ export const MainScreen = () => {
         setRemoteStreams(prev => {
           const exists = prev.some(s => s.id === socketId);
           if (exists) {
-            return prev.map(s => s.id === socketId ? { id: socketId, stream } : s);
+            return prev.map(s => s.id === socketId ? { ...s, stream } : s);
           }
-          return [...prev, { id: socketId, stream }];
+          return [...prev, { id: socketId, stream, isSpeaking: false }];
         });
         // Route audio to speaker because it's a video call
         InCallManager.start({ media: 'video', auto: true });
@@ -598,6 +598,31 @@ export const MainScreen = () => {
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
+       // ---- AUDIO LEVEL DETECTION ----
+       setInterval(async () => {
+        const receivers = peer.getReceivers();
+        const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+        if (audioReceiver) {
+          const stats = await audioReceiver.getStats();
+          stats.forEach(report => {
+            // check inbound-rtp for audio
+            if (report.type === 'inbound-rtp' && (report.mediaType === 'audio' || report.kind === 'audio')) {
+              let audioLevel = report.audioLevel;
+              // if audioLevel is undefined, calculate manually (Chrome-like)
+              if (audioLevel === undefined && report.totalAudioEnergy && report.totalSamplesDuration) {
+                audioLevel = Math.sqrt(report.totalAudioEnergy / report.totalSamplesDuration);
+              }
+      
+              audioLevel = audioLevel || 0;
+              const isSpeaking = audioLevel > 0.05; // threshold
+              setRemoteStreams(prev => prev.map(s =>
+                s.id === socketId ? { ...s, audioLevel, isSpeaking } : s
+              ));
+            }
+          });
+        }
+      }, 200);
+      
 
       return peer;
     } catch (error) {

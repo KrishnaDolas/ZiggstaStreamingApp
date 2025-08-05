@@ -3,7 +3,8 @@ import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
     ActivityIndicator, Platform,
-    Pressable, BackHandler
+    Pressable, BackHandler,
+    ImageBackground
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -31,6 +32,7 @@ import Sound from 'react-native-sound';
 import AnimatedNotification from './AnimatedNotification';
 import { ThemeContext } from '../context/ThemeContext';
 import GiftIcon from '../../assets/images/icons/icon_gift.png'
+import AudioSpectrum from './AudioSpectrum';
 
 const StreamRoom = ({
     remoteStreams,
@@ -251,14 +253,14 @@ const StreamRoom = ({
     // Manage stream layout based on viewer count and streams
     useEffect(() => {
         const streams = [];
-        remoteStreams.forEach(({ id, stream }) => {
+        remoteStreams.forEach(({ id, stream,isSpeaking,audioLevel }) => {
             const hostInfo = streamerList.find((item) => item.IsHost === true)
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
                 } else {
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}` });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
                 }
             } else {
                 SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
@@ -739,48 +741,67 @@ const StreamRoom = ({
                                     ))}
                                 </View>
                             </View>
-                        ) : (
-                            <View style={[styles.streamVideosInnerGrid]}>
-                                {streamLayout.map((streamData, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
-                                                <RTCView
-                                                    key={streamData.type === 'local' ? 'local' : streamData.userId}
-                                                    streamURL={streamData.stream.toURL()}
-                                                    style={[styles.streamVideo]}
-                                                    objectFit="cover"
-                                                    mirror={streamData.type === 'local' && isFrontCamera}
-                                                />
-                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
-                                                </View>
-                                                <View style={styles.videoOverlay}>
-                                                    {streamData?.type !== 'local' &&showUI && (
-                                                        <View style={styles.userInfoContainer}>
-                                                            <TouchableOpacity
-                                                                onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                            >
-                                                                <Image source={GiftIcon} height={35} width={35} />
-                                                            </TouchableOpacity>
-                                                            <Text style={styles.userName}>
-                                                                {streamData?.Name || streamData?.Name || 'Unknown User'}
-                                                            </Text>
-                                                            <TouchableOpacity
-                                                                style={styles.friendRequestIcon}
-                                                                onPress={() => handleFriendRequest(streamData?.userId)}
-                                                            >
-                                                                <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />
-                                                            </TouchableOpacity>
+                            ) : (
+                                <View style={[styles.streamVideosInnerGrid]}>
+                                    {streamLayout.map((streamData, index) => {
+                                        return (
+                                            <Fragment key={index}>
+                                                <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
+                                                    <RTCView
+                                                        key={streamData.type === 'local' ? 'local' : streamData.userId}
+                                                        streamURL={streamData.stream.toURL()}
+                                                        style={[styles.streamVideo]}
+                                                        objectFit="cover"
+                                                        mirror={streamData.type === 'local' && isFrontCamera}
+                                                    />
+                                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
+                                                    </View>
+                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            bottom: 60,
+                                                            left: 10,
+                                                            right: 10,
+                                                            alignItems: 'start',
+                                                        }}>
+                                                            <AudioSpectrum
+                                                                audioLevel={streamData.audioLevel}
+                                                                streamLayout={streamLayout}
+                                                            />
                                                         </View>
                                                     )}
+                                                    <View style={styles.videoOverlay}>
+                                                        {streamData?.type !== 'local' && showUI && (
+                                                            <ImageBackground
+                                                                source={require('../../assets/images/icons/name_bg.png')}
+                                                                style={{ padding: 3 }}
+                                                            >
+                                                                <View style={styles.userInfoContainer}>
+                                                                    <TouchableOpacity
+                                                                        onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                                    >
+                                                                        <Image source={GiftIcon} height={35} width={35} />
+                                                                    </TouchableOpacity>
+                                                                    <Text style={styles.userName}>
+                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    </Text>
+                                                                    <TouchableOpacity
+                                                                        style={styles.friendRequestIcon}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                    >
+                                                                        <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </ImageBackground>
+                                                        )}
+                                                    </View>
                                                 </View>
-                                            </View>
-                                        </Fragment>
-                                    );
-                                })}
-                            </View>
-                        )}
+                                            </Fragment>
+                                        );
+                                    })}
+                                </View>
+                            )}
                     </View>
                 )}
                 {isStreaming&& showUI && (
