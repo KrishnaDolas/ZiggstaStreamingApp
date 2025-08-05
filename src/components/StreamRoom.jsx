@@ -20,7 +20,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Apiclient from '../utils/Apiclient';
 import { ConfirmModal } from '../modals/ConfirmModal';
 import RequestModal from '../modals/RequestModal';
-import { globalStyles } from '../../assets/styles/GlobalStyles';
 import MessageModal from '../modals/MessageModal';
 import { useAppContext } from '../context/AppContext';
 import ReportUserModal from '../modals/ReportUserModal';
@@ -77,7 +76,6 @@ const StreamRoom = ({
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;
-    const shakeAnim = useRef(new Animated.Value(0)).current;
     const animatedTranslateY = useRef(new Animated.Value(20)).current;
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const [streamLayout, setStreamLayout] = useState([]);
@@ -531,6 +529,7 @@ const StreamRoom = ({
     }
     const HnadleSendGiftToCoHost=(UserID,UserName)=>{
         console.log(UserID,UserName);
+        setGiftModalVisible(true)
     }
     const handleFriendRequest = async (userid) => {
         try {
@@ -1128,7 +1127,7 @@ const StreamRoom = ({
                     </>
                 )}
             </View>
-            {giftModalVisible && !isHost && (
+            {giftModalVisible  && (
                 <Modal
                     isVisible={giftModalVisible}
                     animationIn="slideInUp"
