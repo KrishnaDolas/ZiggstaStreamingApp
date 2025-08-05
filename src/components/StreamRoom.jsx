@@ -596,7 +596,7 @@ const StreamRoom = ({
                         {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0  && (
                             <View style={{
                                 position: 'absolute',
-                                top: 90,
+                                top: showUI?90: 10,
                                 left: 10,
                                 right: 10,
                                 alignItems: 'start',
@@ -895,9 +895,9 @@ const StreamRoom = ({
                             )}
                     </View>
                 )}
-                {isStreaming&& showUI && (
+                {isStreaming && (
                     <>
-                        <View style={styles.strRoomHeader}>
+                        {showUI &&(<View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
@@ -949,10 +949,10 @@ const StreamRoom = ({
                                     <Ionicons name="close" size={30} color="#fff" />
                                 </TouchableOpacity>
                             </View>
-                        </View>
+                        </View>)}
                         <LinearGradient
                             colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
-                            start={{ x: 0.5, y: 1 }}
+                            start={{ x: 0.5, y: showUI ?1:0 }}
                             end={{ x: 0.5, y: 0 }}
                             style={[styles.strRoomFooter]}
                         >
@@ -963,29 +963,31 @@ const StreamRoom = ({
                                             ref={scrollViewRef}
                                             showsVerticalScrollIndicator={false}
                                         >
-                                            {roomchat.map((chat, ind) => (
-                                                <View key={ind} style={styles.streamChatItem}>
-                                                    <TouchableOpacity onPress={() => HandleOpenChatUserProfile(chat)}>
-                                                        <Image style={styles.streamChatItemProfileImg}
-                                                            source={!chat.userProfile || chat.userProfile === 'default'
-                                                                ? getGenderFallbackImage(chat.userProfile)
-                                                                : { uri: chat.userProfile }
-                                                            }
-                                                        />
-                                                    </TouchableOpacity>
-                                                    <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                        <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
-                                                            {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
-                                                        </Text>
-                                                        <Text numberOfLines={3} style={styles.streamChatMessage}>
-                                                            {chat?.message}
-                                                        </Text>
+                                            {showUI && (
+                                                roomchat.map((chat, ind) => (
+                                                    <View key={ind} style={styles.streamChatItem}>
+                                                        <TouchableOpacity onPress={() => HandleOpenChatUserProfile(chat)}>
+                                                            <Image style={styles.streamChatItemProfileImg}
+                                                                source={!chat.userProfile || chat.userProfile === 'default'
+                                                                    ? getGenderFallbackImage(chat.userProfile)
+                                                                    : { uri: chat.userProfile }
+                                                                }
+                                                            />
+                                                        </TouchableOpacity>
+                                                        <View numberOfLines={1} style={styles.streamChatMessageBox}>
+                                                            <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
+                                                                {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
+                                                            </Text>
+                                                            <Text numberOfLines={3} style={styles.streamChatMessage}>
+                                                                {chat?.message}
+                                                            </Text>
+                                                        </View>
                                                     </View>
-                                                </View>
-                                            ))}
+                                                ))
+                                            )}
                                         </ScrollView>
                                     </View>
-                                    <View style={styles.strRoomFooterSocialActions}>
+                                    {showUI && (<View style={styles.strRoomFooterSocialActions}>
                                         {!isHost && streamerList?.length === 1 && (<>
                                             <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={() => handleFriendRequest(userDetails?.userid)}>
                                                 <Ionicons name="person-add" size={30} color="#fff" />
@@ -997,10 +999,10 @@ const StreamRoom = ({
                                         <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
                                             <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                         </TouchableOpacity>
-                                    </View>
+                                    </View>)}
                                 </View>
                             </>
-                            {openMoreSettingList && (
+                            {openMoreSettingList &&showUI && (
                                 <LinearGradient
                                     colors={['rgba(8, 8, 8, 0.28)', 'rgba(8, 8, 8, 0)']}
                                     start={{ x: 0.5, y: 1 }}
@@ -1057,7 +1059,7 @@ const StreamRoom = ({
                                     </Animated.View>
                                 </LinearGradient>
                             )}
-                            <View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
+                            {showUI && (<View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
                                 <TextInput
                                     placeholder=""
                                     placeholderTextColor="#414141"
@@ -1122,7 +1124,7 @@ const StreamRoom = ({
                                         )}
                                     </>
                                 )}
-                            </View>
+                            </View>)}
                         </LinearGradient>
                     </>
                 )}
