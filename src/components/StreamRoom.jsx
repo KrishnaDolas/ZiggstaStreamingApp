@@ -262,6 +262,9 @@ const StreamRoom = ({
                     streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
                 } else {
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
+
                 }
             } else {
                 SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
@@ -608,6 +611,20 @@ const StreamRoom = ({
                                     <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
                                         <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                     </View>
+                                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && showUI && (
+                                            <View style={{
+                                                position: 'absolute',
+                                                bottom: 60,
+                                                left: 10,
+                                                right: 10,
+                                                alignItems: 'start',
+                                            }}>
+                                                <AudioSpectrum
+                                                    audioLevel={streamLayout[0]?.audioLevel}
+                                                    streamLayout={streamLayout}
+                                                />
+                                            </View>
+                                        )}
                                     {streamLayout[0]?.type !== 'local' &&showUI && (
                                         <View style={styles.videoOverlay}>
                                                 <ImageBackground
@@ -646,6 +663,20 @@ const StreamRoom = ({
                                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                 <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                             </View>
+                                            {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                <View style={{
+                                                    position: 'absolute',
+                                                    bottom: 60,
+                                                    left: 10,
+                                                    right: 10,
+                                                    alignItems: 'start',
+                                                }}>
+                                                    <AudioSpectrum
+                                                        audioLevel={streamData.audioLevel}
+                                                        streamLayout={streamLayout}
+                                                    />
+                                                </View>
+                                            )}
                                             {streamData?.type !== 'local'&&showUI && (
                                                 <View style={styles.videoOverlay}>
                                                     <ImageBackground
@@ -690,6 +721,20 @@ const StreamRoom = ({
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
+                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                    <View style={{
+                                                        position: 'absolute',
+                                                        bottom: 60,
+                                                        left: 10,
+                                                        right: 10,
+                                                        alignItems: 'start',
+                                                    }}>
+                                                        <AudioSpectrum
+                                                            audioLevel={streamData.audioLevel}
+                                                            streamLayout={streamLayout}
+                                                        />
+                                                    </View>
+                                                )}
                                                 {streamData?.type !== 'local' &&showUI && (
                                                     <View style={styles.videoOverlay}>
                                                          <ImageBackground
@@ -732,6 +777,20 @@ const StreamRoom = ({
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
+                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                    <View style={{
+                                                        position: 'absolute',
+                                                        bottom: 60,
+                                                        left: 10,
+                                                        right: 10,
+                                                        alignItems: 'start',
+                                                    }}>
+                                                        <AudioSpectrum
+                                                            audioLevel={streamData.audioLevel}
+                                                            streamLayout={streamLayout}
+                                                        />
+                                                    </View>
+                                                )}
                                                 {streamData?.type !== 'local' && showUI && (
                                                     <View style={styles.videoOverlay}>
                                                         <ImageBackground

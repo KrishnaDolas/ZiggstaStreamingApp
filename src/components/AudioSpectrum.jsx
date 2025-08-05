@@ -36,7 +36,7 @@ const AudioSpectrum = ({ audioLevel, streamLayout }) => {
       }
     }, [audioLevel]);
   
-    const barSize = streamLayout.length >= 6 ? 2 : 3;
+    const barSize = streamLayout.length >= 6 ? 2 : 2;
     const barSpacing = streamLayout.length >= 6 ? 1 : 2;
   
     return (
@@ -46,9 +46,9 @@ const AudioSpectrum = ({ audioLevel, streamLayout }) => {
         height: streamLayout.length >= 6 ? 20 : 30,
         justifyContent: 'center',
         borderRadius: 40,
-        backgroundColor:'rgba(0,0,0,0.5)',
+        backgroundColor:'rgba(14, 13, 13, 0.5)',
         padding: 2,
-        width: '20%',
+        width: '30',
         height:'30'
       }}>
         {animatedValues.map((animValue, index) => (
