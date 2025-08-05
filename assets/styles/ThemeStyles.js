@@ -187,7 +187,7 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     width: '100%',
     height: '100%',
-    zIndex:15
+    zIndex: 15
     // justifyContent: 'center', // optional: space-around, space-evenly
   },
   streamVideo: {
@@ -223,7 +223,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'transparent',
     borderRadius: 6,
-    zIndex:45
+    zIndex: 45
   },
 
   userName: {
@@ -239,7 +239,7 @@ export const styles = StyleSheet.create({
     padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex:50
+    zIndex: 50
   },
   // stream third row 
   threeUserRow: {
@@ -1064,6 +1064,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 0,
   },
+
+  streamListLuckyWheelBtn: {
+    position: 'absolute',
+    bottom: '16%',
+    right: 10,
+    zIndex: 9,
+  },
+
   streamListFiltersWhiteBtn: {
     backgroundColor: '#fff',
     width: 60,
@@ -1459,7 +1467,7 @@ export const styles = StyleSheet.create({
     paddingTop: 8,
     position: 'absolute',
     zIndex: 99,
-    top:0,
+    top: 0,
     width: '100%',
   },
   strRoomHeaderLeft: {
@@ -1553,7 +1561,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 20,
     position: 'absolute',
     zIndex: 99,
-    bottom:0,
+    bottom: 0,
     width: '100%',
   },
   strRoomFooterChatOrActionsBox: {
@@ -2652,6 +2660,10 @@ export const themeStyles = {
     profileModalOverlay: {
       backgroundColor: 'white',
     },
+    profileLargeModalOverlay: {
+      backgroundColor: 'white',
+    },
+
     psmReportButton: {
       backgroundColor: '#e6f0ff',
     },
@@ -3031,6 +3043,9 @@ export const themeStyles = {
     profileModalOverlay: {
       backgroundColor: Colors.blackModalBgColor,
     },
+    profileLargeModalOverlay: {
+      backgroundColor: Colors.blackLargeModalBgColor,
+    },
     psmReportButton: {
       backgroundColor: Colors.blackBtnBg,
     },
@@ -3048,13 +3063,13 @@ export const themeStyles = {
       color: '#fff',
     },
     psmProfileTopCard: {
-      backgroundColor: Colors.blackModalBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
     },
     psmProfileImageContainer: {
-      backgroundColor: Colors.blackModalBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
     },
     psmTopGiftersContainer: {
-      backgroundColor: Colors.blackModalBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
     },
     psmProfileName: {
       color: '#fff',
@@ -3069,7 +3084,7 @@ export const themeStyles = {
     },
 
     psmOtherGifterCard: {
-      backgroundColor: Colors.blackModalBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
       borderBottomColor: Colors.blackDividers,
       borderRightColor: Colors.blackDividers,
     },
@@ -3087,7 +3102,7 @@ export const themeStyles = {
       backgroundColor: '#2a2a2a',
     },
     fullScreenModalOverlay: {
-      backgroundColor: Colors.blackBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
     },
     modalSmallTitle: {
       color: '#fff',

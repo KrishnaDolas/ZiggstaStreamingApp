@@ -470,7 +470,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 <Animated.View
                     style={[
                         styles.profileModalOverlay,
-                        themeStyles[theme].profileModalOverlay,
+                        themeStyles[theme].profileLargeModalOverlay,
                         { flex: 1, maxHeight: screenHeight * 0.8 + 30 },
                         { transform: [{ translateY: panY }] },
                     ]}

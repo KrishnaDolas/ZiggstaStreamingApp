@@ -11,15 +11,17 @@ import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import themeColors from '../../assets/styles/Colors';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
+import LuckyWheelModal from '../modals/LuckyWheelModal';
 
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
     const { userData,
         userAddress,
         subscriptionStatus,
@@ -41,6 +43,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const [searchFilteredData, setSearchFilteredData] = useState([]);
     const [isdisable, setIsDisable] = useState(false); // for disabling the button when creating room
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
 
     // Function to fetch user details from the API
     const getUserDetails = async () => {
@@ -449,7 +452,20 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 onRefresh={handleRefresh}
                             />)}
                     </View>
-
+                    <TouchableOpacity
+                        style={[
+                            styles.streamListLuckyWheelBtn,
+                            insets.bottom > 0 && { paddingBottom: insets.bottom },
+                        ]}
+                        // onPress={() => navigation.navigate('LuckyWheel', { userData })}
+                        onPress={() => setModalVisible(true)}
+                    >
+                        <Image
+                            style={{ width: 80, height: 80 }}
+                            source={require('../../assets/images/lucky-wheel/lw-home.png')}
+                            resizeMode="contain"
+                        />
+                    </TouchableOpacity>
                     <View style={[
                         styles.streamListFiltersBtnGroup,
                         insets.bottom > 0 && { paddingBottom: insets.bottom },
@@ -472,86 +488,88 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 </>
             ) : headerMainTab === 'leaderboards' ? (
                 <LeaderBoards />
-            ) : null}
-
-            {openStreamInputModal && (
-                <Modal isVisible={openStreamInputModal}
-                    onBackdropPress={() => setOpenStreamInputModal(false)}
-                    animationIn="slideInUp"
-                    animationOut="slideOutDown"
-                    animationInTiming={300}
-                    animationOutTiming={200}
-                    useNativeDriver={true}
-                    avoidKeyboard={false}
-                    backdropOpacity={0}
-                    style={[styles.profileModalMain]}
-                >
-                    <View style={[styles.profileModalOverlay,
-                    themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.7 }]}>
-
-                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
-                            <TouchableOpacity
-                                onPress={() => setOpenStreamInputModal(false)}
-                                style={[styles.modalCloseBtn]}
-                            >
-                                <Ionicons name="close" size={24} color={theme === 'light' ? '#333' : '#fff'} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.strHedSearchModalForm}>
-                            <TextInput
-                                placeholder="Enter Stream Description"
-                                placeholderTextColor="#888"
-                                value={roomIdInput}
-                                onChangeText={setRoomIdInput}
-                                style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
-                            />
-                            <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
-                                <LinearGradient
-                                    colors={['#de0037', '#de0037']}
-                                    start={{ x: 0.15, y: 1 }}
-                                    end={{ x: 1, y: 0 }}
-                                    style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
-                                    <Text
-                                        style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                        Start Stream
-                                    </Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        </View>
-                        <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
-                        {isInterestLoading ? (
-                            <View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                                <ActivityIndicator size="large" color="#d93a63" />
-                            </View>
-                        ) :
-                            <ScrollView
-                                showsVerticalScrollIndicator={false}
-                            >
-                                <View style={styles.modalCategoryContainer}>
-                                    {categoryData.map((category, index) => {
-                                        const isSelected = selectedCategoryIndices.includes(category.categoryID);
-                                        return (
-                                            <TouchableOpacity
-                                                key={category.categoryID}
-                                                onPress={() => toggleCategory(category.categoryID)}
-                                                style={[
-                                                    styles.modalCategoryButton,
-                                                    isSelected && styles.modalCategoryButtonActive,
-                                                ]}>
-                                                <Text style={styles.modalCategoryText}>{category.categoryName}</Text>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
-                                </View>
-                            </ScrollView>
-                        }
-                    </View>
-                </Modal>
-            )
+            ) : null
             }
 
+            {
+                openStreamInputModal && (
+                    <Modal isVisible={openStreamInputModal}
+                        onBackdropPress={() => setOpenStreamInputModal(false)}
+                        animationIn="slideInUp"
+                        animationOut="slideOutDown"
+                        animationInTiming={300}
+                        animationOutTiming={200}
+                        useNativeDriver={true}
+                        avoidKeyboard={false}
+                        backdropOpacity={0}
+                        style={[styles.profileModalMain]}
+                    >
+                        <View style={[styles.profileModalOverlay,
+                        themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.7 }]}>
+
+                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                                <TouchableOpacity
+                                    onPress={() => setOpenStreamInputModal(false)}
+                                    style={[styles.modalCloseBtn]}
+                                >
+                                    <Ionicons name="close" size={24} color={theme === 'light' ? '#333' : '#fff'} />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.strHedSearchModalForm}>
+                                <TextInput
+                                    placeholder="Enter Stream Description"
+                                    placeholderTextColor="#888"
+                                    value={roomIdInput}
+                                    onChangeText={setRoomIdInput}
+                                    style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
+                                />
+                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
+                                    <LinearGradient
+                                        colors={['#de0037', '#de0037']}
+                                        start={{ x: 0.15, y: 1 }}
+                                        end={{ x: 1, y: 0 }}
+                                        style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
+                                        <Text
+                                            style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
+                                            Start Stream
+                                        </Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>
+                            {isInterestLoading ? (
+                                <View style={{ height: 200, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+                                    <ActivityIndicator size="large" color="#d93a63" />
+                                </View>
+                            ) :
+                                <ScrollView
+                                    showsVerticalScrollIndicator={false}
+                                >
+                                    <View style={styles.modalCategoryContainer}>
+                                        {categoryData.map((category, index) => {
+                                            const isSelected = selectedCategoryIndices.includes(category.categoryID);
+                                            return (
+                                                <TouchableOpacity
+                                                    key={category.categoryID}
+                                                    onPress={() => toggleCategory(category.categoryID)}
+                                                    style={[
+                                                        styles.modalCategoryButton,
+                                                        isSelected && styles.modalCategoryButtonActive,
+                                                    ]}>
+                                                    <Text style={styles.modalCategoryText}>{category.categoryName}</Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </ScrollView>
+                            }
+                        </View>
+                    </Modal>
+                )
+            }
+            <LuckyWheelModal visible={modalVisible} onClose={() => setModalVisible(false)} />
             {/* <Footer /> */}
-        </LinearGradient>
+        </LinearGradient >
     );
 };
 
