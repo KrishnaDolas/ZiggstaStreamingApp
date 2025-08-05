@@ -407,6 +407,8 @@ const StreamRoom = ({
             if (response) {
                 const user = response.data.user;
                 setUserDetails(user);
+                setGiftSendData({userName: user?.screenName, userId: user?.userid})
+                console.log("User Details:", user);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'GetUserDetails')
