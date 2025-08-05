@@ -586,6 +586,7 @@ export const MainScreen = () => {
           if (exists) {
             return prev.map(s => s.id === socketId ? { ...s, stream } : s);
           }
+          // add the audio level
           return [...prev, { id: socketId, stream, isSpeaking: false }];
         });
         // Route audio to speaker because it's a video call

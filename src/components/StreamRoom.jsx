@@ -257,11 +257,12 @@ const StreamRoom = ({
         remoteStreams.forEach(({ id, stream,isSpeaking,audioLevel }) => {
             const hostInfo = streamerList.find((item) => item.IsHost === true)
             const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
+            let Alevel=audioLevel ||0.04
             if (stream && typeof stream.toURL === 'function') {
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
+                    streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:Alevel });
                 } else {
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
+                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:Alevel });
                 }
             } else {
                 SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
