@@ -514,7 +514,13 @@ const StreamRoom = ({
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
+                    if(streamInfo?.hostID === userData?.userid){
+                        socket.emit('Send-gift', userData?.screenName,true, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
+                    }else{
+                        socket.emit('Send-gift', userData?.screenName,false, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
+
+                    }
+
                     setSendAnimationData({
                         giftName: item?.giftIcon,
                         recipientName: GiftSenderData.userName
