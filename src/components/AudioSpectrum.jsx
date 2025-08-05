@@ -35,11 +35,6 @@ const AudioSpectrum = ({ audioLevel, streamLayout }) => {
         });
       }
 
-      return () => {
-        animatedValues.forEach((animValue) => {
-          animValue.stopAnimation();
-        });
-      }
     }, [audioLevel]);
   
     const barSize = streamLayout.length >= 6 ? 2 : 2;
