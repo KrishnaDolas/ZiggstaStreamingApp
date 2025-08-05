@@ -848,13 +848,13 @@ const StreamRoom = ({
                                                     <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                         <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
                                                     </View>
-                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0  && (
                                                         <View style={{
                                                             position: 'absolute',
-                                                            bottom: 60,
+                                                            bottom: showUI?60: 10,
                                                             left: 10,
                                                             right: 10,
-                                                            alignItems: 'start',
+                                                            alignItems: 'center',
                                                         }}>
                                                             <AudioSpectrum
                                                                 audioLevel={streamData.audioLevel}
