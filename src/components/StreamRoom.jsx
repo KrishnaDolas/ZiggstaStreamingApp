@@ -1089,7 +1089,7 @@ const StreamRoom = ({
                                                 {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{ height: '35', width: '35' }} />}
                                             </Animated.View>
                                         </TouchableOpacity>
-                                        {!isHost && (<>
+                                        {!isHost && streamLayout.length === 1 && (<>
                                             <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
                                                 <Ionicons name="gift" size={30} color="#FF00FF" />
                                             </TouchableOpacity>
