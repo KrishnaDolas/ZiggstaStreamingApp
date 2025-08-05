@@ -593,7 +593,7 @@ const StreamRoom = ({
                         <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                             <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                         </View>
-                        {/* {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && showUI && (
+                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && showUI && (
                             <View style={{
                                 position: 'absolute',
                                 top: 90,
@@ -606,7 +606,7 @@ const StreamRoom = ({
                                     streamLayout={streamLayout}
                                 />
                             </View>
-                        )} */}
+                        )}
                     </View>
                 ) : (
                     <View style={[styles.streamVideosContainer]}>
