@@ -897,7 +897,7 @@ const StreamRoom = ({
                 )}
                 {isStreaming&& showUI && (
                     <>
-                        <View style={[styles.strRoomHeader, { paddingTop: insetsTop.top, paddingBottom: insets.bottom}]}>
+                        <View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
