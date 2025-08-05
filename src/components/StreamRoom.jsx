@@ -502,7 +502,6 @@ const StreamRoom = ({
 
     const SendGift = async (item) => {
         try {
-            const hostInfo = streamerList.filter((item) => item.IsHost === true)
             if(!GiftSenderData) return;
             console.log(GiftSenderData);
             const params = {
