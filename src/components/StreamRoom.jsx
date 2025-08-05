@@ -262,9 +262,6 @@ const StreamRoom = ({
                     streams.unshift({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
                 } else {
                     streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
-                    streams.push({ type: 'remote', stream, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`,isSpeaking:isSpeaking,audioLevel:audioLevel });
-
                 }
             } else {
                 SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
