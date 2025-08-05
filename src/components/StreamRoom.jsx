@@ -87,8 +87,8 @@ const StreamRoom = ({
     const [isLiked, setisLiked] = useState(false)
     const [message, setMessage] = useState(null);
     const [openChatUserProfile, setOpenChatUserProfile] = useState(false);
+    const [GiftSenderData,setGiftSendData]=useState({userName: '', userId: ''})
     const [SelectedUser, setSelectedUser] = useState({});
-    const blinkingAnim = useRef(new Animated.Value(1)).current;
     const [OpenHostPorfile, setOpenHostPorfile] = useState(false)
     const [showSendAnimation, setShowSendAnimation] = useState(false);
     const [showReceiveAnimation, setShowReceiveAnimation] = useState(false);
@@ -501,19 +501,21 @@ const StreamRoom = ({
     const SendGift = async (item) => {
         try {
             const hostInfo = streamerList.filter((item) => item.IsHost === true)
+            if(!GiftSenderData) return;
+            console.log(GiftSenderData);
             const params = {
                 fromUserID: userData?.userid,
-                toUserID: hostInfo[0].UserID,
+                toUserID: GiftSenderData.userId,
                 giftID: item?.giftID,
                 roomId: streamInfo?.roomID
             }
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
-                    socket.emit('Send-gift', userData?.screenName, hostInfo[0].Name, item?.giftIcon, item?.giftValue)
+                    socket.emit('Send-gift', userData?.screenName, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
                     setSendAnimationData({
                         giftName: item?.giftIcon,
-                        recipientName: hostInfo[0]?.Name
+                        recipientName: GiftSenderData.userName
                     });
                     setShowSendAnimation(true);
                     setGiftModalVisible(false);
@@ -528,6 +530,7 @@ const StreamRoom = ({
         }
     }
     const HnadleSendGiftToCoHost=(UserID,UserName)=>{
+    setGiftSendData({userName: UserName, userId: UserID})
         console.log(UserID,UserName);
         setGiftModalVisible(true)
     }
