@@ -896,7 +896,7 @@ const StreamRoom = ({
                     </View>
                 )}
                 {isStreaming&& showUI && (
-                    <>
+                    <View style={{paddingBottom:insets.bottom, paddingTop: insetsTop.top,position:'absolute',width:'100%',height:'100%'}}>
                         <View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
@@ -1124,7 +1124,7 @@ const StreamRoom = ({
                                 )}
                             </View>
                         </LinearGradient>
-                    </>
+                    </View>
                 )}
             </View>
             {giftModalVisible && !isHost && (
