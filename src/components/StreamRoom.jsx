@@ -32,6 +32,7 @@ import Sound from 'react-native-sound';
 import AnimatedNotification from './AnimatedNotification';
 import { ThemeContext } from '../context/ThemeContext';
 import GiftIcon from '../../assets/images/icons/icon_gift.png'
+import bgImage from '../../assets/images/icons/name_bg.png'
 import AudioSpectrum from './AudioSpectrum';
 
 const StreamRoom = ({
@@ -609,6 +610,10 @@ const StreamRoom = ({
                                     </View>
                                     {streamLayout[0]?.type !== 'local' &&showUI && (
                                         <View style={styles.videoOverlay}>
+                                                <ImageBackground
+                                                    source={bgImage}
+                                                    style={{ padding: 3 }}
+                                                >
                                             <View style={styles.userInfoContainer}>
                                                     <TouchableOpacity
                                                         onPress={() => HnadleSendGiftToCoHost(streamLayout[0]?.userId, streamLayout[0]?.Name)}
@@ -625,6 +630,7 @@ const StreamRoom = ({
                                                     <Ionicons name="person-add" size={18} color="#fff" />
                                                 </TouchableOpacity>
                                             </View>
+                                            </ImageBackground>
                                         </View>
                                     )}
                                 </View>
@@ -642,6 +648,10 @@ const StreamRoom = ({
                                             </View>
                                             {streamData?.type !== 'local'&&showUI && (
                                                 <View style={styles.videoOverlay}>
+                                                    <ImageBackground
+                                                        source={bgImage}
+                                                        style={{ padding: 3 }}
+                                                    >
                                                     <View style={styles.userInfoContainer}>
                                                         <TouchableOpacity
                                                             onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
@@ -658,6 +668,7 @@ const StreamRoom = ({
                                                             <Ionicons name="person-add" size={18} color="#fff" />
                                                         </TouchableOpacity>
                                                     </View>
+                                                    </ImageBackground>
                                                 </View>
                                             )}
                                         </View>
@@ -681,6 +692,10 @@ const StreamRoom = ({
                                                 </View>
                                                 {streamData?.type !== 'local' &&showUI && (
                                                     <View style={styles.videoOverlay}>
+                                                         <ImageBackground
+                                                            source={bgImage}
+                                                            style={{ padding: 3 }}
+                                                        >
                                                         <View style={styles.userInfoContainer}>
                                                             <TouchableOpacity
                                                                 onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
@@ -697,6 +712,7 @@ const StreamRoom = ({
                                                                 <Ionicons name="person-add" size={16} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
+                                                        </ImageBackground>
                                                     </View>
                                                 )}
                                             </View>
@@ -718,6 +734,10 @@ const StreamRoom = ({
                                                 </View>
                                                 {streamData?.type !== 'local' && showUI && (
                                                     <View style={styles.videoOverlay}>
+                                                        <ImageBackground
+                                                            source={bgImage}
+                                                            style={{ padding: 3 }}
+                                                        >
                                                         <View style={styles.userInfoContainer}>
                                                             <TouchableOpacity
                                                                 onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
@@ -734,6 +754,7 @@ const StreamRoom = ({
                                                                 <Ionicons name="person-add" size={16} color="#fff" />
                                                             </TouchableOpacity>
                                                         </View>
+                                                        </ImageBackground>
                                                     </View>
                                                 )}
                                             </View>
@@ -774,7 +795,7 @@ const StreamRoom = ({
                                                     <View style={styles.videoOverlay}>
                                                         {streamData?.type !== 'local' && showUI && (
                                                             <ImageBackground
-                                                                source={require('../../assets/images/icons/name_bg.png')}
+                                                                source={bgImage}
                                                                 style={{ padding: 3 }}
                                                             >
                                                                 <View style={styles.userInfoContainer}>
