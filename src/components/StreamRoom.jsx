@@ -593,7 +593,7 @@ const StreamRoom = ({
                         <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                             <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                         </View>
-                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && showUI && (
+                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0  && (
                             <View style={{
                                 position: 'absolute',
                                 top: 90,
@@ -622,13 +622,13 @@ const StreamRoom = ({
                                     <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
                                         <Text>{streamLayout[0]?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                     </View>
-                                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && showUI && (
+                                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0  && (
                                             <View style={{
                                                 position: 'absolute',
-                                                bottom: 60,
+                                                bottom: showUI?60: 10,
                                                 left: 10,
                                                 right: 10,
-                                                alignItems: 'start',
+                                                alignItems: 'center',
                                             }}>
                                                 <AudioSpectrum
                                                     audioLevel={streamLayout[0]?.audioLevel}
@@ -674,13 +674,13 @@ const StreamRoom = ({
                                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                 <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                             </View>
-                                            {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                            {streamData?.type !== 'local' && streamData?.audioLevel > 0  && (
                                                 <View style={{
                                                     position: 'absolute',
-                                                    bottom: 60,
+                                                    bottom: showUI?60: 10,
                                                     left: 10,
                                                     right: 10,
-                                                    alignItems: 'start',
+                                                    alignItems: 'center',
                                                 }}>
                                                     <AudioSpectrum
                                                         audioLevel={streamData.audioLevel}
@@ -732,13 +732,13 @@ const StreamRoom = ({
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
-                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                     <View style={{
                                                         position: 'absolute',
-                                                        bottom: 60,
+                                                        bottom: showUI?60: 10,
                                                         left: 10,
                                                         right: 10,
-                                                        alignItems: 'start',
+                                                        alignItems: 'center',
                                                     }}>
                                                         <AudioSpectrum
                                                             audioLevel={streamData.audioLevel}
@@ -788,13 +788,13 @@ const StreamRoom = ({
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted &&showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                                 </View>
-                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && showUI && (
+                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                     <View style={{
                                                         position: 'absolute',
-                                                        bottom: 60,
+                                                        bottom: showUI?60: 10,
                                                         left: 10,
                                                         right: 10,
-                                                        alignItems: 'start',
+                                                        alignItems: 'center',
                                                     }}>
                                                         <AudioSpectrum
                                                             audioLevel={streamData.audioLevel}
