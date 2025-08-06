@@ -17,6 +17,7 @@ import io from 'socket.io-client';
 import Sound from 'react-native-sound';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { socket } from '../utils/constant';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -43,7 +44,7 @@ const svgSize = wheelSize * 0.9;     // Slightly smaller than outer wheel
 
 const LuckyWheelModal = (
     { visible, onClose, userData,
-        hostDetails }
+        hostDetails,RoomID }
 ) => {
     const { theme } = useContext(ThemeContext);
     const [chips, setChips] = useState(1000);
@@ -71,10 +72,12 @@ const LuckyWheelModal = (
     useEffect(() => {
         placeYourBetSound = new Sound('place-your-bet.mp3', Sound.MAIN_BUNDLE);
         noMoreBetsSound = new Sound('no-more-bets.mp3', Sound.MAIN_BUNDLE);
+       if(userData){
+        socket.emit('User-joined-SpinWheel',RoomID, userData?.userid, userData?.screenName, userData?.avatar);
+       }
 
         console.log('userData', userData);
         console.log('hostDetails', hostDetails);
-
     }, []);
 
     // Connect socket

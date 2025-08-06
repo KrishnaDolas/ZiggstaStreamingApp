@@ -1337,6 +1337,7 @@ const StreamRoom = ({
                     }}
                     userData={userData}
                     hostDetails={userDetails}
+                    RoomID={streamInfo?.roomID}
                 />
             )}
         </Pressable>

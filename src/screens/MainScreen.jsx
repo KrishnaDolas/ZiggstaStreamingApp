@@ -137,7 +137,6 @@ export const MainScreen = () => {
     if (!IsIdentify.current && userData && socket.connected) {
       setTimeout(() => {
         socket.emit('identity', userData?.userid, userData?.screenName);
-        socket.emit('User-joined-SpinWheel',2399, userData?.userid, userData?.screenName, userData?.avatar);
       }, 2000);
       IsIdentify.current = true; // Set identify flag to true
       if (streamInfo) {
