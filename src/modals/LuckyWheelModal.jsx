@@ -55,7 +55,7 @@ const LuckyWheelModal = (
     const [betPlaced, setBetPlaced] = useState(false);
     const [message, setMessage] = useState('Get Ready');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
-
+    const [mycredit, setMyCredit] = useState(0); // Track user's credit
     const spinValue = useRef(new Animated.Value(0)).current;
     const socketRef = useRef(null);
 
@@ -68,15 +68,23 @@ const LuckyWheelModal = (
     ]);
 
 
-
+    const HandleUpdatedCredit=(amount)=>{
+        setMyCredit(amount);
+    }
     // Sound setup
     let placeYourBetSound, noMoreBetsSound;
     useEffect(() => {
         placeYourBetSound = new Sound('place-your-bet.mp3', Sound.MAIN_BUNDLE);
         noMoreBetsSound = new Sound('no-more-bets.mp3', Sound.MAIN_BUNDLE);
-           if(userData){
-            socket.emit('User-joined-SpinWheel',RoomID, userData?.userid, userData?.screenName, userData?.avatar);
-           }
+        if (userData) {
+            socket.emit('User-joined-SpinWheel', RoomID, userData?.userid, userData?.screenName, userData?.avatar);
+        }
+        socket.on('updated_Credit', HandleUpdatedCredit);
+
+        return ()=>{
+            socket.off('updated_Credit', HandleUpdatedCredit);
+        }
+
 
     }, []);
 
@@ -108,7 +116,6 @@ const LuckyWheelModal = (
             setMessage(winAmount > 0
                 ? `✅ You WON ${winAmount} chips!`
                 : `❌ You LOST! Landed on ${resultLabel}`);
-            setChips(newBalance);
         });
 
         return () => {
@@ -265,7 +272,7 @@ const LuckyWheelModal = (
                             style={{ width: 14, height: 14 }}
                             resizeMode="contain"
                         />
-                        <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{chips}</Text>
+                        <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{mycredit}</Text>
                     </View>
                     <TouchableOpacity onPress={onClose}>
                         <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
