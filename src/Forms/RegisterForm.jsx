@@ -13,7 +13,6 @@ import {
   PermissionsAndroid,
 } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import { globalStyles } from '../../assets/styles/GlobalStyles';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WebView from 'react-native-webview';
@@ -28,14 +27,12 @@ import Geolocation from 'react-native-geolocation-service';
 const screenHeight = Dimensions.get('window').height;
 const questions = [
   {
-    label: 'What is your Screen name?',
-    field: 'screenname',
-    placeholder: 'Enter your screen name',
-  },
-  {
-    label: 'What is your Username?',
-    field: 'userName',
-    placeholder: 'Enter your username',
+    label: 'Enter Your Screen Name and Username',
+    fields: ['screenname', 'userName'], // Combined fields
+    placeholders: {
+      screenname: 'Enter your screen name',
+      userName: 'Enter your username',
+    },
   },
   {
     label: 'What is your Location?',
@@ -555,6 +552,68 @@ export const RegisterForm = ({
   };
 
   const renderStepContent = question => {
+    if (question.fields) {
+      // Combined screenname and userName step
+      return (
+        <View>
+          {/* Screen Name Input */}
+          <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginBottom: 5 }}>
+            Screen Name
+          </Text>
+          <TextInput
+            style={[styles.input, themeStyles[theme].input, { marginVertical: 0 }]}
+            placeholder={question.placeholders.screenname}
+            placeholderTextColor="#9d9d9d"
+            value={formData.screenname}
+            onChangeText={text => handleChange('screenname', text)}
+          />
+          {errors.screenname && (
+            <Text style={{ color: '#0035ff', marginTop: 5, marginBottom: 10 }}>
+              {errors.screenname}
+            </Text>
+          )}
+          {/* Username Input */}
+          <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginTop:10, marginBottom: 5 }}>
+            Username
+          </Text>
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              style={[
+                styles.input,
+                themeStyles[theme].input,
+                { marginVertical: 0 },
+                usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1 },
+              ]}
+              placeholder={question.placeholders.userName}
+              placeholderTextColor="#9d9d9d"
+              value={formData.userName}
+              onChangeText={text => handleChange('userName', text)}
+            />
+            {usernameStatus === 'checking' && (
+              <ActivityIndicator
+                style={{ position: 'absolute', right: 13, top: 13 }}
+                size="small"
+                color="#666"
+              />
+            )}
+            {usernameStatus === 'available' && (
+              <Icon
+                name="check"
+                size={20}
+                color="green"
+                style={{ position: 'absolute', right: 13, top: 13 }}
+              />
+            )}
+            {errors.userName && (
+              <Text style={{ color: '#0035ff', marginTop: 5 }}>
+                {errors.userName}
+              </Text>
+            )}
+          </View>
+        </View>
+      );
+    }
+
     if (question.field === 'gender') {
       return (
         <View>
@@ -906,42 +965,42 @@ export const RegisterForm = ({
     }
 
     // Modified username input with check tick and status message
-    if (question.field === 'userName') {
-      return (
-        <View style={{ position: 'relative' }}>
-          <TextInput
-            style={[
-              styles.input, themeStyles[theme].input, { marginVertical: 0 },
-              usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1, },
-            ]}
-            placeholder={question.placeholder}
-            placeholderTextColor="#9d9d9d"
-            value={formData[question.field]}
-            onChangeText={text => handleChange(question.field, text)}
-          />
-          {usernameStatus === 'checking' && (
-            <ActivityIndicator
-              style={{ position: 'absolute', right: 13, top: 13 }}
-              size="small"
-              color="#666"
-            />
-          )}
-          {usernameStatus === 'available' && (
-            <Icon
-              name="check"
-              size={20}
-              color="green"
-              style={{ position: 'absolute', right: 13, top: 13 }}
-            />
-          )}
-          {errors[question.field] && (
-            <Text style={{ color: '#0035ff', marginTop: 5 }}>
-              {errors[question.field]}
-            </Text>
-          )}
-        </View>
-      );
-    }
+    // if (question.field === 'userName') {
+    //   return (
+    //     <View style={{ position: 'relative' }}>
+    //       <TextInput
+    //         style={[
+    //           styles.input, themeStyles[theme].input, { marginVertical: 0 },
+    //           usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1, },
+    //         ]}
+    //         placeholder={question.placeholder}
+    //         placeholderTextColor="#9d9d9d"
+    //         value={formData[question.field]}
+    //         onChangeText={text => handleChange(question.field, text)}
+    //       />
+    //       {usernameStatus === 'checking' && (
+    //         <ActivityIndicator
+    //           style={{ position: 'absolute', right: 13, top: 13 }}
+    //           size="small"
+    //           color="#666"
+    //         />
+    //       )}
+    //       {usernameStatus === 'available' && (
+    //         <Icon
+    //           name="check"
+    //           size={20}
+    //           color="green"
+    //           style={{ position: 'absolute', right: 13, top: 13 }}
+    //         />
+    //       )}
+    //       {errors[question.field] && (
+    //         <Text style={{ color: '#0035ff', marginTop: 5 }}>
+    //           {errors[question.field]}
+    //         </Text>
+    //       )}
+    //     </View>
+    //   );
+    // }
 
     return (
       <>
@@ -1135,57 +1194,91 @@ export const RegisterForm = ({
 
   const validateStep = () => {
     const currentQuestion = questions[step];
-    const value = formData[currentQuestion.field];
-    let error = '';
+    let error = {};
+    let isValid = true;
 
-    switch (currentQuestion.field) {
-      case 'screenname':
-        if (!value || value.trim().length < 5) {
-          error = 'Screen name must be at least 5 characters';
-        }
-        if (value.trim().length > 12) {
-          error = 'Screen name cannot be more than 12 characters';
-        }
-        break;
-      case 'userName':
-        if (!value || !isValidUsername(value)) {
-          error = 'Username must be at least 6 characters with only letters, numbers, or underscores';
-        } else if (usernameStatus === 'taken') {
-          error = usernameCheckMessage; // Use API-provided message
-        } else if (usernameStatus === 'checking') {
-          error = 'Checking username availability...';
-        }
-        break;
-      case 'location':
-        if (!value || value.trim() === '') {
-          error = 'Location is required';
-        }
-        break;
-      case 'dob':
-        if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-          error = 'Please select a valid date';
-        }
-        break;
-      case 'gender':
-        if (!value) {
-          error = 'Please select a gender';
-        }
-        break;
-      case 'interests':
-        if (!value || value.length < 2) {
-          error = 'Select at least 2 interest';
-        }
-        break;
-      default:
-        break;
+    if (currentQuestion.fields) {
+      // Validate both screenname and userName
+      const screenname = formData.screenname.trim();
+      const userName = formData.userName;
+
+      // Screen name validation
+      if (!screenname || screenname.length < 5) {
+        error.screenname = 'Screen name must be at least 5 characters';
+        isValid = false;
+      } else if (screenname.length > 12) {
+        error.screenname = 'Screen name cannot be more than 12 characters';
+        isValid = false;
+      } else {
+        error.screenname = ''; // Explicitly clear error when valid
+      }
+
+      // Username validation
+      if (!userName || !isValidUsername(userName)) {
+        error.userName = 'Username must be at least 6 characters with only letters, numbers, or underscores';
+        isValid = false;
+      } else if (usernameStatus === 'taken') {
+        error.userName = usernameCheckMessage;
+        isValid = false;
+      } else if (usernameStatus === 'checking') {
+        error.userName = 'Checking username availability...';
+        isValid = false;
+      } else {
+        error.userName = ''; // Explicitly clear error when valid
+      }
+    } else {
+      const value = formData[currentQuestion.field];
+      switch (currentQuestion.field) {
+        case 'location':
+          if (!value || value.trim() === '') {
+            error.location = 'Location is required';
+            isValid = false;
+          } else {
+            error.location = ''; // Clear error
+          }
+          break;
+        case 'dob':
+          if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            error.dob = 'Please select a valid date';
+            isValid = false;
+          } else {
+            error.dob = ''; // Clear error
+          }
+          break;
+        case 'gender':
+          if (!value) {
+            error.gender = 'Please select a gender';
+            isValid = false;
+          } else {
+            error.gender = ''; // Clear error
+          }
+          break;
+        case 'interests':
+          if (!value || value.length < 2) {
+            error.interests = 'Select at least 2 interests';
+            isValid = false;
+          } else {
+            error.interests = ''; // Clear error
+          }
+          break;
+        default:
+          break;
+      }
     }
 
-    setErrors(prev => ({ ...prev, [currentQuestion.field]: error }));
-    setIsValidStep(
-      !error &&
-      !(currentQuestion.field === 'userName' && usernameStatus !== 'available')
-    );
-    return !error;
+    // Update errors state, ensuring previous errors are preserved unless explicitly cleared
+    setErrors(prev => ({
+      ...prev,
+      screenname: error.screenname !== undefined ? error.screenname : prev.screenname,
+      userName: error.userName !== undefined ? error.userName : prev.userName,
+      location: error.location !== undefined ? error.location : prev.location,
+      dob: error.dob !== undefined ? error.dob : prev.dob,
+      gender: error.gender !== undefined ? error.gender : prev.gender,
+      interests: error.interests !== undefined ? error.interests : prev.interests,
+    }));
+
+    setIsValidStep(isValid && !(currentQuestion.fields && usernameStatus !== 'available'));
+    return isValid;
   };
 
   return (

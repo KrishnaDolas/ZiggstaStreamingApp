@@ -1064,6 +1064,14 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 0,
   },
+
+  streamListLuckyWheelBtn: {
+    position: 'absolute',
+    bottom: '16%',
+    right: 10,
+    zIndex: 9,
+  },
+
   streamListFiltersWhiteBtn: {
     backgroundColor: '#fff',
     width: 60,

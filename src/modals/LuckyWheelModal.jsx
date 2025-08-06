@@ -37,6 +37,8 @@ const COLORS = {
     '25x': '#834fffff',
 };
 
+const winIcon = require('../../assets/images/lucky-wheel/win.png');
+const loseIcon = require('../../assets/images/lucky-wheel/lose.png');
 
 
 const wheelSize = screenWidth * 0.8; // 80% of screen width
@@ -44,7 +46,7 @@ const svgSize = wheelSize * 0.9;     // Slightly smaller than outer wheel
 
 const LuckyWheelModal = (
     { visible, onClose, userData,
-        hostDetails,RoomID }
+        hostDetails, RoomID }
 ) => {
     const { theme } = useContext(ThemeContext);
     const [chips, setChips] = useState(1000);
@@ -58,13 +60,13 @@ const LuckyWheelModal = (
     const socketRef = useRef(null);
 
     const [userBets, setUserBets] = useState([
-        // Sample dummy data for testing
-        { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100 },
-        { id: 'u2', username: 'Ravi', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500 },
-        { id: 'u3', username: 'Anita', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 100 },
-        { id: 'u4', username: 'Zoya', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 500 },
-        { id: 'u5', username: 'Max', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100 },
+        { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: true },
+        { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: false },
+        { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: false },
+        { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: true },
+        { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: false },
     ]);
+
 
 
     // Sound setup
@@ -72,12 +74,10 @@ const LuckyWheelModal = (
     useEffect(() => {
         placeYourBetSound = new Sound('place-your-bet.mp3', Sound.MAIN_BUNDLE);
         noMoreBetsSound = new Sound('no-more-bets.mp3', Sound.MAIN_BUNDLE);
-       if(userData){
-        socket.emit('User-joined-SpinWheel',RoomID, userData?.userid, userData?.screenName, userData?.avatar);
-       }
+           if(userData){
+            socket.emit('User-joined-SpinWheel',RoomID, userData?.userid, userData?.screenName, userData?.avatar);
+           }
 
-        console.log('userData', userData);
-        console.log('hostDetails', hostDetails);
     }, []);
 
     // Connect socket
@@ -251,7 +251,7 @@ const LuckyWheelModal = (
                 themeStyles[theme].profileLargeModalOverlay,
                 {
                     flex: 1,
-                    // maxHeight: screenHeight * 0.9
+                    maxHeight: screenHeight * 0.9 - 20
                 },
             ]}
             >
@@ -268,8 +268,8 @@ const LuckyWheelModal = (
                         <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{chips}</Text>
                     </View>
                     <TouchableOpacity onPress={onClose}>
-                        <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontSize: 16 }}>
-                            ❌ Close
+                        <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
+                            Close
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -315,15 +315,23 @@ const LuckyWheelModal = (
                         {/* <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 4, color: theme === 'dark' ? '#fff' : '#000' }}>
                         🧾 User Bets
                     </Text> */}
-                        <View style={{ flexDirection: 'row', backgroundColor: theme === 'dark' ? '#444' : '#ccc', padding: 8 }}>
-                            <Text style={{ flex: 2, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>Users</Text>
-                            <Text style={{ flex: 1, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>Bet</Text>
+                        <View style={{
+                            flexDirection: 'row',
+                            backgroundColor: theme === 'dark' ? '#333' : '#ddddddff',
+                            paddingVertical: 8,
+                            paddingHorizontal: 10,
+                            borderTopLeftRadius: 6,
+                            borderTopRightRadius: 6,
+                        }}>
+                            <Text style={{ flex: 0.5 }}></Text>
+                            <Text style={{ flex: 2, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>User</Text>
+                            <Text style={{ flex: 1, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000', textAlign: 'left' }}>Bet</Text>
                             <Text style={{ flex: 1, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>Option</Text>
                         </View>
 
                         <ScrollView
                             style={{ maxHeight: screenHeight * 0.2 - 22 }}
-                            contentContainerStyle={{ paddingBottom: 4 }}
+                            contentContainerStyle={{ gap: 6, paddingTop: 6 }}
                             showsVerticalScrollIndicator={true}
                         >
                             {userBets.map((user, index) => (
@@ -332,22 +340,60 @@ const LuckyWheelModal = (
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 8,
-                                        borderBottomWidth: 1,
-                                        borderBottomColor: theme === 'dark' ? '#333' : '#eee',
-                                        backgroundColor: theme === 'dark' ? '#2e2e2e' : '#f9f9f9',
+                                        paddingVertical: 10,
+                                        paddingHorizontal: 10,
+                                        borderRadius: 8,
+                                        backgroundColor: theme === 'dark' ? '#2e2e2e' : '#f2f2f2',
+                                        shadowColor: '#000',
+                                        shadowOpacity: 0.05,
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowRadius: 2,
+                                        elevation: 1,
                                     }}
                                 >
-                                    <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                                    {/* Win/Loss Icon */}
+                                    {/* <Text style={{ flex: 0.5, fontSize: 16 }}>
+                                        {user.isWinner ? '✅' : '❌'}
+                                    </Text> */}
+                                    <View style={{ flex: 0.5, fontSize: 16 }}>
                                         <Image
-                                            source={user.avatar}
-                                            style={{ width: 24, height: 24, borderRadius: 12, marginRight: 8 }}
+                                            source={user.isWinner ? winIcon : loseIcon}
+                                            style={{
+                                                width: 25,
+                                                height: 25,
+                                            }}
+                                            resizeMode="contain"
                                         />
+                                    </View>
+                                    {/* User Info */}
+                                    <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
+                                        {/* <Image
+                                            source={user.avatar}
+                                            style={{ width: 26, height: 26, borderRadius: 13, marginRight: 8 }}
+                                        /> */}
                                         <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>{user.username}</Text>
                                     </View>
-                                    <Text style={{ flex: 1, color: theme === 'dark' ? '#fff' : '#000' }}>{user.bet}</Text>
-                                    <Text style={{ flex: 1, color: theme === 'dark' ? '#fff' : '#000' }}>{user.multiplier}</Text>
+
+                                    {/* Bet Amount */}
+                                    <Text style={{
+                                        flex: 1,
+                                        color: theme === 'dark' ? '#fff' : '#222',
+                                        fontWeight: '500',
+                                        textAlign: 'left',
+                                        marginLeft: 15,
+                                    }}>{user.bet}</Text>
+
+                                    {/* Multiplier Chip */}
+                                    <View style={{
+                                        flex: 1,
+                                        backgroundColor: COLORS[user.multiplier] || '#666',
+                                        paddingVertical: 4,
+                                        paddingHorizontal: 8,
+                                        borderRadius: 12,
+                                        alignItems: 'center',
+                                    }}>
+                                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{user.multiplier}</Text>
+                                    </View>
                                 </View>
                             ))}
                         </ScrollView>

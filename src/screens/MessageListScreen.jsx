@@ -217,7 +217,7 @@ export const MessageListScreen = () => {
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => handleChatOpen(item)} style={{ flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
-                            {item.Username}
+                            {item.screenName}
                         </Text>
                     </TouchableOpacity>
                     <View style={styles.frActionBox}>
@@ -249,7 +249,7 @@ export const MessageListScreen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleChatOpen(item)} style={styles.messageListContent}>
                     <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
-                        {item.username}
+                        {item.screenName}
                     </Text>
                     <Text numberOfLines={1} style={[styles.meListMessage, themeStyles[theme].meListMessage]}>
                         {item.message || 'No messages'}
