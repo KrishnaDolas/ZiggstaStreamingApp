@@ -1002,7 +1002,7 @@ const StreamRoom = ({
                                             <TouchableOpacity
                                                 style={styles.strRoomFooterSocialActionsBtn}
                                                 onPress={() => setVisibleModal('luckyWheel')}
-                                            >setVisibleModal
+                                            >
                                                 <Image
                                                     style={{ width: 40, height: 40 }}
                                                     source={require('../../assets/images/lucky-wheel/lw-home.png')}
