@@ -452,20 +452,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 onRefresh={handleRefresh}
                             />)}
                     </View>
-                    <TouchableOpacity
-                        style={[
-                            styles.streamListLuckyWheelBtn,
-                            insets.bottom > 0 && { paddingBottom: insets.bottom },
-                        ]}
-                        // onPress={() => navigation.navigate('LuckyWheel', { userData })}
-                        onPress={() => setModalVisible(true)}
-                    >
-                        <Image
-                            style={{ width: 80, height: 80 }}
-                            source={require('../../assets/images/lucky-wheel/lw-home.png')}
-                            resizeMode="contain"
-                        />
-                    </TouchableOpacity>
                     <View style={[
                         styles.streamListFiltersBtnGroup,
                         insets.bottom > 0 && { paddingBottom: insets.bottom },
@@ -567,9 +553,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     </Modal>
                 )
             }
-            <LuckyWheelModal visible={modalVisible} onClose={() => setModalVisible(false)} />
             {/* <Footer /> */}
-        </LinearGradient >
+        </LinearGradient>
     );
 };
 
