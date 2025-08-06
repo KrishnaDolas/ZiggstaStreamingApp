@@ -71,6 +71,9 @@ const LuckyWheelModal = (
     const HandleUpdatedCredit=(amount)=>{
         setMyCredit(amount);
     }
+    const HandleTimer=(time)=>{
+        console.log('Timer received from server:', time);
+    }
     // Sound setup
     let placeYourBetSound, noMoreBetsSound;
     useEffect(() => {
@@ -80,9 +83,11 @@ const LuckyWheelModal = (
             socket.emit('User-joined-SpinWheel', RoomID, userData?.userid, userData?.screenName, userData?.avatar);
         }
         socket.on('updated_Credit', HandleUpdatedCredit);
+        socket.on('spinwheel_timer', HandleTimer)
 
-        return ()=>{
+        return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
+            socket.off('spinwheel_timer', HandleTimer)
         }
 
 
