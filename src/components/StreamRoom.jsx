@@ -963,7 +963,7 @@ const StreamRoom = ({
                             colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
                             start={{ x: 0.5, y: showUI ?1:0 }}
                             end={{ x: 0.5, y: 0 }}
-                            style={[styles.strRoomFooter,{bottom:insets.bottom}]}
+                            style={[styles.strRoomFooter,{bottom:insets.bottom>3?insets.bottom:0}]}
                         >
                             <>
                                 <View style={[styles.strRoomFooterChatOrActionsBox, { display: openMoreSettingList ? 'none' : 'flex' }]}>
