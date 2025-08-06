@@ -49,7 +49,6 @@ const LuckyWheelModal = (
         hostDetails, RoomID }
 ) => {
     const { theme } = useContext(ThemeContext);
-    const [chips, setChips] = useState(1000);
     const [countdown, setCountdown] = useState(30);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [betPlaced, setBetPlaced] = useState(false);
@@ -74,6 +73,9 @@ const LuckyWheelModal = (
     const HandleTimer=(time)=>{
         console.log('Timer received from server:', time);
     }
+    const HandleBetUserList = (users) => {
+        setUserBets(users);
+    }
     // Sound setup
     let placeYourBetSound, noMoreBetsSound;
     useEffect(() => {
@@ -84,10 +86,11 @@ const LuckyWheelModal = (
         }
         socket.on('updated_Credit', HandleUpdatedCredit);
         socket.on('spinwheel_timer', HandleTimer)
-
+        socket.on('userList', HandleBetUserList)
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer)
+            socket.off('userList', HandleBetUserList)
         }
 
 
@@ -97,35 +100,22 @@ const LuckyWheelModal = (
     useEffect(() => {
         if (!visible) return;
 
-        socketRef.current = io(SOCKET_URL);
-
-        socketRef.current.on('connect', () => {
-            const username = 'Player1';
-            const userID = 'user123';
-
-            socketRef.current.emit('user_joined', { userID, username });
-        });
-
         // startCountdown(30);
-        socketRef.current.on('start_countdown', ({ seconds }) => {
+        socket.on('start_countdown', ({ seconds }) => {
             startCountdown(seconds || 30);
         });
 
-        socketRef.current.on('start_spin', ({ resultLabel }) => {
+        socket.on('start_spin', ({ resultLabel }) => {
             handleSpin(resultLabel);
         });
 
         // handleSpin('5x');
 
-        socketRef.current.on('spin_result', ({ resultLabel, winAmount, newBalance }) => {
+        socket.on('spin_result', ({ resultLabel, winAmount, newBalance }) => {
             setMessage(winAmount > 0
                 ? `✅ You WON ${winAmount} chips!`
                 : `❌ You LOST! Landed on ${resultLabel}`);
         });
-
-        return () => {
-            socketRef.current?.disconnect();
-        };
     }, [visible]);
 
     const startCountdown = (duration = 30) => {
@@ -154,11 +144,11 @@ const LuckyWheelModal = (
             return;
         }
 
-        const userID = 'user123'; // from storage
         socketRef.current.emit('place_bet', {
-            userID,
+            userID: userData?.userid,
             betAmount: val,
             multiplier: selectedMultiplier,
+            userName: userData?.screenName,
         });
 
         placeYourBetSound?.play();
