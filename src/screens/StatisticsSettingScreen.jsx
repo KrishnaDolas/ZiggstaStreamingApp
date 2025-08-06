@@ -192,7 +192,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
 
     return (
-        <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80 }}>
+        <SafeAreaView style={{ flex: 1, position: 'relative'}}>
             <StatusBar
                 barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
                 backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
