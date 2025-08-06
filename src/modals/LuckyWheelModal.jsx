@@ -258,7 +258,9 @@ const LuckyWheelModal = (
                 themeStyles[theme].profileLargeModalOverlay,
                 {
                     flex: 1,
-                    maxHeight: screenHeight * 0.9 - 20
+                    borderTopLeftRadius: 0,
+                    borderTopRightRadius: 0,
+                    // maxHeight: screenHeight * 0.9 - 20
                 },
             ]}
             >
