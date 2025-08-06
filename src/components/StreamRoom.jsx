@@ -905,7 +905,7 @@ const StreamRoom = ({
                     </View>
                 )}
                 {isStreaming && (
-                    <View style={{position:'absolute',width:'100%',height:`${insets.bottom?96:100}%`}}>
+                    <>
                         {showUI &&(<View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
@@ -963,7 +963,7 @@ const StreamRoom = ({
                             colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
                             start={{ x: 0.5, y: showUI ?1:0 }}
                             end={{ x: 0.5, y: 0 }}
-                            style={[styles.strRoomFooter]}
+                            style={[styles.strRoomFooter,{bottom:insets.bottom}]}
                         >
                             <>
                                 <View style={[styles.strRoomFooterChatOrActionsBox, { display: openMoreSettingList ? 'none' : 'flex' }]}>
@@ -1135,7 +1135,7 @@ const StreamRoom = ({
                                 )}
                             </View>)}
                         </LinearGradient>
-                    </View>
+                    </>
                 )}
             </View>
             {giftModalVisible  && (
