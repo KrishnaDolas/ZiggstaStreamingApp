@@ -1349,7 +1349,7 @@ export const RegisterForm = ({
 
           {/* Progress Dots */}
           {questions[step]?.field !== 'location' && isValidStep && (
-            <View style={[styles.dotsContainer, { bottom: insets.bottom + 80 }]}>
+            <View style={[styles.dotsContainer, { bottom: insets.bottom + 65 }]}>
               {questions.map((_, idx) => (
                 <View
                   key={idx}
