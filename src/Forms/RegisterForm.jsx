@@ -548,7 +548,8 @@ export const RegisterForm = ({
     try {
       const address = JSON.parse(message);
       if (address.type !== 'CURRENT_LOCATION') {
-        updateLocationData(address, 'tap');
+        // updateLocationData(address, 'tap');
+        handleSelectLocation(address);
       }
     } catch (err) {
       console.error('Failed to parse map address:', err);
