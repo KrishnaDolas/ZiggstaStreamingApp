@@ -883,7 +883,7 @@ export const RegisterForm = ({
           )}
           <View
             style={{
-              height: screenHeight * 0.5 + 60,
+              height: screenHeight * 0.5 + 100,
               marginTop: 10,
               backgroundColor: '#fff',
               padding: 5,
