@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
-import io from 'socket.io-client';
 import Sound from 'react-native-sound';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { socket } from '../utils/constant';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
+
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
@@ -49,13 +51,16 @@ const LuckyWheelModal = (
         hostDetails, RoomID }
 ) => {
     const { theme } = useContext(ThemeContext);
-    const [countdown, setCountdown] = useState(30);
+    const [countdown, setCountdown] = useState(10);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [betPlaced, setBetPlaced] = useState(false);
     const [message, setMessage] = useState('Get Ready');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
     const [mycredit, setMyCredit] = useState(0); // Track user's credit
     const spinValue = useRef(new Animated.Value(0)).current;
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
+
     const socketRef = useRef(null);
 
     const [userBets, setUserBets] = useState([
@@ -67,17 +72,19 @@ const LuckyWheelModal = (
     ]);
 
 
-    const HandleUpdatedCredit=(amount)=>{
+    const HandleUpdatedCredit = (amount) => {
         setMyCredit(amount);
     }
-    const HandleTimer=(time)=>{
+    const HandleTimer = (time) => {
         console.log('Timer received from server:', time);
+        startCountdown(time);
     }
     const HandleBetUserList = (users) => {
         setUserBets(users);
     }
     // Sound setup
     let placeYourBetSound, noMoreBetsSound;
+
     useEffect(() => {
         placeYourBetSound = new Sound('place-your-bet.mp3', Sound.MAIN_BUNDLE);
         noMoreBetsSound = new Sound('no-more-bets.mp3', Sound.MAIN_BUNDLE);
@@ -100,16 +107,15 @@ const LuckyWheelModal = (
     useEffect(() => {
         if (!visible) return;
 
-        // startCountdown(30);
-        socket.on('start_countdown', ({ seconds }) => {
-            startCountdown(seconds || 30);
-        });
+        // startCountdown(10);
+        // socket.on('start_countdown', ({ seconds }) => {
+        //     startCountdown(seconds || 30);
+        // });
 
+        // handleSpin('Triple');
         socket.on('start_spin', ({ resultLabel }) => {
             handleSpin(resultLabel);
         });
-
-        // handleSpin('5x');
 
         socket.on('spin_result', ({ resultLabel, winAmount, newBalance }) => {
             setMessage(winAmount > 0
@@ -118,25 +124,65 @@ const LuckyWheelModal = (
         });
     }, [visible]);
 
+    // const startCountdown = (duration = 30) => {
+    //     setCountdown(duration);
+    //     setMessage('');
+
+    //     let counter = duration;
+    //     const interval = setInterval(() => {
+    //         counter -= 1;
+    //         setCountdown(counter);
+
+    //         if (counter <= 5 && noMoreBetsSound) {
+    //             noMoreBetsSound.play();
+    //         }
+
+    //         if (counter <= 0) {
+    //             clearInterval(interval);
+    //             setMessage('Spinning...');
+    //         }
+    //     }, 1000);
+    // };
+
     const startCountdown = (duration = 30) => {
         setCountdown(duration);
         setMessage('');
-
         let counter = duration;
+
         const interval = setInterval(() => {
             counter -= 1;
             setCountdown(counter);
 
-            if (counter <= 5 && noMoreBetsSound) {
-                noMoreBetsSound.play();
+            if (counter <= 5) {
+                setBigCountdownNumber(counter);
+                fadeAnim.setValue(0);
+
+                Animated.sequence([
+                    Animated.timing(fadeAnim, {
+                        toValue: 1,
+                        duration: 300,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(fadeAnim, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                        delay: 300,
+                    }),
+                ]).start();
+            } else {
+                setBigCountdownNumber(null);
             }
 
             if (counter <= 0) {
                 clearInterval(interval);
                 setMessage('Spinning...');
+                setBigCountdownNumber(null);
             }
         }, 1000);
     };
+
+
 
     const placeBet = (val) => {
         if (!selectedMultiplier || betPlaced) {
@@ -144,7 +190,7 @@ const LuckyWheelModal = (
             return;
         }
 
-        socketRef.current.emit('place_bet', {
+        socket.emit('place_bet', {
             userID: userData?.userid,
             betAmount: val,
             multiplier: selectedMultiplier,
@@ -234,6 +280,7 @@ const LuckyWheelModal = (
         return segments;
     };
 
+
     return (
         <Modal
             isVisible={visible}
@@ -273,10 +320,46 @@ const LuckyWheelModal = (
                     </View>
                     <TouchableOpacity onPress={onClose}>
                         <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
-                            Close
+                            <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                         </Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Big Center Countdown */}
+                {bigCountdownNumber !== null && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            zIndex: 1000,
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <LinearGradient
+                            colors={['rgba(0, 0, 0, 0.42)', 'rgba(0, 0, 0, 0.47)', 'rgba(0, 0, 0, 0.36)']}
+                            style={{
+                                ...StyleSheet.absoluteFillObject,
+                            }}
+                        />
+
+                        <Animated.Text
+                            style={{
+                                fontSize: 100,
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                opacity: fadeAnim,
+                                textAlign: 'center',
+                            }}
+                        >
+                            {bigCountdownNumber}
+                        </Animated.Text>
+                    </View>
+                )}
+
                 {/* <View style={{ position: 'absolute', top: 0, left: '47%', zIndex: 10 }}>
                     <Text style={{ fontSize: 28, color: '#fff' }}>▼</Text>
                 </View> */}
@@ -442,7 +525,7 @@ const LuckyWheelModal = (
                                 marginRight: 5,
                                 backgroundColor:
                                     activeBetAmount === 500
-                                        ? '#ff5733' // active color
+                                        ? '#ff5733'
                                         : theme === 'dark'
                                             ? '#ffaa00'
                                             : '#ffcc00',
@@ -555,6 +638,7 @@ const mainStyle = StyleSheet.create({
         borderRadius: 6,
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'relative',
     },
     closeBtn: {
         marginTop: 20,
