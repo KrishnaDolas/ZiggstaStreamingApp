@@ -350,10 +350,10 @@ export const RegisterForm = ({
       } else {
         console.error('Error checking username:', err);
         setUsernameStatus('error');
-        setUsernameCheckMessage('Error checking username availability');
+        setUsernameCheckMessage('You’ve made too many requests. Please try again after a short while.');
         setErrors(prev => ({
           ...prev,
-          userName: 'Error checking username availability',
+          userName: 'You’ve made too many requests. Please try again after a short while.',
         })); // Set error
         setIsValidStep(false); // Disable Next button on error
         SendErrorTotheServer(err, 'checkUserNameExists');
@@ -566,14 +566,19 @@ export const RegisterForm = ({
             placeholderTextColor="#9d9d9d"
             value={formData.screenname}
             onChangeText={text => handleChange('screenname', text)}
+            maxLength={13}
           />
+          {/* Info message below the input */}
+          <Text style={{ fontSize: 13, color: theme === 'dark' ? '#bbb' : '#555', marginTop: 5, marginBottom: 10 }}>
+            This name will be visible on your profile and across the app.
+          </Text>
           {errors.screenname && (
             <Text style={{ color: '#0035ff', marginTop: 5, marginBottom: 10 }}>
               {errors.screenname}
             </Text>
           )}
           {/* Username Input */}
-          <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginTop:10, marginBottom: 5 }}>
+          <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginTop: 10, marginBottom: 5 }}>
             Username
           </Text>
           <View style={{ position: 'relative' }}>
@@ -588,6 +593,7 @@ export const RegisterForm = ({
               placeholderTextColor="#9d9d9d"
               value={formData.userName}
               onChangeText={text => handleChange('userName', text)}
+              maxLength={30}
             />
             {usernameStatus === 'checking' && (
               <ActivityIndicator

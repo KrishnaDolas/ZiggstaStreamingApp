@@ -259,7 +259,7 @@ export const ChatScreen = ({ route, navigation }) => {
                             chatStyles.userName,
                             { color: theme === 'dark' ? '#fff' : '#333' }
                         ]}>
-                            {chatUser?.username || chatUser?.Username || 'User'}
+                            {chatUser?.screenName || chatUser?.screenName || 'User'}
                         </Text>
 
                         {userStatus === 'typing' ? (
