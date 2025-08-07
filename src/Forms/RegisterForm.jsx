@@ -25,6 +25,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import Geolocation from 'react-native-geolocation-service';
 
 const screenHeight = Dimensions.get('window').height;
+const initialWidth = Dimensions.get('window').width; // Fallback width
+
 const questions = [
   {
     label: 'Enter Your Screen Name and Username',
@@ -66,7 +68,7 @@ export const RegisterForm = ({
 }) => {
   const { userAddress, setUserAddress, ipAddress, setIpAddress, setUserData } = useAppContext();
   const [step, setStep] = useState(0);
-  const [layoutWidth, setLayoutWidth] = useState(0);
+  const [layoutWidth, setLayoutWidth] = useState(initialWidth);
   const scrollRef = useRef(null);
   const webViewRef = useRef(null);
   const [errors, setErrors] = useState({});
@@ -1321,12 +1323,14 @@ export const RegisterForm = ({
           </ScrollView>
 
           {/* Navigation Buttons */}
-          <View style={[styles.buttons, { justifyContent: step > 0 ? 'space-between' : 'flex-end' }]}>
-            {step > 0 && (
-              <TouchableOpacity onPress={handlePrevious} style={styles.btnNav}>
-                <Text style={{ color: 'white' }}>Previous</Text>
-              </TouchableOpacity>
-            )}
+          <View style={[styles.buttons, { justifyContent: 'space-between' }]}>
+            <TouchableOpacity
+              onPress={handlePrevious}
+              style={[styles.btnNav, step === 0 && { opacity: 0 }]} // Hide visually but maintain layout
+              disabled={step === 0}
+            >
+              <Text style={{ color: 'white' }}>Previous</Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={handleNext}
               style={[styles.btnNav, (!isValidStep || isSubmitting) && { opacity: 0.5 }]}

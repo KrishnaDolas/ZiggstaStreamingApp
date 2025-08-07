@@ -33,6 +33,10 @@ export const Signup = ({
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
   };
 
+  //   const isValidEmail = (email) => {
+  //   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|net|org|in|edu|gov)$/.test(email.trim());
+  // };
+
   // Validate form inputs whenever they change
   useEffect(() => {
     validateForm();
@@ -142,12 +146,12 @@ export const Signup = ({
     }
   };
 
-  // Function to handle sign up
   const handleSignUp = async () => {
     setUserData({ email: email.trim(), password: password.trim() });
-    onToggleForm();
+    onToggleForm(); // Trigger toggleForm, which handles loading
     console.log(`Email: ${email.trim()}, Password: ${password.trim()}`);
   };
+
 
 
   return (

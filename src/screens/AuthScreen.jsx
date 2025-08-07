@@ -1,21 +1,34 @@
 import React, { useState, useContext } from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, ActivityIndicator } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { RegisterForm } from '../Forms/RegisterForm';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Signup } from '../Forms/Signup';
 import { LoginForm } from '../Forms/LoginForm';
+import Colors from '../../assets/styles/Colors';
 
 export const AuthScreen = ({ onLogin }) => {
   const [showsingup, setshowsingup] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { theme } = useContext(ThemeContext);
   const [userData, setUserData] = useState({ email: '', password: '' });
 
-  const toggleForm = () => setshowsingup(!showsingup);
+
+  const toggleForm = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setshowsingup(!showsingup);
+      setLoading(false);
+    }, 2000); // Loader displays for 2 seconds
+  };
+
+
   const ShowloginForm = () => {
     setShowLogin(!showLogin);
   }
+
+
   const SigninWithApple = () => {
     Alert.alert(
       "Coming Soon",
@@ -48,6 +61,25 @@ export const AuthScreen = ({ onLogin }) => {
 
   return (
     <View style={[styles.authContainer, themeStyles[theme].container]}>
+      {loading && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff', // Semi-transparent overlay
+            zIndex: 1000,
+          }}
+        >
+          <ActivityIndicator
+            size="large"
+          />
+        </View>
+      )}
       {showLogin ?
         (
           <LoginForm ShowloginForm={ShowloginForm} onLogin={onLogin} theme={theme} SigninWithApple={SigninWithApple} SigninWithFacebook={SigninWithFacebook} SigninWithGoogle={SigninWithGoogle} />
