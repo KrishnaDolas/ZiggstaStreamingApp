@@ -1316,7 +1316,7 @@ export const RegisterForm = ({
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
-                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: 0 }]}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: insets.top, }]}>
                   <Text style={[styles.question, themeStyles[theme].question]}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>

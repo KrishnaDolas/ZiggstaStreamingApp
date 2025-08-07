@@ -470,11 +470,9 @@ export const styles = StyleSheet.create({
   qAWrapper: {
     width: '100%',
     flex: 1,
-    paddingTop: 20,
   },
   question: {
     fontSize: 20,
-    marginTop: 25,
     textAlign: 'center',
     marginBottom: 30,
   },
