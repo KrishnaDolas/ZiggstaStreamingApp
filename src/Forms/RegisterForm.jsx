@@ -23,6 +23,7 @@ import { SendErrorTotheServer } from '../utils/constant';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 // import { NetworkInfo } from 'react-native-network-info';
 import Geolocation from 'react-native-geolocation-service';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const screenHeight = Dimensions.get('window').height;
 const initialWidth = Dimensions.get('window').width; // Fallback width
@@ -66,6 +67,7 @@ export const RegisterForm = ({
   theme,
   onLogin,
 }) => {
+  const insets = useSafeAreaInsets();
   const { userAddress, setUserAddress, ipAddress, setIpAddress, setUserData } = useAppContext();
   const [step, setStep] = useState(0);
   const [layoutWidth, setLayoutWidth] = useState(initialWidth);
@@ -1314,7 +1316,7 @@ export const RegisterForm = ({
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
-                <View style={[styles.qAWrapper, { paddingHorizontal: 20 }]}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: 0 }]}>
                   <Text style={[styles.question, themeStyles[theme].question]}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View>
@@ -1323,7 +1325,7 @@ export const RegisterForm = ({
           </ScrollView>
 
           {/* Navigation Buttons */}
-          <View style={[styles.buttons, { justifyContent: 'space-between' }]}>
+          <View style={[styles.buttons, { marginBottom: 0, paddingBottom: insets.bottom, justifyContent: 'space-between' }]}>
             <TouchableOpacity
               onPress={handlePrevious}
               style={[styles.btnNav, step === 0 && { opacity: 0 }]} // Hide visually but maintain layout
@@ -1347,7 +1349,7 @@ export const RegisterForm = ({
 
           {/* Progress Dots */}
           {questions[step]?.field !== 'location' && isValidStep && (
-            <View style={styles.dotsContainer}>
+            <View style={[styles.dotsContainer, { bottom: insets.bottom + 80 }]}>
               {questions.map((_, idx) => (
                 <View
                   key={idx}

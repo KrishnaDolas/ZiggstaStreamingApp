@@ -474,7 +474,7 @@ export const styles = StyleSheet.create({
   },
   question: {
     fontSize: 20,
-    marginTop: 60,
+    marginTop: 25,
     textAlign: 'center',
     marginBottom: 30,
   },
@@ -505,7 +505,7 @@ export const styles = StyleSheet.create({
   },
   dotsContainer: {
     position: 'absolute',
-    bottom: 160,
+    // bottom: 160,
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
