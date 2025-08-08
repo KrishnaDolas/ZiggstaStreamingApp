@@ -23,13 +23,10 @@ import LinearGradient from 'react-native-linear-gradient';
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
-const SOCKET_URL = 'http://your-server-ip:PORT'; // change to your server
 
 const SEGMENTS = [
-    '5x', 'Triple', 'Double', 'Triple',
-    '5x', 'Double', 'Triple', 'Double',
-    '5x', 'Double', 'Triple', 'Double',
-    '5x', 'Triple', 'Double', '25x',
+    '5x', 'Triple', 'Double', 'Triple', '5x', 'Double', 'Triple', 'Double',
+    '5x', 'Double', 'Triple', 'Double', '5x', 'Triple', 'Double', '25x',
 ];
 
 const COLORS = {
@@ -61,7 +58,38 @@ const LuckyWheelModal = (
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
 
-    const socketRef = useRef(null);
+    const idleSpin = useRef(new Animated.Value(0)).current;
+
+
+
+    const startIdleRotation = () => {
+        idleSpin.setValue(0);
+        Animated.loop(
+            Animated.timing(idleSpin, {
+                toValue: 1,
+                duration: 5000, // 1 full rotation per second
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        ).start();
+    };
+
+    const stopIdleRotation = () => {
+        idleSpin.stopAnimation();
+    };
+
+    useEffect(() => {
+        if (visible) {
+            startIdleRotation(); // Start idle spinning when modal opens
+        } else {
+            stopIdleRotation();  // Stop idle spinning when modal closes
+        }
+
+        return () => {
+            stopIdleRotation();
+        };
+    }, [visible]);
+
 
     const [userBets, setUserBets] = useState([
         { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: true },
@@ -83,11 +111,8 @@ const LuckyWheelModal = (
         setUserBets(users);
     }
     // Sound setup
-    let placeYourBetSound, noMoreBetsSound;
 
     useEffect(() => {
-        placeYourBetSound = new Sound('place-your-bet.mp3', Sound.MAIN_BUNDLE);
-        noMoreBetsSound = new Sound('no-more-bets.mp3', Sound.MAIN_BUNDLE);
         if (userData) {
             socket.emit('User-joined-SpinWheel', RoomID, userData?.userid, userData?.screenName, userData?.avatar);
         }
@@ -103,6 +128,7 @@ const LuckyWheelModal = (
 
     }, []);
 
+
     // Connect socket
     useEffect(() => {
         if (!visible) return;
@@ -113,9 +139,9 @@ const LuckyWheelModal = (
         // });
 
         // handleSpin('Triple');
-        socket.on('start_spin', ({ resultLabel }) => {
-            handleSpin(resultLabel);
-        });
+        // socket.on('start_spin', ({ resultLabel }) => {
+        //     handleSpin(resultLabel);
+        // });
 
         socket.on('spin_result', ({ resultLabel, winAmount, newBalance }) => {
             setMessage(winAmount > 0
@@ -123,26 +149,6 @@ const LuckyWheelModal = (
                 : `❌ You LOST! Landed on ${resultLabel}`);
         });
     }, [visible]);
-
-    // const startCountdown = (duration = 30) => {
-    //     setCountdown(duration);
-    //     setMessage('');
-
-    //     let counter = duration;
-    //     const interval = setInterval(() => {
-    //         counter -= 1;
-    //         setCountdown(counter);
-
-    //         if (counter <= 5 && noMoreBetsSound) {
-    //             noMoreBetsSound.play();
-    //         }
-
-    //         if (counter <= 0) {
-    //             clearInterval(interval);
-    //             setMessage('Spinning...');
-    //         }
-    //     }, 1000);
-    // };
 
     const startCountdown = (duration = 30) => {
         setCountdown(duration);
@@ -152,6 +158,14 @@ const LuckyWheelModal = (
         const interval = setInterval(() => {
             counter -= 1;
             setCountdown(counter);
+
+            if (counter === 5) {
+                const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
+                    sound.play(() => {
+                        sound.release();
+                    });
+                });
+            }
 
             if (counter <= 5) {
                 setBigCountdownNumber(counter);
@@ -178,6 +192,7 @@ const LuckyWheelModal = (
                 clearInterval(interval);
                 setMessage('Spinning...');
                 setBigCountdownNumber(null);
+                setActiveBetAmount(null);
             }
         }, 1000);
     };
@@ -197,13 +212,18 @@ const LuckyWheelModal = (
             userName: userData?.screenName,
         });
 
-        placeYourBetSound?.play();
+        const sound = new Sound('place_your_bet.mp3', Sound.MAIN_BUNDLE, (error) => {
+            sound.play(() => {
+                sound.release();
+            });
+        });
         setBetPlaced(true);
         setActiveBetAmount(val); // 👈 track which button is active
         setMessage(`Bet placed on ${selectedMultiplier}`);
     };
 
     const handleSpin = (resultLabel) => {
+        stopIdleRotation();
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
         const targetIndices = SEGMENTS
@@ -229,6 +249,7 @@ const LuckyWheelModal = (
         });
         setActiveBetAmount(null);
     };
+
 
     const renderSegments = () => {
         const radius = 200;
@@ -378,9 +399,15 @@ const LuckyWheelModal = (
                                 zIndex: 1,
                                 transform: [
                                     {
-                                        rotate: spinValue.interpolate({
-                                            inputRange: [0, 360],
-                                            outputRange: ['0deg', '360deg'],
+                                        rotate: Animated.add(
+                                            spinValue,
+                                            idleSpin.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 2 * Math.PI], // radians
+                                            })
+                                        ).interpolate({
+                                            inputRange: [0, 2 * Math.PI],
+                                            outputRange: ['0rad', `${2 * Math.PI}rad`],
                                         }),
                                     },
                                 ],
@@ -504,7 +531,8 @@ const LuckyWheelModal = (
                                     borderRightColor: '#fafafa88',
                                 },
                             ]}
-                            onPress={() => setSelectedMultiplier(option)}
+                            // onPress={() => setSelectedMultiplier(option)}
+                            onPress={() => handleSpin('5x')}
                         >
                             <Text style={{
                                 color: selectedMultiplier === option ? '#fff' : theme === 'dark' ? '#fff' : '#222',
