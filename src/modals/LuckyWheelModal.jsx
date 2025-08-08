@@ -58,6 +58,7 @@ const LuckyWheelModal = (
     const spinValue = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
+    const [userBets, setUserBets] = useState([]);
 
     const idleSpin = useRef(new Animated.Value(0)).current;
 
@@ -92,13 +93,13 @@ const LuckyWheelModal = (
     }, [visible]);
 
 
-    const [userBets, setUserBets] = useState([
-        { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 0 },
-        { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: 1 },
-        { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: 2 },
-        { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: 2 },
-        { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 1 },
-    ]);
+    // const [userBets, setUserBets] = useState([
+    //     { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 0 },
+    //     { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: 1 },
+    //     { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: 2 },
+    //     { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: 2 },
+    //     { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 1 },
+    // ]);
 
 
     const HandleUpdatedCredit = (amount) => {
@@ -109,6 +110,7 @@ const LuckyWheelModal = (
         startCountdown(time);
     }
     const HandleBetUserList = (users) => {
+        console.log('users', users);
         setUserBets(users);
     }
     // Sound setup
@@ -120,10 +122,12 @@ const LuckyWheelModal = (
         socket.on('updated_Credit', HandleUpdatedCredit);
         socket.on('spinwheel_timer', HandleTimer)
         socket.on('betPlace-Users', HandleBetUserList)
+        socket.on('start_spin', handleSpin)
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer)
             socket.off('betPlace-Users', HandleBetUserList)
+            socket.off('start_spin', handleSpin)
         }
 
 
@@ -206,12 +210,6 @@ const LuckyWheelModal = (
             return;
         }
 
-        // socket.emit('place_bet', {
-        //     userID: userData?.userid,
-        //     betAmount: val,
-        //     multiplier: selectedMultiplier,
-        //     userName: userData?.screenName,
-        // });
         socket.emit('place_bet', {
             userID: userData?.userid,
             HostId: hostDetails?.userid,
@@ -263,7 +261,7 @@ const LuckyWheelModal = (
         stopIdleRotation();
 
         const segmentCount = SEGMENTS.length;
-        const anglePerSegment = 360 / segmentCount;
+        const anglePerSegment = 360 / segmentCount; // 22.5 degrees per segment
 
         // Find all indices that match the result label
         const targetIndices = SEGMENTS
@@ -273,32 +271,34 @@ const LuckyWheelModal = (
         // Randomly select one of the matching segments
         const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
 
-        // Calculate the center angle of the selected segment
-        // In SVG, 0 degrees starts at 3 o'clock (right side) and goes clockwise
-        // But we want our pointer to be at 12 o'clock (top)
-        // So we need to offset by -90 degrees to align with top
+        // In our renderSegments, segments start from 0° (3 o'clock) and go clockwise
+        // Segment 0: 0° to 22.5° (center at 11.25°)
+        // Segment 1: 22.5° to 45° (center at 33.75°)
+        // etc.
         const segmentCenterAngle = selected.idx * anglePerSegment + (anglePerSegment / 2);
 
-        // To align the segment center with the top pointer (12 o'clock position)
-        // we need to rotate the wheel so that the segment center ends up at -90 degrees
-        // (since -90 degrees in SVG coordinate system is the top)
-        const topPosition = -90; // Top position in SVG coordinates
-        const targetAngle = topPosition - segmentCenterAngle;
+        // Our arrow is at the top (12 o'clock = 270° in standard math, or -90° from SVG 0°)
+        // We need to rotate the wheel so the selected segment center aligns with 270°
+        // Since we're rotating the wheel (not the pointer), we need to calculate how much
+        // to rotate so that the segment center ends up at the top
 
-        // Normalize the angle to ensure we always spin in the same direction
-        let normalizedTargetAngle = targetAngle;
-        while (normalizedTargetAngle <= 0) {
-            normalizedTargetAngle += 360;
+        // The angle we need to rotate to bring the segment to the top (270°)
+        let rotationNeeded = 270 - segmentCenterAngle;
+
+        // Ensure we always rotate in positive direction and add some randomness
+        if (rotationNeeded < 0) {
+            rotationNeeded += 360;
         }
 
-        // Add multiple full rotations for visual effect (10 full rotations)
-        const fullRotations = 360 * 10;
-        const finalRotation = fullRotations + normalizedTargetAngle;
+        // Add multiple full rotations for visual effect
+        const fullRotations = 360 * (8 + Math.random() * 4); // 8-12 rotations
+        const finalRotation = fullRotations + rotationNeeded;
 
         console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
         console.log(`Segment center angle: ${segmentCenterAngle}°`);
-        console.log(`Target angle: ${normalizedTargetAngle}°`);
+        console.log(`Rotation needed: ${rotationNeeded}°`);
         console.log(`Final rotation: ${finalRotation}°`);
+        console.log(`Expected final position: ${(finalRotation % 360)}°`);
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -310,9 +310,14 @@ const LuckyWheelModal = (
                 setMessage(`Landed on ${resultLabel}`);
                 setBetPlaced(false);
                 setSelectedMultiplier(null);
-                // Reset spinValue for next spin but maintain visual position
+                // Keep the final position for next spin
                 const finalAngle = finalRotation % 360;
                 spinValue.setValue(finalAngle);
+
+                // Restart idle rotation from the final position
+                setTimeout(() => {
+                    startIdleRotation();
+                }, 1000);
             }, 500);
         });
         setActiveBetAmount(null);
@@ -537,7 +542,7 @@ const LuckyWheelModal = (
                         >
                             {userBets.map((user, index) => (
                                 <View
-                                    key={user.id + index}
+                                    key={index}
                                     style={{
                                         flexDirection: 'row',
                                         alignItems: 'center',
@@ -572,7 +577,7 @@ const LuckyWheelModal = (
                                             source={user.avatar}
                                             style={{ width: 26, height: 26, borderRadius: 13, marginRight: 8 }}
                                         /> */}
-                                        <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>{user.username}</Text>
+                                        <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>{user.userName}</Text>
                                     </View>
 
                                     {/* Bet Amount */}
@@ -582,7 +587,7 @@ const LuckyWheelModal = (
                                         fontWeight: '500',
                                         textAlign: 'left',
                                         marginLeft: 15,
-                                    }}>{user.bet}</Text>
+                                    }}>{user.betAmount}</Text>
 
                                     {/* Multiplier Chip */}
                                     <View style={{

@@ -998,7 +998,7 @@ const StreamRoom = ({
                                         </ScrollView>
                                     </View>
                                     {showUI && (<View style={styles.strRoomFooterSocialActions}>
-                                        {!isHost && (
+                                        {(
                                             <TouchableOpacity
                                                 style={styles.strRoomFooterSocialActionsBtn}
                                                 onPress={() => setVisibleModal('luckyWheel')}
