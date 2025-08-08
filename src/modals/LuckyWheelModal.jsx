@@ -205,12 +205,19 @@ const LuckyWheelModal = (
             return;
         }
 
-        socket.emit('place_bet', {
+        // socket.emit('place_bet', {
+        //     userID: userData?.userid,
+        //     betAmount: val,
+        //     multiplier: selectedMultiplier,
+        //     userName: userData?.screenName,
+        // });
+        socket.emit('place_bet',{
             userID: userData?.userid,
-            betAmount: val,
+            betAmount: activeBetAmount,
             multiplier: selectedMultiplier,
             userName: userData?.screenName,
-        });
+            RoomId: RoomID,
+        })
 
         const sound = new Sound('place_your_bet.mp3', Sound.MAIN_BUNDLE, (error) => {
             sound.play(() => {
