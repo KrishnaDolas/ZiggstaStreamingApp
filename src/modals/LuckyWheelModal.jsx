@@ -103,6 +103,10 @@ const LuckyWheelModal = (
         startCountdown(time); // Start the countdown logic
     };
 
+    useEffect(() => {
+        console.log('countdown', countdown);
+    }, [countdown]);
+
 
     const HandleBetUserList = (users) => {
         console.log('users', users);
@@ -364,6 +368,11 @@ const LuckyWheelModal = (
         return segments;
     };
 
+    const closeModal = () => {
+        onClose();
+        socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid);
+    };
+
 
     return (
         <Modal
@@ -402,10 +411,7 @@ const LuckyWheelModal = (
                         />
                         <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{mycredit}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => {
-                        onClose()
-                        socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid)
-                    }}>
+                    <TouchableOpacity onPress={closeModal}>
                         <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
                             <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                         </Text>
