@@ -62,8 +62,6 @@ const LuckyWheelModal = (
 
     const idleSpin = useRef(new Animated.Value(0)).current;
 
-
-
     const startIdleRotation = () => {
         idleSpin.setValue(0);
         Animated.loop(
@@ -75,6 +73,7 @@ const LuckyWheelModal = (
             })
         ).start();
     };
+
 
     const stopIdleRotation = () => {
         idleSpin.stopAnimation();
@@ -271,34 +270,41 @@ const LuckyWheelModal = (
         // Randomly select one of the matching segments
         const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
 
-        // In our renderSegments, segments start from 0° (3 o'clock) and go clockwise
-        // Segment 0: 0° to 22.5° (center at 11.25°)
-        // Segment 1: 22.5° to 45° (center at 33.75°)
-        // etc.
-        const segmentCenterAngle = selected.idx * anglePerSegment + (anglePerSegment / 2);
+        // Since our renderSegments starts from -90° (top), calculate the actual angles
+        const segmentStartAngle = (selected.idx * anglePerSegment) - 90;
+        const segmentCenterAngle = segmentStartAngle + (anglePerSegment / 2);
 
-        // Our arrow is at the top (12 o'clock = 270° in standard math, or -90° from SVG 0°)
-        // We need to rotate the wheel so the selected segment center aligns with 270°
-        // Since we're rotating the wheel (not the pointer), we need to calculate how much
-        // to rotate so that the segment center ends up at the top
+        // We want to rotate the wheel so that the segment center ends up at the top (-90°)
+        // Since we're rotating clockwise, we need to calculate the rotation differently
 
-        // The angle we need to rotate to bring the segment to the top (270°)
-        let rotationNeeded = 270 - segmentCenterAngle;
+        // Convert angles to a 0-360 range for easier calculation
+        let normalizedSegmentCenter = segmentCenterAngle;
+        if (normalizedSegmentCenter < 0) {
+            normalizedSegmentCenter += 360;
+        }
 
-        // Ensure we always rotate in positive direction and add some randomness
+        let normalizedTargetPosition = 270; // -90° in 0-360 range is 270°
+
+        // Calculate rotation needed (clockwise)
+        let rotationNeeded = normalizedTargetPosition - normalizedSegmentCenter;
         if (rotationNeeded < 0) {
             rotationNeeded += 360;
         }
 
         // Add multiple full rotations for visual effect
-        const fullRotations = 360 * (8 + Math.random() * 4); // 8-12 rotations
-        const finalRotation = fullRotations + rotationNeeded;
+        const baseRotations = 360 * (8 + Math.random() * 4); // 8-12 rotations
+        const finalRotation = baseRotations + rotationNeeded;
 
+        console.log(`=== DEBUG INFO ===`);
         console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
-        console.log(`Segment center angle: ${segmentCenterAngle}°`);
+        console.log(`Raw segment center angle: ${segmentCenterAngle}°`);
+        console.log(`Normalized segment center: ${normalizedSegmentCenter}°`);
+        console.log(`Target position: ${normalizedTargetPosition}° (top of wheel)`);
         console.log(`Rotation needed: ${rotationNeeded}°`);
+        console.log(`Base rotations: ${baseRotations}°`);
         console.log(`Final rotation: ${finalRotation}°`);
-        console.log(`Expected final position: ${(finalRotation % 360)}°`);
+        console.log(`Final position check: ${(normalizedSegmentCenter + rotationNeeded) % 360}° (should be 270°)`);
+        console.log(`==================`);
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -310,7 +316,8 @@ const LuckyWheelModal = (
                 setMessage(`Landed on ${resultLabel}`);
                 setBetPlaced(false);
                 setSelectedMultiplier(null);
-                // Keep the final position for next spin
+
+                // Set the final position for next spin
                 const finalAngle = finalRotation % 360;
                 spinValue.setValue(finalAngle);
 
@@ -697,6 +704,45 @@ const LuckyWheelModal = (
                 >
                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (5x)</Text>
                 </TouchableOpacity>
+
+                {/* Debug button for Double */}
+                {/* <TouchableOpacity
+                    style={{
+                        backgroundColor: '#00a3ccff',
+                        padding: 10,
+                        margin: 10,
+                        borderRadius: 5,
+                        alignItems: 'center'
+                    }}
+                    onPress={() => handleSpin('Double')}
+                >
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (Double)</Text>
+                </TouchableOpacity> */}
+
+                {/* Debug: Show current segments layout */}
+                {/* <View style={{ margin: 10, padding: 10, backgroundColor: theme === 'dark' ? '#333' : '#eee', borderRadius: 5 }}>
+                    <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontWeight: 'bold', marginBottom: 5 }}>
+                        Debug: Segments Layout
+                    </Text>
+                    {SEGMENTS.map((segment, index) => {
+                        const startAngle = (index * 22.5) - 90;
+                        const centerAngle = startAngle + 11.25;
+                        const normalizedCenter = centerAngle < 0 ? centerAngle + 360 : centerAngle;
+
+                        return (
+                            <Text key={index} style={{
+                                color: theme === 'dark' ? '#ccc' : '#666',
+                                fontSize: 10,
+                                fontFamily: 'monospace'
+                            }}>
+                                {index}: {segment} | Center: {centerAngle.toFixed(1)}° ({normalizedCenter.toFixed(1)}°)
+                            </Text>
+                        );
+                    })}
+                    <Text style={{ color: 'red', fontWeight: 'bold', marginTop: 5, fontSize: 12 }}>
+                        Arrow at: -90° (270°) ← Target Position
+                    </Text>
+                </View> */}
 
             </View>
 
