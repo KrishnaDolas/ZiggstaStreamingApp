@@ -96,12 +96,7 @@ const LuckyWheelModal = (
         setMyCredit(amount);
     };
 
-    const HandleTimer = (time) => {
-        console.log('Timer received from server:', time);
-        setCountdown(time);
-        setMessage(''); // Clear any existing message
-        startCountdown(time); // Start the countdown logic
-    };
+
 
     useEffect(() => {
         console.log('countdown', countdown);
@@ -113,55 +108,68 @@ const LuckyWheelModal = (
         setUserBets(users);
     };
 
-    const startCountdown = (duration) => {
 
+    // 1️⃣ Always clear interval safely
+    const clearCountdown = () => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }
+
+    const startCountdown = (duration) => {
+        clearCountdown(); // ⬅️ clear any previous countdown first
         // Only start a new interval if none exists
-        if (!intervalRef.current) {
-            let counter = duration;
+        let counter = duration;
+        setCountdown(counter);
+
+        intervalRef.current = setInterval(() => {
+            counter -= 1;
             setCountdown(counter);
 
-            intervalRef.current = setInterval(() => {
-                counter -= 1;
-                setCountdown(counter);
-
-                if (counter === 5) {
-                    const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
-                        sound.play(() => {
-                            sound.release();
-                        });
+            if (counter === 5) {
+                const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
+                    sound.play(() => {
+                        sound.release();
                     });
-                }
+                });
+            }
 
-                if (counter <= 5) {
-                    setBigCountdownNumber(counter);
-                    fadeAnim.setValue(0);
+            if (counter <= 5) {
+                setBigCountdownNumber(counter);
+                fadeAnim.setValue(0);
 
-                    Animated.sequence([
-                        Animated.timing(fadeAnim, {
-                            toValue: 1,
-                            duration: 300,
-                            useNativeDriver: true,
-                        }),
-                        Animated.timing(fadeAnim, {
-                            toValue: 0,
-                            duration: 300,
-                            useNativeDriver: true,
-                            delay: 300,
-                        }),
-                    ]).start();
-                } else {
-                    setBigCountdownNumber(null);
-                }
+                Animated.sequence([
+                    Animated.timing(fadeAnim, {
+                        toValue: 1,
+                        duration: 300,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(fadeAnim, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                        delay: 300,
+                    }),
+                ]).start();
+            } else {
+                setBigCountdownNumber(null);
+            }
 
-                if (counter <= 0) {
-                    clearInterval(intervalRef.current);
-                    intervalRef.current = null;
-                    setMessage('Spinning...');
-                    setBigCountdownNumber(null);
-                    setActiveBetAmount(null);
-                }
-            }, 1000);
-        }
+            if (counter <= 0) {
+                clearCountdown();
+                setMessage('Spinning...');
+                setBigCountdownNumber(null);
+                setActiveBetAmount(null);
+            }
+        }, 1000);
+    };
+
+    // 2️⃣ Socket handlers
+    const HandleTimer = (time) => {
+        console.log('Timer received from server:', time);
+        setMessage('');
+        startCountdown(time); // This will clear any old countdown and restart
     };
 
     // Sound setup
@@ -179,18 +187,23 @@ const LuckyWheelModal = (
             socket.off('spinwheel_timer', HandleTimer);
             socket.off('betPlace-Users', HandleBetUserList);
             socket.off('start_spin', handleSpin);
-            // Clear interval only on unmount
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
         };
-    }, [userData, RoomID]);
+    }, []);
+
+
+    // 4️⃣ Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            clearCountdown();
+        };
+    }, []);
 
 
     // Connect socket
     useEffect(() => {
-        if (!visible) return;
+        if (!visible) {
+            clearCountdown(); // stop interval if modal is closed
+        }
 
         // startCountdown(10);
         // socket.on('start_countdown', ({ seconds }) => {
@@ -208,7 +221,6 @@ const LuckyWheelModal = (
                 : `❌ You LOST! Landed on ${resultLabel}`);
         });
     }, [visible]);
-
 
 
 
