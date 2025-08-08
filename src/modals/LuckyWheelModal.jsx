@@ -38,6 +38,7 @@ const COLORS = {
 
 const winIcon = require('../../assets/images/lucky-wheel/win.png');
 const loseIcon = require('../../assets/images/lucky-wheel/lose.png');
+const chipsIcon = require('../../assets/images/lucky-wheel/blue-chip.png');
 
 
 const wheelSize = screenWidth * 0.8; // 80% of screen width
@@ -92,11 +93,11 @@ const LuckyWheelModal = (
 
 
     const [userBets, setUserBets] = useState([
-        { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: true },
-        { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: false },
-        { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: false },
-        { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: true },
-        { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: false },
+        { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 0 },
+        { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: 1 },
+        { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: 2 },
+        { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: 2 },
+        { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 1 },
     ]);
 
 
@@ -211,9 +212,10 @@ const LuckyWheelModal = (
         //     multiplier: selectedMultiplier,
         //     userName: userData?.screenName,
         // });
-        socket.emit('place_bet',{
+        socket.emit('place_bet', {
             userID: userData?.userid,
-            betAmount: activeBetAmount,
+            HostId: hostDetails?.userid,
+            betAmount: val,
             multiplier: selectedMultiplier,
             userName: userData?.screenName,
             RoomId: RoomID,
@@ -556,7 +558,7 @@ const LuckyWheelModal = (
                                     </Text> */}
                                     <View style={{ flex: 0.5, fontSize: 16 }}>
                                         <Image
-                                            source={user.isWinner ? winIcon : loseIcon}
+                                            source={user.isWinner === 1 ? winIcon : user.isWinner === 0 ? loseIcon : chipsIcon}
                                             style={{
                                                 width: 25,
                                                 height: 25,
