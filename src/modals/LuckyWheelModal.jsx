@@ -119,11 +119,11 @@ const LuckyWheelModal = (
         }
         socket.on('updated_Credit', HandleUpdatedCredit);
         socket.on('spinwheel_timer', HandleTimer)
-        socket.on('userList', HandleBetUserList)
+        socket.on('betPlace-Users', HandleBetUserList)
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer)
-            socket.off('userList', HandleBetUserList)
+            socket.off('betPlace-Users', HandleBetUserList)
         }
 
 
