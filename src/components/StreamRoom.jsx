@@ -59,7 +59,6 @@ const StreamRoom = ({
     totalGiftValue
 }) => {
     const insets = useSafeAreaInsets();
-    const insetsTop = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
@@ -998,7 +997,6 @@ const StreamRoom = ({
                                         </ScrollView>
                                     </View>
                                     {showUI && (<View style={styles.strRoomFooterSocialActions}>
-                                        {!isHost && (
                                             <TouchableOpacity
                                                 style={styles.strRoomFooterSocialActionsBtn}
                                                 onPress={() => setVisibleModal('luckyWheel')}
@@ -1009,7 +1007,6 @@ const StreamRoom = ({
                                                     resizeMode="contain"
                                                 />
                                             </TouchableOpacity>
-                                        )}
                                         {!isHost && streamerList?.length === 1 && (<>
                                             <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={() => handleFriendRequest(userDetails?.userid)}>
                                                 <Ionicons name="person-add" size={30} color="#fff" />
