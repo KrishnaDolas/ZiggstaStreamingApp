@@ -414,7 +414,10 @@ const LuckyWheelModal = (
                         />
                         <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{mycredit}</Text>
                     </View>
-                    <TouchableOpacity onPress={onClose}>
+                    <TouchableOpacity onPress={()=>{
+                        onClose()
+                        socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid)
+                    }}>
                         <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
                             <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                         </Text>
