@@ -61,6 +61,7 @@ const LuckyWheelModal = (
     const [userBets, setUserBets] = useState([]);
 
     const idleSpin = useRef(new Animated.Value(0)).current;
+    const intervalRef = useRef(null);
 
     const startIdleRotation = () => {
         idleSpin.setValue(0);
@@ -155,11 +156,17 @@ const LuckyWheelModal = (
     }, [visible]);
 
     const startCountdown = (duration = 30) => {
+
+        // Clear any existing interval before starting new
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+        }
+
         setCountdown(duration);
         setMessage('');
         let counter = duration;
 
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
             counter -= 1;
             setCountdown(counter);
 
@@ -193,7 +200,8 @@ const LuckyWheelModal = (
             }
 
             if (counter <= 0) {
-                clearInterval(interval);
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
                 setMessage('Spinning...');
                 setBigCountdownNumber(null);
                 setActiveBetAmount(null);
@@ -201,6 +209,15 @@ const LuckyWheelModal = (
         }, 1000);
     };
 
+    // Clear interval when component unmounts
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+    }, []);
 
 
     const placeBet = (val) => {
@@ -227,34 +244,6 @@ const LuckyWheelModal = (
         setActiveBetAmount(val); // 👈 track which button is active
         setMessage(`Bet placed on ${selectedMultiplier}`);
     };
-
-    // const handleSpin = (resultLabel) => {
-    //     stopIdleRotation();
-    //     const segmentCount = SEGMENTS.length;
-    //     const anglePerSegment = 360 / segmentCount;
-    //     const targetIndices = SEGMENTS
-    //         .map((label, idx) => ({ label, idx }))
-    //         .filter(s => s.label === resultLabel);
-    //     const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
-
-    //     const segmentMidAngle = selected.idx * anglePerSegment + anglePerSegment / 2;
-    //     const finalRotation = 360 * 10 - segmentMidAngle;
-
-    //     Animated.timing(spinValue, {
-    //         toValue: finalRotation,
-    //         duration: 7000,
-    //         easing: Easing.out(Easing.quad),
-    //         useNativeDriver: true,
-    //     }).start(() => {
-    //         setTimeout(() => {
-    //             setMessage(`Landed on ${resultLabel}`);
-    //             setBetPlaced(false);
-    //             setSelectedMultiplier(null);
-    //             spinValue.setValue(0); // reset for next spin
-    //         }, 500);
-    //     });
-    //     setActiveBetAmount(null);
-    // };
 
     const handleSpin = (resultLabel) => {
         stopIdleRotation();
@@ -292,7 +281,9 @@ const LuckyWheelModal = (
         }
 
         // Add multiple full rotations for visual effect
-        const baseRotations = 360 * (8 + Math.random() * 4); // 8-12 rotations
+        // IMPORTANT: Use whole numbers for base rotations to avoid modulo issues
+        const numberOfFullRotations = Math.floor(8 + Math.random() * 4); // 8-11 full rotations
+        const baseRotations = numberOfFullRotations * 360; // Always exact multiples of 360
         const finalRotation = baseRotations + rotationNeeded;
 
         console.log(`=== DEBUG INFO ===`);
@@ -301,10 +292,15 @@ const LuckyWheelModal = (
         console.log(`Normalized segment center: ${normalizedSegmentCenter}°`);
         console.log(`Target position: ${normalizedTargetPosition}° (top of wheel)`);
         console.log(`Rotation needed: ${rotationNeeded}°`);
-        console.log(`Base rotations: ${baseRotations}°`);
+        console.log(`Number of full rotations: ${numberOfFullRotations}`);
+        console.log(`Base rotations: ${baseRotations}° (exact multiple of 360)`);
         console.log(`Final rotation: ${finalRotation}°`);
-        console.log(`Final position check: ${(normalizedSegmentCenter + rotationNeeded) % 360}° (should be 270°)`);
-        console.log(`==================`);
+        console.log(`Final rotation mod 360: ${finalRotation % 360}° (should equal rotation needed: ${rotationNeeded}°)`);
+        console.log(`Expected final segment position: ${(normalizedSegmentCenter + rotationNeeded) % 360}° (should be 270°)`);
+
+        // Double-check our math
+        const checkPosition = (normalizedSegmentCenter + rotationNeeded) % 360;
+        console.log(`Math check: ${normalizedSegmentCenter}° + ${rotationNeeded}° = ${checkPosition}° (should be 270°)`);
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -499,8 +495,9 @@ const LuckyWheelModal = (
                                 transform: [
                                     {
                                         rotate: spinValue.interpolate({
-                                            inputRange: [0, 360],
-                                            outputRange: ['0deg', '360deg'],
+                                            inputRange: [0, 360 * 20], // Handle large rotation values
+                                            outputRange: ['0deg', `${360 * 20}deg`],
+                                            extrapolate: 'extend',
                                         }),
                                     },
                                     {
@@ -692,7 +689,7 @@ const LuckyWheelModal = (
                 </View>
 
                 {/* Test button - Remove in production */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={{
                         backgroundColor: '#ff6b6b',
                         padding: 10,
@@ -703,7 +700,7 @@ const LuckyWheelModal = (
                     onPress={() => handleSpin('5x')}
                 >
                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (5x)</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 {/* Debug button for Double */}
                 {/* <TouchableOpacity
