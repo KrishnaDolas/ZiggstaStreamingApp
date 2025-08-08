@@ -222,34 +222,92 @@ const LuckyWheelModal = (
         setMessage(`Bet placed on ${selectedMultiplier}`);
     };
 
+    // const handleSpin = (resultLabel) => {
+    //     stopIdleRotation();
+    //     const segmentCount = SEGMENTS.length;
+    //     const anglePerSegment = 360 / segmentCount;
+    //     const targetIndices = SEGMENTS
+    //         .map((label, idx) => ({ label, idx }))
+    //         .filter(s => s.label === resultLabel);
+    //     const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
+
+    //     const segmentMidAngle = selected.idx * anglePerSegment + anglePerSegment / 2;
+    //     const finalRotation = 360 * 10 - segmentMidAngle;
+
+    //     Animated.timing(spinValue, {
+    //         toValue: finalRotation,
+    //         duration: 7000,
+    //         easing: Easing.out(Easing.quad),
+    //         useNativeDriver: true,
+    //     }).start(() => {
+    //         setTimeout(() => {
+    //             setMessage(`Landed on ${resultLabel}`);
+    //             setBetPlaced(false);
+    //             setSelectedMultiplier(null);
+    //             spinValue.setValue(0); // reset for next spin
+    //         }, 500);
+    //     });
+    //     setActiveBetAmount(null);
+    // };
+
     const handleSpin = (resultLabel) => {
         stopIdleRotation();
+
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
+
+        // Find all indices that match the result label
         const targetIndices = SEGMENTS
             .map((label, idx) => ({ label, idx }))
             .filter(s => s.label === resultLabel);
+
+        // Randomly select one of the matching segments
         const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
 
-        const segmentMidAngle = selected.idx * anglePerSegment + anglePerSegment / 2;
-        const finalRotation = 360 * 10 - segmentMidAngle;
+        // Calculate the center angle of the selected segment
+        // In SVG, 0 degrees starts at 3 o'clock (right side) and goes clockwise
+        // But we want our pointer to be at 12 o'clock (top)
+        // So we need to offset by -90 degrees to align with top
+        const segmentCenterAngle = selected.idx * anglePerSegment + (anglePerSegment / 2);
+
+        // To align the segment center with the top pointer (12 o'clock position)
+        // we need to rotate the wheel so that the segment center ends up at -90 degrees
+        // (since -90 degrees in SVG coordinate system is the top)
+        const topPosition = -90; // Top position in SVG coordinates
+        const targetAngle = topPosition - segmentCenterAngle;
+
+        // Normalize the angle to ensure we always spin in the same direction
+        let normalizedTargetAngle = targetAngle;
+        while (normalizedTargetAngle <= 0) {
+            normalizedTargetAngle += 360;
+        }
+
+        // Add multiple full rotations for visual effect (10 full rotations)
+        const fullRotations = 360 * 10;
+        const finalRotation = fullRotations + normalizedTargetAngle;
+
+        console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
+        console.log(`Segment center angle: ${segmentCenterAngle}°`);
+        console.log(`Target angle: ${normalizedTargetAngle}°`);
+        console.log(`Final rotation: ${finalRotation}°`);
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
-            duration: 7000,
-            easing: Easing.out(Easing.quad),
+            duration: 4000,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
             setTimeout(() => {
                 setMessage(`Landed on ${resultLabel}`);
                 setBetPlaced(false);
                 setSelectedMultiplier(null);
-                spinValue.setValue(0); // reset for next spin
+                // Reset spinValue for next spin but maintain visual position
+                const finalAngle = finalRotation % 360;
+                spinValue.setValue(finalAngle);
             }, 500);
         });
         setActiveBetAmount(null);
     };
-
 
     const renderSegments = () => {
         const radius = 200;
@@ -381,11 +439,31 @@ const LuckyWheelModal = (
                     </View>
                 )}
 
-                {/* <View style={{ position: 'absolute', top: 0, left: '47%', zIndex: 10 }}>
-                    <Text style={{ fontSize: 28, color: '#fff' }}>▼</Text>
-                </View> */}
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <View style={mainStyle.wheelWrapper}>
+                        {/* Pointer/Arrow at the top of wheelWrapper */}
+                        <View style={{
+                            position: 'absolute',
+                            top: -25, // Position above the wheel
+                            left: '50%',
+                            marginLeft: -15, // Half of arrow width to center it
+                            zIndex: 100
+                        }}>
+                            <View style={{
+                                width: 0,
+                                height: 0,
+                                borderLeftWidth: 15,
+                                borderRightWidth: 15,
+                                borderTopWidth: 25,
+                                borderLeftColor: 'transparent',
+                                borderRightColor: 'transparent',
+                                borderTopColor: '#FFD700', // Gold color
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 2,
+                            }} />
+                        </View>
                         <Image
                             source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
                             style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
@@ -399,15 +477,15 @@ const LuckyWheelModal = (
                                 zIndex: 1,
                                 transform: [
                                     {
-                                        rotate: Animated.add(
-                                            spinValue,
-                                            idleSpin.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0, 2 * Math.PI], // radians
-                                            })
-                                        ).interpolate({
-                                            inputRange: [0, 2 * Math.PI],
-                                            outputRange: ['0rad', `${2 * Math.PI}rad`],
+                                        rotate: spinValue.interpolate({
+                                            inputRange: [0, 360],
+                                            outputRange: ['0deg', '360deg'],
+                                        }),
+                                    },
+                                    {
+                                        rotate: idleSpin.interpolate({
+                                            inputRange: [0, 1],
+                                            outputRange: ['0deg', '360deg'],
                                         }),
                                     },
                                 ],
@@ -531,8 +609,7 @@ const LuckyWheelModal = (
                                     borderRightColor: '#fafafa88',
                                 },
                             ]}
-                            // onPress={() => setSelectedMultiplier(option)}
-                            onPress={() => handleSpin('5x')}
+                            onPress={() => setSelectedMultiplier(option)}
                         >
                             <Text style={{
                                 color: selectedMultiplier === option ? '#fff' : theme === 'dark' ? '#fff' : '#222',
@@ -592,6 +669,20 @@ const LuckyWheelModal = (
                         </Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Test button - Remove in production */}
+                <TouchableOpacity
+                    style={{
+                        backgroundColor: '#ff6b6b',
+                        padding: 10,
+                        margin: 10,
+                        borderRadius: 5,
+                        alignItems: 'center'
+                    }}
+                    onPress={() => handleSpin('5x')}
+                >
+                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (5x)</Text>
+                </TouchableOpacity>
 
             </View>
 
