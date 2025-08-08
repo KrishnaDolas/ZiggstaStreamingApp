@@ -457,7 +457,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             styles.streamListLuckyWheelBtn,
                             insets.bottom > 0 && { paddingBottom: insets.bottom },
                         ]}
-                        onPress={() => setModalVisible(true)}
+                        onPress={() => setModalVisible('lucky-wheel')}
                     >
                         <Image
                             style={{ width: 75, height: 75 }}
@@ -566,7 +566,9 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     </Modal>
                 )
             }
-            <LuckyWheelModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+            {modalVisible === 'lucky-wheel' && (
+                <LuckyWheelModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+            )}
             {/* <Footer /> */}
         </LinearGradient>
     );

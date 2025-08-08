@@ -155,7 +155,7 @@ const LuckyWheelModal = (
         });
     }, [visible]);
 
-    const startCountdown = (duration = 30) => {
+    const startCountdown = (duration) => {
 
         // Clear any existing interval before starting new
         if (intervalRef.current) {
@@ -714,7 +714,7 @@ const LuckyWheelModal = (
                     onPress={() => handleSpin('Double')}
                 >
                     <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (Double)</Text>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
 
                 {/* Debug: Show current segments layout */}
                 {/* <View style={{ margin: 10, padding: 10, backgroundColor: theme === 'dark' ? '#333' : '#eee', borderRadius: 5 }}>
