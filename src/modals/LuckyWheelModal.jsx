@@ -92,27 +92,74 @@ const LuckyWheelModal = (
         };
     }, [visible]);
 
-
-    // const [userBets, setUserBets] = useState([
-    //     { id: 'u1', username: 'Player1', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 0 },
-    //     { id: 'u2', username: 'Player2', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '5x', bet: 500, isWinner: 1 },
-    //     { id: 'u3', username: 'Player3', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Triple', bet: 200, isWinner: 2 },
-    //     { id: 'u4', username: 'Player4', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: '25x', bet: 300, isWinner: 2 },
-    //     { id: 'u5', username: 'Player5', avatar: require('../../assets/images/lucky-wheel/blue-chip.png'), multiplier: 'Double', bet: 100, isWinner: 1 },
-    // ]);
-
-
     const HandleUpdatedCredit = (amount) => {
         setMyCredit(amount);
-    }
+    };
+
     const HandleTimer = (time) => {
         console.log('Timer received from server:', time);
-        startCountdown(time);
-    }
+        setCountdown(time);
+        setMessage(''); // Clear any existing message
+        startCountdown(time); // Start the countdown logic
+    };
+
+
     const HandleBetUserList = (users) => {
         console.log('users', users);
         setUserBets(users);
-    }
+    };
+
+    const startCountdown = (duration) => {
+
+        // Only start a new interval if none exists
+        if (!intervalRef.current) {
+            let counter = duration;
+            setCountdown(counter);
+
+            intervalRef.current = setInterval(() => {
+                counter -= 1;
+                setCountdown(counter);
+
+                if (counter === 5) {
+                    const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
+                        sound.play(() => {
+                            sound.release();
+                        });
+                    });
+                }
+
+                if (counter <= 5) {
+                    setBigCountdownNumber(counter);
+                    fadeAnim.setValue(0);
+
+                    Animated.sequence([
+                        Animated.timing(fadeAnim, {
+                            toValue: 1,
+                            duration: 300,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(fadeAnim, {
+                            toValue: 0,
+                            duration: 300,
+                            useNativeDriver: true,
+                            delay: 300,
+                        }),
+                    ]).start();
+                } else {
+                    setBigCountdownNumber(null);
+                }
+
+                if (counter <= 0) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                    setMessage('Spinning...');
+                    setBigCountdownNumber(null);
+                    setActiveBetAmount(null);
+                }
+            }, 1000);
+        }
+    };
+
     // Sound setup
 
     useEffect(() => {
@@ -120,18 +167,21 @@ const LuckyWheelModal = (
             socket.emit('User-joined-SpinWheel', RoomID, userData?.userid, userData?.screenName, userData?.avatar);
         }
         socket.on('updated_Credit', HandleUpdatedCredit);
-        socket.on('spinwheel_timer', HandleTimer)
-        socket.on('betPlace-Users', HandleBetUserList)
-        socket.on('start_spin', handleSpin)
+        socket.on('spinwheel_timer', HandleTimer);
+        socket.on('betPlace-Users', HandleBetUserList);
+        socket.on('start_spin', handleSpin);
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
-            socket.off('spinwheel_timer', HandleTimer)
-            socket.off('betPlace-Users', HandleBetUserList)
-            socket.off('start_spin', handleSpin)
-        }
-
-
-    }, []);
+            socket.off('spinwheel_timer', HandleTimer);
+            socket.off('betPlace-Users', HandleBetUserList);
+            socket.off('start_spin', handleSpin);
+            // Clear interval only on unmount
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+        };
+    }, [userData, RoomID]);
 
 
     // Connect socket
@@ -155,69 +205,7 @@ const LuckyWheelModal = (
         });
     }, [visible]);
 
-    const startCountdown = (duration) => {
 
-        // Clear any existing interval before starting new
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-        }
-
-        setCountdown(duration);
-        setMessage('');
-        let counter = duration;
-
-        intervalRef.current = setInterval(() => {
-            counter -= 1;
-            setCountdown(counter);
-
-            if (counter === 5) {
-                const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
-                    sound.play(() => {
-                        sound.release();
-                    });
-                });
-            }
-
-            if (counter <= 5) {
-                setBigCountdownNumber(counter);
-                fadeAnim.setValue(0);
-
-                Animated.sequence([
-                    Animated.timing(fadeAnim, {
-                        toValue: 1,
-                        duration: 300,
-                        useNativeDriver: true,
-                    }),
-                    Animated.timing(fadeAnim, {
-                        toValue: 0,
-                        duration: 300,
-                        useNativeDriver: true,
-                        delay: 300,
-                    }),
-                ]).start();
-            } else {
-                setBigCountdownNumber(null);
-            }
-
-            if (counter <= 0) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-                setMessage('Spinning...');
-                setBigCountdownNumber(null);
-                setActiveBetAmount(null);
-            }
-        }, 1000);
-    };
-
-    // Clear interval when component unmounts
-    useEffect(() => {
-        return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
-        };
-    }, []);
 
 
     const placeBet = (val) => {
@@ -414,7 +402,7 @@ const LuckyWheelModal = (
                         />
                         <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{mycredit}</Text>
                     </View>
-                    <TouchableOpacity onPress={()=>{
+                    <TouchableOpacity onPress={() => {
                         onClose()
                         socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid)
                     }}>
