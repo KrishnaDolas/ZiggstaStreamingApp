@@ -1086,7 +1086,18 @@ const StreamRoom = ({
                                         {!isHost && streamerList?.length === 1 && (<>
                                             <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid)}>
                                                 {streamLayout[0]?.isFriend ? (
-                                                    <Ionicons name="person-remove" size={30} color="#fff" />
+                                                    <>
+                                                        {/* <Ionicons name="person-remove" size={30} color="#fff" /> */}
+                                                        <Image
+                                                            style={{
+                                                                width: 32,
+                                                                height: 32,
+                                                            }}
+                                                            source={require('../../assets/images/icons/friend-added.png')}
+                                                            resizeMode="contain"
+                                                            tintColor="#4dff17ff"
+                                                        />
+                                                    </>
                                                 ) : (
                                                     <Ionicons name="person-add" size={30} color="#fff" />)}
                                             </TouchableOpacity>

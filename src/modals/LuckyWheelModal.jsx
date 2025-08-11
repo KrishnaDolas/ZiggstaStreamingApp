@@ -54,7 +54,6 @@ const LuckyWheelModal = (
     { visible, onClose, userData,
         hostDetails, RoomID }
 ) => {
-    const { theme } = useContext(ThemeContext);
     const [countdown, setCountdown] = useState(0);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [betPlaced, setBetPlaced] = useState(false);
