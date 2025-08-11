@@ -11,6 +11,7 @@ import {
     Image,
     Dimensions,
     ScrollView,
+    Alert,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
@@ -100,13 +101,6 @@ const LuckyWheelModal = (
     const HandleUpdatedCredit = (amount) => {
         setMyCredit(amount);
     };
-
-
-
-    useEffect(() => {
-        console.log('countdown', countdown);
-    }, [countdown]);
-
 
     const HandleBetUserList = (users) => {
         console.log('users', users);
@@ -430,10 +424,10 @@ const LuckyWheelModal = (
             <BlurView
                 style={StyleSheet.absoluteFill}
                 blurType="dark"
-                blurAmount={10}
-                reducedTransparencyFallbackColor="white"
+                blurAmount={30}
+            // reducedTransparencyFallbackColor="white"
             />
-            {/* <View style={mainStyle.overlayBackground} /> */}
+            <View style={mainStyle.overlayBackground} />
             <View style={mainStyle.LWModalOverlay}
             >
                 <View style={mainStyle.header}>
@@ -528,7 +522,7 @@ const LuckyWheelModal = (
                         </Animated.View>
                     </View>
                 </View>
-                <Text style={[mainStyle.message]}>{message}</Text>
+                {/* <Text style={[mainStyle.message]}>{message}</Text> */}
                 <Text style={mainStyle.countdownText}>⏱ {countdown}s</Text>
 
                 {userBets.length > 0 && (
@@ -611,52 +605,90 @@ const LuckyWheelModal = (
 
                 <View style={[mainStyle.placeBetBtnGroup]}>
                     {/* First button - 70% */}
-                    <TouchableOpacity
-                        style={[
-                            mainStyle.placeBetBtn,
-                            {
-                                flex: 7,
-                                marginRight: 5,
-                                backgroundColor:
-                                    activeBetAmount === 500
-                                        ? '#ff5733'
-                                        : theme === 'dark'
-                                            ? '#ffaa00'
-                                            : '#ffcc00',
-                                opacity: activeBetAmount && activeBetAmount !== 500 ? 0.5 : 1,
-                            },
-                        ]}
-                        onPress={() => placeBet(500)}
-                        disabled={!!activeBetAmount && activeBetAmount !== 500}
-                    >
-                        <Text style={mainStyle.placeBetBtnText}>
-                            BET 500
-                        </Text>
-                    </TouchableOpacity>
+                    {userBets.length === 0 ? (
+                        <TouchableOpacity
+                            style={[
+                                mainStyle.placeBetBtn,
+                                {
+                                    flex: 7,
+                                    marginRight: 5,
+                                    backgroundColor:
+                                        activeBetAmount === 500
+                                            ? '#ff5733'
+                                            : theme === 'dark'
+                                                ? '#ffaa00'
+                                                : '#ffcc00',
+                                    opacity: activeBetAmount && activeBetAmount !== 500 ? 0.5 : 1,
+                                },
+                            ]}
+                            onPress={() => {
+                                Alert.alert(
+                                    'Place Bet',
+                                    'Are you sure you want to place 500 chips to play?',
+                                    [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'OK', onPress: () => placeBet(500) }
+                                    ]
+                                );
+                            }}
+                            disabled={!!activeBetAmount && activeBetAmount !== 500}
+                        >
+                            <Text style={mainStyle.placeBetBtnText}>
+                                BET 500
+                            </Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <>
+                            <TouchableOpacity
+                                style={[
+                                    mainStyle.placeBetBtn,
+                                    {
+                                        flex: 7,
+                                        marginRight: 5,
+                                        backgroundColor:
+                                            activeBetAmount === 500
+                                                ? '#ff5733'
+                                                : theme === 'dark'
+                                                    ? '#ffaa00'
+                                                    : '#ffcc00',
+                                        opacity: activeBetAmount && activeBetAmount !== 500 ? 0.5 : 1,
+                                    },
+                                ]}
+                                onPress={() => placeBet(500)}
+                                disabled={!!activeBetAmount && activeBetAmount !== 500}
+                            >
+                                <Text style={mainStyle.placeBetBtnText}>
+                                    BET 500
+                                </Text>
+                            </TouchableOpacity>
 
-                    {/* Second button - 30% */}
-                    <TouchableOpacity
-                        style={[
-                            mainStyle.placeBetBtn,
-                            {
-                                flex: 3,
-                                marginLeft: 5,
-                                backgroundColor:
-                                    activeBetAmount === 100
-                                        ? '#ff5733'
-                                        : theme === 'dark'
-                                            ? '#ffaa00'
-                                            : '#ffcc00',
-                                opacity: activeBetAmount && activeBetAmount !== 100 ? 0.5 : 1,
-                            },
-                        ]}
-                        onPress={() => placeBet(100)}
-                        disabled={!!activeBetAmount && activeBetAmount !== 100}
-                    >
-                        <Text style={mainStyle.placeBetBtnText}>
-                            BET 100
-                        </Text>
-                    </TouchableOpacity>
+                            {/* Second button - 30% */}
+                            <TouchableOpacity
+                                style={[
+                                    mainStyle.placeBetBtn,
+                                    {
+                                        flex: 3,
+                                        marginLeft: 5,
+                                        backgroundColor:
+                                            activeBetAmount === 100
+                                                ? '#ff5733'
+                                                : theme === 'dark'
+                                                    ? '#ffaa00'
+                                                    : '#ffcc00',
+                                        opacity: activeBetAmount && activeBetAmount !== 100 ? 0.5 : 1,
+                                    },
+                                ]}
+                                onPress={() => placeBet(100)}
+                                disabled={!!activeBetAmount && activeBetAmount !== 100}
+                            >
+                                <Text style={mainStyle.placeBetBtnText}>
+                                    BET 100
+                                </Text>
+                            </TouchableOpacity>
+
+                        </>
+                    )}
+
                 </View>
 
                 <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
@@ -678,7 +710,7 @@ const mainStyle = StyleSheet.create({
     },
     overlayBackground: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.57)',
+        backgroundColor: 'rgba(0, 0, 0, 0.34)',
     },
     container: {
         flex: 1,
