@@ -1129,7 +1129,7 @@ const StreamRoom = ({
                                     </Animated.View>
                                 </LinearGradient>
                             )}
-                            {showUI && (<View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
+                            {showUI && (<View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? insets.bottom : 0 }]}>
                                 <TextInput
                                     placeholder=""
                                     placeholderTextColor="#414141"
