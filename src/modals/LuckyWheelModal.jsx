@@ -57,6 +57,7 @@ const LuckyWheelModal = (
     const [countdown, setCountdown] = useState(0);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [betPlaced, setBetPlaced] = useState(false);
+    const [userBetPlaced, setUserBetPlaced] = useState(false);
     const [message, setMessage] = useState('Get Ready');
     const [spinResultMessage, setSpinResultMessage] = useState('');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
@@ -65,6 +66,7 @@ const LuckyWheelModal = (
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
     const [userBets, setUserBets] = useState([]);
+    const [betButtonsDisabled, setBetButtonsDisabled] = useState(false);
 
     const idleSpin = useRef(new Animated.Value(0)).current;
     const intervalRef = useRef(null);
@@ -116,6 +118,7 @@ const LuckyWheelModal = (
         }
     };
 
+
     const startCountdown = (duration) => {
         clearCountdown(); // ⬅️ clear any previous countdown first
         // Only start a new interval if none exists
@@ -132,6 +135,7 @@ const LuckyWheelModal = (
                         sound.release();
                     });
                 });
+                setBetButtonsDisabled(true);
             }
 
             if (counter <= 5) {
@@ -159,7 +163,7 @@ const LuckyWheelModal = (
                 clearCountdown();
                 setMessage('Spinning...');
                 setBigCountdownNumber(null);
-                // setActiveBetAmount(null);
+                // setBetButtonsDisabled(false);
             }
         }, 1000);
     };
@@ -171,6 +175,8 @@ const LuckyWheelModal = (
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
         setActiveBetAmount(null);
+        setUserBetPlaced(false);
+        setBetButtonsDisabled(false);
     };
 
     const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
@@ -179,6 +185,15 @@ const LuckyWheelModal = (
                 ? `✅ You WON ${WinAmount} chips!`
                 : `❌ You LOST! because Wheel Landed on ${resultLabel}`
         );
+    };
+
+    const handleBetError = (error) => {
+        Alert.alert('Message', error || 'You have not sufficient chips to place a bet!');
+    };
+
+    const handleBetSuccess = () => {
+        setUserBetPlaced(true);
+        setBetButtonsDisabled(true);
     };
 
     // Sound setup
@@ -192,12 +207,16 @@ const LuckyWheelModal = (
         socket.on('betPlace-Users', HandleBetUserList);
         socket.on('start_spin', handleSpin);
         socket.on('Spin-result', handleSpinResult);
+        socket.on('bet_error', handleBetError);
+        socket.on('Bet-Success', handleBetSuccess);
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
             socket.off('betPlace-Users', HandleBetUserList);
             socket.off('start_spin', handleSpin);
             socket.off('Spin-result', handleSpinResult);
+            socket.off('bet_error', handleBetError);
+            socket.off('Bet-Success', handleBetSuccess);
         };
     }, []);
 
@@ -619,7 +638,7 @@ const LuckyWheelModal = (
                                             : theme === 'dark'
                                                 ? '#ffaa00'
                                                 : '#ffcc00',
-                                    opacity: activeBetAmount && activeBetAmount !== 500 ? 0.5 : 1,
+                                    opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.5 : 1,
                                 },
                             ]}
                             onPress={() => {
@@ -628,11 +647,11 @@ const LuckyWheelModal = (
                                     'Are you sure you want to place 500 chips to play?',
                                     [
                                         { text: 'Cancel', style: 'cancel' },
-                                        { text: 'OK', onPress: () => placeBet(500) }
+                                        { text: 'OK', onPress: () => placeBet(500) },
                                     ]
                                 );
                             }}
-                            disabled={!!activeBetAmount && activeBetAmount !== 500}
+                            disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                         >
                             <Text style={mainStyle.placeBetBtnText}>
                                 BET 500
@@ -652,11 +671,11 @@ const LuckyWheelModal = (
                                                 : theme === 'dark'
                                                     ? '#ffaa00'
                                                     : '#ffcc00',
-                                        opacity: activeBetAmount && activeBetAmount !== 500 ? 0.5 : 1,
+                                        opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.5 : 1,
                                     },
                                 ]}
                                 onPress={() => placeBet(500)}
-                                disabled={!!activeBetAmount && activeBetAmount !== 500}
+                                disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                             >
                                 <Text style={mainStyle.placeBetBtnText}>
                                     BET 500
@@ -676,11 +695,11 @@ const LuckyWheelModal = (
                                                 : theme === 'dark'
                                                     ? '#ffaa00'
                                                     : '#ffcc00',
-                                        opacity: activeBetAmount && activeBetAmount !== 100 ? 0.5 : 1,
+                                        opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.5 : 1,
                                     },
                                 ]}
                                 onPress={() => placeBet(100)}
-                                disabled={!!activeBetAmount && activeBetAmount !== 100}
+                                disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
                             >
                                 <Text style={mainStyle.placeBetBtnText}>
                                     BET 100
