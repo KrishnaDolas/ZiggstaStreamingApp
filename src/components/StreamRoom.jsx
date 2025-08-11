@@ -73,7 +73,7 @@ const StreamRoom = ({
     const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
     const [showTooltip, setShowTooltip] = useState(true);
     const scrollRef = useRef(null);
-    const HideUiInterval= useRef(null);
+    const HideUiInterval = useRef(null);
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;
@@ -96,7 +96,7 @@ const StreamRoom = ({
     const [sendAnimationData, setSendAnimationData] = useState(null);
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
     const [showUI, setShowUI] = useState(true);
-    const [myFriendList,setMyFriendList] = useState([]);
+    const [myFriendList, setMyFriendList] = useState([]);
     const [notification, setNotification] = useState({
         isVisible: false,
         message: '',
@@ -104,6 +104,29 @@ const StreamRoom = ({
     });
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
+    const rotateAnim = useRef(new Animated.Value(0)).current;
+
+
+    // Create interpolated spin value ONCE
+    const spin = rotateAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+    });
+
+    useEffect(() => {
+        const loopAnimation = Animated.loop(
+            Animated.timing(rotateAnim, {
+                toValue: 1,
+                duration: 2000,
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        );
+        loopAnimation.start();
+
+        return () => loopAnimation.stop(); // cleanup when unmounted
+    }, [rotateAnim]);
+
 
     useEffect(() => {
         if (showTooltip) {
@@ -260,9 +283,9 @@ const StreamRoom = ({
             if (stream && typeof stream.toURL === 'function') {
                 const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream,isFriend:isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
+                    streams.unshift({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
                 } else {
-                    streams.push({ type: 'remote', stream,isFriend:isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
+                    streams.push({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
                 }
             } else {
                 SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
@@ -278,7 +301,7 @@ const StreamRoom = ({
             }
         }
         setStreamLayout(streams);
-    }, [localStream, remoteStreams, streamerList, isStreaming,myFriendList]);
+    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList]);
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
@@ -295,20 +318,20 @@ const StreamRoom = ({
     const confirmleaveRoom = () => {
         setCloseStreamModal(true);
     };
-    const HideUifewSecond=()=>{
-        if(!showUI){
-            HideUiInterval.current= setTimeout(() => {
+    const HideUifewSecond = () => {
+        if (!showUI) {
+            HideUiInterval.current = setTimeout(() => {
                 setShowUI(false)
             }, 10000);
-        }else{
+        } else {
             clearTimeout(HideUiInterval.current)
         }
     }
 
     // Handle keyboard events
     useEffect(() => {
-        if(showUI){
-        HideUifewSecond()
+        if (showUI) {
+            HideUifewSecond()
         }
         //    if(!isHost){
         if (streamInfo) {
@@ -507,7 +530,7 @@ const StreamRoom = ({
         try {
             const postData = {
                 userId: userData.userid,
-                isBlocked:0,
+                isBlocked: 0,
             };
 
             const response = await Apiclient.post('/getFriendsList', postData);
@@ -612,7 +635,7 @@ const StreamRoom = ({
         setSelectedUser(data)
     }
     const HandleShowUi = () => {
-            HideUifewSecond()
+        HideUifewSecond()
         setShowUI(!showUI)
     }
 
@@ -688,16 +711,16 @@ const StreamRoom = ({
                                                     <Text style={styles.userName}>
                                                         {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
                                                     </Text>
-                                                        <TouchableOpacity
-                                                            style={styles.friendRequestIcon}
-                                                            disabled={streamLayout[0]?.isFriend}
-                                                            onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
-                                                        >
-                                                            {streamLayout[0]?.isFriend ? (
-                                                                <Ionicons name="person-remove" size={18} color="green" />
-                                                            ) : (
-                                                                <Ionicons name="person-add" size={18} color="#fff" />)}
-                                                        </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        style={styles.friendRequestIcon}
+                                                        disabled={streamLayout[0]?.isFriend}
+                                                        onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                                    >
+                                                        {streamLayout[0]?.isFriend ? (
+                                                            <Ionicons name="person-remove" size={18} color="green" />
+                                                        ) : (
+                                                            <Ionicons name="person-add" size={18} color="#fff" />)}
+                                                    </TouchableOpacity>
                                                 </View>
                                             </ImageBackground>
                                         </View>
@@ -750,9 +773,9 @@ const StreamRoom = ({
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 {streamData?.isFriend ? (
-                                                                <Ionicons name="person-remove" size={18} color="green" />
-                                                            ) : (
-                                                                <Ionicons name="person-add" size={18} color="#fff" />)}
+                                                                    <Ionicons name="person-remove" size={18} color="green" />
+                                                                ) : (
+                                                                    <Ionicons name="person-add" size={18} color="#fff" />)}
                                                             </TouchableOpacity>
                                                         </View>
                                                     </ImageBackground>
@@ -1045,16 +1068,21 @@ const StreamRoom = ({
                                         </ScrollView>
                                     </View>
                                     {showUI && (<View style={styles.strRoomFooterSocialActions}>
-                                            <TouchableOpacity
-                                                style={styles.strRoomFooterSocialActionsBtn}
-                                                onPress={() => setVisibleModal('luckyWheel')}
-                                            >
-                                                <Image
-                                                    style={{ width: 40, height: 40 }}
-                                                    source={require('../../assets/images/lucky-wheel/lw-home.png')}
-                                                    resizeMode="contain"
-                                                />
-                                            </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.strRoomFooterSocialActionsBtn}
+                                            onPress={() => setVisibleModal('luckyWheel')}
+                                        >
+                                            <Animated.Image
+                                                style={{
+                                                    width: 35,
+                                                    height: 35,
+                                                    transform: [{ rotate: spin }], // always the animated value
+                                                }}
+                                                source={require('../../assets/images/lucky-wheel/lw-home.png')}
+                                                resizeMode="contain"
+
+                                            />
+                                        </TouchableOpacity>
                                         {!isHost && streamerList?.length === 1 && (<>
                                             <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid)}>
                                                 {streamLayout[0]?.isFriend ? (

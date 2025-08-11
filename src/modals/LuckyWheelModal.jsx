@@ -71,6 +71,18 @@ const LuckyWheelModal = (
     const idleSpin = useRef(new Animated.Value(0)).current;
     const intervalRef = useRef(null);
 
+    // Animation states for chip collection
+    const [flyingChips, setFlyingChips] = useState([]);
+    const [displayCredit, setDisplayCredit] = useState(0);
+    const creditCountAnim = useRef(new Animated.Value(0)).current;
+    const chipsGlowAnim = useRef(new Animated.Value(0)).current;
+
+    // Refs for positioning
+    const betButtonRef = useRef(null);
+    const chipsBoxRef = useRef(null);
+    const [betButtonLayout, setBetButtonLayout] = useState(null);
+    const [chipsBoxLayout, setChipsBoxLayout] = useState(null);
+
     const startIdleRotation = () => {
         idleSpin.setValue(0);
         Animated.loop(
@@ -89,6 +101,12 @@ const LuckyWheelModal = (
     };
 
     useEffect(() => {
+        if (userData && mycredit > 0) {
+            setDisplayCredit(mycredit);
+        }
+    }, [userData, mycredit]);
+
+    useEffect(() => {
         if (visible) {
             startIdleRotation(); // Start idle spinning when modal opens
         } else {
@@ -102,6 +120,7 @@ const LuckyWheelModal = (
 
     const HandleUpdatedCredit = (amount) => {
         setMyCredit(amount);
+        setDisplayCredit(amount);
     };
 
     const HandleBetUserList = (users) => {
@@ -170,7 +189,7 @@ const LuckyWheelModal = (
 
     // 2️⃣ Socket handlers
     const HandleTimer = (time) => {
-        console.log('Timer received from server:', time);
+        // console.log('Timer received from server:', time);
         setMessage('');
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
@@ -179,12 +198,136 @@ const LuckyWheelModal = (
         setBetButtonsDisabled(false);
     };
 
+
+    // Enhanced chip collection animation
+    const startChipCollectionAnimation = (winAmount, multiplier) => {
+        if (!betButtonLayout || !chipsBoxLayout) return;
+
+        // Get the multiplier number for animation count
+        const multiplierNum = multiplier === 'Double' ? 2 :
+            multiplier === 'Triple' ? 3 :
+                multiplier === '5x' ? 5 :
+                    multiplier === '25x' ? 25 : 2;
+
+        // Create flying chips
+        const newFlyingChips = [];
+        for (let i = 0; i < multiplierNum; i++) {
+            newFlyingChips.push({
+                id: `chip-${Date.now()}-${i}`,
+                translateX: new Animated.Value(betButtonLayout.x + betButtonLayout.width / 2),
+                translateY: new Animated.Value(betButtonLayout.y + betButtonLayout.height / 2),
+                scaleAnim: new Animated.Value(0),
+                opacityAnim: new Animated.Value(1),
+                delay: i * 100, // Stagger the animation
+            });
+        }
+
+        setFlyingChips(newFlyingChips);
+
+        // Start chip glow animation
+        Animated.sequence([
+            Animated.timing(chipsGlowAnim, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: false, // Glow animation doesn't need native driver
+            }),
+            Animated.timing(chipsGlowAnim, {
+                toValue: 0,
+                duration: 1000,
+                useNativeDriver: false,
+            })
+        ]).start();
+
+        // Animate each flying chip
+        newFlyingChips.forEach((chip, index) => {
+            // Scale in animation
+            Animated.timing(chip.scaleAnim, {
+                toValue: 1,
+                duration: 200,
+                delay: chip.delay,
+                useNativeDriver: true,
+            }).start();
+
+            // Flying animation
+            setTimeout(() => {
+                Animated.parallel([
+                    Animated.timing(chip.translateX, {
+                        toValue: chipsBoxLayout.x + chipsBoxLayout.width / 2,
+                        duration: 800,
+                        easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(chip.translateY, {
+                        toValue: chipsBoxLayout.y + chipsBoxLayout.height / 2,
+                        duration: 800,
+                        easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
+                        useNativeDriver: true,
+                    }),
+                ]).start();
+
+                // Scale out animation
+                setTimeout(() => {
+                    Animated.timing(chip.opacityAnim, {
+                        toValue: 0,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start();
+                }, 600);
+            }, chip.delay);
+        });
+
+        // Start counting animation after a short delay
+        setTimeout(() => {
+            animateCredits(mycredit, mycredit + winAmount);
+        }, 400);
+
+        // Clear flying chips after animation
+        setTimeout(() => {
+            setFlyingChips([]);
+        }, 2000);
+    };
+
+
+    // Animated credit counting - only for visual effect, doesn't update actual credit
+    const animateCredits = (from, to) => {
+        creditCountAnim.setValue(0);
+
+        Animated.timing(creditCountAnim, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: false,
+        }).start();
+
+        // Listen to animated value changes for display only
+        const listener = creditCountAnim.addListener(({ value }) => {
+            const currentCredit = Math.floor(from + (to - from) * value);
+            setDisplayCredit(currentCredit);
+        });
+
+        // Clean up listener after animation - displayCredit will be updated by socket
+        setTimeout(() => {
+            creditCountAnim.removeListener(listener);
+            // Don't set displayCredit here, let socket update handle it
+        }, 1000);
+    };
+
+
     const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
-        setSpinResultMessage(
-            isWin
-                ? `✅ You WON ${WinAmount} chips!`
-                : `❌ You LOST! because Wheel Landed on ${resultLabel}`
-        );
+        const resultMessage = isWin
+            ? `✅ You WON ${WinAmount} chips!`
+            : `❌ You LOST! because Wheel Landed on ${resultLabel}`;
+
+        setSpinResultMessage(resultMessage);
+
+
+        // Start chip collection animation if user won
+        if (isWin && WinAmount > 0) {
+            setTimeout(() => {
+                startChipCollectionAnimation(WinAmount, selectedMultiplier);
+            }, 1000); // Start after spin result message
+        }
+
     };
 
     const handleBetError = (error) => {
@@ -260,11 +403,6 @@ const LuckyWheelModal = (
 
 
     const placeBet = (val) => {
-        if (!selectedMultiplier || betPlaced) {
-            setMessage('Bet already placed or not selected!');
-            return;
-        }
-
         socket.emit('place_bet', {
             userID: userData?.userid,
             HostId: hostDetails?.userid,
@@ -420,6 +558,34 @@ const LuckyWheelModal = (
     };
 
 
+    // Render flying chips
+    const renderFlyingChips = () => {
+        return flyingChips.map((chip) => (
+            <Animated.View
+                key={chip.id}
+                style={[
+                    mainStyle.flyingChip,
+                    {
+                        transform: [
+                            { translateX: chip.translateX },
+                            { translateY: chip.translateY },
+                            { scale: chip.scaleAnim },
+                            { translateX: -12.5 }, // Half of chip width
+                            { translateY: -12.5 }, // Half of chip height
+                        ],
+                        opacity: chip.opacityAnim,
+                    },
+                ]}
+            >
+                <Image
+                    source={require('../../assets/images/icons/star.png')}
+                    style={mainStyle.flyingChipIcon}
+                    resizeMode="contain"
+                />
+            </Animated.View>
+        ));
+    };
+
     return (
         <Modal
             isVisible={visible}
@@ -434,13 +600,6 @@ const LuckyWheelModal = (
             animationType="slide"
             style={[styles.profileModalMain]}
         >
-            {/* Blur background */}
-            {/* <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType="dark" // light / dark / xlight
-                blurAmount={10} // blur intensity
-                reducedTransparencyFallbackColor="rgba(0,0,0,0.4)"
-            /> */}
             <BlurView
                 style={StyleSheet.absoluteFill}
                 blurType="dark"
@@ -451,19 +610,48 @@ const LuckyWheelModal = (
             <View style={mainStyle.LWModalOverlay}
             >
                 <View style={mainStyle.header}>
-                    <View style={[mainStyle.chipsBox]}>
+                    <Animated.View
+                        ref={chipsBoxRef}
+                        onLayout={(event) => {
+                            const { x, y, width, height } = event.nativeEvent.layout;
+                            setChipsBoxLayout({ x, y, width, height });
+                        }}
+                        style={[
+                            mainStyle.chipsBox,
+                            {
+                                shadowColor: chipsGlowAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: ['transparent', '#FFD700']
+                                }),
+                                shadowOpacity: chipsGlowAnim,
+                                shadowRadius: chipsGlowAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0, 15]
+                                }),
+                                elevation: chipsGlowAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0, 8]
+                                }),
+                            }
+                        ]}
+                    >
                         <Image
                             source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
                             style={{ width: 14, height: 14 }}
                             resizeMode="contain"
                         />
-                        <Text style={[mainStyle.chips]}>{mycredit}</Text>
-                    </View>
+                        <Text style={[mainStyle.chips]}>{displayCredit}</Text>
+                    </Animated.View>
                     <TouchableOpacity onPress={closeModal}>
                         <Ionicons name="close" size={28} color="#fff" />
                     </TouchableOpacity>
                 </View>
 
+
+                {/* Flying chips overlay */}
+                <View style={mainStyle.flyingChipsContainer} pointerEvents="none">
+                    {renderFlyingChips()}
+                </View>
                 {/* Big Center Countdown */}
                 {bigCountdownNumber !== null && (
                     <View
@@ -600,45 +788,71 @@ const LuckyWheelModal = (
                 )}
 
                 <View style={mainStyle.betGroup}>
-                    {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => (
-                        <TouchableOpacity
-                            key={option}
-                            style={[
-                                mainStyle.betButton,
-                                {
-                                    backgroundColor:
-                                        selectedMultiplier === option
-                                            ? '#d93a63'
-                                            : '#ddd',
-                                    borderRightWidth: ind !== arr.length - 1 ? 1 : 0,
-                                    borderRightColor: '#fafafa88',
-                                },
-                            ]}
-                            onPress={() => setSelectedMultiplier(option)}
-                        >
-                            <Text style={[mainStyle.betButtonText, {
-                                color: selectedMultiplier === option ? '#fff' : '#222',
-                            }]}>{option}</Text>
-                        </TouchableOpacity>
-                    ))}
+                    {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
+                        const isActive = selectedMultiplier === option;
+                        const isFirst = ind === 0;
+                        const isLast = ind === arr.length - 1;
+                        return (
+                            <TouchableOpacity
+                                key={option}
+                                style={[
+                                    mainStyle.betButton,
+                                    {
+                                        backgroundColor: isActive
+                                            ? '#39FF14' // Neon Lime for active
+                                            : ['#00a3ccff', '#ff9a27ff', '#d93a2d', '#834fffff'][ind], // Vibrant colors
+                                        borderTopLeftRadius: isFirst ? 4 : 0,
+                                        borderBottomLeftRadius: isFirst ? 4 : 0,
+                                        borderTopRightRadius: isLast ? 4 : 0,
+                                        borderBottomRightRadius: isLast ? 4 : 0,
+                                        borderRightWidth: isLast ? 0 : 1,
+                                        borderRightColor: '#00000022',
+                                        shadowColor: isActive ? '#39FF14' : '#000',
+                                        shadowOffset: { width: 0, height: 1 },
+                                        shadowOpacity: isActive ? 0.8 : 0.2,
+                                        shadowRadius: isActive ? 6 : 2,
+                                        elevation: isActive ? 6 : 2,
+                                    },
+                                ]}
+                                onPress={() => setSelectedMultiplier(option)}
+                            >
+                                <Text style={[
+                                    mainStyle.betButtonText,
+                                    {
+                                        color: isActive ? '#000' : '#fff',
+                                        fontSize: 14,
+                                    },
+                                ]}>
+                                    {option}
+                                </Text>
+                            </TouchableOpacity>
+                        )
+                    })}
                 </View>
 
                 <View style={[mainStyle.placeBetBtnGroup]}>
                     {/* First button - 70% */}
                     {userBets.length === 0 ? (
                         <TouchableOpacity
+                            ref={betButtonRef}
+                            onLayout={(event) => {
+                                const { x, y, width, height } = event.nativeEvent.layout;
+                                setBetButtonLayout({ x: x + 10, y: y + 200, width, height }); // Adjust for margin
+                            }}
                             style={[
                                 mainStyle.placeBetBtn,
                                 {
                                     flex: 7,
                                     marginRight: 5,
                                     backgroundColor:
-                                        activeBetAmount === 500
-                                            ? '#ff5733'
-                                            : theme === 'dark'
-                                                ? '#ffaa00'
-                                                : '#ffcc00',
-                                    opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.5 : 1,
+                                        activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
+                                    opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                    borderRadius: 4,
+                                    shadowColor: '#00FFFF',
+                                    shadowOffset: { width: 0, height: 0 },
+                                    shadowOpacity: 0.9,
+                                    shadowRadius: 10,
+                                    elevation: 8,
                                 },
                             ]}
                             onPress={() => {
@@ -651,6 +865,9 @@ const LuckyWheelModal = (
                                     ]
                                 );
                             }}
+                            // onPress={() => {
+                            //     startChipCollectionAnimation(1000, '5x');
+                            // }}
                             disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                         >
                             <Text style={mainStyle.placeBetBtnText}>
@@ -660,18 +877,25 @@ const LuckyWheelModal = (
                     ) : (
                         <>
                             <TouchableOpacity
+                                ref={betButtonRef}
+                                onLayout={(event) => {
+                                    const { x, y, width, height } = event.nativeEvent.layout;
+                                    setBetButtonLayout({ x: x + 10, y: y + 200, width, height }); // Adjust for modal padding
+                                }}
                                 style={[
                                     mainStyle.placeBetBtn,
                                     {
                                         flex: 7,
                                         marginRight: 5,
                                         backgroundColor:
-                                            activeBetAmount === 500
-                                                ? '#ff5733'
-                                                : theme === 'dark'
-                                                    ? '#ffaa00'
-                                                    : '#ffcc00',
-                                        opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.5 : 1,
+                                            activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
+                                        opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                        borderRadius: 4,
+                                        shadowColor: '#00FFFF',
+                                        shadowOffset: { width: 0, height: 0 },
+                                        shadowOpacity: 0.9,
+                                        shadowRadius: 10,
+                                        elevation: 8,
                                     },
                                 ]}
                                 onPress={() => placeBet(500)}
@@ -684,18 +908,27 @@ const LuckyWheelModal = (
 
                             {/* Second button - 30% */}
                             <TouchableOpacity
+                                onLayout={(event) => {
+                                    // If this is the second button and we don't have layout for first button yet
+                                    if (!betButtonLayout) {
+                                        const { x, y, width, height } = event.nativeEvent.layout;
+                                        setBetButtonLayout({ x: x + 10 - width * 0.7 - 5, y: y + 200, width: width * 0.7 + width + 10, height }); // Calculate combined button area
+                                    }
+                                }}
                                 style={[
                                     mainStyle.placeBetBtn,
                                     {
                                         flex: 3,
                                         marginLeft: 5,
                                         backgroundColor:
-                                            activeBetAmount === 100
-                                                ? '#ff5733'
-                                                : theme === 'dark'
-                                                    ? '#ffaa00'
-                                                    : '#ffcc00',
-                                        opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.5 : 1,
+                                            activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
+                                        opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
+                                        borderRadius: 4,
+                                        shadowColor: '#FF00FF',
+                                        shadowOffset: { width: 0, height: 0 },
+                                        shadowOpacity: 0.9,
+                                        shadowRadius: 10,
+                                        elevation: 8,
                                     },
                                 ]}
                                 onPress={() => placeBet(100)}
@@ -752,7 +985,27 @@ const mainStyle = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 5,
-        backgroundColor: '#e9e9e9ff',
+        backgroundColor: '#ffffff7e',
+    },
+    // Flying chips animation styles
+    flyingChipsContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+    },
+    flyingChip: {
+        position: 'absolute',
+        width: 25,
+        height: 25,
+        zIndex: 1001,
+    },
+    flyingChipIcon: {
+        width: 25,
+        height: 25,
+        tintColor: '#FFD700', // Gold color for the flying stars
     },
     bigCountDownBox: {
         position: 'absolute',
@@ -897,7 +1150,7 @@ const mainStyle = StyleSheet.create({
     chips: {
         fontSize: 15,
         marginVertical: 4,
-        color: '#000',
+        color: '#fff',
         fontWeight: 500,
     },
     betGroup: {
@@ -927,7 +1180,7 @@ const mainStyle = StyleSheet.create({
         position: 'relative',
     },
     placeBetBtnText: {
-        color: '#222',
+        color: '#fff',
         textAlign: 'center',
         fontWeight: 'bold',
     },

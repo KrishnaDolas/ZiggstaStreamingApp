@@ -460,7 +460,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         onPress={() => setModalVisible('lucky-wheel')}
                     >
                         <Image
-                            style={{ width: 75, height: 75 }}
+                            style={{ width: 60, height: 60 }}
                             source={require('../../assets/images/lucky-wheel/lw-home.png')}
                             resizeMode="contain"
                         />
