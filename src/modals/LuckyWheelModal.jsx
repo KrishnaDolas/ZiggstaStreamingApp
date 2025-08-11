@@ -57,6 +57,7 @@ const LuckyWheelModal = (
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [betPlaced, setBetPlaced] = useState(false);
     const [message, setMessage] = useState('Get Ready');
+    const [spinResultMessage, setSpinResultMessage] = useState('');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
     const [mycredit, setMyCredit] = useState(0); // Track user's credit
     const spinValue = useRef(new Animated.Value(0)).current;
@@ -173,13 +174,14 @@ const LuckyWheelModal = (
     const HandleTimer = (time) => {
         console.log('Timer received from server:', time);
         setMessage('');
+        setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
     };
 
-    const handleSpinResult = ({ resultLabel, winAmount }) => {
-        setMessage(
-            winAmount > 0
-                ? `✅ You WON ${winAmount} chips!`
+    const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
+        setSpinResultMessage(
+            isWin
+                ? `✅ You WON ${WinAmount} chips!`
                 : `❌ You LOST! Landed on ${resultLabel}`
         );
     };
@@ -194,13 +196,13 @@ const LuckyWheelModal = (
         socket.on('spinwheel_timer', HandleTimer);
         socket.on('betPlace-Users', HandleBetUserList);
         socket.on('start_spin', handleSpin);
-        socket.on('spin_result', handleSpinResult);
+        socket.on('Spin-result', handleSpinResult);
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
             socket.off('betPlace-Users', HandleBetUserList);
             socket.off('start_spin', handleSpin);
-            socket.off('spin_result', handleSpinResult);
+            socket.off('Spin-result', handleSpinResult);
         };
     }, []);
 
@@ -213,24 +215,33 @@ const LuckyWheelModal = (
     }, []);
 
 
-    // Connect socket
+    // useEffect(() => {
+    //     startCountdown(10);
+    //     socket.on('start_countdown', ({ seconds }) => {
+    //         startCountdown(seconds || 30);
+    //     });
+    // }, []);
+
+
     useEffect(() => {
-        if (!visible) {
-            clearCountdown(); // stop interval if modal is closed
-        } else {
+        if (visible) {
             const sound = new Sound('wheel_launch.mp3', Sound.MAIN_BUNDLE, (error) => {
-                sound.play(() => {
-                    sound.release();
+                if (error) {
+                    console.log('Failed to load the sound', error);
+                    return;
+                }
+                sound.play((success) => {
+                    if (!success) {
+                        console.log('Sound playback failed');
+                    }
+                    sound.release(); // Free up resources
                 });
             });
-            console.log('sound', sound);
+        } else {
+            clearCountdown(); // Your existing cleanup
         }
-        // startCountdown(10);
-        // socket.on('start_countdown', ({ seconds }) => {
-        //     startCountdown(seconds || 30);
-        // });
-
     }, [visible]);
+
 
 
 
@@ -249,11 +260,11 @@ const LuckyWheelModal = (
             RoomId: RoomID,
         })
 
-        const sound = new Sound('place_your_bet.mp3', Sound.MAIN_BUNDLE, (error) => {
-            sound.play(() => {
-                sound.release();
-            });
-        });
+        // const sound = new Sound('place_your_bet.mp3', Sound.MAIN_BUNDLE, (error) => {
+        //     sound.play(() => {
+        //         sound.release();
+        //     });
+        // });
         setBetPlaced(true);
         setActiveBetAmount(val); // 👈 track which button is active
         setMessage(`Bet placed on ${selectedMultiplier}`);
@@ -517,15 +528,16 @@ const LuckyWheelModal = (
                         </Animated.View>
                     </View>
                 </View>
-                {/* <Text style={[mainStyle.message, { color: theme === 'dark' ? '#fff' : '#222' }]}>{message}</Text> */}
+                <Text style={[mainStyle.message]}>{message}</Text>
                 <Text style={mainStyle.countdownText}>⏱ {countdown}s</Text>
+
                 {userBets.length > 0 && (
                     <View style={mainStyle.userBetTable}>
                         <View style={mainStyle.tableHeader}>
-                            <Text style={styles.emptyCell}></Text>
-                            <Text style={styles.userCell}>User</Text>
-                            <Text style={styles.betCell}>Bet</Text>
-                            <Text style={styles.optionCell}>Option</Text>
+                            <Text style={mainStyle.emptyCell}></Text>
+                            <Text style={mainStyle.userCell}>User</Text>
+                            <Text style={mainStyle.betCell}>Bet</Text>
+                            <Text style={mainStyle.optionCell}>Option</Text>
                         </View>
                         <ScrollView
                             style={{ maxHeight: screenHeight * 0.2 - 22 }}
@@ -647,58 +659,7 @@ const LuckyWheelModal = (
                     </TouchableOpacity>
                 </View>
 
-                {/* Test button - Remove in production */}
-                {/* <TouchableOpacity
-                    style={{
-                        backgroundColor: '#ff6b6b',
-                        padding: 10,
-                        margin: 10,
-                        borderRadius: 5,
-                        alignItems: 'center'
-                    }}
-                    onPress={() => handleSpin('5x')}
-                >
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (5x)</Text>
-                </TouchableOpacity> */}
-
-                {/* Debug button for Double */}
-                {/* <TouchableOpacity
-                    style={{
-                        backgroundColor: '#00a3ccff',
-                        padding: 10,
-                        margin: 10,
-                        borderRadius: 5,
-                        alignItems: 'center'
-                    }}
-                    onPress={() => handleSpin('Double')}
-                >
-                    <Text style={{ color: '#fff', fontWeight: 'bold' }}>TEST SPIN (Double)</Text>
-                </TouchableOpacity>
-
-                {/* Debug: Show current segments layout */}
-                {/* <View style={{ margin: 10, padding: 10, backgroundColor: theme === 'dark' ? '#333' : '#eee', borderRadius: 5 }}>
-                    <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontWeight: 'bold', marginBottom: 5 }}>
-                        Debug: Segments Layout
-                    </Text>
-                    {SEGMENTS.map((segment, index) => {
-                        const startAngle = (index * 22.5) - 90;
-                        const centerAngle = startAngle + 11.25;
-                        const normalizedCenter = centerAngle < 0 ? centerAngle + 360 : centerAngle;
-
-                        return (
-                            <Text key={index} style={{
-                                color: theme === 'dark' ? '#ccc' : '#666',
-                                fontSize: 10,
-                                fontFamily: 'monospace'
-                            }}>
-                                {index}: {segment} | Center: {centerAngle.toFixed(1)}° ({normalizedCenter.toFixed(1)}°)
-                            </Text>
-                        );
-                    })}
-                    <Text style={{ color: 'red', fontWeight: 'bold', marginTop: 5, fontSize: 12 }}>
-                        Arrow at: -90° (270°) ← Target Position
-                    </Text>
-                </View> */}
+                <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
 
             </View>
 
@@ -787,6 +748,15 @@ const mainStyle = StyleSheet.create({
     message: {
         fontSize: 16,
         marginTop: 10,
+        color: '#fff',
+        textAlign: 'center',
+    },
+    spinResultMessageText: {
+        fontSize: 18,
+        marginTop: 20,
+        color: '#fff',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
     countdownText: {
         fontSize: 18,
