@@ -49,6 +49,7 @@ const redChipIcon = require('../../assets/images/lucky-wheel/red_chip.png');
 const wheelSize = screenWidth * 0.8; // 80% of screen width
 const svgSize = wheelSize * 0.9;     // Slightly smaller than outer wheel
 
+
 const LuckyWheelModal = (
     { visible, onClose, userData,
         hostDetails, RoomID }
@@ -196,6 +197,7 @@ const LuckyWheelModal = (
         setActiveBetAmount(null);
         setUserBetPlaced(false);
         setBetButtonsDisabled(false);
+        startIdleRotation();
     };
 
 
@@ -494,9 +496,9 @@ const LuckyWheelModal = (
                 spinValue.setValue(finalAngle);
 
                 // Restart idle rotation from the final position
-                setTimeout(() => {
-                    startIdleRotation();
-                }, 1000);
+                // setTimeout(() => {
+                //     startIdleRotation();
+                // }, 1000);
             }, 500);
         });
         // setActiveBetAmount(null);
@@ -731,10 +733,22 @@ const LuckyWheelModal = (
                     </View>
                 </View>
                 {/* <Text style={[mainStyle.message]}>{message}</Text> */}
-                <Text style={mainStyle.countdownText}>⏱ {countdown}s</Text>
+                <Text style={[mainStyle.countdownText, {
+                    opacity: countdown <= 5 ? 0 : 1,
+                }]}>⏱ {countdown}s</Text>
 
                 {userBets.length > 0 && (
                     <View style={mainStyle.userBetTable}>
+                        {/* Summary Section */}
+                        <View style={mainStyle.betSummary}>
+                            <Text style={mainStyle.summaryText}>
+                                Total Players: {userBets.length}
+                            </Text>
+                            <Text style={mainStyle.summaryText}>
+                                Total Bet Amount: {userBets.reduce((sum, user) => sum + Number(user.betAmount), 0)}
+                            </Text>
+                        </View>
+                        {/* Existing Table Header and Content */}
                         <View style={mainStyle.tableHeader}>
                             <Text style={mainStyle.emptyCell}></Text>
                             <Text style={mainStyle.userCell}>User</Text>
@@ -742,7 +756,7 @@ const LuckyWheelModal = (
                             <Text style={mainStyle.optionCell}>Option</Text>
                         </View>
                         <ScrollView
-                            style={{ maxHeight: screenHeight * 0.2 - 22 }}
+                            style={{ maxHeight: screenHeight * 0.2 - 50 }}
                             contentContainerStyle={{ gap: 6, paddingTop: 6 }}
                             showsVerticalScrollIndicator={true}
                         >
@@ -1068,10 +1082,25 @@ const mainStyle = StyleSheet.create({
         color: 'darkorange',
         textAlign: 'center',
         marginVertical: 10,
+        fontWeight: 'bold',
     },
     userBetTable: {
         marginHorizontal: 10,
         marginBottom: 10,
+    },
+    betSummary: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        backgroundColor: '#ffffff1a', // Semi-transparent white for a subtle background
+        borderRadius: 6,
+        marginBottom: 8,
+    },
+    summaryText: {
+        fontSize: 14,
+        color: '#fff',
+        fontWeight: 'bold',
     },
     tableHeader: {
         flexDirection: 'row',
@@ -1103,7 +1132,7 @@ const mainStyle = StyleSheet.create({
     tableRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
+        paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 8,
         backgroundColor: '#f2f2f2',
@@ -1117,8 +1146,8 @@ const mainStyle = StyleSheet.create({
         flex: 0.5,
     },
     iconImage: {
-        width: 25,
-        height: 25,
+        width: 22,
+        height: 22,
     },
     cellUser: {
         flex: 2,
