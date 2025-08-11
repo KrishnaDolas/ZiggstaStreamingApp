@@ -619,10 +619,10 @@ const StreamRoom = ({
                         {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
                             <View style={{
                                 position: 'absolute',
-                                top: showUI ? 90 : 10,
+                                bottom: showUI ? 90 : 10,
                                 left: 10,
                                 right: 10,
-                                alignItems: 'start',
+                                alignItems: 'center',
                             }}>
                                 <AudioSpectrum
                                     audioLevel={streamLayout[0]?.audioLevel}
