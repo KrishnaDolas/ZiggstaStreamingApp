@@ -717,7 +717,7 @@ const StreamRoom = ({
                                                         onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                                     >
                                                         {streamLayout[0]?.isFriend ? (
-                                                            <Ionicons name="person-remove" size={18} color="green" />
+                                                            <Ionicons name="person-remove" size={18} color="#fff" />
                                                         ) : (
                                                             <Ionicons name="person-add" size={18} color="#fff" />)}
                                                     </TouchableOpacity>
@@ -773,7 +773,7 @@ const StreamRoom = ({
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 {streamData?.isFriend ? (
-                                                                    <Ionicons name="person-remove" size={18} color="green" />
+                                                                    <Ionicons name="person-remove" size={18} color="#fff" />
                                                                 ) : (
                                                                     <Ionicons name="person-add" size={18} color="#fff" />)}
                                                             </TouchableOpacity>
@@ -835,7 +835,7 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={16} color="green" />
+                                                                        <Ionicons name="person-remove" size={16} color="#fff" />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={16} color="#fff" />)}
                                                                 </TouchableOpacity>
@@ -895,7 +895,7 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={16} color="green" />
+                                                                        <Ionicons name="person-remove" size={16} color="#fff" />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={16} color="#fff" />)}
                                                                 </TouchableOpacity>
@@ -959,7 +959,7 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="green" />
+                                                                        <Ionicons name="person-remove" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />)}
                                                                 </TouchableOpacity>
@@ -1086,7 +1086,7 @@ const StreamRoom = ({
                                         {!isHost && streamerList?.length === 1 && (<>
                                             <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid)}>
                                                 {streamLayout[0]?.isFriend ? (
-                                                    <Ionicons name="person-remove" size={30} color="green" />
+                                                    <Ionicons name="person-remove" size={30} color="#fff" />
                                                 ) : (
                                                     <Ionicons name="person-add" size={30} color="#fff" />)}
                                             </TouchableOpacity>
