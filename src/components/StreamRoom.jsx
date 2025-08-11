@@ -1129,7 +1129,7 @@ const StreamRoom = ({
                                     </Animated.View>
                                 </LinearGradient>
                             )}
-                            {showUI && (<View style={[styles.strRoomBottomBox]}>
+                            {showUI && (<View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
                                 <TextInput
                                     placeholder=""
                                     placeholderTextColor="#414141"
@@ -1138,10 +1138,10 @@ const StreamRoom = ({
                                     onFocus={() => setIsTyping(true)}
                                     onBlur={() => setIsTyping(false)}
                                     onSubmitEditing={HadleSendChat}
-                                    style={[styles.strRoomBottomBoxInput,{bottom:insets.bottom}]}
+                                    style={styles.strRoomBottomBoxInput}
                                 />
                                 {keyboardOffset && isTyping ? (
-                                    <TouchableOpacity onPress={() => HadleSendChat()} style={[styles.strRoomBottomBoxIconBox,{bottom:insets.bottom}]}>
+                                    <TouchableOpacity onPress={() => HadleSendChat()} style={styles.strRoomBottomBoxIconBox}>
                                         <FontAwesome name="send" size={24} color="#00FF00" />
                                     </TouchableOpacity>
                                 ) : (
