@@ -1637,6 +1637,7 @@ export const styles = StyleSheet.create({
     color: '#414141',
     fontWeight: '300',
     fontSize: 15,
+    position:'relative',
   },
   strRoomBottomBoxIconBox: {
     marginLeft: 20,
