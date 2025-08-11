@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 // LuckyWheelModal.js
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
@@ -15,10 +16,12 @@ import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import Sound from 'react-native-sound';
 import { ThemeContext } from '../context/ThemeContext';
-import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
+import { styles } from '../../assets/styles/ThemeStyles';
 import { socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
+import { BlurView } from '@react-native-community/blur';
+
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
@@ -38,7 +41,8 @@ const COLORS = {
 
 const winIcon = require('../../assets/images/lucky-wheel/win.png');
 const loseIcon = require('../../assets/images/lucky-wheel/lose.png');
-const chipsIcon = require('../../assets/images/lucky-wheel/blue-chip.png');
+const blueChipIcon = require('../../assets/images/lucky-wheel/blue-chip.png');
+const redChipIcon = require('../../assets/images/lucky-wheel/red_chip.png');
 
 
 const wheelSize = screenWidth * 0.8; // 80% of screen width
@@ -115,7 +119,7 @@ const LuckyWheelModal = (
             clearInterval(intervalRef.current);
             intervalRef.current = null;
         }
-    }
+    };
 
     const startCountdown = (duration) => {
         clearCountdown(); // ⬅️ clear any previous countdown first
@@ -172,6 +176,14 @@ const LuckyWheelModal = (
         startCountdown(time); // This will clear any old countdown and restart
     };
 
+    const handleSpinResult = ({ resultLabel, winAmount }) => {
+        setMessage(
+            winAmount > 0
+                ? `✅ You WON ${winAmount} chips!`
+                : `❌ You LOST! Landed on ${resultLabel}`
+        );
+    };
+
     // Sound setup
 
     useEffect(() => {
@@ -182,11 +194,13 @@ const LuckyWheelModal = (
         socket.on('spinwheel_timer', HandleTimer);
         socket.on('betPlace-Users', HandleBetUserList);
         socket.on('start_spin', handleSpin);
+        socket.on('spin_result', handleSpinResult);
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
             socket.off('betPlace-Users', HandleBetUserList);
             socket.off('start_spin', handleSpin);
+            socket.off('spin_result', handleSpinResult);
         };
     }, []);
 
@@ -203,23 +217,19 @@ const LuckyWheelModal = (
     useEffect(() => {
         if (!visible) {
             clearCountdown(); // stop interval if modal is closed
+        } else {
+            const sound = new Sound('wheel_launch.mp3', Sound.MAIN_BUNDLE, (error) => {
+                sound.play(() => {
+                    sound.release();
+                });
+            });
+            console.log('sound', sound);
         }
-
         // startCountdown(10);
         // socket.on('start_countdown', ({ seconds }) => {
         //     startCountdown(seconds || 30);
         // });
 
-        // handleSpin('Triple');
-        // socket.on('start_spin', ({ resultLabel }) => {
-        //     handleSpin(resultLabel);
-        // });
-
-        socket.on('spin_result', ({ resultLabel, winAmount, newBalance }) => {
-            setMessage(winAmount > 0
-                ? `✅ You WON ${winAmount} chips!`
-                : `❌ You LOST! Landed on ${resultLabel}`);
-        });
     }, [visible]);
 
 
@@ -290,7 +300,6 @@ const LuckyWheelModal = (
         const baseRotations = numberOfFullRotations * 360; // Always exact multiples of 360
         const finalRotation = baseRotations + rotationNeeded;
 
-        console.log(`=== DEBUG INFO ===`);
         console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
         console.log(`Raw segment center angle: ${segmentCenterAngle}°`);
         console.log(`Normalized segment center: ${normalizedSegmentCenter}°`);
@@ -400,49 +409,40 @@ const LuckyWheelModal = (
             animationType="slide"
             style={[styles.profileModalMain]}
         >
-            <View style={[
-                styles.profileModalOverlay,
-                themeStyles[theme].profileLargeModalOverlay,
-                {
-                    flex: 1,
-                    borderTopLeftRadius: 0,
-                    borderTopRightRadius: 0,
-                    // maxHeight: screenHeight * 0.9 - 20
-                },
-            ]}
+            {/* Blur background */}
+            {/* <BlurView
+                style={StyleSheet.absoluteFill}
+                blurType="dark" // light / dark / xlight
+                blurAmount={10} // blur intensity
+                reducedTransparencyFallbackColor="rgba(0,0,0,0.4)"
+            /> */}
+            <BlurView
+                style={StyleSheet.absoluteFill}
+                blurType="dark"
+                blurAmount={10}
+                reducedTransparencyFallbackColor="white"
+            />
+            {/* <View style={mainStyle.overlayBackground} /> */}
+            <View style={mainStyle.LWModalOverlay}
             >
                 <View style={mainStyle.header}>
-                    <View style={[
-                        mainStyle.chipsBox,
-                        { backgroundColor: theme === 'dark' ? "#2e2e2eff" : '#e9e9e9ff' },
-                    ]}>
+                    <View style={[mainStyle.chipsBox]}>
                         <Image
                             source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
                             style={{ width: 14, height: 14 }}
                             resizeMode="contain"
                         />
-                        <Text style={[mainStyle.chips, { color: theme === 'dark' ? '#fff' : '#000', fontWeight: 500 }]}>{mycredit}</Text>
+                        <Text style={[mainStyle.chips]}>{mycredit}</Text>
                     </View>
                     <TouchableOpacity onPress={closeModal}>
-                        <Text style={{ color: theme === 'dark' ? '#fff' : '#222', fontWeight: 500, fontSize: 16 }}>
-                            <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
-                        </Text>
+                        <Ionicons name="close" size={28} color="#fff" />
                     </TouchableOpacity>
                 </View>
 
                 {/* Big Center Countdown */}
                 {bigCountdownNumber !== null && (
                     <View
-                        style={{
-                            position: 'absolute',
-                            zIndex: 1000,
-                            top: 0,
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
+                        style={[mainStyle.bigCountDownBox]}
                     >
                         <LinearGradient
                             colors={['rgba(0, 0, 0, 0.42)', 'rgba(0, 0, 0, 0.47)', 'rgba(0, 0, 0, 0.36)']}
@@ -452,23 +452,19 @@ const LuckyWheelModal = (
                         />
 
                         <Animated.Text
-                            style={{
-                                fontSize: 100,
-                                color: '#fff',
-                                fontWeight: 'bold',
+                            style={[mainStyle.bigCountDownText, {
                                 opacity: fadeAnim,
-                                textAlign: 'center',
-                            }}
+                            }]}
                         >
                             {bigCountdownNumber}
                         </Animated.Text>
                     </View>
                 )}
 
-                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <View style={mainStyle.wheelWrapperContainer}>
                     <View style={mainStyle.wheelWrapper}>
                         {/* Pointer/Arrow at the top of wheelWrapper */}
-                        <View style={{
+                        {/* <View style={{
                             position: 'absolute',
                             top: -25, // Position above the wheel
                             left: '50%',
@@ -489,18 +485,14 @@ const LuckyWheelModal = (
                                 shadowOpacity: 0.3,
                                 shadowRadius: 2,
                             }} />
-                        </View>
+                        </View> */}
                         <Image
                             source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
                             style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
                             resizeMode="contain"
                         />
                         <Animated.View
-                            style={{
-                                position: 'relative',
-                                width: wheelSize,
-                                height: wheelSize,
-                                zIndex: 1,
+                            style={[mainStyle.wheelSegmentBox, {
                                 transform: [
                                     {
                                         rotate: spinValue.interpolate({
@@ -516,9 +508,7 @@ const LuckyWheelModal = (
                                         }),
                                     },
                                 ],
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
+                            }]}
                         >
                             <Svg width={svgSize} height={svgSize} viewBox="0 0 400 400">
                                 {renderSegments()}
@@ -528,26 +518,15 @@ const LuckyWheelModal = (
                     </View>
                 </View>
                 {/* <Text style={[mainStyle.message, { color: theme === 'dark' ? '#fff' : '#222' }]}>{message}</Text> */}
-                <Text style={[mainStyle.countdownText, { color: theme === 'dark' ? 'orange' : 'darkorange', textAlign: 'center', marginVertical: 10 }]}>⏱ {countdown}s</Text>
+                <Text style={mainStyle.countdownText}>⏱ {countdown}s</Text>
                 {userBets.length > 0 && (
-                    <View style={{ marginHorizontal: 10, marginBottom: 10 }}>
-                        {/* <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 4, color: theme === 'dark' ? '#fff' : '#000' }}>
-                        🧾 User Bets
-                    </Text> */}
-                        <View style={{
-                            flexDirection: 'row',
-                            backgroundColor: theme === 'dark' ? '#333' : '#ddddddff',
-                            paddingVertical: 8,
-                            paddingHorizontal: 10,
-                            borderTopLeftRadius: 6,
-                            borderTopRightRadius: 6,
-                        }}>
-                            <Text style={{ flex: 0.5 }}></Text>
-                            <Text style={{ flex: 2, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>User</Text>
-                            <Text style={{ flex: 1, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000', textAlign: 'left' }}>Bet</Text>
-                            <Text style={{ flex: 1, fontWeight: 'bold', color: theme === 'dark' ? '#fff' : '#000' }}>Option</Text>
+                    <View style={mainStyle.userBetTable}>
+                        <View style={mainStyle.tableHeader}>
+                            <Text style={styles.emptyCell}></Text>
+                            <Text style={styles.userCell}>User</Text>
+                            <Text style={styles.betCell}>Bet</Text>
+                            <Text style={styles.optionCell}>Option</Text>
                         </View>
-
                         <ScrollView
                             style={{ maxHeight: screenHeight * 0.2 - 22 }}
                             contentContainerStyle={{ gap: 6, paddingTop: 6 }}
@@ -556,62 +535,37 @@ const LuckyWheelModal = (
                             {userBets.map((user, index) => (
                                 <View
                                     key={index}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        paddingVertical: 10,
-                                        paddingHorizontal: 10,
-                                        borderRadius: 8,
-                                        backgroundColor: theme === 'dark' ? '#2e2e2e' : '#f2f2f2',
-                                        shadowColor: '#000',
-                                        shadowOpacity: 0.05,
-                                        shadowOffset: { width: 0, height: 2 },
-                                        shadowRadius: 2,
-                                        elevation: 1,
-                                    }}
+                                    style={mainStyle.tableRow}
                                 >
-                                    {/* Win/Loss Icon */}
-                                    {/* <Text style={{ flex: 0.5, fontSize: 16 }}>
-                                        {user.isWinner ? '✅' : '❌'}
-                                    </Text> */}
-                                    <View style={{ flex: 0.5, fontSize: 16 }}>
+                                    <View style={mainStyle.cellIcon}>
                                         <Image
-                                            source={user.isWinner === 1 ? winIcon : user.isWinner === 0 ? loseIcon : chipsIcon}
-                                            style={{
-                                                width: 25,
-                                                height: 25,
-                                            }}
+                                            source={
+                                                user.isWinner === 1
+                                                    ? winIcon
+                                                    : user.isWinner === 0
+                                                        ? loseIcon
+                                                        : Number(user.betAmount) === 100
+                                                            ? blueChipIcon
+                                                            : redChipIcon
+                                            }
+                                            style={mainStyle.iconImage}
                                             resizeMode="contain"
                                         />
                                     </View>
                                     {/* User Info */}
-                                    <View style={{ flex: 2, flexDirection: 'row', alignItems: 'center' }}>
-                                        {/* <Image
-                                            source={user.avatar}
-                                            style={{ width: 26, height: 26, borderRadius: 13, marginRight: 8 }}
-                                        /> */}
-                                        <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>{user.userName}</Text>
+                                    <View style={mainStyle.cellUser}>
+                                        <Text style={mainStyle.cellUserText}>{user.userName}</Text>
                                     </View>
 
                                     {/* Bet Amount */}
-                                    <Text style={{
-                                        flex: 1,
-                                        color: theme === 'dark' ? '#fff' : '#222',
-                                        fontWeight: '500',
-                                        textAlign: 'left',
-                                        marginLeft: 15,
-                                    }}>{user.betAmount}</Text>
+                                    <Text style={mainStyle.cellBet}>{user.betAmount}</Text>
 
                                     {/* Multiplier Chip */}
-                                    <View style={{
-                                        flex: 1,
-                                        backgroundColor: COLORS[user.multiplier] || '#666',
-                                        paddingVertical: 4,
-                                        paddingHorizontal: 8,
-                                        borderRadius: 12,
-                                        alignItems: 'center',
-                                    }}>
-                                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{user.multiplier}</Text>
+                                    <View style={[
+                                        mainStyle.cellMultiplier,
+                                        { backgroundColor: COLORS[user.multiplier] || '#666' },
+                                    ]}>
+                                        <Text style={mainStyle.multiplierText}>{user.multiplier}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -628,26 +582,22 @@ const LuckyWheelModal = (
                                 {
                                     backgroundColor:
                                         selectedMultiplier === option
-                                            ? "#d93a63"
-                                            : theme === 'dark'
-                                                ? '#444'
-                                                : '#ddd',
+                                            ? '#d93a63'
+                                            : '#ddd',
                                     borderRightWidth: ind !== arr.length - 1 ? 1 : 0,
                                     borderRightColor: '#fafafa88',
                                 },
                             ]}
                             onPress={() => setSelectedMultiplier(option)}
                         >
-                            <Text style={{
-                                color: selectedMultiplier === option ? '#fff' : theme === 'dark' ? '#fff' : '#222',
-                                fontWeight: 'bold',
-                                textAlign: 'center'
-                            }}>{option}</Text>
+                            <Text style={[mainStyle.betButtonText, {
+                                color: selectedMultiplier === option ? '#fff' : '#222',
+                            }]}>{option}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                <View style={{ flexDirection: 'row', marginHorizontal: 10, marginBottom: 10 }}>
+                <View style={[mainStyle.placeBetBtnGroup]}>
                     {/* First button - 70% */}
                     <TouchableOpacity
                         style={[
@@ -667,7 +617,7 @@ const LuckyWheelModal = (
                         onPress={() => placeBet(500)}
                         disabled={!!activeBetAmount && activeBetAmount !== 500}
                     >
-                        <Text style={{ color: theme === 'dark' ? '#000' : '#222', textAlign: 'center', fontWeight: 'bold' }}>
+                        <Text style={mainStyle.placeBetBtnText}>
                             BET 500
                         </Text>
                     </TouchableOpacity>
@@ -691,7 +641,7 @@ const LuckyWheelModal = (
                         onPress={() => placeBet(100)}
                         disabled={!!activeBetAmount && activeBetAmount !== 100}
                     >
-                        <Text style={{ color: theme === 'dark' ? '#000' : '#222', textAlign: 'center', fontWeight: 'bold' }}>
+                        <Text style={mainStyle.placeBetBtnText}>
                             BET 100
                         </Text>
                     </TouchableOpacity>
@@ -759,10 +709,19 @@ const LuckyWheelModal = (
 export default LuckyWheelModal;
 
 const mainStyle = StyleSheet.create({
+    LWModalOverlay: {
+        flex: 1,
+        // maxHeight: screenHeight * 0.9 - 20
+        padding: 10,
+        zIndex: 10,
+    },
+    overlayBackground: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.57)',
+    },
     container: {
         flex: 1,
         alignItems: 'center',
-        // justifyContent: 'center',
         position: 'relative',
         paddingHorizontal: 12,
     },
@@ -780,6 +739,27 @@ const mainStyle = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 5,
+        backgroundColor: '#e9e9e9ff',
+    },
+    bigCountDownBox: {
+        position: 'absolute',
+        zIndex: 1000,
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    bigCountDownText: {
+        fontSize: 100,
+        color: '#fff',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    wheelWrapperContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     wheelWrapper: {
         width: 300,
@@ -796,17 +776,107 @@ const mainStyle = StyleSheet.create({
         position: 'absolute',
         zIndex: 99,
     },
+    wheelSegmentBox: {
+        position: 'relative',
+        width: wheelSize,
+        height: wheelSize,
+        zIndex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     message: {
         fontSize: 16,
         marginTop: 10,
     },
     countdownText: {
         fontSize: 18,
-        marginVertical: 4,
+        color: 'darkorange',
+        textAlign: 'center',
+        marginVertical: 10,
+    },
+    userBetTable: {
+        marginHorizontal: 10,
+        marginBottom: 10,
+    },
+    tableHeader: {
+        flexDirection: 'row',
+        backgroundColor: '#ddddddff',
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderTopLeftRadius: 6,
+        borderTopRightRadius: 6,
+    },
+    emptyCell: {
+        flex: 0.5,
+    },
+    userCell: {
+        flex: 2,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    betCell: {
+        flex: 1,
+        fontWeight: 'bold',
+        color: '#000',
+        textAlign: 'left',
+    },
+    optionCell: {
+        flex: 1,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        backgroundColor: '#f2f2f2',
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    cellIcon: {
+        flex: 0.5,
+    },
+    iconImage: {
+        width: 25,
+        height: 25,
+    },
+    cellUser: {
+        flex: 2,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    cellUserText: {
+        color: '#000',
+    },
+    cellBet: {
+        flex: 1,
+        fontWeight: '500',
+        textAlign: 'left',
+        marginLeft: 15,
+        color: '#222',
+    },
+    cellMultiplier: {
+        flex: 1,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    multiplierText: {
+        color: '#fff',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     chips: {
         fontSize: 15,
         marginVertical: 4,
+        color: '#000',
+        fontWeight: 500,
     },
     betGroup: {
         flexDirection: 'row',
@@ -818,12 +888,26 @@ const mainStyle = StyleSheet.create({
         borderRadius: 0,
         flex: 1,
     },
+    betButtonText: {
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    placeBetBtnGroup: {
+        flexDirection: 'row',
+        marginHorizontal: 10,
+        marginBottom: 10,
+    },
     placeBetBtn: {
         padding: 12,
         borderRadius: 6,
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative',
+    },
+    placeBetBtnText: {
+        color: '#222',
+        textAlign: 'center',
+        fontWeight: 'bold',
     },
     closeBtn: {
         marginTop: 20,
