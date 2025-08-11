@@ -159,7 +159,7 @@ const LuckyWheelModal = (
                 clearCountdown();
                 setMessage('Spinning...');
                 setBigCountdownNumber(null);
-                setActiveBetAmount(null);
+                // setActiveBetAmount(null);
             }
         }, 1000);
     };
@@ -170,13 +170,14 @@ const LuckyWheelModal = (
         setMessage('');
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
+        setActiveBetAmount(null);
     };
 
     const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
         setSpinResultMessage(
             isWin
                 ? `✅ You WON ${WinAmount} chips!`
-                : `❌ You LOST! Landed on ${resultLabel}`
+                : `❌ You LOST! because Wheel Landed on ${resultLabel}`
         );
     };
 
@@ -329,7 +330,7 @@ const LuckyWheelModal = (
             setTimeout(() => {
                 setMessage(`Landed on ${resultLabel}`);
                 setBetPlaced(false);
-                setSelectedMultiplier(null);
+                setSelectedMultiplier('Double');
 
                 // Set the final position for next spin
                 const finalAngle = finalRotation % 360;
@@ -341,7 +342,7 @@ const LuckyWheelModal = (
                 }, 1000);
             }, 500);
         });
-        setActiveBetAmount(null);
+        // setActiveBetAmount(null);
     };
 
     const renderSegments = () => {
