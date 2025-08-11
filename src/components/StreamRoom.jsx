@@ -188,7 +188,6 @@ const StreamRoom = ({
         KeepAwake.activate(); // Prevent screen from sleeping
 
         return () => {
-            console.log("unmounting");
             KeepAwake.deactivate();
         }
     }, []);
@@ -410,7 +409,6 @@ const StreamRoom = ({
                 const user = response.data.user;
                 setUserDetails(user);
                 setGiftSendData({ userName: user?.screenName, userId: user?.userid })
-                console.log("User Details:", user);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'GetUserDetails')
@@ -481,7 +479,6 @@ const StreamRoom = ({
         try {
             if (userData?.screenName === senderName) return
             playGiftSound()
-            console.log(receiverName);
             setReceiveAnimationData({
                 giftName: giftName,
                 senderName: senderName,
@@ -501,10 +498,8 @@ const StreamRoom = ({
             };
 
             const response = await Apiclient.post('/getFriendsList', postData);
-            console.log('response getFriendsList', response.data);
             if (response.status === 200) {
                 const data = response.data?.friends || [];
-                console.log(data);
                 setMyFriendList(data);
             }
         } catch (error) {
@@ -525,7 +520,6 @@ const StreamRoom = ({
     const SendGift = async (item) => {
         try {
             if (!GiftSenderData) return;
-            console.log(GiftSenderData);
             const params = {
                 fromUserID: userData?.userid,
                 toUserID: GiftSenderData.userId,
@@ -559,7 +553,6 @@ const StreamRoom = ({
     }
     const HnadleSendGiftToCoHost = (UserID, UserName) => {
         setGiftSendData({ userName: UserName, userId: UserID })
-        console.log(UserID, UserName);
         setGiftModalVisible(true)
     }
     const handleFriendRequest = async (userid) => {
@@ -607,7 +600,6 @@ const StreamRoom = ({
     }
     const HandleShowUi = () => {
         setShowUI(!showUI)
-        console.log("Pressed")
     }
 
     return (
