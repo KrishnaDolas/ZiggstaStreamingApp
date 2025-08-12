@@ -83,6 +83,11 @@ const LuckyWheelModal = (
     const [betButtonLayout, setBetButtonLayout] = useState(null);
     const [chipsBoxLayout, setChipsBoxLayout] = useState(null);
 
+    // Win animation states
+    const [winParticles, setWinParticles] = useState([]);
+    const winTextAnim = useRef(new Animated.Value(0)).current;
+
+
     const startIdleRotation = () => {
         idleSpin.setValue(0);
         Animated.loop(
@@ -314,6 +319,55 @@ const LuckyWheelModal = (
     };
 
 
+    // Beautiful win animation with particle burst and text
+    const startWinAnimation = (winAmount) => {
+        // Particle animation
+        const particles = [];
+        for (let i = 0; i < 20; i++) {
+            const anim = new Animated.Value(0);
+            const direction = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 200;
+            const endX = Math.cos(direction) * distance;
+            const endY = Math.sin(direction) * distance;
+            particles.push({
+                id: i,
+                anim,
+                endX,
+                endY,
+                rotate: Math.random() * 360,
+                size: 20 + Math.random() * 20,
+            });
+        }
+        setWinParticles(particles);
+        particles.forEach(p => {
+            Animated.timing(p.anim, {
+                toValue: 1,
+                duration: 2000 + Math.random() * 500,
+                easing: Easing.out(Easing.quad),
+                useNativeDriver: true,
+            }).start();
+        });
+
+        // Text animation
+        winTextAnim.setValue(0);
+        Animated.sequence([
+            Animated.timing(winTextAnim, {
+                toValue: 1,
+                duration: 500,
+                easing: Easing.out(Easing.back(1.5)),
+                useNativeDriver: true,
+            }),
+            Animated.timing(winTextAnim, {
+                toValue: 0,
+                duration: 500,
+                delay: 1000,
+                useNativeDriver: true,
+            })
+        ]).start();
+
+        setTimeout(() => setWinParticles([]), 2000);
+    };
+
     const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
         const resultMessage = isWin
             ? `✅ You WON ${WinAmount} chips!`
@@ -321,6 +375,24 @@ const LuckyWheelModal = (
 
         setSpinResultMessage(resultMessage);
 
+        if (isWin) {
+            // Play winner sound
+            const sound = new Sound('winner.mp3', Sound.MAIN_BUNDLE, (error) => {
+                if (error) {
+                    console.log('Failed to load the sound', error);
+                    return;
+                }
+                sound.play((success) => {
+                    if (!success) {
+                        console.log('Sound playback failed');
+                    }
+                    sound.release();
+                });
+            });
+
+            // Start beautiful win animation
+            startWinAnimation(WinAmount);
+        }
 
         // Start chip collection animation if user won
         if (isWin && WinAmount > 0) {
@@ -652,6 +724,42 @@ const LuckyWheelModal = (
                 {/* Flying chips overlay */}
                 <View style={mainStyle.flyingChipsContainer} pointerEvents="none">
                     {renderFlyingChips()}
+                    {winParticles.map(p => (
+                        <Animated.Image
+                            key={p.id}
+                            source={require('../../assets/images/icons/star.png')}
+                            style={{
+                                position: 'absolute',
+                                left: '50%',
+                                top: '50%',
+                                width: p.size,
+                                height: p.size,
+                                transform: [
+                                    { translateX: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endX] }) },
+                                    { translateY: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endY] }) },
+                                    { rotate: p.anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${p.rotate}deg`] }) },
+                                    { scale: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 0] }) },
+                                ],
+                                opacity: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1, 0] }),
+                            }}
+                        />
+                    ))}
+                    <Animated.View
+                        style={[mainStyle.winTextContainer, { justifyContent: 'center', alignItems: 'center' }]}
+                    >
+                        <Animated.Text
+                            style={[
+                                mainStyle.winText,
+                                {
+                                    transform: [
+                                        { scale: winTextAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 1] }) },
+                                    ],
+                                    opacity: winTextAnim,
+                                }]}
+                        >
+                            YOU WON!
+                        </Animated.Text>
+                    </Animated.View>
                 </View>
                 {/* Big Center Countdown */}
                 {bigCountdownNumber !== null && (
@@ -1019,6 +1127,26 @@ const mainStyle = StyleSheet.create({
         width: 25,
         height: 25,
         tintColor: '#FFD700', // Gold color for the flying stars
+    },
+    winTextContainer: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 1002,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    winText: {
+        fontSize: 40,
+        fontWeight: 'bold',
+        color: '#FFD700',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 2, height: 2 },
+        textShadowRadius: 10,
+        zIndex: 1002,
+        textAlign: 'center',
     },
     bigCountDownBox: {
         position: 'absolute',
