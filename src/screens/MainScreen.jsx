@@ -53,7 +53,7 @@ export const MainScreen = () => {
   const [currentStreamData, setCurrentStreamData] = useState({});
   const [totalGiftValue, setTotalGiftValue] = useState(0);
   const IsIdentify = useRef(false)
-
+  const IsVerified=useRef(false)
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
@@ -135,11 +135,6 @@ export const MainScreen = () => {
     setconnectingpanel(false)
     setIsSocketConnected(true); // Update connection status
     if (!IsIdentify.current && userData && socket.connected) {
-      setTimeout(() => {
-        socket.emit('identity', userData?.userid, userData?.screenName);
-        console.log('🔗 Emitted identity:', userData?.userid, userData?.screenName);
-      }, 2000);
-      IsIdentify.current = true; // Set identify flag to true
       if (streamInfo) {
         const roomID = streamInfo?.roomID.toString()
         socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar)
@@ -451,6 +446,7 @@ export const MainScreen = () => {
     setTotalGiftValue(totalValue)
   }
   const HandleDisconnected = () => {
+    IsVerified.current = false;
     console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
     setconnectingpanel(true)
@@ -492,6 +488,21 @@ export const MainScreen = () => {
     HandleConnect()
   }, [])
 
+  useEffect(()=>{
+    if(!IsVerified.current){
+      console.log("Verifing...");
+      console.log(socket.connected);
+      // Check if user is verified
+      if (userData?.userid &&socket.connected) {
+        console.log("Verified user:", userData?.userid, userData?.screenName);
+        socket.emit('identity', userData?.userid, userData?.screenName);
+        console.log('🔗 Emitted identity:', userData?.userid, userData?.screenName);
+        IsVerified.current = true; // Set verified flag to true
+      } else {
+        IsVerified.current = false;
+      }
+    }
+  },[IsVerified,socket.connected,userData])
 
 
 
