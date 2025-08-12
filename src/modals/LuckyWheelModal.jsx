@@ -75,9 +75,7 @@ const LuckyWheelModal = (
     const chipsGlowAnim = useRef(new Animated.Value(0)).current;
 
     // Refs for positioning
-    const betButtonRef = useRef(null);
     const chipsBoxRef = useRef(null);
-    const [betButtonLayout, setBetButtonLayout] = useState(null);
     const [chipsBoxLayout, setChipsBoxLayout] = useState(null);
 
     // Win animation states
@@ -205,9 +203,11 @@ const LuckyWheelModal = (
     const startChipCollectionAnimation = (winAmount, multiplier) => {
         console.log(`Starting chip collection animation with winAmount: ${winAmount}, multiplier: ${multiplier}`);
 
-        // Default layout values if measurements are unavailable
-        const defaultBetButtonLayout = betButtonLayout || { x: screenWidth * 0.5, y: screenHeight * 0.8, width: 100, height: 50 };
-        const defaultChipsBoxLayout = chipsBoxLayout || { x: screenWidth * 0.9, y: 50, width: 80, height: 40 };
+        // Start from the middle of the screen
+        const startX = screenWidth / 2;
+        const startY = screenHeight / 2;
+        // End at chipsBoxLayout (top-left) or fallback
+        const defaultChipsBoxLayout = chipsBoxLayout || { x: 20, y: 20, width: 80, height: 40 };
 
         const multiplierNum = multiplier === 'Double' ? 2 :
             multiplier === 'Triple' ? 3 :
@@ -218,8 +218,8 @@ const LuckyWheelModal = (
         for (let i = 0; i < multiplierNum; i++) {
             newFlyingChips.push({
                 id: `chip-${Date.now()}-${i}`,
-                translateX: new Animated.Value(defaultBetButtonLayout.x + defaultBetButtonLayout.width / 2),
-                translateY: new Animated.Value(defaultBetButtonLayout.y + defaultBetButtonLayout.height / 2),
+                translateX: new Animated.Value(startX),
+                translateY: new Animated.Value(startY),
                 scaleAnim: new Animated.Value(0),
                 opacityAnim: new Animated.Value(1),
                 delay: i * 100,
@@ -288,7 +288,6 @@ const LuckyWheelModal = (
     // Animated credit counting - only for visual effect, doesn't update actual credit
     const animateCredits = (from, to) => {
         creditCountAnim.setValue(0);
-
         Animated.timing(creditCountAnim, {
             toValue: 1,
             duration: 1000,
@@ -296,18 +295,16 @@ const LuckyWheelModal = (
             useNativeDriver: false,
         }).start();
 
-        // Listen to animated value changes for display only
         const listener = creditCountAnim.addListener(({ value }) => {
             const currentCredit = Math.floor(from + (to - from) * value);
             setDisplayCredit(currentCredit);
         });
 
-        // Clean up listener after animation - displayCredit will be updated by socket
         setTimeout(() => {
             creditCountAnim.removeListener(listener);
-            // Don't set displayCredit here, let socket update handle it
         }, 1000);
     };
+
 
 
     // Beautiful win animation with particle burst and text
@@ -526,20 +523,20 @@ const LuckyWheelModal = (
         const baseRotations = numberOfFullRotations * 360; // Always exact multiples of 360
         const finalRotation = baseRotations + rotationNeeded;
 
-        console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
-        console.log(`Raw segment center angle: ${segmentCenterAngle}°`);
-        console.log(`Normalized segment center: ${normalizedSegmentCenter}°`);
-        console.log(`Target position: ${normalizedTargetPosition}° (top of wheel)`);
-        console.log(`Rotation needed: ${rotationNeeded}°`);
-        console.log(`Number of full rotations: ${numberOfFullRotations}`);
-        console.log(`Base rotations: ${baseRotations}° (exact multiple of 360)`);
-        console.log(`Final rotation: ${finalRotation}°`);
-        console.log(`Final rotation mod 360: ${finalRotation % 360}° (should equal rotation needed: ${rotationNeeded}°)`);
-        console.log(`Expected final segment position: ${(normalizedSegmentCenter + rotationNeeded) % 360}° (should be 270°)`);
+        // console.log(`Selected segment: ${resultLabel} at index ${selected.idx}`);
+        // console.log(`Raw segment center angle: ${segmentCenterAngle}°`);
+        // console.log(`Normalized segment center: ${normalizedSegmentCenter}°`);
+        // console.log(`Target position: ${normalizedTargetPosition}° (top of wheel)`);
+        // console.log(`Rotation needed: ${rotationNeeded}°`);
+        // console.log(`Number of full rotations: ${numberOfFullRotations}`);
+        // console.log(`Base rotations: ${baseRotations}° (exact multiple of 360)`);
+        // console.log(`Final rotation: ${finalRotation}°`);
+        // console.log(`Final rotation mod 360: ${finalRotation % 360}° (should equal rotation needed: ${rotationNeeded}°)`);
+        // console.log(`Expected final segment position: ${(normalizedSegmentCenter + rotationNeeded) % 360}° (should be 270°)`);
 
         // Double-check our math
-        const checkPosition = (normalizedSegmentCenter + rotationNeeded) % 360;
-        console.log(`Math check: ${normalizedSegmentCenter}° + ${rotationNeeded}° = ${checkPosition}° (should be 270°)`);
+        // const checkPosition = (normalizedSegmentCenter + rotationNeeded) % 360;
+        // console.log(`Math check: ${normalizedSegmentCenter}° + ${rotationNeeded}° = ${checkPosition}° (should be 270°)`);
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -945,12 +942,6 @@ const LuckyWheelModal = (
                     {/* First button - 70% */}
                     {userBets.length === 0 ? (
                         <TouchableOpacity
-                            ref={betButtonRef}
-                            onLayout={(event) => {
-                                const { x, y, width, height } = event.nativeEvent.layout;
-                                setBetButtonLayout({ x: x + 10, y: y + 200, width, height });
-                                console.log('BetButton layout:', { x, y, width, height });
-                            }}
                             style={[
                                 mainStyle.placeBetBtn,
                                 {
@@ -978,7 +969,7 @@ const LuckyWheelModal = (
                                 );
                             }}
                             // onPress={() => {
-                            //     startChipCollectionAnimation(1000, 'Double');
+                            //     startChipCollectionAnimation(1000, '25x');
                             // }}
                             disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                         >
@@ -989,12 +980,6 @@ const LuckyWheelModal = (
                     ) : (
                         <>
                             <TouchableOpacity
-                                ref={betButtonRef}
-                                onLayout={(event) => {
-                                    const { x, y, width, height } = event.nativeEvent.layout;
-                                    setBetButtonLayout({ x: x + 10, y: y + 200, width, height });
-                                    console.log('BetButton layout:', { x, y, width, height });
-                                }}
                                 style={[
                                     mainStyle.placeBetBtn,
                                     {
@@ -1021,13 +1006,6 @@ const LuckyWheelModal = (
 
                             {/* Second button - 30% */}
                             <TouchableOpacity
-                                onLayout={(event) => {
-                                    if (!betButtonLayout) {
-                                        const { x, y, width, height } = event.nativeEvent.layout;
-                                        setBetButtonLayout({ x: x + 10 - width * 0.7 - 5, y: y + 200, width: width * 0.7 + width + 10, height });
-                                        console.log('Second BetButton layout:', { x, y, width, height });
-                                    }
-                                }}
                                 style={[
                                     mainStyle.placeBetBtn,
                                     {
@@ -1189,8 +1167,8 @@ const mainStyle = StyleSheet.create({
         textAlign: 'center',
     },
     spinResultMessageText: {
-        fontSize: 18,
-        marginTop: 20,
+        fontSize: 16,
+        marginTop: 10,
         color: '#fff',
         fontWeight: 'bold',
         textAlign: 'center',
