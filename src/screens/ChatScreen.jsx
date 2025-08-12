@@ -13,6 +13,7 @@ import {
     Alert,
     Animated,
     Dimensions,
+    Keyboard,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -59,9 +60,11 @@ export const ChatScreen = ({ route, navigation }) => {
     const [isTyping, setIsTyping] = useState(false);
     const [userStatus, setUserStatus] = useState('offline'); // online, offline, typing
     const [replyingTo, setReplyingTo] = useState(null);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const flatListRef = useRef(null);
     const inputRef = useRef(null);
     const typingAnimation = useRef(new Animated.Value(0)).current;
+    const typingTimeoutRef = useRef(null);
 
     // Simulate user status changes
     useEffect(() => {
@@ -70,14 +73,56 @@ export const ChatScreen = ({ route, navigation }) => {
         }
     }, []);
 
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            }
+        );
+
+        const keyboardDidHideListener = Keyboard.addListener(
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+            () => {
+                setKeyboardHeight(0);
+            }
+        );
+
+        return () => {
+            keyboardDidShowListener.remove();
+            keyboardDidHideListener.remove();
+        };
+    }, []);
+
 
     const handleInputChange = (text) => {
         socket.emit('isTyping', chatUser?.userid);
         setInputText(text);
+
+        // Clear previous timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        console.log('typingTimeoutRef.current', typingTimeoutRef.current);
+
+
+        // Set new timeout to emit stopTyping after 1 second of inactivity
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit('stopTyping', chatUser?.userid);
+        }, 1000); // Adjust delay as needed
     };
 
 
     //Socket-events
+
+    const handleUserTyping = (userid) => {
+        if (chatUser?.userid === userid) {
+            console.log('user is typing');
+            setUserStatus('typing');
+        }
+    }
+
     const HandleUserOnline = (userid) => {
         if (chatUser?.userid === userid) {
             console.log('user is online');
@@ -92,13 +137,17 @@ export const ChatScreen = ({ route, navigation }) => {
         }
 
     }
+
     useEffect(() => {
-        socket.on('user-online', HandleUserOnline)
-        socket.on('user-offline', HandleUseroffline)
+        socket.on('user-online', HandleUserOnline);
+        socket.on('user-offline', HandleUseroffline);
+        socket.on('isTyping', handleUserTyping);
 
         return () => {
-            socket.off('user-online', HandleUserOnline)
-            socket.off('user-offline', HandleUserOnline)
+            socket.off('user-online', HandleUserOnline);
+            socket.off('user-offline', HandleUserOnline);
+            socket.off('isTyping', handleUserTyping);
+
         }
     }, [])
 
@@ -342,7 +391,8 @@ export const ChatScreen = ({ route, navigation }) => {
             chatStyles.inputContainer,
             {
                 backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
-                borderTopColor: theme === 'dark' ? Colors.blackDividers : '#e0e0e0'
+                borderTopColor: theme === 'dark' ? Colors.blackDividers : '#e0e0e0',
+                paddingBottom: keyboardHeight > 0 ? keyboardHeight - insets.bottom + 110 : insets.bottom + 14
             }
         ]}>
             {replyingTo && (
@@ -395,6 +445,7 @@ export const ChatScreen = ({ route, navigation }) => {
                         chatStyles.sendButton,
                         { opacity: inputText.trim().length > 0 ? 1 : 0.5 }
                     ]}
+                    disabled={inputText.trim().length === 0}
                 >
                     <LinearGradient
                         colors={['#d93a63', '#e85a7a']}
@@ -410,7 +461,7 @@ export const ChatScreen = ({ route, navigation }) => {
     return (
         <SafeAreaView style={[
             chatStyles.container,
-            { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff', paddingBottom: insets.bottom, }
+            { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff', }
         ]}>
             <StatusBar
                 barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
@@ -419,10 +470,7 @@ export const ChatScreen = ({ route, navigation }) => {
             />
             {renderHeader()}
 
-            <KeyboardAvoidingView
-                style={chatStyles.content}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
+            <View style={chatStyles.content}>
                 <View style={[
                     chatStyles.messagesContainer,
                     { backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#f8f8f8' }
@@ -439,7 +487,7 @@ export const ChatScreen = ({ route, navigation }) => {
                 </View>
 
                 {renderInputArea()}
-            </KeyboardAvoidingView>
+            </View>
         </SafeAreaView>
     );
 };
