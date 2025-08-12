@@ -103,7 +103,7 @@ export const ChatScreen = ({ route, navigation }) => {
             setUserStatus('typing');
         }
     }
-    const HandleStopTyping = () => {
+    const HandleStopTyping = (userid) => {
         if (chatUser?.userid === userid && socket.connected) {
             socket.emit('user-online', chatUser?.userid);
         }
