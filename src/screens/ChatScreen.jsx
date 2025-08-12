@@ -57,7 +57,7 @@ export const ChatScreen = ({ route, navigation }) => {
 
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const [userStatus, setUserStatus] = useState('online'); // online, offline, typing
+    const [userStatus, setUserStatus] = useState('offline'); // online, offline, typing
     const [replyingTo, setReplyingTo] = useState(null);
     const flatListRef = useRef(null);
     const inputRef = useRef(null);
@@ -65,10 +65,17 @@ export const ChatScreen = ({ route, navigation }) => {
 
     // Simulate user status changes
     useEffect(() => {
-        if(socket.connected){
+        if (socket.connected) {
             socket.emit('user-online', chatUser?.userid);
         }
     }, []);
+
+
+    const handleInputChange = (text) => {
+        socket.emit('isTyping', chatUser?.userid);
+        setInputText(text);
+    };
+
 
     //Socket-events
     const HandleUserOnline = (userid) => {
@@ -376,7 +383,7 @@ export const ChatScreen = ({ route, navigation }) => {
                         placeholder="Type a message..."
                         placeholderTextColor={theme === 'dark' ? '#999' : '#666'}
                         value={inputText}
-                        onChangeText={setInputText}
+                        onChangeText={handleInputChange}
                         multiline
                         maxLength={1000}
                     />
