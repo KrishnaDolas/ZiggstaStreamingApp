@@ -76,6 +76,7 @@ export const ChatScreen = ({ route, navigation }) => {
         if(!isTyping){
             socket.emit('isTyping', chatUser?.userid);
         }
+        setIsTyping(true)
         setInputText(text);
         // Clear previous timeout
         if (typingTimeoutRef.current) {
@@ -84,6 +85,7 @@ export const ChatScreen = ({ route, navigation }) => {
 
         // Set new timeout to emit stopTyping after 1 second of inactivity
         typingTimeoutRef.current = setTimeout(() => {
+            setIsTyping(false)
             if (socket.connected) {
                 socket.emit('user-online', chatUser?.userid);
             }
