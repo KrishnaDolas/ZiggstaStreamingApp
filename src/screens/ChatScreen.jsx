@@ -68,13 +68,6 @@ export const ChatScreen = ({ route, navigation }) => {
         if(socket.connected){
             socket.emit('user-online', chatUser?.userid);
         }
-        // const statusInterval = setInterval(() => {
-        //     const statuses = ['online', 'offline', 'typing'];
-        //     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-        //     setUserStatus(randomStatus);
-        // }, 10000);
-
-        // return () => clearInterval(statusInterval);
     }, []);
 
     //Socket-events
