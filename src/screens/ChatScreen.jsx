@@ -20,7 +20,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import { getGenderFallbackImage } from '../utils/constant';
+import { getGenderFallbackImage, socket } from '../utils/constant';
 import Colors from '../../assets/styles/Colors';
 
 const { width } = Dimensions.get('window');
@@ -65,14 +65,42 @@ export const ChatScreen = ({ route, navigation }) => {
 
     // Simulate user status changes
     useEffect(() => {
-        const statusInterval = setInterval(() => {
-            const statuses = ['online', 'offline', 'typing'];
-            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-            setUserStatus(randomStatus);
-        }, 10000);
+        if(socket.connected){
+            socket.emit('user-online', chatUser?.userid);
+        }
+        // const statusInterval = setInterval(() => {
+        //     const statuses = ['online', 'offline', 'typing'];
+        //     const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+        //     setUserStatus(randomStatus);
+        // }, 10000);
 
-        return () => clearInterval(statusInterval);
+        // return () => clearInterval(statusInterval);
     }, []);
+
+    //Socket-events
+    const HandleUserOnline = (userid) => {
+        if (chatUser?.userid === userid) {
+            console.log('user is online');
+            setUserStatus('online');
+        }
+    }
+    const HandleUseroffline = (userid) => {
+        if (chatUser?.userid === userid) {
+            console.log('user is offline');
+            setUserStatus('offline');
+            return;
+        }
+
+    }
+    useEffect(() => {
+        socket.on('user-online', HandleUserOnline)
+        socket.on('user-offline', HandleUseroffline)
+
+        return () => {
+            socket.off('user-online', HandleUserOnline)
+            socket.off('user-offline', HandleUserOnline)
+        }
+    }, [])
 
     // Typing animation
     useEffect(() => {
