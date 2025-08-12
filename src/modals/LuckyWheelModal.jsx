@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 // LuckyWheelModal.js
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -16,7 +16,6 @@ import {
 import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import Sound from 'react-native-sound';
-import { ThemeContext } from '../context/ThemeContext';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -56,8 +55,6 @@ const LuckyWheelModal = (
 ) => {
     const [countdown, setCountdown] = useState(0);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
-    const [betPlaced, setBetPlaced] = useState(false);
-    const [userBetPlaced, setUserBetPlaced] = useState(false);
     const [message, setMessage] = useState('Get Ready');
     const [spinResultMessage, setSpinResultMessage] = useState('');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
@@ -199,7 +196,6 @@ const LuckyWheelModal = (
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
         setActiveBetAmount(null);
-        setUserBetPlaced(false);
         setBetButtonsDisabled(false);
         startIdleRotation();
     };
@@ -208,35 +204,35 @@ const LuckyWheelModal = (
     // Enhanced chip collection animation
     const startChipCollectionAnimation = (winAmount, multiplier) => {
         console.log(`Starting chip collection animation with winAmount: ${winAmount}, multiplier: ${multiplier}`);
-        if (!betButtonLayout || !chipsBoxLayout) return;
 
-        // Get the multiplier number for animation count
+        // Default layout values if measurements are unavailable
+        const defaultBetButtonLayout = betButtonLayout || { x: screenWidth * 0.5, y: screenHeight * 0.8, width: 100, height: 50 };
+        const defaultChipsBoxLayout = chipsBoxLayout || { x: screenWidth * 0.9, y: 50, width: 80, height: 40 };
+
         const multiplierNum = multiplier === 'Double' ? 2 :
             multiplier === 'Triple' ? 3 :
                 multiplier === '5x' ? 5 :
                     multiplier === '25x' ? 25 : 2;
 
-        // Create flying chips
         const newFlyingChips = [];
         for (let i = 0; i < multiplierNum; i++) {
             newFlyingChips.push({
                 id: `chip-${Date.now()}-${i}`,
-                translateX: new Animated.Value(betButtonLayout.x + betButtonLayout.width / 2),
-                translateY: new Animated.Value(betButtonLayout.y + betButtonLayout.height / 2),
+                translateX: new Animated.Value(defaultBetButtonLayout.x + defaultBetButtonLayout.width / 2),
+                translateY: new Animated.Value(defaultBetButtonLayout.y + defaultBetButtonLayout.height / 2),
                 scaleAnim: new Animated.Value(0),
                 opacityAnim: new Animated.Value(1),
-                delay: i * 100, // Stagger the animation
+                delay: i * 100,
             });
         }
 
         setFlyingChips(newFlyingChips);
 
-        // Start chip glow animation
         Animated.sequence([
             Animated.timing(chipsGlowAnim, {
                 toValue: 1,
                 duration: 200,
-                useNativeDriver: false, // Glow animation doesn't need native driver
+                useNativeDriver: false,
             }),
             Animated.timing(chipsGlowAnim, {
                 toValue: 0,
@@ -245,9 +241,7 @@ const LuckyWheelModal = (
             })
         ]).start();
 
-        // Animate each flying chip
         newFlyingChips.forEach((chip, index) => {
-            // Scale in animation
             Animated.timing(chip.scaleAnim, {
                 toValue: 1,
                 duration: 200,
@@ -255,24 +249,22 @@ const LuckyWheelModal = (
                 useNativeDriver: true,
             }).start();
 
-            // Flying animation
             setTimeout(() => {
                 Animated.parallel([
                     Animated.timing(chip.translateX, {
-                        toValue: chipsBoxLayout.x + chipsBoxLayout.width / 2,
+                        toValue: defaultChipsBoxLayout.x + defaultChipsBoxLayout.width / 2,
                         duration: 800,
                         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
                         useNativeDriver: true,
                     }),
                     Animated.timing(chip.translateY, {
-                        toValue: chipsBoxLayout.y + chipsBoxLayout.height / 2,
+                        toValue: defaultChipsBoxLayout.y + defaultChipsBoxLayout.height / 2,
                         duration: 800,
                         easing: Easing.bezier(0.25, 0.46, 0.45, 0.94),
                         useNativeDriver: true,
                     }),
                 ]).start();
 
-                // Scale out animation
                 setTimeout(() => {
                     Animated.timing(chip.opacityAnim, {
                         toValue: 0,
@@ -283,12 +275,10 @@ const LuckyWheelModal = (
             }, chip.delay);
         });
 
-        // Start counting animation after a short delay
         setTimeout(() => {
             animateCredits(mycredit, mycredit + winAmount);
         }, 400);
 
-        // Clear flying chips after animation
         setTimeout(() => {
             setFlyingChips([]);
         }, 2000);
@@ -398,8 +388,9 @@ const LuckyWheelModal = (
         // Start chip collection animation if user won
         if (isWin && WinAmount > 0) {
             setTimeout(() => {
+                console.log('Triggering chip collection animation');
                 startChipCollectionAnimation(WinAmount, selectedMultiplier);
-            }, 3000); // Start after spin result message
+            }, 3000);
         }
 
     };
@@ -409,7 +400,6 @@ const LuckyWheelModal = (
     };
 
     const handleBetSuccess = () => {
-        setUserBetPlaced(true);
         setBetButtonsDisabled(true);
     };
 
@@ -491,7 +481,6 @@ const LuckyWheelModal = (
         //         sound.release();
         //     });
         // });
-        setBetPlaced(true);
         setActiveBetAmount(val); // 👈 track which button is active
         setMessage(`Bet placed on ${selectedMultiplier}`);
     };
@@ -560,7 +549,6 @@ const LuckyWheelModal = (
         }).start(() => {
             setTimeout(() => {
                 setMessage(`Landed on ${resultLabel}`);
-                setBetPlaced(false);
                 setSelectedMultiplier('Double');
 
                 // Set the final position for next spin
@@ -644,8 +632,8 @@ const LuckyWheelModal = (
                             { translateX: chip.translateX },
                             { translateY: chip.translateY },
                             { scale: chip.scaleAnim },
-                            { translateX: -12.5 }, // Half of chip width
-                            { translateY: -12.5 }, // Half of chip height
+                            { translateX: -12.5 },
+                            { translateY: -12.5 },
                         ],
                         opacity: chip.opacityAnim,
                     },
@@ -689,6 +677,7 @@ const LuckyWheelModal = (
                         onLayout={(event) => {
                             const { x, y, width, height } = event.nativeEvent.layout;
                             setChipsBoxLayout({ x, y, width, height });
+                            console.log('ChipsBox layout:', { x, y, width, height });
                         }}
                         style={[
                             mainStyle.chipsBox,
@@ -710,7 +699,7 @@ const LuckyWheelModal = (
                         ]}
                     >
                         <Image
-                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                            source={require('../../assets/images/icons/star.png')}
                             style={{ width: 14, height: 14 }}
                             resizeMode="contain"
                         />
@@ -959,7 +948,8 @@ const LuckyWheelModal = (
                             ref={betButtonRef}
                             onLayout={(event) => {
                                 const { x, y, width, height } = event.nativeEvent.layout;
-                                setBetButtonLayout({ x: x + 10, y: y + 200, width, height }); // Adjust for margin
+                                setBetButtonLayout({ x: x + 10, y: y + 200, width, height });
+                                console.log('BetButton layout:', { x, y, width, height });
                             }}
                             style={[
                                 mainStyle.placeBetBtn,
@@ -1002,7 +992,8 @@ const LuckyWheelModal = (
                                 ref={betButtonRef}
                                 onLayout={(event) => {
                                     const { x, y, width, height } = event.nativeEvent.layout;
-                                    setBetButtonLayout({ x: x + 10, y: y + 200, width, height }); // Adjust for modal padding
+                                    setBetButtonLayout({ x: x + 10, y: y + 200, width, height });
+                                    console.log('BetButton layout:', { x, y, width, height });
                                 }}
                                 style={[
                                     mainStyle.placeBetBtn,
@@ -1031,10 +1022,10 @@ const LuckyWheelModal = (
                             {/* Second button - 30% */}
                             <TouchableOpacity
                                 onLayout={(event) => {
-                                    // If this is the second button and we don't have layout for first button yet
                                     if (!betButtonLayout) {
                                         const { x, y, width, height } = event.nativeEvent.layout;
-                                        setBetButtonLayout({ x: x + 10 - width * 0.7 - 5, y: y + 200, width: width * 0.7 + width + 10, height }); // Calculate combined button area
+                                        setBetButtonLayout({ x: x + 10 - width * 0.7 - 5, y: y + 200, width: width * 0.7 + width + 10, height });
+                                        console.log('Second BetButton layout:', { x, y, width, height });
                                     }
                                 }}
                                 style={[
@@ -1109,7 +1100,6 @@ const mainStyle = StyleSheet.create({
         gap: 5,
         backgroundColor: '#ffffff7e',
     },
-    // Flying chips animation styles
     flyingChipsContainer: {
         position: 'absolute',
         top: 0,
@@ -1127,7 +1117,7 @@ const mainStyle = StyleSheet.create({
     flyingChipIcon: {
         width: 25,
         height: 25,
-        tintColor: '#FFD700', // Gold color for the flying stars
+        tintColor: '#FFD700',
     },
     winTextContainer: {
         position: 'absolute',
