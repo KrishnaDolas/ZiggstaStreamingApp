@@ -95,11 +95,13 @@ export const ChatScreen = ({ route, navigation }) => {
 
     //Socket-events
 
-    const handleUserTyping = () => {
-        setUserStatus('typing');
+    const handleUserTyping = (userid) => {
+        if (chatUser?.userid === userid) {
+            setUserStatus('typing');
+        }
     }
     const HandleStopTyping = () => {
-        if (socket.connected) {
+        if (chatUser?.userid === userid && socket.connected) {
             socket.emit('user-online', chatUser?.userid);
         }
     }
