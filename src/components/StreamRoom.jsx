@@ -717,7 +717,15 @@ const StreamRoom = ({
                                                         onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
                                                     >
                                                         {streamLayout[0]?.isFriend ? (
-                                                            <Ionicons name="person-remove" size={18} color="#fff" />
+                                                           <Image
+                                                           style={{
+                                                               width: 20,
+                                                               height: 20,
+                                                           }}
+                                                           source={require('../../assets/images/icons/friend-added.png')}
+                                                           resizeMode="contain"
+                                                           tintColor="white"
+                                                       />
                                                         ) : (
                                                             <Ionicons name="person-add" size={18} color="#fff" />)}
                                                     </TouchableOpacity>
@@ -773,7 +781,15 @@ const StreamRoom = ({
                                                                 onPress={() => handleFriendRequest(streamData?.userId)}
                                                             >
                                                                 {streamData?.isFriend ? (
-                                                                    <Ionicons name="person-remove" size={18} color="#fff" />
+                                                                    <Image
+                                                                    style={{
+                                                                        width: 20,
+                                                                        height: 20,
+                                                                    }}
+                                                                    source={require('../../assets/images/icons/friend-added.png')}
+                                                                    resizeMode="contain"
+                                                                    tintColor="white"
+                                                                />
                                                                 ) : (
                                                                     <Ionicons name="person-add" size={18} color="#fff" />)}
                                                             </TouchableOpacity>
@@ -835,7 +851,15 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={16} color="#fff" />
+                                                                        <Image
+                                                                        style={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                        }}
+                                                                        source={require('../../assets/images/icons/friend-added.png')}
+                                                                        resizeMode="contain"
+                                                                        tintColor="white"
+                                                                    />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={16} color="#fff" />)}
                                                                 </TouchableOpacity>
@@ -895,7 +919,15 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={16} color="#fff" />
+                                                                        <Image
+                                                                        style={{
+                                                                            width: 15,
+                                                                            height: 15,
+                                                                        }}
+                                                                        source={require('../../assets/images/icons/friend-added.png')}
+                                                                        resizeMode="contain"
+                                                                        tintColor="white"
+                                                                    />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={16} color="#fff" />)}
                                                                 </TouchableOpacity>
@@ -959,7 +991,15 @@ const StreamRoom = ({
                                                                     onPress={() => handleFriendRequest(streamData?.userId)}
                                                                 >
                                                                     {streamData?.isFriend ? (
-                                                                        <Ionicons name="person-remove" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />
+                                                                       <Image
+                                                                       style={{
+                                                                           width: streamLayout.length == 6?15: streamLayout.length == 4  ? 20 :22,
+                                                                           height: streamLayout.length == 6?15: streamLayout.length == 4 ? 20 :22,
+                                                                       }}
+                                                                       source={require('../../assets/images/icons/friend-added.png')}
+                                                                       resizeMode="contain"
+                                                                       tintColor="white"
+                                                                   />
                                                                     ) : (
                                                                         <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />)}
                                                                 </TouchableOpacity>
