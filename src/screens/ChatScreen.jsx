@@ -122,13 +122,21 @@ export const ChatScreen = ({ route, navigation }) => {
         }
 
     }
+    const HandleReceiveMsg=(message)=>{
+        console.log('Received message:', message);
+        // setMessages(prev => [...prev, message]);
+        // Scroll to bottom
+        // setTimeout(() => {
+        //     flatListRef.current?.scrollToEnd({ animated: true });
+        // }, 100);
+    }
 
     useEffect(() => {
         socket.on('user-online', HandleUserOnline);
         socket.on('user-offline', HandleUseroffline);
         socket.on('isTyping', handleUserTyping);
         socket.on('stopTyping',HandleStopTyping)
-
+        socket.on('receive-msg',HandleReceiveMsg)
         return () => {
             socket.off('user-online', HandleUserOnline);
             socket.off('user-offline', HandleUserOnline);
@@ -164,20 +172,15 @@ export const ChatScreen = ({ route, navigation }) => {
         const newMessage = {
             id: Date.now().toString(),
             text: inputText.trim(),
-            sender: 'me',
+            from: userData?.userid,
+            to:chatUser?.userid,
             timestamp: new Date().getTime(),
             status: 'sent',
             replyTo: replyingTo
         };
-
-        setMessages(prev => [...prev, newMessage]);
+        socket.emit('send-msg', newMessage);
         setInputText('');
         setReplyingTo(null);
-
-        // Scroll to bottom
-        setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
 
         // Simulate message status updates
         setTimeout(() => {
