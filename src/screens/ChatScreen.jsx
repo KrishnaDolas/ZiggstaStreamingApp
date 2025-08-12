@@ -96,10 +96,7 @@ export const ChatScreen = ({ route, navigation }) => {
     //Socket-events
 
     const handleUserTyping = (userid) => {
-        if (chatUser?.userid === userid) {
-            console.log('user is typing');
-            setUserStatus('typing');
-        }
+        setUserStatus('typing');
     }
 
     const HandleUserOnline = (userid) => {
