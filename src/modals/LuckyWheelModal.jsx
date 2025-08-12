@@ -207,7 +207,7 @@ const LuckyWheelModal = (
 
     // Enhanced chip collection animation
     const startChipCollectionAnimation = (winAmount, multiplier) => {
-        if (!betButtonLayout || !chipsBoxLayout) return;
+        // if (!betButtonLayout || !chipsBoxLayout) return;
 
         // Get the multiplier number for animation count
         const multiplierNum = multiplier === 'Double' ? 2 :
