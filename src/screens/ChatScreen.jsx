@@ -22,12 +22,13 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { getGenderFallbackImage, socket } from '../utils/constant';
 import Colors from '../../assets/styles/Colors';
+import { useAppContext } from '../context/AppContext';
 
 const { width } = Dimensions.get('window');
 
 export const ChatScreen = ({ route, navigation }) => {
     const { chatUser } = route.params; // User data passed from MessageListScreen
-
+ const { userData } = useAppContext()
     const { theme } = useContext(ThemeContext);
     const insets = useSafeAreaInsets();
 
@@ -74,7 +75,7 @@ export const ChatScreen = ({ route, navigation }) => {
 
     const handleInputChange = (text) => {
         if(!isTyping){
-            socket.emit('isTyping', chatUser?.userid);
+            socket.emit('isTyping', chatUser?.userid,userData?.userid);
         }
         setIsTyping(true)
         setInputText(text);
@@ -87,7 +88,7 @@ export const ChatScreen = ({ route, navigation }) => {
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false)
             if (socket.connected) {
-                socket.emit('stopTyping', chatUser?.userid);
+                socket.emit('stopTyping', chatUser?.userid,userData?.userid);
             }
         }, 1000); // Adjust delay as needed
     };
@@ -96,6 +97,8 @@ export const ChatScreen = ({ route, navigation }) => {
     //Socket-events
 
     const handleUserTyping = (userid) => {
+        console.log('User is typing:', userid);
+        console.log('Current chat user:', chatUser?.userid);
         if (chatUser?.userid === userid) {
             setUserStatus('typing');
         }
