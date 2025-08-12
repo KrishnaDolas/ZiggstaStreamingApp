@@ -179,10 +179,12 @@ export const MessageListScreen = () => {
         // setMessage(`Chat feature is not implemented yet.`)
         // setVisibleModal('message-modal');
         // Navigate to ChatScreen instead of showing message modal
-        navigation.navigate('ChatScreen', {
-            chatUser: item,
-        });
-    }, [navigation]);
+        if (friendListType === 'friends') {
+            navigation.navigate('ChatScreen', {
+                chatUser: item,
+            });
+        }
+    }, [navigation, friendListType]);
 
     // Add this function
     const handleRefresh = useCallback(async () => {
@@ -215,7 +217,7 @@ export const MessageListScreen = () => {
                             style={styles.messageListAvatar}
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleChatOpen(item)} style={{ flex: 1, marginRight: 10 }}>
+                    <TouchableOpacity style={{ flex: 1, marginRight: 10 }}>
                         <Text numberOfLines={1} style={[styles.messageListName, themeStyles[theme].messageListName]}>
                             {item.screenName}
                         </Text>
