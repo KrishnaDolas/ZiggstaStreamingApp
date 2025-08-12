@@ -207,6 +207,7 @@ const LuckyWheelModal = (
 
     // Enhanced chip collection animation
     const startChipCollectionAnimation = (winAmount, multiplier) => {
+        console.log(`Starting chip collection animation with winAmount: ${winAmount}, multiplier: ${multiplier}`);
         if (!betButtonLayout || !chipsBoxLayout) return;
 
         // Get the multiplier number for animation count
@@ -398,7 +399,7 @@ const LuckyWheelModal = (
         if (isWin && WinAmount > 0) {
             setTimeout(() => {
                 startChipCollectionAnimation(WinAmount, selectedMultiplier);
-            }, 1000); // Start after spin result message
+            }, 3000); // Start after spin result message
         }
 
     };
@@ -987,7 +988,7 @@ const LuckyWheelModal = (
                                 );
                             }}
                             // onPress={() => {
-                            //     startChipCollectionAnimation(1000, '5x');
+                            //     startChipCollectionAnimation(1000, 'Double');
                             // }}
                             disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                         >
