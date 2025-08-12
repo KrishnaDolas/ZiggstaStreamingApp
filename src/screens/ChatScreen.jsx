@@ -28,7 +28,7 @@ const { width } = Dimensions.get('window');
 
 export const ChatScreen = ({ route, navigation }) => {
     const { chatUser } = route.params; // User data passed from MessageListScreen
- const { userData } = useAppContext()
+    const { userData } = useAppContext()
     const { theme } = useContext(ThemeContext);
     const insets = useSafeAreaInsets();
 
@@ -52,8 +52,8 @@ export const ChatScreen = ({ route, navigation }) => {
 
 
     const handleInputChange = (text) => {
-        if(!isTyping){
-            socket.emit('isTyping', chatUser?.userid,userData?.userid);
+        if (!isTyping) {
+            socket.emit('isTyping', chatUser?.userid, userData?.userid);
         }
         setIsTyping(true)
         setInputText(text);
@@ -66,7 +66,7 @@ export const ChatScreen = ({ route, navigation }) => {
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false)
             if (socket.connected) {
-                socket.emit('stopTyping', chatUser?.userid,userData?.userid);
+                socket.emit('stopTyping', chatUser?.userid, userData?.userid);
             }
         }, 1000); // Adjust delay as needed
     };
@@ -100,7 +100,7 @@ export const ChatScreen = ({ route, navigation }) => {
         }
 
     }
-    const HandleReceiveMsg=(message)=>{
+    const HandleReceiveMsg = (message) => {
         console.log('Received message:', message);
         setMessages(prev => [...prev, message]);
         // Scroll to bottom
@@ -113,14 +113,14 @@ export const ChatScreen = ({ route, navigation }) => {
         socket.on('user-online', HandleUserOnline);
         socket.on('user-offline', HandleUseroffline);
         socket.on('isTyping', handleUserTyping);
-        socket.on('stopTyping',HandleStopTyping)
-        socket.on('receive-msg',HandleReceiveMsg)
+        socket.on('stopTyping', HandleStopTyping)
+        socket.on('receive-msg', HandleReceiveMsg)
         return () => {
             socket.off('user-online', HandleUserOnline);
             socket.off('user-offline', HandleUserOnline);
             socket.off('isTyping', handleUserTyping);
-            socket.off('stopTyping',HandleStopTyping)
-            socket.off('receive-msg',HandleReceiveMsg)
+            socket.off('stopTyping', HandleStopTyping)
+            socket.off('receive-msg', HandleReceiveMsg)
         }
     }, [])
 
@@ -151,7 +151,7 @@ export const ChatScreen = ({ route, navigation }) => {
             id: Date.now().toString(),
             text: inputText.trim(),
             from: userData?.userid,
-            to:chatUser?.userid,
+            to: chatUser?.userid,
             timestamp: new Date().getTime(),
             status: 'pending',
             replyTo: replyingTo
@@ -278,7 +278,7 @@ export const ChatScreen = ({ route, navigation }) => {
                         />
                         <View style={[
                             chatStyles.statusDot,
-                            { backgroundColor: userStatus === 'online' ? '#4CAF50' : '#999' }
+                            { backgroundColor: (userStatus === 'online' || userStatus === 'typing') ? '#4CAF50' : '#999' }
                         ]} />
                     </View>
 
