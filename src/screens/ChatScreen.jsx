@@ -87,7 +87,7 @@ export const ChatScreen = ({ route, navigation }) => {
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false)
             if (socket.connected) {
-                socket.emit('user-online', chatUser?.userid);
+                socket.emit('stopTyping', chatUser?.userid);
             }
         }, 1000); // Adjust delay as needed
     };
@@ -95,10 +95,14 @@ export const ChatScreen = ({ route, navigation }) => {
 
     //Socket-events
 
-    const handleUserTyping = (userid) => {
+    const handleUserTyping = () => {
         setUserStatus('typing');
     }
-
+    const HandleStopTyping = () => {
+        if (socket.connected) {
+            socket.emit('user-online', chatUser?.userid);
+        }
+    }
     const HandleUserOnline = (userid) => {
         if (chatUser?.userid === userid) {
             console.log('user is online');
@@ -118,11 +122,13 @@ export const ChatScreen = ({ route, navigation }) => {
         socket.on('user-online', HandleUserOnline);
         socket.on('user-offline', HandleUseroffline);
         socket.on('isTyping', handleUserTyping);
+        socket.on('stopTyping',HandleStopTyping)
 
         return () => {
             socket.off('user-online', HandleUserOnline);
             socket.off('user-offline', HandleUserOnline);
             socket.off('isTyping', handleUserTyping);
+            socket.off('stopTyping',HandleStopTyping)
 
         }
     }, [])
