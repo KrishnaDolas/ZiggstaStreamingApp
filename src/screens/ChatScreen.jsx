@@ -75,8 +75,6 @@ export const ChatScreen = ({ route, navigation }) => {
     //Socket-events
 
     const handleUserTyping = (userid) => {
-        console.log('User is typing:', userid);
-        console.log('Current chat user:', chatUser?.userid);
         if (chatUser?.userid === userid) {
             setUserStatus('typing');
         }
@@ -88,20 +86,17 @@ export const ChatScreen = ({ route, navigation }) => {
     }
     const HandleUserOnline = (userid) => {
         if (chatUser?.userid === userid) {
-            console.log('user is online');
             setUserStatus('online');
         }
     }
     const HandleUseroffline = (userid) => {
         if (chatUser?.userid === userid) {
-            console.log('user is offline');
             setUserStatus('offline');
             return;
         }
 
     }
     const HandleReceiveMsg = (message) => {
-        console.log('Received message:', message);
         setMessages(prev => [...prev, message]);
         // Scroll to bottom
         setTimeout(() => {
