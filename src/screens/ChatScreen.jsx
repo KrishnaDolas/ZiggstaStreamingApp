@@ -32,29 +32,7 @@ export const ChatScreen = ({ route, navigation }) => {
     const { theme } = useContext(ThemeContext);
     const insets = useSafeAreaInsets();
 
-    const [messages, setMessages] = useState([
-        {
-            id: '1',
-            text: 'Hey! How are you doing?',
-            sender: 'other',
-            timestamp: new Date().getTime() - 1000 * 60 * 5,
-            status: 'read'
-        },
-        {
-            id: '2',
-            text: 'I\'m doing great! Just finished work. What about you?',
-            sender: 'me',
-            timestamp: new Date().getTime() - 1000 * 60 * 3,
-            status: 'read'
-        },
-        {
-            id: '3',
-            text: 'That\'s awesome! I\'m just relaxing at home. Want to catch up later?',
-            sender: 'other',
-            timestamp: new Date().getTime() - 1000 * 60 * 1,
-            status: 'delivered'
-        }
-    ]);
+    const [messages, setMessages] = useState([]);
 
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
@@ -124,11 +102,11 @@ export const ChatScreen = ({ route, navigation }) => {
     }
     const HandleReceiveMsg=(message)=>{
         console.log('Received message:', message);
-        // setMessages(prev => [...prev, message]);
+        setMessages(prev => [...prev, message]);
         // Scroll to bottom
-        // setTimeout(() => {
-        //     flatListRef.current?.scrollToEnd({ animated: true });
-        // }, 100);
+        setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
     }
 
     useEffect(() => {
@@ -142,7 +120,7 @@ export const ChatScreen = ({ route, navigation }) => {
             socket.off('user-offline', HandleUserOnline);
             socket.off('isTyping', handleUserTyping);
             socket.off('stopTyping',HandleStopTyping)
-
+            socket.off('receive-msg',HandleReceiveMsg)
         }
     }, [])
 
@@ -175,29 +153,12 @@ export const ChatScreen = ({ route, navigation }) => {
             from: userData?.userid,
             to:chatUser?.userid,
             timestamp: new Date().getTime(),
-            status: 'sent',
+            status: 'pending',
             replyTo: replyingTo
         };
         socket.emit('send-msg', newMessage);
         setInputText('');
         setReplyingTo(null);
-
-        // Simulate message status updates
-        setTimeout(() => {
-            setMessages(prev =>
-                prev.map(msg =>
-                    msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
-                )
-            );
-        }, 1000);
-
-        setTimeout(() => {
-            setMessages(prev =>
-                prev.map(msg =>
-                    msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
-                )
-            );
-        }, 3000);
     }, [inputText, replyingTo]);
 
     const handleLongPress = useCallback((message) => {
@@ -232,7 +193,7 @@ export const ChatScreen = ({ route, navigation }) => {
     }, []);
 
     const renderMessage = useCallback(({ item, index }) => {
-        const isMe = item.sender === 'me';
+        const isMe = item.from === userData?.userid;
         const isLastMessage = index === messages.length - 1;
 
         return (
