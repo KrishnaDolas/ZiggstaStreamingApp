@@ -57,7 +57,7 @@ const questions = [
   },
 ];
 
-const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
+const genderOptions = ['Male', 'Female', 'Other'];
 
 // Helper: return date 18 years ago from today in YYYY-MM-DD
 const getDefaultDOB = () => {
