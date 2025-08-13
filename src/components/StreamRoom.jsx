@@ -1068,7 +1068,7 @@ const StreamRoom = ({
                                     socket.emit('RoomTotalCount')
                                 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6',marginRight:'3' }}>
                                             <Ionicons name="eye" size={15} color="#1F85F5" />
                                             <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
                                         </View>
