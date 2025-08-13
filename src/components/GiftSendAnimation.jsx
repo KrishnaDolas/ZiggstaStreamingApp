@@ -462,17 +462,17 @@ const styles = {
     position: 'absolute',
   },
   giftImageContainer: {
-    marginBottom: 10,
+    marginBottom: 20,
     position: 'relative',
   },
   sendGiftImage: {
-    width: 80,
-    height: 80,
+    width: 160,  // Doubled from 80
+    height: 160, // Doubled from 80
   },
   heartEffect: {
     position: 'absolute',
-    top: -10,
-    right: -10,
+    top: -15,
+    right: -15,
   },
   sendTextContainer: {
     alignItems: 'center',
@@ -536,26 +536,26 @@ const styles = {
   },
   glowEffect: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 200,    // Increased from 120
+    height: 200,   // Increased from 120
+    borderRadius: 100,  // Increased from 60
     backgroundColor: '#FFD700',
     top: '20%',
     left: '50%',
-    marginLeft: -60,
-    marginTop: -60,
+    marginLeft: -100,   // Adjusted from -60
+    marginTop: -100,    // Adjusted from -60
   },
   receiveGiftContainer: {
-    marginBottom: 15,
-    padding: 10,
+    marginBottom: 20,  // Increased spacing
+    padding: 20,       // Doubled from 10
     backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    borderRadius: 50,
+    borderRadius: 80,  // Increased from 50
     borderWidth: 2,
     borderColor: '#FFD700',
   },
   receiveGiftImage: {
-    width: 80,
-    height: 80,
+    width: 160,  // Doubled from 80
+    height: 160, // Doubled from 80
   },
   receiveTextContainer: {
     alignItems: 'center',
