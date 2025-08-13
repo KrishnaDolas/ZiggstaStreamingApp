@@ -10,6 +10,8 @@ import KeepAwake from 'react-native-keep-awake';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { RTCView } from 'react-native-webrtc';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -34,6 +36,7 @@ import GiftIcon from '../../assets/images/icons/icon_gift.png'
 import bgImage from '../../assets/images/icons/name_bg.png'
 import AudioSpectrum from './AudioSpectrum';
 import LuckyWheelModal from '../modals/LuckyWheelModal';
+import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
 
 const StreamRoom = ({
     remoteStreams,
@@ -102,6 +105,7 @@ const StreamRoom = ({
         message: '',
         type: 'info',
     });
+    const [editstreamdescription, setEditStreamDescription] = useState(false);
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -638,6 +642,25 @@ const StreamRoom = ({
         HideUifewSecond()
         setShowUI(!showUI)
     }
+    const HandleNewStreamDesciption = async (description) => {
+        try {
+            setEditStreamDescription(false);
+            const formData = {
+                roomId: streamInfo?.roomID,
+                RoomName: description
+            };
+            const response = await Apiclient.post('/updateStreamDescription', formData)
+            if (response.data.success) {
+                setStreamupdated((prev) => ({ ...prev, description: description }));
+                showNotification("Stream description updated successfully", "success");
+            } else {
+                showNotification(response.data.message || "Failed to update stream description", "error");
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, "HandleNewStreamDesciption")
+        }
+
+    }
 
     return (
         <Pressable onPress={HandleShowUi}>
@@ -1027,8 +1050,8 @@ const StreamRoom = ({
                                             {userDetails?.screenName}
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                            <Ionicons name="star" solid size={14} color="#fff" />
-                                            <Text style={[styles.strRoomHeaderLeftProfileSubText]}>0</Text>
+                                        <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
+                                        <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -1039,10 +1062,6 @@ const StreamRoom = ({
                                     socket.emit('RoomTotalCount')
                                 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: '5' }}>
-                                            <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
-                                            <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
-                                        </View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
                                             <Ionicons name="eye" size={15} color="#1F85F5" />
                                             <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
@@ -1167,7 +1186,6 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        {/* {localStream || isHost && ( */}
                                         <TouchableOpacity onPress={() => {
                                             switchCamera();
                                             HidesettingPanel()
@@ -1175,7 +1193,6 @@ const StreamRoom = ({
                                             <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
-                                        {/* // )} */}
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 requestStreamPermission(),
@@ -1186,8 +1203,7 @@ const StreamRoom = ({
                                                 <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
                                                 <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
                                             </TouchableOpacity>
-                                        )}
-                                        {/* {localStream || isHost && ( */}
+                                        )}                                        
                                         <TouchableOpacity onPress={() => {
                                             toggleMute(),
                                                 HidesettingPanel()
@@ -1195,7 +1211,13 @@ const StreamRoom = ({
                                             <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
-                                        {/* )} */}
+                                        <TouchableOpacity onPress={() => {
+                                            setEditStreamDescription(true)
+                                            HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
+                                            <Text style={styles.strMoreSettingListItemText}>Edit Stream Title </Text>
+                                             <AntDesign name="edit" size={20} color="#fff" />
+                                        </TouchableOpacity>
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 HidesettingPanel()
@@ -1392,6 +1414,9 @@ const StreamRoom = ({
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
+            )}
+            {editstreamdescription && (
+                <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamInfo?.RoomName.trim()} HandleNewStreamDesciption={HandleNewStreamDesciption} />
             )}
             {visibleModal === 'ReportVideo' && (
                 <ReportUserModal

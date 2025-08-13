@@ -188,10 +188,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     // Function to create a room
     const submitroomnameandcreateroom = async () => {
         const IsAccepted = await requestPermissions();
-        if (roomIdInput.trim() === '') {
-            Alert.alert('Error', 'Please enter the stream description before creating stream.');
-            return;
-        } else if (selectedCategoryIndices.length === 0) {
+         if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
             return;
         } else if (!IsAccepted && socket?.connected) {
@@ -208,7 +205,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             //7 character room ID
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
             const roomData = {
-                RoomName: roomIdInput,
+                RoomName: roomIdInput ||" ",
                 hostID: userData.userid,
                 startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
                 endDate: format(new Date(Date.now() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
@@ -516,7 +513,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             </View>
                             <View style={styles.strHedSearchModalForm}>
                                 <TextInput
-                                    placeholder="Enter Stream Description"
+                                    placeholder="Enter Stream Title"
                                     placeholderTextColor="#888"
                                     value={roomIdInput}
                                     onChangeText={setRoomIdInput}
