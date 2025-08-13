@@ -106,6 +106,7 @@ const StreamRoom = ({
         type: 'info',
     });
     const [editstreamdescription, setEditStreamDescription] = useState(false);
+    const [streamDescription, setStreamDescription] = useState(streamInfo?.roomName || '');
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -647,6 +648,7 @@ const StreamRoom = ({
             const response = await Apiclient.get(`/rooms/updaterooms?roomID=${streamInfo?.roomID}&RoomName=${description}`)
             console.log(response);
             if (response.status === 200) {
+                setStreamDescription(description)
                 setEditStreamDescription(false)
                 showNotification("Stream description updated successfully", "success");
             } else {
@@ -1409,7 +1411,7 @@ const StreamRoom = ({
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
             )}
             {editstreamdescription && (
-                <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamInfo?.RoomName.trim()} HandleNewStreamDesciption={HandleNewStreamDesciption} />
+                <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamDescription} HandleNewStreamDesciption={HandleNewStreamDesciption} />
             )}
             {visibleModal === 'ReportVideo' && (
                 <ReportUserModal
