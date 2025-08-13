@@ -984,45 +984,6 @@ export const RegisterForm = ({
         </View>
       );
     }
-
-    // Modified username input with check tick and status message
-    // if (question.field === 'userName') {
-    //   return (
-    //     <View style={{ position: 'relative' }}>
-    //       <TextInput
-    //         style={[
-    //           styles.input, themeStyles[theme].input, { marginVertical: 0 },
-    //           usernameStatus === 'taken' && { borderColor: 'red', borderWidth: 1, },
-    //         ]}
-    //         placeholder={question.placeholder}
-    //         placeholderTextColor="#9d9d9d"
-    //         value={formData[question.field]}
-    //         onChangeText={text => handleChange(question.field, text)}
-    //       />
-    //       {usernameStatus === 'checking' && (
-    //         <ActivityIndicator
-    //           style={{ position: 'absolute', right: 13, top: 13 }}
-    //           size="small"
-    //           color="#666"
-    //         />
-    //       )}
-    //       {usernameStatus === 'available' && (
-    //         <Icon
-    //           name="check"
-    //           size={20}
-    //           color="green"
-    //           style={{ position: 'absolute', right: 13, top: 13 }}
-    //         />
-    //       )}
-    //       {errors[question.field] && (
-    //         <Text style={{ color: '#0035ff', marginTop: 5 }}>
-    //           {errors[question.field]}
-    //         </Text>
-    //       )}
-    //     </View>
-    //   );
-    // }
-
     return (
       <>
         <TextInput
@@ -1331,7 +1292,7 @@ export const RegisterForm = ({
                   <Text style={[styles.question, themeStyles[theme].question]}>{questionItem.label}</Text>
                   {renderStepContent(questionItem)}
                 </View> */}
-                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: insets.top }]}>
+                <View style={[styles.qAWrapper, { paddingHorizontal: 5, paddingTop: insets.top }]}>
                   {questionItem.renderLabel ? (
                     questionItem.renderLabel(theme)
                   ) : (
