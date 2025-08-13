@@ -644,17 +644,12 @@ const StreamRoom = ({
     }
     const HandleNewStreamDesciption = async (description) => {
         try {
-            setEditStreamDescription(false);
-            const formData = {
-                roomId: streamInfo?.roomID,
-                RoomName: description
-            };
-            const response = await Apiclient.post('/updateStreamDescription', formData)
-            if (response.data.success) {
-                setStreamupdated((prev) => ({ ...prev, description: description }));
+            const response = await Apiclient.get(`/rooms/updaterooms?roomID=${streamInfo?.roomID}&RoomName=${description}`)
+            console.log(response);
+            if (response.status === 200) {
+                setEditStreamDescription(false)
                 showNotification("Stream description updated successfully", "success");
             } else {
-                showNotification(response.data.message || "Failed to update stream description", "error");
             }
         } catch (error) {
             SendErrorTotheServer(error, "HandleNewStreamDesciption")
