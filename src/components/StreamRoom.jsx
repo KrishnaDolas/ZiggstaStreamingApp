@@ -1211,13 +1211,13 @@ const StreamRoom = ({
                                             <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
                                             {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
                                         </TouchableOpacity>
-                                        <TouchableOpacity onPress={() => {
+                                        {isHost && (<TouchableOpacity onPress={() => {
                                             setEditStreamDescription(true)
                                             HidesettingPanel()
                                         }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Edit Stream Title </Text>
                                              <AntDesign name="edit" size={20} color="#fff" />
-                                        </TouchableOpacity>
+                                        </TouchableOpacity>) }
                                         {!isHost && (
                                             <TouchableOpacity onPress={() => {
                                                 HidesettingPanel()
