@@ -377,9 +377,9 @@ export const GiftReceiveAnimation = ({ giftName, senderName,ReceiverName, onComp
         </Animated.View>
 
         {/* Glow effect */}
-        <Animated.View
+        {/* <Animated.View
           style={[
-            styles.glowEffect,
+            // styles.glowEffect,
             {
               opacity: glowAnim.interpolate({
                 inputRange: [0, 1],
@@ -387,15 +387,15 @@ export const GiftReceiveAnimation = ({ giftName, senderName,ReceiverName, onComp
               }),
             },
           ]}
-        />
+        /> */}
 
         {/* Gift image with rotation */}
         <Animated.View
           style={[
             styles.receiveGiftContainer,
-            {
-              transform: [{ rotate: rotation }],
-            },
+            // {
+            //   transform: [{ rotate: rotation }],
+            // },
           ]}
         >
           {localImage && (
@@ -507,7 +507,7 @@ const styles = {
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   receiveAnimationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: 'white',
     borderRadius: 25,
     padding: 30,
     alignItems: 'center',
@@ -538,8 +538,8 @@ const styles = {
     position: 'absolute',
     width: 200,    // Increased from 120
     height: 200,   // Increased from 120
-    borderRadius: 100,  // Increased from 60
-    backgroundColor: '#FFD700',
+    // borderRadius: 100,  // Increased from 60
+    // backgroundColor: '#FFD700',
     top: '20%',
     left: '50%',
     marginLeft: -100,   // Adjusted from -60
@@ -548,10 +548,10 @@ const styles = {
   receiveGiftContainer: {
     marginBottom: 20,  // Increased spacing
     padding: 20,       // Doubled from 10
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    borderRadius: 80,  // Increased from 50
-    borderWidth: 2,
-    borderColor: '#FFD700',
+    // backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    // borderRadius: 80,  // Increased from 50
+    // borderWidth: 2,
+    // borderColor: '#FFD700',
   },
   receiveGiftImage: {
     width: 160,  // Doubled from 80
