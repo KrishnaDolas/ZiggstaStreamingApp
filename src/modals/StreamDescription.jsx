@@ -8,7 +8,7 @@ import {
     StyleSheet
 } from 'react-native';
 
-export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '',HandleNewStreamDesciption }) => {
+export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '', HandleNewStreamDesciption }) => {
     const [streamDescription, setStreamDescription] = useState(description);
     const handleSave = () => {
         onClose();
@@ -26,12 +26,12 @@ export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '
             useNativeDriver={true}
             hardwareAccelerated={true}
             onRequestClose={onClose}
-            >
-            
+        >
+
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
                     <Text style={styles.modalTitle}>Stream Description</Text>
-                    
+
                     <TextInput
                         style={styles.textInput}
                         placeholder="Add description"
@@ -41,9 +41,9 @@ export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '
                         textAlignVertical="top"
                         placeholderTextColor="#999"
                     />
-                    
+
                     <View style={styles.buttonContainer}>
-                    <TouchableOpacity onPress={onClose} style={[styles.button, styles.cancelButton]}>
+                        <TouchableOpacity onPress={onClose} style={[styles.button, styles.cancelButton]}>
                             <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleSave} style={[styles.button, styles.saveButton]}>
