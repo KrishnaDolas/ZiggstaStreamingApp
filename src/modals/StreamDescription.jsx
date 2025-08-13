@@ -25,7 +25,8 @@ export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '
             animationOut="slideOutDown"
             useNativeDriver={true}
             hardwareAccelerated={true}
-            onRequestClose={onClose}>
+            onRequestClose={onClose}
+            >
             
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
