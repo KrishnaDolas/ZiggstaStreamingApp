@@ -44,7 +44,17 @@ const questions = [
   },
   { label: 'Date of Birth', field: 'dob', placeholder: 'YYYY-MM-DD' },
   { label: 'Gender', field: 'gender' },
-  { label: 'Choose your Interests (Any 2)', field: 'interests' },
+  // { label: 'Choose your Interests (Any 2)', field: 'interests' },
+  {
+    label: 'Choose your Interests (Any 2)', // This will be overridden by renderLabel
+    field: 'interests',
+    renderLabel: (theme) => (
+      <Text style={[styles.question, themeStyles[theme].question]}>
+        Choose your{' '}
+        <Text style={{ color: '#0035ff', fontWeight: 500 }}>Interests</Text> (Any 2)
+      </Text>
+    ),
+  },
 ];
 
 const genderOptions = ['Male', 'Female', 'Trans', 'Other'];
@@ -1317,8 +1327,18 @@ export const RegisterForm = ({
             style={{ flex: 1 }}>
             {questions.map((questionItem, index) => (
               <View key={index} style={{ width: layoutWidth }}>
-                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: insets.top, }]}>
+                {/* <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: insets.top, }]}>
                   <Text style={[styles.question, themeStyles[theme].question]}>{questionItem.label}</Text>
+                  {renderStepContent(questionItem)}
+                </View> */}
+                <View style={[styles.qAWrapper, { paddingHorizontal: 20, paddingTop: insets.top }]}>
+                  {questionItem.renderLabel ? (
+                    questionItem.renderLabel(theme)
+                  ) : (
+                    <Text style={[styles.question, themeStyles[theme].question]}>
+                      {questionItem.label}
+                    </Text>
+                  )}
                   {renderStepContent(questionItem)}
                 </View>
               </View>

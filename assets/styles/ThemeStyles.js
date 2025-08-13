@@ -889,13 +889,22 @@ export const styles = StyleSheet.create({
     paddingBottom: 2,
     zIndex: 10,
     width: '100%',
+    position: 'relative',
+  },
+  bottomShadow: {
+    height: 6,
+    width: '100%',
+    position: 'absolute',
+    bottom: -6,
+    left: 0,
+    zIndex: 9,
   },
 
   streamListHeaderTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 8,
   },
   streamHeaderLeftImg: {
     width: 140,
@@ -940,7 +949,7 @@ export const styles = StyleSheet.create({
   },
 
   strHeaderScrollCategoryContainer: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
     // paddingBottom: 3,
     paddingVertical: 3,
     flexDirection: 'row',
@@ -948,9 +957,12 @@ export const styles = StyleSheet.create({
   },
 
   strHeaderCategoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 6,
+    paddingHorizontal: 15,
+    paddingVertical: 4,
     marginHorizontal: 5,
     // Shadow for iOS
     shadowOffset: { width: 1, height: 1 },
@@ -962,7 +974,7 @@ export const styles = StyleSheet.create({
   },
 
   strHeaderCategoryText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   btnInterestActiveText: {
@@ -1637,7 +1649,7 @@ export const styles = StyleSheet.create({
     color: '#414141',
     fontWeight: '300',
     fontSize: 15,
-    position:'relative',
+    position: 'relative',
   },
   strRoomBottomBoxIconBox: {
     marginLeft: 20,
@@ -2645,7 +2657,7 @@ export const themeStyles = {
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
-    error: { color: 'red' },
+    error: { color: '#0035ff' },
     success: { color: 'green' },
     primary: { color: '#1a73e8' },
     placeholder: { color: '#999' },
@@ -2955,7 +2967,7 @@ export const themeStyles = {
     },
     // footer
     footer: {
-      backgroundColor: '#fff',
+      backgroundColor: '#ffffff',
       borderTopColor: '#ddd', // optional: a light border color
     },
     // leader board
@@ -3028,7 +3040,7 @@ export const themeStyles = {
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
     linkText: { color: '#1a73e8' },
-    error: { color: '#ff5555' },
+    error: { color: '#0035ff' },
     success: { color: '#55ff55' },
     primary: { color: '#1a73e8' },
     placeholder: { color: '#aaa' },
