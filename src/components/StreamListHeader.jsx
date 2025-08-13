@@ -54,6 +54,11 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
         setVisibleModal('message-modal');
     }, []);
 
+    const handleEvents = useCallback((item) => {
+        setMessage(`this feature is not implemented yet.`)
+        setVisibleModal('message-modal');
+    }, []);
+
 
     const handleLeaderBoards = useCallback((item) => {
         // setMessage(`this feature is not implemented yet.`)
@@ -108,7 +113,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                                         style={{
                                             width: 23,
                                             height: 23,
-                                            tintColor: theme === 'light' ? '#d93a63' : '#d93a63', 
+                                            tintColor: theme === 'light' ? '#d93a63' : '#d93a63',
                                         }}
                                         resizeMode="contain"
                                     />
@@ -162,6 +167,11 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                                 styles.btnInterestActive]}>
                                 <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText, isFavourite && styles.btnInterestActiveText]}>
                                     Favourites
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleConnect} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton]}>
+                                <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText]}>
+                                    Events
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleLeaderBoards} style={[styles.strHeaderCategoryButton, themeStyles[theme].strHeaderCategoryButton, headerMainTab === 'leaderboards' &&

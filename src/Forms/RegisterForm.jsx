@@ -167,7 +167,7 @@ export const RegisterForm = ({
       }
 
       const newAddress = {
-        city: address.city || '',
+        city: address.city || address.town || address.village || 'Unknown City',
         state: address.state || '',
         country: address.country || '',
         postcode: address.postcode || '',
@@ -179,6 +179,7 @@ export const RegisterForm = ({
       await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress));
     } catch (error) {
       console.error('Geoapify reverse geocoding error:', error);
+      updateLocationData({ city: 'Unknown City', source: 'device' }); // Fallback
     }
   };
 
@@ -194,7 +195,7 @@ export const RegisterForm = ({
       );
       const json = await response.json();
       const address = {
-        city: json.city?.name || '',
+        city: json.city?.name || 'Unknown City',
         state: json.state?.name || '',
         country: json.country?.name || '',
         postcode: json.postcode || '',
@@ -211,24 +212,16 @@ export const RegisterForm = ({
         const reverseJson = await reverseResponse.json();
         const reverseAddress = reverseJson.features?.[0]?.properties || {};
         console.log('Reverse geocoding (IP):', reverseAddress);
-        const newAddress = {
-          city: reverseAddress.city || address.city,
-          state: reverseAddress.state || address.state,
-          country: reverseAddress.country || address.country,
-          postcode: reverseAddress.postcode || '',
-          latitude: address.latitude,
-          longitude: address.longitude,
-          ip,
-          source: 'ip',
-        };
-        updateLocationData(newAddress);
-        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress));
-      } else {
-        updateLocationData(address);
-        await AsyncStorage.setItem('userAddress', JSON.stringify(address));
+        address.city = reverseAddress.city || reverseAddress.town || reverseAddress.village || address.city;
+        address.state = reverseAddress.state || address.state;
+        address.country = reverseAddress.country || address.country;
+        address.postcode = reverseAddress.postcode || address.postcode;
       }
+      updateLocationData(address);
+      await AsyncStorage.setItem('userAddress', JSON.stringify(address));
     } catch (error) {
       console.error('IP-based location error:', error);
+      updateLocationData({ city: 'Unknown City', source: 'ip' }); // Fallback
     }
   };
 
@@ -376,8 +369,9 @@ export const RegisterForm = ({
   };
 
   const updateLocationData = (address, source = 'device') => {
+    const city = address.city || address.town || address.village || 'Unknown City';
     const newAddress = {
-      city: address.city || '',
+      city,
       state: address.state || '',
       country: address.country || '',
       postcode: address.postcode || '',
@@ -389,8 +383,8 @@ export const RegisterForm = ({
 
     setFormData(prev => ({
       ...prev,
-      location: newAddress.city || address.formatted || '',
-      city: newAddress.city,
+      location: city,
+      city,
       state: newAddress.state,
       country: newAddress.country,
       postcode: newAddress.postcode,
@@ -409,11 +403,7 @@ export const RegisterForm = ({
 
 
   useEffect(() => {
-    if (userAddress && userAddress.latitude && userAddress.longitude && webViewLoaded && !mapInitialized) {
-      updateMapLocationByCoords(userAddress.latitude, userAddress.longitude);
-      setMapInitialized(true);
-    }
-    if (userAddress && userAddress.city) {
+    if (userAddress && userAddress.city && !formData.location) {
       setFormData(prev => ({
         ...prev,
         location: userAddress.city,
@@ -422,6 +412,10 @@ export const RegisterForm = ({
         country: userAddress.country || '',
         postcode: userAddress.postcode || '',
       }));
+    }
+    if (userAddress && userAddress.latitude && userAddress.longitude && webViewLoaded && !mapInitialized) {
+      updateMapLocationByCoords(userAddress.latitude, userAddress.longitude);
+      setMapInitialized(true);
     }
   }, [userAddress, webViewLoaded]);
 
@@ -497,12 +491,18 @@ export const RegisterForm = ({
     } catch (err) {
       console.error('Error fetching autocomplete results:', err);
       setSearchResults([]);
+    } finally {
+      setIsSearching(false);
     }
   };
 
   // Handle selection from autocomplete results
   const handleSelectLocation = async item => {
     console.log('Selected item:', item);
+
+    const city = item.city || item.town || item.village || 'Unknown City';
+    let updatedItem = { ...item, city };
+
     // Check if postcode is missing and coordinates are available
     if (!item.postcode && item.lat && item.lon) {
       try {
@@ -513,23 +513,18 @@ export const RegisterForm = ({
         let reverseJson = await reverseResponse.json();
         let reverseAddress = reverseJson.features?.[0]?.properties || {};
         console.log('Reverse geocoding (postcode type):', reverseAddress);
-        updateLocationData(
-          {
-            ...item,
-            city: reverseAddress.city || item.city,
-            state: reverseAddress.state || item.state,
-            country: reverseAddress.country || item.country,
-            postcode: reverseAddress.postcode || '',
-          },
-          'search'
-        );
+        updatedItem = {
+          ...item,
+          city: reverseAddress.city || reverseAddress.town || reverseAddress.village || city,
+          state: reverseAddress.state || item.state,
+          country: reverseAddress.country || item.country,
+          postcode: reverseAddress.postcode || item.postcode || '',
+        };
       } catch (err) {
         console.error('Error fetching reverse geocoding for search:', err);
-        updateLocationData(item, 'search'); // Fallback to item if reverse geocoding fails
       }
-    } else {
-      updateLocationData(item, 'search');
     }
+    updateLocationData(updatedItem, 'search');
     setSearchResults([]);
     setIsSearching(false);
   };
@@ -847,6 +842,7 @@ export const RegisterForm = ({
             placeholderTextColor="#9d9d9d"
             value={formData.location}
             onChangeText={text => handleChange('location', text)}
+            editable={true}
           />
           <Text
             style={{
@@ -866,7 +862,10 @@ export const RegisterForm = ({
               Using approximate location from IP. For better accuracy, enable location access in settings.
             </Text>
           )}
-          {isSearching && searchResults.length > 0 && (
+          {isSearching && (
+            <ActivityIndicator size="small" color="#666" style={{ marginTop: 10 }} />
+          )}
+          {searchResults.length > 0 && (
             <FlatList
               data={searchResults}
               keyExtractor={item => item.place_id}
@@ -880,7 +879,7 @@ export const RegisterForm = ({
                   }}
                   onPress={() => handleSelectLocation(item)}>
                   <Text style={{ color: theme === 'dark' ? '#fff' : '#000' }}>
-                    {item.formatted}
+                    {item.city || item.town || item.village || item.formatted}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -1033,7 +1032,7 @@ export const RegisterForm = ({
         screenName: formData.screenname.trim(),
         dob: formData.dob,
         gender: formData.gender,
-        city: formData.city || userAddress?.city || formData.location || '',
+        city: formData.city || userAddress?.city || 'Unknown City',
         state: formData.state || userAddress?.state || '',
         country: formData.country || userAddress?.country || '',
         zipcode: userAddress?.postcode || formData.postcode || '',
