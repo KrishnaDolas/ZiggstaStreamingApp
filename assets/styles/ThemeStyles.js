@@ -1487,7 +1487,7 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
-    minWidth: 120
+    minWidth: 130
   },
 
   strRoomHeaderLeftProfileImg: {
@@ -1498,10 +1498,12 @@ export const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
   },
+  strRoomHeaderLeftProfileInfo :{
+  },
   strRoomHeaderLeftProfileName: {
     color: '#fff',
     marginRight: 10,
-    fontSize: 12,
+    fontSize: 13,
   },
   strRoomHeaderLeftProfileSubInfo: {
     flexDirection: 'row',
@@ -1531,8 +1533,8 @@ export const styles = StyleSheet.create({
   },
   strRoomHeaderRWalletInfoText: {
     color: '#ffea23',
-    marginLeft: 5,
-    paddingHorizontal: 5
+    paddingLeft:'5',
+    paddingRight:'5'
   },
   strRoomHeaderRIconBox: {
     marginLeft: 18,

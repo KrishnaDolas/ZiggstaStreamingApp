@@ -1045,13 +1045,19 @@ const StreamRoom = ({
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
-                                    <View style={styles.strRoomHeaderLeftProfileInfo}>
+                                    <View>
                                         <Text style={[styles.strRoomHeaderLeftProfileName]}>
                                             {userDetails?.screenName}
                                         </Text>
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                        <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
-                                        <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
+                                            <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
+                                            <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
+                                            <Image
+                                                source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                                style={{ width: 14, height: 14, marginLeft: '5' }}
+                                                resizeMode="contain"
+                                            />
+                                            <Text style={styles.strRoomHeaderRWalletInfoText}>{totalGiftValue}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -1076,14 +1082,6 @@ const StreamRoom = ({
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.strRoomHeaderRight}>
-                                <View style={styles.strRoomHeaderRWalletInfo}>
-                                    <Image
-                                        source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                        style={{ width: 14, height: 14, marginRight: 4 }}
-                                        resizeMode="contain"
-                                    />
-                                    <Text style={styles.strRoomHeaderRWalletInfoText}>{totalGiftValue}</Text>
-                                </View>
                                 <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                     <Ionicons name="close" size={30} color="#fff" />
                                 </TouchableOpacity>
