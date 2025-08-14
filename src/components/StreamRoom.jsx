@@ -106,7 +106,7 @@ const StreamRoom = ({
         type: 'info',
     });
     const [editstreamdescription, setEditStreamDescription] = useState(false);
-    const [streamDescription, setStreamDescription] = useState(streamInfo?.RoomName || '');
+    const [streamDescription, setStreamDescription] = useState(streamInfo?.RoomName?.trim() || '');
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
