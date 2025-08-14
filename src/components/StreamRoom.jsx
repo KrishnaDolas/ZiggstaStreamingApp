@@ -4,7 +4,7 @@ import {
     Easing,
     ActivityIndicator, Platform,
     Pressable, BackHandler,
-    ImageBackground
+    ImageBackground,Share
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -657,6 +657,27 @@ const StreamRoom = ({
         }
 
     }
+    const onShare = async () => {
+        try {
+            const result = await Share.share({
+                message: 'Check out this awesome link: https://streamalong.live',
+                url: 'https://example.com', // Optional, used more on iOS
+                title: 'Ziggsta'
+            });
+
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    console.log('Shared with activity type: ', result.activityType);
+                } else {
+                    console.log('Shared');
+                }
+            } else if (result.action === Share.dismissedAction) {
+                console.log('Dismissed');
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, "onShare")
+        }
+    };
 
     return (
         <Pressable onPress={HandleShowUi}>
@@ -1158,7 +1179,7 @@ const StreamRoom = ({
                                         {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                             <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                         </TouchableOpacity>)}
-                                        <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
+                                        <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]} onPress={onShare} >
                                             <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                         </TouchableOpacity>
                                     </View>)}
