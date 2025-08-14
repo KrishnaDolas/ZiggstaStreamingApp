@@ -6,12 +6,15 @@ import {
     TextInput,
     TouchableOpacity,
     StyleSheet,
-    Pressable
+    Pressable,
 } from 'react-native';
 
 export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '', HandleNewStreamDesciption }) => {
     const [streamDescription, setStreamDescription] = useState(description);
     const handleSave = () => {
+        if (!streamDescription.trim()) {
+            return;
+        }
         onClose();
         HandleNewStreamDesciption(streamDescription);
     };
@@ -66,7 +69,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        padding: 10,
     },
     modalContainer: {
         backgroundColor: '#fff',
