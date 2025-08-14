@@ -5,7 +5,8 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet
+    StyleSheet,
+    Pressable
 } from 'react-native';
 
 export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '', HandleNewStreamDesciption }) => {
@@ -28,30 +29,32 @@ export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '
             onRequestClose={onClose}
         >
 
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>Stream Description</Text>
+            <Pressable onPress={onClose} style={{ flex: 1 }}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Stream Description</Text>
 
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder="Add description"
-                        value={streamDescription}
-                        onChangeText={setStreamDescription}
-                        multiline={true}
-                        textAlignVertical="top"
-                        placeholderTextColor="#999"
-                    />
+                        <TextInput
+                            style={styles.textInput}
+                            placeholder="Add description"
+                            value={streamDescription}
+                            onChangeText={setStreamDescription}
+                            multiline={true}
+                            textAlignVertical="top"
+                            placeholderTextColor="#999"
+                        />
 
-                    <View style={styles.buttonContainer}>
-                        <TouchableOpacity onPress={onClose} style={[styles.button, styles.cancelButton]}>
-                            <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={handleSave} style={[styles.button, styles.saveButton]}>
-                            <Text style={[styles.buttonText, styles.saveButtonText]}>Save</Text>
-                        </TouchableOpacity>
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity onPress={onClose} style={[styles.button, styles.cancelButton]}>
+                                <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleSave} style={[styles.button, styles.saveButton]}>
+                                <Text style={[styles.buttonText, styles.saveButtonText]}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-            </View>
+            </Pressable>
 
         </Modal>
     );
