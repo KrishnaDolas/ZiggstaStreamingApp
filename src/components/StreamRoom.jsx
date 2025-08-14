@@ -481,7 +481,7 @@ const StreamRoom = ({
         try {
             const sound = new Sound('gift_received.mp3', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    console.log('Failed to load sound', error);
+                   SendErrorTotheServer(error, "playGiftSound")
                     return;
                 }
                 sound.play(() => {
@@ -489,14 +489,14 @@ const StreamRoom = ({
                 });
             });
         } catch (error) {
-            console.log(error);
+           SendErrorTotheServer(error, "playGiftSound")
         }
     };
     const playNotification = () => {
         try {
             const sound = new Sound('join_request_alert.mp3', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    console.log('Failed to load sound', error);
+                    SendErrorTotheServer(error, "playNotification")
                     return;
                 }
                 sound.play(() => {
@@ -504,7 +504,7 @@ const StreamRoom = ({
                 });
             });
         } catch (error) {
-            console.log(error);
+            SendErrorTotheServer(error, "playNotification")
         }
     };
 

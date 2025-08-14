@@ -39,7 +39,7 @@ import ProfileScreenModal from './src/modals/ProfileScreenModal';
 import { ThemeContext } from './src/context/ThemeContext';
 import { themeStyles } from './assets/styles/ThemeStyles';
 import { ChatScreen } from './src/screens/ChatScreen';
-import { socket } from './src/utils/constant';
+import { SendErrorTotheServer, socket } from './src/utils/constant';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -65,7 +65,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   };
 
   if (isInStreamRoom) {
-    console.log('CustomTabBar: Hiding tab bar due to isInStreamRoom = true');
     return null; // Hide entire tab bar
   }
 
@@ -295,13 +294,12 @@ const App = () => {
       hasFetchedAddress.current = false; // Allow re-fetch on next load
       socket.disconnect(); // Disconnect socket on logout
     } catch (error) {
-      console.log('Logout failed:', error);
+      SendErrorTotheServer(error, 'handleLogout');
     }
   };
 
   const requestLocationPermission = async () => {
     try {
-      console.log('Requesting location permission...');
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -314,18 +312,16 @@ const App = () => {
           }
         );
         const isGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-        console.log('Android permission result:', isGranted ? 'granted' : 'denied');
         await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
         return isGranted;
       } else {
         const auth = await Geolocation.requestAuthorization('whenInUse');
         const isGranted = auth === 'granted';
-        console.log('iOS permission result:', isGranted ? 'granted' : 'denied');
         await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
         return isGranted;
       }
     } catch (error) {
-      console.error('Permission request error:', error);
+      SendErrorTotheServer(error, 'requestLocationPermission');
       await AsyncStorage.setItem('locationPermission', 'denied');
       return false;
     }
@@ -351,11 +347,9 @@ const App = () => {
         setUserAddress(newAddress);
         await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress)); // Persist userAddress
         hasFetchedAddress.current = true;
-      } else {
-        console.log('No address found from Geoapify');
       }
     } catch (error) {
-      console.error('Geoapify reverse geocoding error:', error);
+      SendErrorTotheServer(error, 'fetchAddressFromCoords');
     }
   };
 
@@ -405,7 +399,7 @@ const App = () => {
       }
       hasFetchedAddress.current = true;
     } catch (error) {
-      console.error('IP-based location error:', error);
+      SendErrorTotheServer(error, 'fetchAddressFromIP');
     }
   };
 
@@ -429,7 +423,6 @@ const App = () => {
           Geolocation.getCurrentPosition(
             pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
             err => {
-              console.error('Location error:', err);
               fetchAddressFromIP();
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
@@ -441,7 +434,6 @@ const App = () => {
         Geolocation.getCurrentPosition(
           pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
           err => {
-            console.error('Location error:', err);
             fetchAddressFromIP();
           },
           { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
@@ -452,7 +444,7 @@ const App = () => {
 
       setTimeout(() => setIsLoading(false), 3000);
     } catch (e) {
-      console.error('Init error:', e);
+      SendErrorTotheServer(e, 'init');
       setIsLoading(false);
     }
   }, [isConnected, isAuthenticated]);
@@ -467,13 +459,6 @@ const App = () => {
     }
   }, [isConnected, init]);
 
-  useEffect(() => {
-    console.log('App.jsx user address updated:', userAddress);
-  }, [userAddress]);
-
-  useEffect(() => {
-    console.log('App.jsx userData storage:', userData);
-  }, [userData]);
 
   // Function to check subscription status
   const checkSubscription = useCallback(async () => {
@@ -485,12 +470,11 @@ const App = () => {
       };
 
       const response = await Apiclient.post('/checkSubscription', postData);
-      // console.log('Subscription check response:', response);
       if (response.status === 200) {
         setSubscriptionStatus(response.data);
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      SendErrorTotheServer(error, 'checkSubscription');
       setSubscriptionStatus({ success: false, message: 'Subscription check failed' });
     }
   }, [userData?.userid, setSubscriptionStatus]);
@@ -509,20 +493,6 @@ const App = () => {
       setIsConnected(state.isInternetReachable === true);
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (nextAppState === 'background') {
-        // console.log('App is in background');
-        // You can pause stream, release resources, etc.
-      }
-      if (nextAppState === 'active') {
-        // console.log('App is in foreground');
-      }
-    });
-
-    return () => subscription.remove();
   }, []);
 
   useEffect(() => {

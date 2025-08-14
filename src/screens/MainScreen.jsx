@@ -61,7 +61,6 @@ export const MainScreen = () => {
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState) => {
-      console.log(`📱 App state changed to: ${nextAppState}`);
       const IsValid = isuserstreaming || isHost;
 
       if (nextAppState === 'active') {
@@ -79,8 +78,6 @@ export const MainScreen = () => {
           }, 1000);
         }
       } else if (nextAppState === 'background' && isStreaming && IsValid) {
-        console.log('⏸ App in background: stopping local stream');
-
         try {
           if (localStreamRef.current) {
             localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -189,11 +186,9 @@ export const MainScreen = () => {
         }
       });
       if (ChatMessages) {
-        console.log(ChatMessages);
         let chat = ChatMessages.map((item) => {
           return { ...item, userProfile: item?.userProfile, userID: item?.id, TYPE: "PLAYERCHAT" }
         })
-        console.log(chat);
         setRoomchat(chat)
       }
     } catch (error) {
@@ -433,7 +428,6 @@ export const MainScreen = () => {
     setStrimerList(list)
   }
   const HandlenewUserJoined = (userinfo) => {
-    console.log('New user joined:', userinfo);
     const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, userID: userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
@@ -491,13 +485,9 @@ export const MainScreen = () => {
 
   useEffect(()=>{
     if(!IsVerified.current){
-      console.log("Verifing...");
-      console.log(socket.connected);
       // Check if user is verified
       if (userData?.userid &&socket.connected) {
-        console.log("Verified user:", userData?.userid, userData?.screenName);
         socket.emit('identity', userData?.userid, userData?.screenName);
-        console.log('🔗 Emitted identity:', userData?.userid, userData?.screenName);
         IsVerified.current = true; // Set verified flag to true
       } else {
         IsVerified.current = false;
@@ -510,7 +500,6 @@ export const MainScreen = () => {
   useEffect(() => {
     // Handles socket events
     if (isSocketConnected) {
-      console.log('Connecting to socket server...');
       socket.on('connect', HandleConnect);
       socket.on('joined', HandleJoined);
       socket.on('StreamNotAvailable', HandleStreamNotAvailable)
@@ -543,7 +532,6 @@ export const MainScreen = () => {
     return () => {
       if (isSocketConnected) {
         // Cleanup socket listeners
-        console.log('Disconnecting from socket server...');
         socket.off('connect', HandleConnect);
         socket.off('joined', HandleJoined);
         socket.off('StreamNotAvailable', HandleStreamNotAvailable)
@@ -719,7 +707,6 @@ export const MainScreen = () => {
       setIsHost(false);
       setIsInStreamRoom(false); // Reset isInStreamRoom
       AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false)); // Persist reset state
-      console.log('MainScreen.jsx: isInStreamRoom reset to false in leaveRoom');
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');
     }
@@ -791,7 +778,7 @@ export const MainScreen = () => {
     try {
       const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
       if (response.status === 200) {
-        console.log('Live status updated successfully');
+        return;
       } else {
         Alert.alert('Error', 'Failed to update live status. Please try again later.');
       }
