@@ -404,6 +404,7 @@ export const MainScreen = () => {
         localStreamRef.current.getAudioTracks().forEach(track => (track.enabled = true));
         setIsMuted({ HostControl: false, muted: false });
       } else if (action === 'stop-stream') {
+        setIsMuted({ HostControl: false, muted: false });
         setStreamMsg("Your stream Stopped By Host")
         stopLocalStream();
       }
