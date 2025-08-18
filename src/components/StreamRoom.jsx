@@ -1179,7 +1179,7 @@ const StreamRoom = ({
                                         {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
                                             <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                         </TouchableOpacity>)}
-                                        <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]} onPress={onShare} >
+                                        <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
                                             <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                         </TouchableOpacity>
                                     </View>)}
