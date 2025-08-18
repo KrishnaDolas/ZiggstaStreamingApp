@@ -487,7 +487,7 @@ export const MainScreen = () => {
     if(!IsVerified.current){
       // Check if user is verified
       if (userData?.userid &&socket.connected) {
-        socket.emit('identity', userData?.userid, userData?.screenName);
+        socket.emit('identity', userData?.userid, userData?.screenName,userData?.avatar);
         IsVerified.current = true; // Set verified flag to true
       } else {
         IsVerified.current = false;
