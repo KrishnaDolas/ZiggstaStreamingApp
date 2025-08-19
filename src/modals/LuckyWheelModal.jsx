@@ -108,7 +108,9 @@ const LuckyWheelModal = (
 
     useEffect(() => {
         if (visible) {
-            startIdleRotation(); // Start idle spinning when modal opens
+            spinValue.setValue(0); // Reset spin
+            idleSpin.setValue(0); // Reset idle
+            startIdleRotation(); // Start idle spinning
         } else {
             stopIdleRotation();  // Stop idle spinning when modal closes
         }
@@ -484,78 +486,14 @@ const LuckyWheelModal = (
     };
 
 
-    // Reset with spinValue.setValue(0)
-
-    // const handleSpin = (resultLabel) => {
-    //     // Stop idle rotation
-    //     idleSpin.setValue(0);
-    //     stopIdleRotation();
-
-    //     const segmentCount = SEGMENTS.length;
-    //     const anglePerSegment = 360 / segmentCount;
-
-    //     // Find all indices matching the result label
-    //     const targetIndices = SEGMENTS
-    //         .map((label, idx) => ({ label, idx }))
-    //         .filter(s => s.label === resultLabel);
-
-    //     if (targetIndices.length === 0) {
-    //         console.warn("No matching segment found for:", resultLabel);
-    //         return;
-    //     }
-
-    //     // Randomly pick one if multiple
-    //     const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
-
-    //     // Segment’s center angle (TOP = 0° pointer)
-    //     const segmentStartAngle = selected.idx * anglePerSegment - 90;
-    //     const segmentCenterAngle = segmentStartAngle + anglePerSegment / 2;
-
-    //     let normalizedSegmentCenter = segmentCenterAngle % 360;
-    //     if (normalizedSegmentCenter < 0) normalizedSegmentCenter += 360;
-
-    //     // Always start fresh
-    //     spinValue.setValue(0);
-
-    //     // Calculate how much we need to rotate
-    //     let rotationNeeded = (0 - normalizedSegmentCenter) % 360;
-    //     if (rotationNeeded < 0) rotationNeeded += 360;
-
-    //     // Add multiple full spins
-    //     const numberOfFullRotations = Math.floor(8 + Math.random() * 4); // 8–11
-    //     const baseRotations = numberOfFullRotations * 360;
-    //     const finalRotation = baseRotations + rotationNeeded;
-
-    //     // 🔑 FIX: reset interpolation range dynamically
-    //     const maxRotation = finalRotation + 1; // +1 so interpolate never wraps
-    //     spinValue.interpolate({
-    //         inputRange: [0, maxRotation],
-    //         outputRange: ['0deg', `${maxRotation}deg`],
-    //         extrapolate: 'clamp',
-    //     });
-
-    //     // Animate
-    //     Animated.timing(spinValue, {
-    //         toValue: finalRotation,
-    //         duration: 4000,
-    //         easing: Easing.out(Easing.cubic),
-    //         useNativeDriver: true
-    //     }).start(() => {
-    //         // Hard clamp at end
-    //         spinValue.setValue(finalRotation);
-
-    //         console.log("✅ Stopped on:", resultLabel, "under arrow at TOP");
-    //     });
-    // };
-
     const handleSpin = (resultLabel) => {
-        spinValue.setValue(0); // always start from 0
         stopIdleRotation();
+        idleSpin.setValue(0);
+        spinValue.setValue(0);
 
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
 
-        // Find all matching indices
         const targetIndices = SEGMENTS.map((label, idx) => ({ label, idx }))
             .filter(s => s.label === resultLabel);
 
@@ -564,34 +502,28 @@ const LuckyWheelModal = (
             return;
         }
 
-        // Pick one (if multiple same labels exist)
         const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
 
-        // Apply -90° offset like renderSegments
         const segmentStartAngle = selected.idx * anglePerSegment - 90;
         const segmentCenterAngle = segmentStartAngle + anglePerSegment / 2;
 
-        // Normalize 0–360
         let normalizedCenter = segmentCenterAngle % 360;
         if (normalizedCenter < 0) normalizedCenter += 360;
 
-        // Arrow is fixed at TOP → 0°
-        const pointerPosition = 0;
-
-        // Rotation needed to bring selected segment under arrow
-        let rotationNeeded = (pointerPosition - normalizedCenter) % 360;
+        let rotationNeeded = (0 - normalizedCenter) % 360;
         if (rotationNeeded < 0) rotationNeeded += 360;
 
-        // Add extra spins
-        const fullRotations = Math.floor(8 + Math.random() * 4); // 8–11
+        const fullRotations = Math.floor(8 + Math.random() * 4);
         const baseRotations = fullRotations * 360;
         const finalRotation = baseRotations + rotationNeeded;
 
-        console.log("🎯 Target:", resultLabel,
+        console.log(
+            "🎯 Target:", resultLabel,
             "| Index:", selected.idx,
-            "| Center:", normalizedCenter,
-            "| Needed:", rotationNeeded,
-            "| Final:", finalRotation);
+            "| Segment Center:", normalizedCenter,
+            "| Rotation Needed:", rotationNeeded,
+            "| Final Rotation:", finalRotation
+        );
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -600,79 +532,9 @@ const LuckyWheelModal = (
             useNativeDriver: true,
         }).start(() => {
             console.log("✅ Stopped on:", resultLabel, "under arrow at TOP");
-            // restart idle rotation if needed
             // startIdleRotation();
         });
     };
-
-
-
-
-    //check current Rotation
-
-    // const handleSpin = (resultLabel) => {
-    //     stopIdleRotation(); // Stop the continuous spin immediately
-
-    //     const segmentCount = SEGMENTS.length;
-    //     const anglePerSegment = 360 / segmentCount;
-
-    //     // Get current rotation value in degrees
-    //     let currentRotationDeg = spinValue.__getValue() % 360; // may be negative
-    //     if (currentRotationDeg < 0) {
-    //         currentRotationDeg += 360;
-    //     }
-
-    //     // Find all indices that match the result label
-    //     const targetIndices = SEGMENTS
-    //         .map((label, idx) => ({ label, idx }))
-    //         .filter(s => s.label === resultLabel);
-
-    //     if (targetIndices.length === 0) {
-    //         console.warn("No matching segment found for:", resultLabel);
-    //         return;
-    //     }
-
-    //     // Randomly pick one if multiple
-    //     const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
-
-    //     /**
-    //      * Since segments are drawn starting at -90° (top) in your renderSegments(),
-    //      * segment index 0 starts at -90° and each subsequent one moves clockwise by `anglePerSegment`.
-    //      */
-    //     const segmentStartAngle = (selected.idx * anglePerSegment) - 90;
-    //     const segmentCenterAngle = segmentStartAngle + (anglePerSegment / 2);
-
-    //     // Normalize target position to 0–360
-    //     let normalizedSegmentCenter = segmentCenterAngle;
-    //     if (normalizedSegmentCenter < 0) {
-    //         normalizedSegmentCenter += 360;
-    //     }
-
-    //     // Pointer is at -90° => in 0–360 range that’s 270°
-    //     const pointerPosition = 270;
-
-    //     // Adjust calculation based on current rotation
-    //     // We want final angle = currentRotationDeg + spinAmount
-    //     // so that normalizedSegmentCenter ends at pointerPosition
-    //     let rotationNeeded = pointerPosition - normalizedSegmentCenter - currentRotationDeg;
-    //     rotationNeeded = ((rotationNeeded % 360) + 360) % 360; // normalize 0–360
-
-    //     // Add multiple full rotations for visual effect
-    //     const numberOfFullRotations = Math.floor(8 + Math.random() * 4); // 8–11 full spins
-    //     const baseRotations = numberOfFullRotations * 360;
-    //     const finalRotation = baseRotations + rotationNeeded;
-
-    //     // Animate from currentRotationDeg to currentRotationDeg + finalRotation
-    //     Animated.timing(spinValue, {
-    //         toValue: currentRotationDeg + finalRotation,
-    //         duration: 4000,
-    //         easing: Easing.out(Easing.cubic),
-    //         useNativeDriver: true
-    //     }).start(() => {
-    //         console.log("Stopped on:", resultLabel);
-    //     });
-    // };
-
 
 
 
@@ -681,8 +543,8 @@ const LuckyWheelModal = (
         const angle = 360 / SEGMENTS.length;
         const segments = [];
 
-        // ✅ Shift so index 0 (5x) is at TOP middle
-        const offset = -90 - angle / 2;
+        // Adjusted offset to align segment center at top
+        const offset = -90;
 
         for (let i = 0; i < SEGMENTS.length; i++) {
             const startAngle = i * angle + offset;
@@ -890,7 +752,7 @@ const LuckyWheelModal = (
                 <View style={mainStyle.wheelWrapperContainer}>
                     <View style={mainStyle.wheelWrapper}>
                         {/* Pointer/Arrow at the top of wheelWrapper */}
-                        <View style={{
+                        {/* <View style={{
                             position: 'absolute',
                             top: -25, // Position above the wheel
                             left: '50%',
@@ -912,7 +774,7 @@ const LuckyWheelModal = (
                                 shadowRadius: 2,
                                 borderStyle: 'solid',
                             }} />
-                        </View>
+                        </View> */}
                         <Image
                             source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
                             style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
@@ -923,7 +785,7 @@ const LuckyWheelModal = (
                                 transform: [
                                     {
                                         rotate: spinValue.interpolate({
-                                            inputRange: [0, 360 * 20], // Handle large rotation values
+                                            inputRange: [0, 360 * 20],
                                             outputRange: ['0deg', `${360 * 20}deg`],
                                             extrapolate: 'extend',
                                         }),
