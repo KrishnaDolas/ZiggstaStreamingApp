@@ -151,7 +151,7 @@ const LuckyWheelModal = (
             setCountdown(counter);
 
             if (counter === 5) {
-                const sound = new Sound('no_more_bets.mp3', Sound.MAIN_BUNDLE, (error) => {
+                const sound = new Sound('no_more_bets', Sound.MAIN_BUNDLE, (error) => {
                     sound.play(() => {
                         sound.release();
                     });
@@ -368,7 +368,7 @@ const LuckyWheelModal = (
 
         if (isWin) {
             // Play winner sound
-            const sound = new Sound('winner.mp3', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('winner', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     console.log('Failed to load the sound', error);
                     return;
@@ -476,7 +476,7 @@ const LuckyWheelModal = (
             RoomId: RoomID,
         })
 
-        // const sound = new Sound('place_your_bet.mp3', Sound.MAIN_BUNDLE, (error) => {
+        // const sound = new Sound('place_your_bet', Sound.MAIN_BUNDLE, (error) => {
         //     sound.play(() => {
         //         sound.release();
         //     });
