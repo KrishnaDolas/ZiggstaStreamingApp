@@ -446,7 +446,7 @@ const LuckyWheelModal = (
 
     useEffect(() => {
         if (visible) {
-            const sound = new Sound('wheel_launch.mp3', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('wheel_launch', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
@@ -502,16 +502,19 @@ const LuckyWheelModal = (
             return;
         }
 
-        const selected = targetIndices[Math.floor(Math.random() * targetIndices.length)];
+        const selected = targetIndices[0]; // Test with first index
 
         const segmentStartAngle = selected.idx * anglePerSegment - 90;
         const segmentCenterAngle = segmentStartAngle + anglePerSegment / 2;
 
-        let normalizedCenter = segmentCenterAngle % 360;
-        if (normalizedCenter < 0) normalizedCenter += 360;
+        // Normalize to 0–360°
+        let normalizedCenter = segmentCenterAngle;
+        while (normalizedCenter < 0) normalizedCenter += 360;
+        while (normalizedCenter >= 360) normalizedCenter -= 360;
 
-        let rotationNeeded = (0 - normalizedCenter) % 360;
-        if (rotationNeeded < 0) rotationNeeded += 360;
+        // Rotate to align center with 0° (arrow)
+        let rotationNeeded = 360 - normalizedCenter;
+        if (rotationNeeded === 360) rotationNeeded = 0; // Avoid unnecessary full rotation
 
         const fullRotations = Math.floor(8 + Math.random() * 4);
         const baseRotations = fullRotations * 360;
@@ -520,6 +523,7 @@ const LuckyWheelModal = (
         console.log(
             "🎯 Target:", resultLabel,
             "| Index:", selected.idx,
+            "| Segment Start:", segmentStartAngle,
             "| Segment Center:", normalizedCenter,
             "| Rotation Needed:", rotationNeeded,
             "| Final Rotation:", finalRotation
@@ -531,8 +535,9 @@ const LuckyWheelModal = (
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
-            console.log("✅ Stopped on:", resultLabel, "under arrow at TOP");
+            console.log("✅ Stopped on:", resultLabel, "at index:", selected.idx, "under arrow at TOP");
             // startIdleRotation();
+            setSelectedMultiplier('Double'); // Reset multiplier after spin
         });
     };
 
@@ -948,7 +953,7 @@ const LuckyWheelModal = (
                                     ]
                                 );
                             }}
-                            // onPress={() => handleSpin('5x')}
+                            // onPress={() => handleSpin('Triple')}
                             disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                         >
                             <Text style={mainStyle.placeBetBtnText}>
