@@ -446,7 +446,7 @@ const LuckyWheelModal = (
 
     useEffect(() => {
         if (visible) {
-            const sound = new Sound('wheellaunch.mp3', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('wheel_launch.mp3', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;

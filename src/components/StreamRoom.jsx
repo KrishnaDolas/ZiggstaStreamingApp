@@ -494,7 +494,7 @@ const StreamRoom = ({
     };
     const playNotification = () => {
         try {
-            const sound = new Sound('join_request.mp3', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('join_request_alert.mp3', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, "playNotification")
                     return;
