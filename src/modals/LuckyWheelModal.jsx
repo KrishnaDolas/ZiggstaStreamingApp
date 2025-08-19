@@ -17,7 +17,7 @@ import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
 import Sound from 'react-native-sound';
 import { styles } from '../../assets/styles/ThemeStyles';
-import { socket } from '../utils/constant';
+import { SendErrorTotheServer, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { BlurView } from '@react-native-community/blur';
@@ -446,9 +446,9 @@ const LuckyWheelModal = (
 
     useEffect(() => {
         if (visible) {
-            const sound = new Sound('wheelLaunch.mp3', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('wheellaunch.mp3', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    console.log('Failed to load the sound', error);
+                    SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
                 }
                 sound.play((success) => {
