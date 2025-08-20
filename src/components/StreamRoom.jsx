@@ -59,7 +59,8 @@ const StreamRoom = ({
     hasRequestedStream,
     streamerList,
     streammsg,
-    totalGiftValue
+    totalGiftValue,
+    connectingpanel
 }) => {
     const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
@@ -132,6 +133,11 @@ const StreamRoom = ({
         return () => loopAnimation.stop(); // cleanup when unmounted
     }, [rotateAnim]);
 
+    useEffect(() => {
+        if (connectingpanel) {
+            setVisibleModal(null);
+        }
+    }, [connectingpanel])
 
     useEffect(() => {
         if (showTooltip) {

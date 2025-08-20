@@ -826,6 +826,7 @@ export const MainScreen = () => {
             streammsg={streammsg}
             isInStreamRoom={isInStreamRoom}
             totalGiftValue={totalGiftValue}
+            connectingpanel={connectingpanel}
           />)}
         </View>
       </LinearGradient>
