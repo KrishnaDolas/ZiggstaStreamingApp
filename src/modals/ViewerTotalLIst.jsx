@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { View, TouchableOpacity, Text, FlatList, Image, ActivityIndicator } from 'react-native';
@@ -14,6 +15,7 @@ import rank3Img from '../../assets/images/TopGifterBedge/trophy_3.png';
 import { getGenderFallbackImage, giftImages, SendErrorTotheServer } from '../utils/constant';
 import FastImage from 'react-native-fast-image';
 import ProfileScreenModal from './ProfileScreenModal';
+import Colors from '../../assets/styles/Colors';
 
 
 const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
@@ -185,7 +187,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     alignItems: 'center',
                     paddingHorizontal: 10,
                     borderBottomWidth: 1, // optional: to give a border effect
-                    borderBottomColor: "#d9d9d9",
+                    borderBottomColor: theme === 'light' ? '#d9d9d9' : Colors.blackDividers,
                     paddingVertical: 10,
                 }}
             >
@@ -231,7 +233,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     alignItems: 'center',
                     paddingHorizontal: 10,
                     borderBottomWidth: 1, // optional: to give a border effect
-                    borderBottomColor: "#d9d9d9",
+                    borderBottomColor: theme === 'light' ? '#d9d9d9' : Colors.blackDividers,
                     paddingVertical: 10,
                 }}
             >
@@ -371,7 +373,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
             >
                 <View style={{
                     width: '100%', // like drawer
-                    backgroundColor: theme === 'light' ? '#fff' : '#2a2a2a',
+                    backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor,
                     padding: 5,
                     shadowColor: '#000',
                     shadowOffset: { width: -3, height: 0 },
@@ -386,7 +388,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                         flexDirection: 'row',
                         marginTop: 15,
                         borderBottomWidth: 1,
-                        borderBottomColor: theme === 'light' ? '#e0e0e0' : '#404040',
+                        borderBottomColor: theme === 'light' ? '#e0e0e0' : Colors.blackDividers,
                     }}>
                         {tabs.map((tab, index) => (
                             <TouchableOpacity

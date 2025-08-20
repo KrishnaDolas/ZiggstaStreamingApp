@@ -1,38 +1,42 @@
-import React, { memo, useEffect } from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React, { memo, useContext, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { useAppContext } from '../context/AppContext';
 import { getGenderFallbackImage, socket } from '../utils/constant';
+import { ThemeContext } from '../context/ThemeContext';
+import Colors from '../../assets/styles/Colors';
 const RequestModal = ({
     visible,
     onClose,
     StreamRequestList = [],
     streamGuest = [],
 }) => {
-    const {userData,userAddress}= useAppContext();
-    const GetAction=(targetId,action)=>{
-       socket.emit('host-control', {action: action,targetId: targetId}
-       )
+    const { theme } = useContext(ThemeContext);
+    const { userData, userAddress } = useAppContext();
+    const GetAction = (targetId, action) => {
+        socket.emit('host-control', { action: action, targetId: targetId }
+        )
     }
-    const AcceptStream=(action,requesterId,name,CustomID,item)=>{
+    const AcceptStream = (action, requesterId, name, CustomID, item) => {
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
-        if(action === 'approve') {
-            const Address=userAddress ?{country:userAddress?.country,city:userAddress?.city} : {country:'India',city:'Pune'}
+        if (action === 'approve') {
+            const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
             console.log(Address);
-        socket.emit('approveStream', requesterId,Address,name,CustomID,item?.avatar)
+            socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar)
         }
-        if( action === 'reject') {
-          socket.emit('rejectStream', requesterId)
+        if (action === 'reject') {
+            socket.emit('rejectStream', requesterId)
         }
-      }
-      const RemoveAllRequest=()=>{
+    }
+    const RemoveAllRequest = () => {
         StreamRequestList.forEach((item) => {
             socket.emit('rejectStream', item.ID);
         });
         onClose();
-      }
+    }
     return (
         <Modal
             isVisible={visible}
@@ -45,19 +49,19 @@ const RequestModal = ({
             backdropOpacity={0.3}
             style={{ margin: 0, justifyContent: 'flex-end' }}
         >
-            <View style={{ backgroundColor: '#fff', padding: 20, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%' }}>
+            <View style={{ backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor, padding: 20, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%' }}>
                 {/* Section 1: Stream Requests */}
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Requests</Text>
+                    <Text style={{ fontSize: 18, color: theme === 'light' ? '#000' : '#fff', fontWeight: 'bold', marginBottom: 10 }}>Requests</Text>
                     {StreamRequestList?.length > 0 && (
-                        <View style={{ borderRadius: "10%", backgroundColor: '#f2f2f2', paddingHorizontal: 10, paddingVertical: 0, flexDirection: 'row', alignItems: 'center', height: '25',marginBottom:20 }}>
+                        <View style={{ borderRadius: "10%", backgroundColor: theme === 'light' ? '#f2f2f2' : Colors.blackBtnBg, paddingHorizontal: 10, paddingVertical: 0, flexDirection: 'row', alignItems: 'center', height: '25', marginBottom: 20 }}>
                             <TouchableOpacity onPress={RemoveAllRequest}>
                                 <Text style={{ fontSize: 12, color: 'red' }}>Remove ALL</Text>
                             </TouchableOpacity>
                         </View>)}
                 </View>
                 {StreamRequestList.length === 0 ? (
-                    <Text style={{ marginBottom: 20 }}>No Pending Requests at this time</Text>
+                    <Text style={{ color: theme === 'light' ? '#000' : '#fff', marginBottom: 20 }}>No Pending Requests at this time</Text>
                 ) : (
                     <FlatList
                         data={StreamRequestList}
@@ -70,40 +74,40 @@ const RequestModal = ({
                                 marginBottom: 12,
                                 padding: 10,
                             }}>
-                                <View style={{position:'relative'}}>
-                                <Image style={styles.strRoomHeaderLeftProfileImg}
-                                 source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
-                                  />
-                                </View>
-                                <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
-                                <Text style={{ fontSize: 16 }}>{item.Name}</Text>
-                                <Text>{`${item?.country} (${item?.city})`}</Text>
-                                </View>
-                                <TouchableOpacity
-                                disabled={streamGuest.length>=6?true:false}
-                                onPress={() => AcceptStream("approve", item.ID,item.Name,item?.CustomID,item)}
-                                style={{
-                                    backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
-                                    paddingVertical: 4,
-                                    paddingHorizontal: 9,
-                                    borderRadius: 6,
-                                }}
-                                >
-                                <View style={{ position: 'relative', marginRight: 6 }}>
-                                    <Ionicons name="videocam-outline" size={22} color="#fff" />
-                                    <Ionicons
-                                    name="add-circle"
-                                    size={10}
-                                    color="#fff"
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: 0,
-                                        right: 9,
-                                        backgroundColor: 'black',
-                                        borderRadius: 6,
-                                    }}
+                                <View style={{ position: 'relative' }}>
+                                    <Image style={styles.strRoomHeaderLeftProfileImg}
+                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
                                     />
                                 </View>
+                                <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
+                                    <Text style={{ fontSize: 16, color: theme === 'light' ? '#000' : '#fff' }}>{item.Name}</Text>
+                                    <Text style={{ color: theme === 'light' ? '#000' : '#fff' }}>{`${item?.country} (${item?.city})`}</Text>
+                                </View>
+                                <TouchableOpacity
+                                    disabled={streamGuest.length >= 6 ? true : false}
+                                    onPress={() => AcceptStream("approve", item.ID, item.Name, item?.CustomID, item)}
+                                    style={{
+                                        backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
+                                        paddingVertical: 4,
+                                        paddingHorizontal: 9,
+                                        borderRadius: 6,
+                                    }}
+                                >
+                                    <View style={{ position: 'relative', marginRight: 6 }}>
+                                        <Ionicons name="videocam-outline" size={22} color="#fff" />
+                                        <Ionicons
+                                            name="add-circle"
+                                            size={10}
+                                            color="#fff"
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: 0,
+                                                right: 9,
+                                                backgroundColor: 'black',
+                                                borderRadius: 6,
+                                            }}
+                                        />
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -111,12 +115,12 @@ const RequestModal = ({
                 )}
 
                 {/* Divider */}
-                <View style={{ height: 1, backgroundColor: '#ddd', marginVertical: 15 }} />
+                <View style={{ height: 1, backgroundColor: theme === 'light' ? '#ddd' : Colors.blackDividers, marginVertical: 15 }} />
 
                 {/* Section 2: Stream Guests */}
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Guests</Text>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme === 'light' ? '#000' : '#fff', marginBottom: 10 }}>Guests</Text>
                 {streamGuest.length === 0 ? (
-                    <Text>No stream guests.</Text>
+                    <Text style={{ color: theme === 'light' ? '#000' : '#fff', }}>No stream guests.</Text>
                 ) : (
                     <FlatList
                         data={streamGuest}
@@ -129,14 +133,14 @@ const RequestModal = ({
                                 marginBottom: 12,
                                 padding: 10,
                             }}>
-                                <View style={{position:'relative'}}>
-                                <Image style={styles.strRoomHeaderLeftProfileImg}
-                                 source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
-                                  />
+                                <View style={{ position: 'relative' }}>
+                                    <Image style={styles.strRoomHeaderLeftProfileImg}
+                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
+                                    />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
-                                <Text style={{ fontSize: 16 }}>{item.Name}</Text>
-                                <Text>{`${item?.country} (${item?.city})`}</Text>
+                                    <Text style={{ fontSize: 16, color: theme === 'light' ? '#000' : '#fff' }}>{item.Name}</Text>
+                                    <Text style={{ color: theme === 'light' ? '#000' : '#fff' }}>{`${item?.country} (${item?.city})`}</Text>
                                 </View>
                                 {/* <Text style={{ fontSize: 16, marginBottom: 8 }}>{item.Name}</Text> */}
                                 <View style={{ flexDirection: 'row', gap: 15, alignItems: 'center' }}>
@@ -162,17 +166,17 @@ const RequestModal = ({
 
                                     {/* Remove Button with Icon */}
                                     <TouchableOpacity
-                                        onPress={() =>Alert.alert(
+                                        onPress={() => Alert.alert(
                                             'Remove Guest',
                                             `Are you sure you want to remove ${item.Name} from the stream?`,
                                             [
                                                 { text: 'Cancel', style: 'cancel' },
                                                 {
                                                     text: 'Remove',
-                                                    onPress: () => GetAction(item.ID,'stop-stream')
+                                                    onPress: () => GetAction(item.ID, 'stop-stream')
                                                 },
                                             ],
-                                            { cancelable: true },   
+                                            { cancelable: true },
                                         )}
                                         style={{
                                             flexDirection: 'row',
