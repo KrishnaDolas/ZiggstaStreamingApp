@@ -799,7 +799,7 @@ export const MainScreen = () => {
         />
         {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
         <View style={[styles.container]}>
-          {isloading ? (<Loader LoaderImage={chatimage} currentStreamData={currentStreamData} />) : null}
+          {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
           {!joined ? (
             <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
           ) : (<StreamRoom
