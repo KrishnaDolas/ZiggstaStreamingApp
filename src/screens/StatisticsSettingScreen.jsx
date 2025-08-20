@@ -146,9 +146,12 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         }
     }, [userData.userid]);
 
-    useEffect(() => {
-        getAverageDaily();
-    }, [getAverageDaily]);
+
+    useFocusEffect(
+        useCallback(() => {
+            getAverageDaily();
+        }, [getAverageDaily])
+    );
 
     // to get top gifters
 
@@ -160,7 +163,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         setIsUserError('');
         try {
             const response = await Apiclient.post('/topgifters', formData);
-            console.log('topgifters response', response.data);
             if (response) {
                 setTopGiftersData(response.data || []);
             } else {
