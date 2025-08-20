@@ -21,6 +21,7 @@ import { SendErrorTotheServer, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { BlurView } from '@react-native-community/blur';
+import CustomConfirmDialog from './CustomConfirmDialog';
 
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -64,8 +65,10 @@ const LuckyWheelModal = (
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
     const [userBets, setUserBets] = useState([]);
     const [betButtonsDisabled, setBetButtonsDisabled] = useState(false);
+    const [closePlaceBetDialog, setClosePlaceBetDialog] = useState(false);
 
     const idleSpin = useRef(new Animated.Value(0)).current;
+    const placeBetButtonRef = useRef(false);
     const intervalRef = useRef(null);
     const myCreditRef = useRef(mycredit);
 
@@ -163,6 +166,9 @@ const LuckyWheelModal = (
             setCountdown(counter);
 
             if (counter === 5) {
+                setClosePlaceBetDialog(false);
+            }
+            if (counter === 5) {
                 const sound = new Sound('no_more_bets', Sound.MAIN_BUNDLE, (error) => {
                     sound.play(() => {
                         sound.release();
@@ -209,6 +215,7 @@ const LuckyWheelModal = (
         setActiveBetAmount(null);
         setBetButtonsDisabled(false);
         startIdleRotation();
+        placeBetButtonRef.current = false;
     };
 
 
@@ -467,24 +474,31 @@ const LuckyWheelModal = (
 
 
     const placeBet = (val) => {
-        socket.emit('place_bet', {
-            userID: userData?.userid,
-            HostId: hostDetails?.userid,
-            betAmount: val,
-            multiplier: selectedMultiplier,
-            userName: userData?.screenName,
-            RoomId: RoomID,
-        })
-
-        // const sound = new Sound('place_your_bet', Sound.MAIN_BUNDLE, (error) => {
-        //     sound.play(() => {
-        //         sound.release();
-        //     });
-        // });
-        setActiveBetAmount(val); // 👈 track which button is active
-        setMessage(`Bet placed on ${selectedMultiplier}`);
+        if (!placeBetButtonRef.current) {
+            socket.emit('place_bet', {
+                userID: userData?.userid,
+                HostId: hostDetails?.userid,
+                betAmount: val,
+                multiplier: selectedMultiplier,
+                userName: userData?.screenName,
+                RoomId: RoomID,
+            });
+            setClosePlaceBetDialog(false);
+            // const sound = new Sound('place_your_bet', Sound.MAIN_BUNDLE, (error) => {
+            //     sound.play(() => {
+            //         sound.release();
+            //     });
+            // });
+            setBetButtonsDisabled(true);
+            setActiveBetAmount(val); // 👈 track which button is active
+            setMessage(`Bet placed on ${selectedMultiplier}`);
+            placeBetButtonRef.current = true;
+        }
     };
 
+    const handlePlaceBet = () => {
+        setClosePlaceBetDialog(true);
+    };
 
     const handleSpin = (resultLabel) => {
         stopIdleRotation();
@@ -630,313 +644,279 @@ const LuckyWheelModal = (
     };
 
     return (
-        <Modal
-            isVisible={visible}
-            onBackdropPress={onClose}
-            animationIn="slideInUp"
-            animationOut="slideOutDown"
-            animationInTiming={300}
-            animationOutTiming={200}
-            useNativeDriver={true}
-            avoidKeyboard={false}
-            backdropOpacity={0}
-            animationType="slide"
-            style={[styles.profileModalMain]}
-        >
-            <BlurView
-                style={StyleSheet.absoluteFill}
-                blurType="dark"
-                blurAmount={30}
-            // reducedTransparencyFallbackColor="white"
-            />
-            <View style={mainStyle.overlayBackground} />
-            <View style={mainStyle.LWModalOverlay}
+        <>
+            <Modal
+                isVisible={visible}
+                onBackdropPress={onClose}
+                animationIn="slideInUp"
+                animationOut="slideOutDown"
+                animationInTiming={300}
+                animationOutTiming={200}
+                useNativeDriver={true}
+                avoidKeyboard={false}
+                backdropOpacity={0}
+                animationType="slide"
+                style={[styles.profileModalMain]}
             >
-                <View style={mainStyle.header}>
-                    <Animated.View
-                        ref={chipsBoxRef}
-                        onLayout={(event) => {
-                            const { x, y, width, height } = event.nativeEvent.layout;
-                            setChipsBoxLayout({ x, y, width, height });
-                        }}
-                        style={[
-                            mainStyle.chipsBox,
-                            {
-                                shadowColor: chipsGlowAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: ['transparent', '#FFD700']
-                                }),
-                                shadowOpacity: chipsGlowAnim,
-                                shadowRadius: chipsGlowAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, 15]
-                                }),
-                                elevation: chipsGlowAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, 8]
-                                }),
-                            }
-                        ]}
-                    >
-                        <Image
-                            source={require('../../assets/images/icons/star.png')}
-                            style={{ width: 14, height: 14 }}
-                            resizeMode="contain"
-                        />
-                        <Text style={[mainStyle.chips]}>{displayCredit}</Text>
-                    </Animated.View>
-                    <TouchableOpacity onPress={closeModal}>
-                        <Ionicons name="close" size={28} color="#fff" />
-                    </TouchableOpacity>
-                </View>
-
-
-                {/* Flying chips overlay */}
-                <View style={mainStyle.flyingChipsContainer} pointerEvents="none">
-                    {renderFlyingChips()}
-                    {winParticles.map(p => (
-                        <Animated.Image
-                            key={p.id}
-                            source={require('../../assets/images/icons/star.png')}
-                            style={{
-                                position: 'absolute',
-                                left: '50%',
-                                top: '50%',
-                                width: p.size,
-                                height: p.size,
-                                transform: [
-                                    { translateX: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endX] }) },
-                                    { translateY: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endY] }) },
-                                    { rotate: p.anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${p.rotate}deg`] }) },
-                                    { scale: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 0] }) },
-                                ],
-                                opacity: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1, 0] }),
-                            }}
-                        />
-                    ))}
-                    <Animated.View
-                        style={[mainStyle.winTextContainer, { justifyContent: 'center', alignItems: 'center' }]}
-                    >
-                        <Animated.Text
-                            style={[
-                                mainStyle.winText,
-                                {
-                                    transform: [
-                                        { scale: winTextAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 1] }) },
-                                    ],
-                                    opacity: winTextAnim,
-                                }]}
-                        >
-                            YOU WON!
-                        </Animated.Text>
-                    </Animated.View>
-                </View>
-                {/* Big Center Countdown */}
-                {bigCountdownNumber !== null && (
-                    <View
-                        style={[mainStyle.bigCountDownBox]}
-                    >
-                        <LinearGradient
-                            colors={['rgba(0, 0, 0, 0.42)', 'rgba(0, 0, 0, 0.47)', 'rgba(0, 0, 0, 0.36)']}
-                            style={{
-                                ...StyleSheet.absoluteFillObject,
-                            }}
-                        />
-
-                        <Animated.Text
-                            style={[mainStyle.bigCountDownText, {
-                                opacity: fadeAnim,
-                            }]}
-                        >
-                            {bigCountdownNumber}
-                        </Animated.Text>
-                    </View>
-                )}
-
-                <View style={mainStyle.wheelWrapperContainer}>
-                    <View style={mainStyle.wheelWrapper}>
-                        <Image
-                            source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
-                            style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
-                            resizeMode="contain"
-                        />
+                <BlurView
+                    style={StyleSheet.absoluteFill}
+                    blurType="dark"
+                    blurAmount={30}
+                // reducedTransparencyFallbackColor="white"
+                />
+                <View style={mainStyle.overlayBackground} />
+                <View style={mainStyle.LWModalOverlay}
+                >
+                    <View style={mainStyle.header}>
                         <Animated.View
-                            style={[mainStyle.wheelSegmentBox, {
-                                transform: [
-                                    {
-                                        rotate: spinValue.interpolate({
-                                            inputRange: [0, 360 * 20],
-                                            outputRange: ['0deg', `${360 * 20}deg`],
-                                            extrapolate: 'extend',
-                                        }),
-                                    },
-                                    {
-                                        rotate: idleSpin.interpolate({
-                                            inputRange: [0, 1],
-                                            outputRange: ['0deg', '360deg'],
-                                        }),
-                                    },
-                                ],
-                            }]}
+                            ref={chipsBoxRef}
+                            onLayout={(event) => {
+                                const { x, y, width, height } = event.nativeEvent.layout;
+                                setChipsBoxLayout({ x, y, width, height });
+                            }}
+                            style={[
+                                mainStyle.chipsBox,
+                                {
+                                    shadowColor: chipsGlowAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: ['transparent', '#FFD700']
+                                    }),
+                                    shadowOpacity: chipsGlowAnim,
+                                    shadowRadius: chipsGlowAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0, 15]
+                                    }),
+                                    elevation: chipsGlowAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0, 8]
+                                    }),
+                                }
+                            ]}
                         >
-                            <Svg width={svgSize} height={svgSize} viewBox="0 0 400 400">
-                                {renderSegments()}
-                                <Circle cx="200" cy="200" r="10" fill="gold" />
-                            </Svg>
+                            <Image
+                                source={require('../../assets/images/icons/star.png')}
+                                style={{ width: 14, height: 14 }}
+                                resizeMode="contain"
+                            />
+                            <Text style={[mainStyle.chips]}>{displayCredit}</Text>
+                        </Animated.View>
+                        <TouchableOpacity onPress={closeModal}>
+                            <Ionicons name="close" size={28} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+
+
+                    {/* Flying chips overlay */}
+                    <View style={mainStyle.flyingChipsContainer} pointerEvents="none">
+                        {renderFlyingChips()}
+                        {winParticles.map(p => (
+                            <Animated.Image
+                                key={p.id}
+                                source={require('../../assets/images/icons/star.png')}
+                                style={{
+                                    position: 'absolute',
+                                    left: '50%',
+                                    top: '50%',
+                                    width: p.size,
+                                    height: p.size,
+                                    transform: [
+                                        { translateX: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endX] }) },
+                                        { translateY: p.anim.interpolate({ inputRange: [0, 1], outputRange: [0, p.endY] }) },
+                                        { rotate: p.anim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', `${p.rotate}deg`] }) },
+                                        { scale: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 0] }) },
+                                    ],
+                                    opacity: p.anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 1, 0] }),
+                                }}
+                            />
+                        ))}
+                        <Animated.View
+                            style={[mainStyle.winTextContainer, { justifyContent: 'center', alignItems: 'center' }]}
+                        >
+                            <Animated.Text
+                                style={[
+                                    mainStyle.winText,
+                                    {
+                                        transform: [
+                                            { scale: winTextAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 1.5, 1] }) },
+                                        ],
+                                        opacity: winTextAnim,
+                                    }]}
+                            >
+                                YOU WON!
+                            </Animated.Text>
                         </Animated.View>
                     </View>
-                </View>
-                {/* <Text style={[mainStyle.message]}>{message}</Text> */}
-                <Text style={[mainStyle.countdownText, {
-                    opacity: countdown <= 5 ? 0 : 1,
-                }]}>⏱ {countdown}s</Text>
-
-                {userBets.length > 0 && (
-                    <View style={mainStyle.userBetTable}>
-                        {/* Summary Section */}
-                        <View style={mainStyle.betSummary}>
-                            <Text style={mainStyle.summaryText}>
-                                Total Players: {userBets.length}
-                            </Text>
-                            <Text style={mainStyle.summaryText}>
-                                Total Bet Amount: {userBets.reduce((sum, user) => sum + Number(user.betAmount), 0)}
-                            </Text>
-                        </View>
-                        {/* Existing Table Header and Content */}
-                        <View style={mainStyle.tableHeader}>
-                            <Text style={mainStyle.emptyCell}></Text>
-                            <Text style={mainStyle.userCell}>User</Text>
-                            <Text style={mainStyle.betCell}>Bet</Text>
-                            <Text style={mainStyle.optionCell}>Option</Text>
-                        </View>
-                        <ScrollView
-                            style={{ maxHeight: screenHeight * 0.2 - 50 }}
-                            contentContainerStyle={{ gap: 6, paddingTop: 6 }}
-                            showsVerticalScrollIndicator={true}
+                    {/* Big Center Countdown */}
+                    {bigCountdownNumber !== null && (
+                        <View
+                            style={[mainStyle.bigCountDownBox]}
                         >
-                            {userBets.map((user, index) => (
-                                <View
-                                    key={index}
-                                    style={mainStyle.tableRow}
-                                >
-                                    <View style={mainStyle.cellIcon}>
-                                        <Image
-                                            source={
-                                                user.isWinner === 1
-                                                    ? winIcon
-                                                    : user.isWinner === 0
-                                                        ? loseIcon
-                                                        : Number(user.betAmount) === 100
-                                                            ? blueChipIcon
-                                                            : redChipIcon
-                                            }
-                                            style={mainStyle.iconImage}
-                                            resizeMode="contain"
-                                        />
-                                    </View>
-                                    {/* User Info */}
-                                    <View style={mainStyle.cellUser}>
-                                        <Text style={mainStyle.cellUserText}>{user.userName}</Text>
-                                    </View>
+                            <LinearGradient
+                                colors={['rgba(0, 0, 0, 0.42)', 'rgba(0, 0, 0, 0.47)', 'rgba(0, 0, 0, 0.36)']}
+                                style={{
+                                    ...StyleSheet.absoluteFillObject,
+                                }}
+                            />
 
-                                    {/* Bet Amount */}
-                                    <Text style={mainStyle.cellBet}>{user.betAmount}</Text>
-
-                                    {/* Multiplier Chip */}
-                                    <View style={[
-                                        mainStyle.cellMultiplier,
-                                        { backgroundColor: COLORS[user.multiplier] || '#666' },
-                                    ]}>
-                                        <Text style={mainStyle.multiplierText}>{user.multiplier}</Text>
-                                    </View>
-                                </View>
-                            ))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                <View style={mainStyle.betGroup}>
-                    {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
-                        const isActive = selectedMultiplier === option;
-                        const isFirst = ind === 0;
-                        const isLast = ind === arr.length - 1;
-                        return (
-                            <TouchableOpacity
-                                key={option}
-                                style={[
-                                    mainStyle.betButton,
-                                    {
-                                        backgroundColor: isActive
-                                            ? '#39FF14' // Neon Lime for active
-                                            : ['#00a3ccff', '#ff9a27ff', '#d93a2d', '#834fffff'][ind], // Vibrant colors
-                                        borderTopLeftRadius: isFirst ? 4 : 0,
-                                        borderBottomLeftRadius: isFirst ? 4 : 0,
-                                        borderTopRightRadius: isLast ? 4 : 0,
-                                        borderBottomRightRadius: isLast ? 4 : 0,
-                                        borderRightWidth: isLast ? 0 : 1,
-                                        borderRightColor: '#00000022',
-                                        shadowColor: isActive ? '#39FF14' : '#000',
-                                        shadowOffset: { width: 0, height: 1 },
-                                        shadowOpacity: isActive ? 0.8 : 0.2,
-                                        shadowRadius: isActive ? 6 : 2,
-                                        elevation: isActive ? 6 : 2,
-                                    },
-                                ]}
-                                onPress={() => setSelectedMultiplier(option)}
+                            <Animated.Text
+                                style={[mainStyle.bigCountDownText, {
+                                    opacity: fadeAnim,
+                                }]}
                             >
-                                <Text style={[
-                                    mainStyle.betButtonText,
-                                    {
-                                        color: isActive ? '#000' : '#fff',
-                                        fontSize: 14,
-                                    },
-                                ]}>
-                                    {option}
-                                </Text>
-                            </TouchableOpacity>
-                        )
-                    })}
-                </View>
+                                {bigCountdownNumber}
+                            </Animated.Text>
+                        </View>
+                    )}
 
-                <View style={[mainStyle.placeBetBtnGroup]}>
-                    {/* First button - 70% */}
-                    {userBets.length === 0 ? (
-                        <TouchableOpacity
-                            style={[
-                                mainStyle.placeBetBtn,
-                                {
-                                    flex: 7,
-                                    marginRight: 5,
-                                    backgroundColor:
-                                        activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
-                                    opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
-                                    borderRadius: 4,
-                                    shadowColor: '#00FFFF',
-                                    shadowOffset: { width: 0, height: 0 },
-                                    shadowOpacity: 0.9,
-                                    shadowRadius: 10,
-                                    elevation: 8,
-                                },
-                            ]}
-                            onPress={() => {
-                                Alert.alert(
-                                    'Place Bet',
-                                    'Are you sure you want to place 500 chips to play?',
-                                    [
-                                        { text: 'Cancel', style: 'cancel' },
-                                        { text: 'OK', onPress: () => placeBet(500) },
-                                    ]
-                                );
-                            }}
-                            // onPress={() => handleSpin('Triple')}
-                            disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
-                        >
-                            <Text style={mainStyle.placeBetBtnText}>
-                                BET 500
-                            </Text>
-                        </TouchableOpacity>
-                    ) : (
-                        <>
+                    <View style={mainStyle.wheelWrapperContainer}>
+                        <View style={mainStyle.wheelWrapper}>
+                            <Image
+                                source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
+                                style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
+                                resizeMode="contain"
+                            />
+                            <Animated.View
+                                style={[mainStyle.wheelSegmentBox, {
+                                    transform: [
+                                        {
+                                            rotate: spinValue.interpolate({
+                                                inputRange: [0, 360 * 20],
+                                                outputRange: ['0deg', `${360 * 20}deg`],
+                                                extrapolate: 'extend',
+                                            }),
+                                        },
+                                        {
+                                            rotate: idleSpin.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: ['0deg', '360deg'],
+                                            }),
+                                        },
+                                    ],
+                                }]}
+                            >
+                                <Svg width={svgSize} height={svgSize} viewBox="0 0 400 400">
+                                    {renderSegments()}
+                                    <Circle cx="200" cy="200" r="10" fill="gold" />
+                                </Svg>
+                            </Animated.View>
+                        </View>
+                    </View>
+                    {/* <Text style={[mainStyle.message]}>{message}</Text> */}
+                    <Text style={[mainStyle.countdownText, {
+                        opacity: countdown <= 5 ? 0 : 1,
+                        marginVertical: countdown <= 5 ? 5 : 20,
+                    }]}>⏱ {countdown}s</Text>
+
+                    {userBets.length > 0 && (
+                        <View style={mainStyle.userBetTable}>
+                            {/* Summary Section */}
+                            <View style={mainStyle.betSummary}>
+                                <Text style={mainStyle.summaryText}>
+                                    Total Players: {userBets.length}
+                                </Text>
+                                <Text style={mainStyle.summaryText}>
+                                    Total Bet Amount: {userBets.reduce((sum, user) => sum + Number(user.betAmount), 0)}
+                                </Text>
+                            </View>
+                            {/* Existing Table Header and Content */}
+                            <View style={mainStyle.tableHeader}>
+                                <Text style={mainStyle.emptyCell}></Text>
+                                <Text style={mainStyle.userCell}>User</Text>
+                                <Text style={mainStyle.betCell}>Bet</Text>
+                                <Text style={mainStyle.optionCell}>Option</Text>
+                            </View>
+                            <ScrollView
+                                style={{ maxHeight: screenHeight * 0.2 - 50 }}
+                                contentContainerStyle={{ gap: 6, paddingTop: 6 }}
+                                showsVerticalScrollIndicator={true}
+                            >
+                                {userBets.map((user, index) => (
+                                    <View
+                                        key={index}
+                                        style={mainStyle.tableRow}
+                                    >
+                                        <View style={mainStyle.cellIcon}>
+                                            <Image
+                                                source={
+                                                    user.isWinner === 1
+                                                        ? winIcon
+                                                        : user.isWinner === 0
+                                                            ? loseIcon
+                                                            : Number(user.betAmount) === 100
+                                                                ? blueChipIcon
+                                                                : redChipIcon
+                                                }
+                                                style={mainStyle.iconImage}
+                                                resizeMode="contain"
+                                            />
+                                        </View>
+                                        {/* User Info */}
+                                        <View style={mainStyle.cellUser}>
+                                            <Text style={mainStyle.cellUserText}>{user.userName}</Text>
+                                        </View>
+
+                                        {/* Bet Amount */}
+                                        <Text style={mainStyle.cellBet}>{user.betAmount}</Text>
+
+                                        {/* Multiplier Chip */}
+                                        <View style={[
+                                            mainStyle.cellMultiplier,
+                                            { backgroundColor: COLORS[user.multiplier] || '#666' },
+                                        ]}>
+                                            <Text style={mainStyle.multiplierText}>{user.multiplier}</Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    )}
+
+                    <View style={mainStyle.betGroup}>
+                        {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
+                            const isActive = selectedMultiplier === option;
+                            const isFirst = ind === 0;
+                            const isLast = ind === arr.length - 1;
+                            return (
+                                <TouchableOpacity
+                                    key={option}
+                                    style={[
+                                        mainStyle.betButton,
+                                        {
+                                            backgroundColor: isActive
+                                                ? '#39FF14' // Neon Lime for active
+                                                : ['#00a3ccff', '#ff9a27ff', '#d93a2d', '#834fffff'][ind], // Vibrant colors
+                                            borderTopLeftRadius: isFirst ? 4 : 0,
+                                            borderBottomLeftRadius: isFirst ? 4 : 0,
+                                            borderTopRightRadius: isLast ? 4 : 0,
+                                            borderBottomRightRadius: isLast ? 4 : 0,
+                                            borderRightWidth: isLast ? 0 : 1,
+                                            borderRightColor: '#00000022',
+                                            shadowColor: isActive ? '#39FF14' : '#000',
+                                            shadowOffset: { width: 0, height: 1 },
+                                            shadowOpacity: isActive ? 0.8 : 0.2,
+                                            shadowRadius: isActive ? 6 : 2,
+                                            elevation: isActive ? 6 : 2,
+                                        },
+                                    ]}
+                                    onPress={() => setSelectedMultiplier(option)}
+                                >
+                                    <Text style={[
+                                        mainStyle.betButtonText,
+                                        {
+                                            color: isActive ? '#000' : '#fff',
+                                            fontSize: 14,
+                                        },
+                                    ]}>
+                                        {option}
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                        })}
+                    </View>
+
+                    <View style={[mainStyle.placeBetBtnGroup]}>
+                        {/* First button - 70% */}
+                        {userBets.length === 0 ? (
                             <TouchableOpacity
                                 style={[
                                     mainStyle.placeBetBtn,
@@ -954,50 +934,99 @@ const LuckyWheelModal = (
                                         elevation: 8,
                                     },
                                 ]}
-                                onPress={() => placeBet(500)}
+                                // onPress={() => {
+                                //     Alert.alert(
+                                //         'Place Bet',
+                                //         'Are you sure you want to place 500 chips to play?',
+                                //         [
+                                //             { text: 'Cancel', style: 'cancel' },
+                                //             { text: 'OK', onPress: () => placeBet(500) },
+                                //         ]
+                                //     );
+                                // }}
+                                onPress={handlePlaceBet}
+                                // onPress={() => handleSpin('Triple')}
                                 disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                             >
                                 <Text style={mainStyle.placeBetBtnText}>
                                     BET 500
                                 </Text>
                             </TouchableOpacity>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 7,
+                                            marginRight: 5,
+                                            backgroundColor:
+                                                activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
+                                            opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                            borderRadius: 4,
+                                            shadowColor: '#00FFFF',
+                                            shadowOffset: { width: 0, height: 0 },
+                                            shadowOpacity: 0.9,
+                                            shadowRadius: 10,
+                                            elevation: 8,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(500)}
+                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 500
+                                    </Text>
+                                </TouchableOpacity>
 
-                            {/* Second button - 30% */}
-                            <TouchableOpacity
-                                style={[
-                                    mainStyle.placeBetBtn,
-                                    {
-                                        flex: 3,
-                                        marginLeft: 5,
-                                        backgroundColor:
-                                            activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
-                                        opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
-                                        borderRadius: 4,
-                                        shadowColor: '#FF00FF',
-                                        shadowOffset: { width: 0, height: 0 },
-                                        shadowOpacity: 0.9,
-                                        shadowRadius: 10,
-                                        elevation: 8,
-                                    },
-                                ]}
-                                onPress={() => placeBet(100)}
-                                disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
-                            >
-                                <Text style={mainStyle.placeBetBtnText}>
-                                    BET 100
-                                </Text>
-                            </TouchableOpacity>
+                                {/* Second button - 30% */}
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 3,
+                                            marginLeft: 5,
+                                            backgroundColor:
+                                                activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
+                                            opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
+                                            borderRadius: 4,
+                                            shadowColor: '#FF00FF',
+                                            shadowOffset: { width: 0, height: 0 },
+                                            shadowOpacity: 0.9,
+                                            shadowRadius: 10,
+                                            elevation: 8,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(100)}
+                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 100
+                                    </Text>
+                                </TouchableOpacity>
 
-                        </>
-                    )}
+                            </>
+                        )}
+
+                    </View>
+
+                    <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
 
                 </View>
 
-                <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
-
-            </View>
-
-        </Modal>
+            </Modal>
+            {closePlaceBetDialog && (
+                <CustomConfirmDialog
+                    visible={closePlaceBetDialog}
+                    title="Place Bet"
+                    message="Are you sure you want to place 500 chips to play?"
+                    onCancel={() => setClosePlaceBetDialog(false)}
+                    onConfirm={() => placeBet(500)}
+                    cancelText="Cancel"
+                    confirmText="Place Bet"
+                />
+            )}
+        </>
     );
 };
 
