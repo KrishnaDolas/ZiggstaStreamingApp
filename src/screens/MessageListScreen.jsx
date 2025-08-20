@@ -58,7 +58,8 @@ export const MessageListScreen = () => {
             console.log('response getFriendsList', response.data);
             if (response.status === 200) {
                 const data = response.data?.friends || [];
-                setFriendsData(data);
+                const uniqueUsers = Array.from(new Map(data.map(user => [user.userid, user])).values());
+                setFriendsData(uniqueUsers);
             }
         } catch (error) {
             console.error('Error fetching friends data list:', error);
