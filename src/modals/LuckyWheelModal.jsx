@@ -67,6 +67,8 @@ const LuckyWheelModal = (
 
     const idleSpin = useRef(new Animated.Value(0)).current;
     const intervalRef = useRef(null);
+    const myCreditRef = useRef(mycredit);
+
 
     // Animation states for chip collection
     const [flyingChips, setFlyingChips] = useState([]);
@@ -106,6 +108,11 @@ const LuckyWheelModal = (
         }
     }, [userData, mycredit]);
 
+
+    useEffect(() => {
+        myCreditRef.current = mycredit; // Update ref whenever mycredit changes
+    }, [mycredit]);
+
     useEffect(() => {
         if (visible) {
             spinValue.setValue(0); // Reset spin
@@ -121,12 +128,17 @@ const LuckyWheelModal = (
     }, [visible]);
 
     const HandleUpdatedCredit = (amount) => {
-        setMyCredit(amount);
-        setDisplayCredit(amount);
+        setMyCredit(prev => {
+            if (prev !== amount) {
+                setDisplayCredit(amount);
+                return amount;
+            }
+            return prev;
+        });
+        // setDisplayCredit(amount);
     };
 
     const HandleBetUserList = (users) => {
-        console.log('users', users);
         setUserBets(users);
     };
 
@@ -191,7 +203,6 @@ const LuckyWheelModal = (
 
     // 2️⃣ Socket handlers
     const HandleTimer = (time) => {
-        // console.log('Timer received from server:', time);
         setMessage('');
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
@@ -203,12 +214,13 @@ const LuckyWheelModal = (
 
     // Enhanced chip collection animation
     const startChipCollectionAnimation = (winAmount, multiplier) => {
-        console.log(`Starting chip collection animation with winAmount: ${winAmount}, multiplier: ${multiplier}`);
+        // Use myCreditRef.current instead of mycredit
+        const currentCredit = isNaN(myCreditRef.current) || myCreditRef.current === null ? 0 : myCreditRef.current;
+        const targetCredit = currentCredit + winAmount;
 
         // Start from the middle of the screen
         const startX = screenWidth / 2;
         const startY = screenHeight / 2;
-        // End at chipsBoxLayout (top-left) or fallback
         const defaultChipsBoxLayout = chipsBoxLayout || { x: 20, y: 20, width: 80, height: 40 };
 
         const multiplierNum = multiplier === 'Double' ? 2 :
@@ -278,7 +290,7 @@ const LuckyWheelModal = (
         });
 
         setTimeout(() => {
-            animateCredits(mycredit, mycredit + winAmount);
+            animateCredits(currentCredit, targetCredit);
         }, 400);
 
         setTimeout(() => {
@@ -286,10 +298,8 @@ const LuckyWheelModal = (
         }, 2000);
     };
 
-
     // Animated credit counting - only for visual effect, doesn't update actual credit
     const animateCredits = (from, to) => {
-        console.log(`Animating credits from ${from} to ${to}`);
         creditCountAnim.setValue(0);
         Animated.timing(creditCountAnim, {
             toValue: 1,
@@ -299,12 +309,13 @@ const LuckyWheelModal = (
         }).start();
 
         const listener = creditCountAnim.addListener(({ value }) => {
-            const currentCredit = Math.floor(from + (to + from) * value);
+            const currentCredit = Math.floor(from + (to - from) * value);
             setDisplayCredit(currentCredit);
         });
 
         setTimeout(() => {
             creditCountAnim.removeListener(listener);
+            setDisplayCredit(to);
         }, 1000);
     };
 
@@ -370,25 +381,22 @@ const LuckyWheelModal = (
             // Play winner sound
             const sound = new Sound('winner', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    console.log('Failed to load the sound', error);
+                    SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
                 }
                 sound.play((success) => {
                     if (!success) {
-                        console.log('Sound playback failed');
+                        SendErrorTotheServer(error, 'LuckyWheelModal');
                     }
                     sound.release();
                 });
             });
-
-            // Start beautiful win animation
             startWinAnimation(WinAmount);
         }
 
         // Start chip collection animation if user won
         if (isWin && WinAmount > 0) {
             setTimeout(() => {
-                console.log('Triggering chip collection animation');
                 startChipCollectionAnimation(WinAmount, selectedMultiplier);
             }, 3000);
         }
@@ -436,24 +444,16 @@ const LuckyWheelModal = (
     }, []);
 
 
-    // useEffect(() => {
-    //     startCountdown(10);
-    //     socket.on('start_countdown', ({ seconds }) => {
-    //         startCountdown(seconds || 30);
-    //     });
-    // }, []);
-
-
     useEffect(() => {
         if (visible) {
-            const sound = new Sound('launch', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('launch_wheel', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
                 }
                 sound.play((success) => {
                     if (!success) {
-                        console.log('Sound playback failed');
+                        SendErrorTotheServer(error, 'LuckyWheelModal');
                     }
                     sound.release(); // Free up resources
                 });
@@ -520,14 +520,14 @@ const LuckyWheelModal = (
         const baseRotations = fullRotations * 360;
         const finalRotation = baseRotations + rotationNeeded;
 
-        console.log(
-            "🎯 Target:", resultLabel,
-            "| Index:", selected.idx,
-            "| Segment Start:", segmentStartAngle,
-            "| Segment Center:", normalizedCenter,
-            "| Rotation Needed:", rotationNeeded,
-            "| Final Rotation:", finalRotation
-        );
+        // console.log(
+        //     "🎯 Target:", resultLabel,
+        //     "| Index:", selected.idx,
+        //     "| Segment Start:", segmentStartAngle,
+        //     "| Segment Center:", normalizedCenter,
+        //     "| Rotation Needed:", rotationNeeded,
+        //     "| Final Rotation:", finalRotation
+        // );
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -535,8 +535,7 @@ const LuckyWheelModal = (
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
-            console.log("✅ Stopped on:", resultLabel, "at index:", selected.idx, "under arrow at TOP");
-            // startIdleRotation();
+            // console.log("✅ Stopped on:", resultLabel, "at index:", selected.idx, "under arrow at TOP");
             setSelectedMultiplier('Double'); // Reset multiplier after spin
         });
     };
@@ -756,30 +755,6 @@ const LuckyWheelModal = (
 
                 <View style={mainStyle.wheelWrapperContainer}>
                     <View style={mainStyle.wheelWrapper}>
-                        {/* Pointer/Arrow at the top of wheelWrapper */}
-                        {/* <View style={{
-                            position: 'absolute',
-                            top: -25, // Position above the wheel
-                            left: '50%',
-                            marginLeft: -15, // Half of arrow width to center it
-                            zIndex: 100
-                        }}>
-                            <View style={{
-                                width: 0,
-                                height: 0,
-                                borderLeftWidth: 15,
-                                borderRightWidth: 15,
-                                borderTopWidth: 25,
-                                borderLeftColor: 'transparent',
-                                borderRightColor: 'transparent',
-                                borderTopColor: '#FFD700',
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 2,
-                                borderStyle: 'solid',
-                            }} />
-                        </View> */}
                         <Image
                             source={require('../../assets/images/lucky-wheel/wheel_outer.png')}
                             style={[mainStyle.wheelBackground, { width: wheelSize, height: wheelSize }]}
