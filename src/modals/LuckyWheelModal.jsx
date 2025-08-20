@@ -1132,10 +1132,10 @@ const mainStyle = StyleSheet.create({
         textAlign: 'center',
     },
     countdownText: {
-        fontSize: 18,
-        color: 'darkorange',
+        fontSize: 19,
+        color: '#fff',
         textAlign: 'center',
-        marginVertical: 10,
+        marginVertical: 20,
         fontWeight: 'bold',
     },
     userBetTable: {
