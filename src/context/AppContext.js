@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import Apiclient from '../utils/Apiclient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // 3️⃣ Create context
 const AppContext = createContext();
@@ -23,7 +24,10 @@ export const AppProvider = ({ children }) => {
             };
             const response = await Apiclient.post('/getUserDetails', formData);
             if (response.status === 200) {
+                const userDataString = JSON.stringify(response.data.user);
+                await AsyncStorage.setItem('UserData', userDataString);
                 setProfileData(response.data.user || {});
+                setUserData(response.data.user || {});
             }
         } catch (err) {
             console.log('Error fetching user profile details: ' + err.message);

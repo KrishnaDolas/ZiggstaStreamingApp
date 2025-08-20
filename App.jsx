@@ -262,6 +262,7 @@ const App = () => {
     setUserAddress,
     userData,
     setUserData,
+    setProfileData,
     setIpAddress,
     fetchProfileDetails,
     setSubscriptionStatus,
@@ -289,6 +290,7 @@ const App = () => {
 
       setUserAddress(null);
       setUserData(null);
+      setProfileData(null);
       setIpAddress('');
       setIsAuthenticated(false);
       hasFetchedAddress.current = false; // Allow re-fetch on next load
