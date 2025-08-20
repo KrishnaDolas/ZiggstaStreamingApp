@@ -766,6 +766,7 @@ export const MainScreen = () => {
         timestamp: new Date().toLocaleTimeString(),
         userProfile: userData?.avatar
       };
+      console.log(newMessage);
 
       socket.emit('send-message', newMessage);
 
