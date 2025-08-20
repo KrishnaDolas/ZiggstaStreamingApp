@@ -996,11 +996,11 @@ export const styles = StyleSheet.create({
   },
 
   streamListScrollContainer: {
-    paddingTop: 10,
+    paddingTop: 15,
     paddingBottom: 80,
     paddingHorizontal: 10,
-    borderTopColor: '#1e1e1e',
-    borderTopWidth: 0.6,
+    // borderTopColor: '#1e1e1e',
+    // borderTopWidth: 0.6,
   },
 
   streamListGrid: {

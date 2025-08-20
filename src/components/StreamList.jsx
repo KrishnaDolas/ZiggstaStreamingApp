@@ -188,7 +188,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     // Function to create a room
     const submitroomnameandcreateroom = async () => {
         const IsAccepted = await requestPermissions();
-         if (selectedCategoryIndices.length === 0) {
+        if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
             return;
         } else if (!IsAccepted && socket?.connected) {
@@ -205,7 +205,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             //7 character room ID
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
             const roomData = {
-                RoomName: roomIdInput ||" ",
+                RoomName: roomIdInput || " ",
                 hostID: userData.userid,
                 startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
                 endDate: format(new Date(Date.now() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
@@ -360,13 +360,13 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             styles.streamListMainCardLayout,
                             themeStyles[theme].streamListMainCardLayout,
                         ]}>
-                        <Text
+                        {/* <Text
                             style={[
                                 styles.streamListMainTitle,
                                 themeStyles[theme].streamListMainTitle,
                             ]}>
                             For You
-                        </Text>
+                        </Text> */}
                         {isFiltering && (
                             <View style={styles.isFilteringOverlay}>
                                 <View style={[styles.isFilteringBlurBackground, themeStyles[theme].isFilteringBlurBackground]} />
