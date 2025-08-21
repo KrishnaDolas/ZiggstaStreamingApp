@@ -765,7 +765,7 @@ export const MainScreen = () => {
         id: userData.userid,
         timestamp: new Date().toLocaleTimeString(),
         userProfile: userData?.avatar,
-        Gender:userData?.Gender
+        Gender:userData?.gender
       };
       console.log(newMessage);
 
