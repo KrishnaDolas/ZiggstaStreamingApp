@@ -205,7 +205,7 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                     <Text
                         style={{ fontSize: 14, fontWeight: '600', color: theme === 'light' ? '#222' : '#fff' }}
                     >
-                        {item.username}
+                        {item.screenName}
                     </Text>
                 </View>
                 <View style={{ marginLeft: 12 }}>
