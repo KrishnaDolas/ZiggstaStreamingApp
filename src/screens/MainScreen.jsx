@@ -249,13 +249,13 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleSignal');
     }
   }
-  const HandleNewMessage = ({ userName, message, id, userProfile }) => {
+  const HandleNewMessage = ({ userName, message, id, userProfile,Gender }) => {
     try {
       let own = userName
       if (userName === userData?.screenName) {
         own = "You"
       }
-      const data = { userID: id, userProfile: userProfile, userName: own, message: message, TYPE: "PLAYERCHAT" }
+      const data = { userID: id, userProfile: userProfile,Gender:Gender, userName: own, message: message, TYPE: "PLAYERCHAT" }
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
@@ -764,7 +764,8 @@ export const MainScreen = () => {
         message: formatted.trim(),
         id: userData.userid,
         timestamp: new Date().toLocaleTimeString(),
-        userProfile: userData?.avatar
+        userProfile: userData?.avatar,
+        Gender:userData?.Gender
       };
       console.log(newMessage);
 

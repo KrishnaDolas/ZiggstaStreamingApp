@@ -1129,7 +1129,7 @@ const StreamRoom = ({
                                                         <TouchableOpacity onPress={() => HandleOpenChatUserProfile(chat)}>
                                                             <Image style={styles.streamChatItemProfileImg}
                                                                 source={!chat.userProfile || chat.userProfile === 'default'
-                                                                    ? getGenderFallbackImage(chat.userProfile)
+                                                                    ? getGenderFallbackImage(chat.Gender)
                                                                     : { uri: chat.userProfile }
                                                                 }
                                                             />
