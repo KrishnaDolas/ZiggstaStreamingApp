@@ -119,7 +119,7 @@ export const MainScreen = () => {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar } : { country: 'India', city: 'Pune' }
+        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar,Gender:userData?.gender } : { country: 'India', city: 'Pune' }
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);
       }
@@ -134,7 +134,7 @@ export const MainScreen = () => {
     if (!IsIdentify.current && userData && socket.connected) {
       if (streamInfo) {
         const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar)
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar,userData?.gender)
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
@@ -487,7 +487,7 @@ export const MainScreen = () => {
     if(!IsVerified.current){
       // Check if user is verified
       if (userData?.userid &&socket.connected) {
-        socket.emit('identity', userData?.userid, userData?.screenName,userData?.avatar);
+        socket.emit('identity', userData?.userid, userData?.screenName,userData?.avatar,userData?.gender);
         IsVerified.current = true; // Set verified flag to true
       } else {
         IsVerified.current = false;
@@ -643,7 +643,7 @@ export const MainScreen = () => {
       }
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar);
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar,userData?.gender);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
