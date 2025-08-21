@@ -1126,9 +1126,6 @@ const StreamRoom = ({
                                         <ScrollView
                                             ref={scrollViewRef}
                                             showsVerticalScrollIndicator={false}
-                                            nestedScrollEnabled={true}
-                                            onStartShouldSetResponderCapture={() => true}
-                                            onMoveShouldSetResponderCapture={() => true}
                                         >
                                             {showUI && (
                                                 roomchat.map((chat, ind) => (
