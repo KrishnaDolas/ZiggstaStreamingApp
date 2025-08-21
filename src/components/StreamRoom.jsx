@@ -686,10 +686,11 @@ const StreamRoom = ({
     };
 
     return (
-        <Pressable onPress={HandleShowUi}>
+        <View>
             <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
-                    <View style={styles.videoContainer}>
+                    <Pressable onPress={HandleShowUi}>
+                        <View style={styles.videoContainer}>
                         <RTCView
                             streamURL={streamLayout[0]?.stream.toURL()}
                             style={styles.fullScreenVideo}
@@ -714,7 +715,9 @@ const StreamRoom = ({
                             </View>
                         )}
                     </View>
+                    </Pressable>
                 ) : (
+                    <Pressable onPress={HandleShowUi}>
                     <View style={[styles.streamVideosContainer]}>
                         {streamLayout.length === 3 ? (
                             <View style={styles.threeUserRow}>
@@ -1060,6 +1063,7 @@ const StreamRoom = ({
                             </View>
                         )}
                     </View>
+                    </Pressable>
                 )}
                 {isStreaming && (
                     <>
@@ -1516,7 +1520,7 @@ const StreamRoom = ({
                     RoomID={streamInfo?.roomID}
                 />
             )}
-        </Pressable>
+        </View>
     );
 };
 
