@@ -142,8 +142,34 @@ const LuckyWheelModal = (
     };
 
     const HandleBetUserList = (users) => {
+        // console.log('Received user bets:', users);
         setUserBets(users);
     };
+
+
+    useEffect(() => {
+        if (visible && userData && userBets.length > 0) {
+            const userBet = userBets.find(bet => bet.userid === userData?.userid);
+            // console.log('Checking user bet:', userBet);
+            if (userBet) {
+                // User has an active bet
+                // console.log('User has bet:', userBet.betAmount, userBet.multiplier);
+                setBetButtonsDisabled(true);
+                setActiveBetAmount(Number(userBet.betAmount));
+                setSelectedMultiplier(userBet.multiplier);
+                placeBetButtonRef.current = true;
+                setMessage(`Bet placed on ${userBet.multiplier}`);
+            } else {
+                // No active bet, reset states
+                // console.log('No active bet for user');
+                setBetButtonsDisabled(false);
+                setActiveBetAmount(null);
+                setSelectedMultiplier('Double');
+                placeBetButtonRef.current = false;
+                setMessage('Get Ready');
+            }
+        }
+    }, [visible, userBets, userData]);
 
 
     // 1️⃣ Always clear interval safely
@@ -407,6 +433,11 @@ const LuckyWheelModal = (
                 startChipCollectionAnimation(WinAmount, selectedMultiplier);
             }, 3000);
         }
+
+        // Reset betting states after spin
+        setBetButtonsDisabled(false);
+        setActiveBetAmount(null);
+        placeBetButtonRef.current = false;
 
     };
 

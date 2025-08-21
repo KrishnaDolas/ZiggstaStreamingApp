@@ -285,6 +285,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     // get profile details from API
 
     useEffect(() => {
+        if (!profileUserId) return; // ✅ skip if no userId
         const fetchUserProfileDetails = async () => {
             setIsUserLoading(true);
             setIsUserError('');
@@ -301,7 +302,12 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     setIsUserError('Failed to fetch user profile details');
                 }
             } catch (err) {
-                setIsUserError('Error fetching user profile details: ' + err.message);
+                if (err.response?.status === 429) {
+                    setIsUserError('Rate limit exceeded. Retrying...');
+                    setTimeout(() => fetchUserProfileDetails(), 3000); // retry after 3s
+                } else {
+                    setIsUserError('Error fetching user profile details: ' + err.message);
+                }
                 SendErrorTotheServer(err, 'fetchUserProfileDetails');
             } finally {
                 setIsUserLoading(false);
