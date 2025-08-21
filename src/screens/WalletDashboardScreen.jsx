@@ -58,6 +58,11 @@ export const WalletDashboardScreen = () => {
             getFriendsData();
 
             getBankListData();
+            setActiveTab('Deposit');
+            setSelectedAmount(5);
+            setPaymentMethod('');
+            setSelectBankName('');
+            setUserName('');
         }, [])
     );
 
