@@ -434,11 +434,6 @@ const LuckyWheelModal = (
             }, 3000);
         }
 
-        // Reset betting states after spin
-        setBetButtonsDisabled(false);
-        setActiveBetAmount(null);
-        placeBetButtonRef.current = false;
-
     };
 
     const handleBetError = (error) => {

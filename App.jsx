@@ -40,16 +40,17 @@ import { ThemeContext } from './src/context/ThemeContext';
 import { themeStyles } from './assets/styles/ThemeStyles';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { SendErrorTotheServer, socket } from './src/utils/constant';
+import NetworkCheck from './src/components/NetworkCheck';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const NetworkCheck = () => (
-  <View style={styles.center}>
-    <ActivityIndicator size="large" color="#0000ff" />
-    <Text style={styles.text}>No Internet Connection</Text>
-  </View>
-);
+// const NetworkCheck = () => (
+//   <View style={styles.center}>
+//     <ActivityIndicator size="large" color="#0000ff" />
+//     <Text style={styles.text}>No Internet Connection</Text>
+//   </View>
+// );
 
 // Custom Tab Bar Component to handle Profile Modal
 const CustomTabBar = ({ state, descriptors, navigation }) => {
