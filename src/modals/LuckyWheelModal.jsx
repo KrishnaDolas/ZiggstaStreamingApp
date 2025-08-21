@@ -66,7 +66,7 @@ const LuckyWheelModal = (
     const [userBets, setUserBets] = useState([]);
     const [betButtonsDisabled, setBetButtonsDisabled] = useState(false);
     const [closePlaceBetDialog, setClosePlaceBetDialog] = useState(false);
-
+    const [hideBetButtons, setHideBetButtons] = useState(false);
     const idleSpin = useRef(new Animated.Value(0)).current;
     const placeBetButtonRef = useRef(false);
     const intervalRef = useRef(null);
@@ -235,6 +235,7 @@ const LuckyWheelModal = (
 
     // 2️⃣ Socket handlers
     const HandleTimer = (time) => {
+        setHideBetButtons(false);
         setMessage('');
         setSpinResultMessage('');
         startCountdown(time); // This will clear any old countdown and restart
@@ -530,6 +531,7 @@ const LuckyWheelModal = (
         stopIdleRotation();
         idleSpin.setValue(0);
         spinValue.setValue(0);
+        setHideBetButtons(true); // Hide bet buttons during spin
 
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
@@ -897,89 +899,56 @@ const LuckyWheelModal = (
                         </View>
                     )}
 
-                    <View style={mainStyle.betGroup}>
-                        {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
-                            const isActive = selectedMultiplier === option;
-                            const isFirst = ind === 0;
-                            const isLast = ind === arr.length - 1;
-                            return (
-                                <TouchableOpacity
-                                    key={option}
-                                    style={[
-                                        mainStyle.betButton,
-                                        {
-                                            backgroundColor: isActive
-                                                ? '#39FF14' // Neon Lime for active
-                                                : ['#00a3ccff', '#ff9a27ff', '#d93a2d', '#834fffff'][ind], // Vibrant colors
-                                            borderTopLeftRadius: isFirst ? 4 : 0,
-                                            borderBottomLeftRadius: isFirst ? 4 : 0,
-                                            borderTopRightRadius: isLast ? 4 : 0,
-                                            borderBottomRightRadius: isLast ? 4 : 0,
-                                            borderRightWidth: isLast ? 0 : 1,
-                                            borderRightColor: '#00000022',
-                                            shadowColor: isActive ? '#39FF14' : '#000',
-                                            shadowOffset: { width: 0, height: 1 },
-                                            shadowOpacity: isActive ? 0.8 : 0.2,
-                                            shadowRadius: isActive ? 6 : 2,
-                                            elevation: isActive ? 6 : 2,
-                                        },
-                                    ]}
-                                    onPress={() => setSelectedMultiplier(option)}
-                                >
-                                    <Text style={[
-                                        mainStyle.betButtonText,
-                                        {
-                                            color: isActive ? '#000' : '#fff',
-                                            fontSize: 14,
-                                        },
-                                    ]}>
-                                        {option}
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                        })}
-                    </View>
+                    {!hideBetButtons && (
+                        <View style={mainStyle.betGroup}>
+                            {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
+                                const isActive = selectedMultiplier === option;
+                                const isFirst = ind === 0;
+                                const isLast = ind === arr.length - 1;
+                                return (
+                                    <TouchableOpacity
+                                        key={option}
+                                        style={[
+                                            mainStyle.betButton,
+                                            {
+                                                backgroundColor: isActive
+                                                    ? '#39FF14' // Neon Lime for active
+                                                    : ['#00a3ccff', '#ff9a27ff', '#d93a2d', '#834fffff'][ind], // Vibrant colors
+                                                borderTopLeftRadius: isFirst ? 4 : 0,
+                                                borderBottomLeftRadius: isFirst ? 4 : 0,
+                                                borderTopRightRadius: isLast ? 4 : 0,
+                                                borderBottomRightRadius: isLast ? 4 : 0,
+                                                borderRightWidth: isLast ? 0 : 1,
+                                                borderRightColor: '#00000022',
+                                                shadowColor: isActive ? '#39FF14' : '#000',
+                                                shadowOffset: { width: 0, height: 1 },
+                                                shadowOpacity: isActive ? 0.8 : 0.2,
+                                                shadowRadius: isActive ? 6 : 2,
+                                                elevation: isActive ? 6 : 2,
+                                            },
+                                        ]}
+                                        onPress={() => setSelectedMultiplier(option)}
+                                    >
+                                        <Text style={[
+                                            mainStyle.betButtonText,
+                                            {
+                                                color: isActive ? '#000' : '#fff',
+                                                fontSize: 14,
+                                            },
+                                        ]}>
+                                            {option}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )
+                            })}
+                        </View>
+                    )}
 
-                    <View style={[mainStyle.placeBetBtnGroup]}>
-                        {/* First button - 70% */}
-                        {userBets.length === 0 ? (
-                            <TouchableOpacity
-                                style={[
-                                    mainStyle.placeBetBtn,
-                                    {
-                                        flex: 7,
-                                        marginRight: 5,
-                                        backgroundColor:
-                                            activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
-                                        opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
-                                        borderRadius: 4,
-                                        shadowColor: '#00FFFF',
-                                        shadowOffset: { width: 0, height: 0 },
-                                        shadowOpacity: 0.9,
-                                        shadowRadius: 10,
-                                        elevation: 8,
-                                    },
-                                ]}
-                                // onPress={() => {
-                                //     Alert.alert(
-                                //         'Place Bet',
-                                //         'Are you sure you want to place 500 chips to play?',
-                                //         [
-                                //             { text: 'Cancel', style: 'cancel' },
-                                //             { text: 'OK', onPress: () => placeBet(500) },
-                                //         ]
-                                //     );
-                                // }}
-                                onPress={handlePlaceBet}
-                                // onPress={() => handleSpin('Triple')}
-                                disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
-                            >
-                                <Text style={mainStyle.placeBetBtnText}>
-                                    BET 500
-                                </Text>
-                            </TouchableOpacity>
-                        ) : (
-                            <>
+
+                    {!hideBetButtons && (
+                        <View style={[mainStyle.placeBetBtnGroup]}>
+                            {/* First button - 70% */}
+                            {userBets.length === 0 ? (
                                 <TouchableOpacity
                                     style={[
                                         mainStyle.placeBetBtn,
@@ -997,44 +966,82 @@ const LuckyWheelModal = (
                                             elevation: 8,
                                         },
                                     ]}
-                                    onPress={() => placeBet(500)}
+                                    // onPress={() => {
+                                    //     Alert.alert(
+                                    //         'Place Bet',
+                                    //         'Are you sure you want to place 500 chips to play?',
+                                    //         [
+                                    //             { text: 'Cancel', style: 'cancel' },
+                                    //             { text: 'OK', onPress: () => placeBet(500) },
+                                    //         ]
+                                    //     );
+                                    // }}
+                                    onPress={handlePlaceBet}
+                                    // onPress={() => handleSpin('Triple')}
                                     disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
                                 >
                                     <Text style={mainStyle.placeBetBtnText}>
                                         BET 500
                                     </Text>
                                 </TouchableOpacity>
+                            ) : (
+                                <>
+                                    <TouchableOpacity
+                                        style={[
+                                            mainStyle.placeBetBtn,
+                                            {
+                                                flex: 7,
+                                                marginRight: 5,
+                                                backgroundColor:
+                                                    activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
+                                                opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                                borderRadius: 4,
+                                                shadowColor: '#00FFFF',
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.9,
+                                                shadowRadius: 10,
+                                                elevation: 8,
+                                            },
+                                        ]}
+                                        onPress={() => placeBet(500)}
+                                        disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
+                                    >
+                                        <Text style={mainStyle.placeBetBtnText}>
+                                            BET 500
+                                        </Text>
+                                    </TouchableOpacity>
 
-                                {/* Second button - 30% */}
-                                <TouchableOpacity
-                                    style={[
-                                        mainStyle.placeBetBtn,
-                                        {
-                                            flex: 3,
-                                            marginLeft: 5,
-                                            backgroundColor:
-                                                activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
-                                            opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
-                                            borderRadius: 4,
-                                            shadowColor: '#FF00FF',
-                                            shadowOffset: { width: 0, height: 0 },
-                                            shadowOpacity: 0.9,
-                                            shadowRadius: 10,
-                                            elevation: 8,
-                                        },
-                                    ]}
-                                    onPress={() => placeBet(100)}
-                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
-                                >
-                                    <Text style={mainStyle.placeBetBtnText}>
-                                        BET 100
-                                    </Text>
-                                </TouchableOpacity>
+                                    {/* Second button - 30% */}
+                                    <TouchableOpacity
+                                        style={[
+                                            mainStyle.placeBetBtn,
+                                            {
+                                                flex: 3,
+                                                marginLeft: 5,
+                                                backgroundColor:
+                                                    activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
+                                                opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
+                                                borderRadius: 4,
+                                                shadowColor: '#FF00FF',
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.9,
+                                                shadowRadius: 10,
+                                                elevation: 8,
+                                            },
+                                        ]}
+                                        onPress={() => placeBet(100)}
+                                        disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
+                                    >
+                                        <Text style={mainStyle.placeBetBtnText}>
+                                            BET 100
+                                        </Text>
+                                    </TouchableOpacity>
 
-                            </>
-                        )}
+                                </>
+                            )}
+                        </View>
+                    )}
 
-                    </View>
 
                     <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
 
