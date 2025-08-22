@@ -5,9 +5,6 @@ import {
     ActivityIndicator,
     Pressable, BackHandler,
     ImageBackground, Share,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
     LayoutAnimation,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
