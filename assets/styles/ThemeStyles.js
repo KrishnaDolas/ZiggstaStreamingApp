@@ -162,10 +162,9 @@ export const styles = StyleSheet.create({
     backgroundColor: '#00000033',
   },
   streamBox: {
-    width: '100%',
-    position: 'relative',
-    height: '100%',
+    flex: 1,
     backgroundColor: '#1d1d1d',
+    position: 'relative',
   },
 
   fullScreenVideo: {
@@ -1498,7 +1497,7 @@ export const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
   },
-  strRoomHeaderLeftProfileInfo :{
+  strRoomHeaderLeftProfileInfo: {
   },
   strRoomHeaderLeftProfileName: {
     color: '#fff',
@@ -1533,8 +1532,8 @@ export const styles = StyleSheet.create({
   },
   strRoomHeaderRWalletInfoText: {
     color: '#ffea23',
-    paddingLeft:'5',
-    paddingRight:'5'
+    paddingLeft: '5',
+    paddingRight: '5'
   },
   strRoomHeaderRIconBox: {
     marginLeft: 18,
@@ -1568,25 +1567,29 @@ export const styles = StyleSheet.create({
   },
   strRoomFooter: {
     width: '100%',
-    position: 'relative',
-    // paddingBottom: 20,
     paddingVertical: 20,
     position: 'absolute',
-    zIndex: 99,
+    zIndex: 9,
     bottom: 0,
-    width: '100%',
+    height: 250,
   },
   strRoomFooterChatOrActionsBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    marginTop: 18,
+    paddingHorizontal: 10,
+    // marginTop: 18,
+    position: 'absolute',
+    // bottom: 61,
+    left: 0,
+    right: 0,
+    width: '100%',
+    zIndex: 10,
   },
   streamChatContainer: {
     flex: 1,
-    height: 215,
-    position: "relative",
-    bottom: 25
+    // height: 215,
+    maxHeight: 215,
+    position: 'relative',
   },
   streamChatItem: {
     flexDirection: 'row',
@@ -1621,24 +1624,26 @@ export const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
   strRoomFooterSocialActions: {
-    position: 'absolute',
-    bottom: 18,
-    right: 8,
     flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'baseline',
+    gap: 20,
   },
   strRoomFooterSocialActionsBtn: {
-    marginBottom: 24,
+    marginBottom: 0,
   },
   strRoomBottomBox: {
     position: 'absolute',
     bottom: 0,
-    paddingHorizontal: 14,
-    paddingBottom: 6,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    width: '100%',
+    zIndex: 20,
   },
   strRoomBottomBoxInput: {
     flex: 1,
@@ -1759,8 +1764,9 @@ export const styles = StyleSheet.create({
   // stream more setting options
   strMoreSettingListContainer: {
     position: 'absolute',
-    bottom: 40,
-    right: '18%',
+    bottom: 80,
+    right: 70,
+    zIndex: 9999,
   },
   strMoreSettingListItem: {
     flexDirection: 'row',

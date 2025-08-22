@@ -2,9 +2,13 @@
 import {
     View, Text, TouchableOpacity, Alert, Image, ScrollView, Dimensions, TextInput, Keyboard, Animated,
     Easing,
-    ActivityIndicator, Platform,
+    ActivityIndicator,
     Pressable, BackHandler,
-    ImageBackground,Share
+    ImageBackground, Share,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    LayoutAnimation,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -351,9 +355,11 @@ const StreamRoom = ({
         //    }
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             HidesettingPanel()
+            LayoutAnimation.easeInEaseOut();
             setKeyboardOffset(e.endCoordinates.height);
         });
         const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+            LayoutAnimation.easeInEaseOut();
             setKeyboardOffset(0);
         });
 
@@ -487,7 +493,7 @@ const StreamRoom = ({
         try {
             const sound = new Sound('gift_received', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                   SendErrorTotheServer(error, "playGiftSound")
+                    SendErrorTotheServer(error, "playGiftSound")
                     return;
                 }
                 sound.play(() => {
@@ -495,7 +501,7 @@ const StreamRoom = ({
                 });
             });
         } catch (error) {
-           SendErrorTotheServer(error, "playGiftSound")
+            SendErrorTotheServer(error, "playGiftSound")
         }
     };
     const playNotification = () => {
@@ -686,151 +692,87 @@ const StreamRoom = ({
     };
 
     return (
-        <View>
+        <>
             <View style={[styles.streamBox]}>
                 {streamLayout.length === 1 ? (
                     <Pressable onPress={HandleShowUi}>
                         <View style={styles.videoContainer}>
-                        <RTCView
-                            streamURL={streamLayout[0]?.stream.toURL()}
-                            style={styles.fullScreenVideo}
-                            objectFit="cover"
-                            mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
-                        />
-                        <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                            <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
-                        </View>
-                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
-                            <View style={{
-                                position: 'absolute',
-                                bottom: showUI ? 90 : 10,
-                                left: 10,
-                                right: 10,
-                                alignItems: 'center',
-                            }}>
-                                <AudioSpectrum
-                                    audioLevel={streamLayout[0]?.audioLevel}
-                                    streamLayout={streamLayout}
-                                />
+                            <RTCView
+                                streamURL={streamLayout[0]?.stream.toURL()}
+                                style={styles.fullScreenVideo}
+                                objectFit="cover"
+                                mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
+                            />
+                            <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                             </View>
-                        )}
-                    </View>
+                            {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
+                                <View style={{
+                                    position: 'absolute',
+                                    bottom: showUI ? insets.bottom + 70 : 10,
+                                    left: 10,
+                                    right: 10,
+                                    alignItems: 'center',
+                                }}>
+                                    <AudioSpectrum
+                                        audioLevel={streamLayout[0]?.audioLevel}
+                                        streamLayout={streamLayout}
+                                    />
+                                </View>
+                            )}
+                        </View>
                     </Pressable>
                 ) : (
                     <Pressable onPress={HandleShowUi}>
-                    <View style={[styles.streamVideosContainer]}>
-                        {streamLayout.length === 3 ? (
-                            <View style={styles.threeUserRow}>
-                                <View style={styles.threeUserColumnLeft}>
-                                    <RTCView
-                                        streamURL={streamLayout[0].stream.toURL()}
-                                        style={styles.streamVideoFull}
-                                        objectFit="cover"
-                                        mirror={streamLayout[0].type === 'local' && isFrontCamera}
-                                    />
-                                    <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
-                                        <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
-                                    </View>
-                                    {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
-                                        <View style={{
-                                            position: 'absolute',
-                                            bottom: showUI ? 60 : 10,
-                                            left: 10,
-                                            right: 10,
-                                            alignItems: 'center',
-                                        }}>
-                                            <AudioSpectrum
-                                                audioLevel={streamLayout[0]?.audioLevel}
-                                                streamLayout={streamLayout}
-                                            />
+                        <View style={[styles.streamVideosContainer]}>
+                            {streamLayout.length === 3 ? (
+                                <View style={styles.threeUserRow}>
+                                    <View style={styles.threeUserColumnLeft}>
+                                        <RTCView
+                                            streamURL={streamLayout[0].stream.toURL()}
+                                            style={styles.streamVideoFull}
+                                            objectFit="cover"
+                                            mirror={streamLayout[0].type === 'local' && isFrontCamera}
+                                        />
+                                        <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
+                                            <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                         </View>
-                                    )}
-                                    {streamLayout[0]?.type !== 'local' && showUI && (
-                                        <View style={styles.videoOverlay}>
-                                            <ImageBackground
-                                                source={bgImage}
-                                                style={{ padding: 3 }}
-                                            >
-                                                <View style={styles.userInfoContainer}>
-                                                    <TouchableOpacity
-                                                        onPress={() => HnadleSendGiftToCoHost(streamLayout[0]?.userId, streamLayout[0]?.Name)}
-                                                    >
-                                                        <Image source={GiftIcon} height={35} width={35} />
-                                                    </TouchableOpacity>
-                                                    <Text style={styles.userName}>
-                                                        {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
-                                                    </Text>
-                                                    <TouchableOpacity
-                                                        style={styles.friendRequestIcon}
-                                                        disabled={streamLayout[0]?.isFriend}
-                                                        onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
-                                                    >
-                                                        {streamLayout[0]?.isFriend ? (
-                                                           <Image
-                                                           style={{
-                                                               width: 20,
-                                                               height: 20,
-                                                           }}
-                                                           source={require('../../assets/images/icons/friend-added.png')}
-                                                           resizeMode="contain"
-                                                           tintColor="white"
-                                                       />
-                                                        ) : (
-                                                            <Ionicons name="person-add" size={18} color="#fff" />)}
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </ImageBackground>
-                                        </View>
-                                    )}
-                                </View>
-                                <View style={styles.threeUserColumnRight}>
-                                    {streamLayout.slice(1, 3).map((streamData, index) => (
-                                        <View key={index} style={{ flex: 1, position: 'relative' }}>
-                                            <RTCView
-                                                streamURL={streamData.stream.toURL()}
-                                                style={styles.streamVideoHalf}
-                                                objectFit="cover"
-                                                mirror={streamData.type === 'local' && isFrontCamera}
-                                            />
-                                            <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                        {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
+                                            <View style={{
+                                                position: 'absolute',
+                                                bottom: showUI ? 60 : 10,
+                                                left: 10,
+                                                right: 10,
+                                                alignItems: 'center',
+                                            }}>
+                                                <AudioSpectrum
+                                                    audioLevel={streamLayout[0]?.audioLevel}
+                                                    streamLayout={streamLayout}
+                                                />
                                             </View>
-                                            {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
-                                                <View style={{
-                                                    position: 'absolute',
-                                                    bottom: showUI ? 60 : 10,
-                                                    left: 10,
-                                                    right: 10,
-                                                    alignItems: 'center',
-                                                }}>
-                                                    <AudioSpectrum
-                                                        audioLevel={streamData.audioLevel}
-                                                        streamLayout={streamLayout}
-                                                    />
-                                                </View>
-                                            )}
-                                            {streamData?.type !== 'local' && showUI && (
-                                                <View style={styles.videoOverlay}>
-                                                    <ImageBackground
-                                                        source={bgImage}
-                                                        style={{ padding: 3 }}
-                                                    >
-                                                        <View style={styles.userInfoContainer}>
-                                                            <TouchableOpacity
-                                                                onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                            >
-                                                                <Image source={GiftIcon} height={25} width={25} />
-                                                            </TouchableOpacity>
-                                                            <Text style={styles.userName}>
-                                                                {streamData?.Name || streamData?.Name || 'Unknown User'}
-                                                            </Text>
-                                                            <TouchableOpacity
-                                                                style={styles.friendRequestIcon}
-                                                                disabled={streamData?.isFriend}
-                                                                onPress={() => handleFriendRequest(streamData?.userId)}
-                                                            >
-                                                                {streamData?.isFriend ? (
-                                                                    <Image
+                                        )}
+                                        {streamLayout[0]?.type !== 'local' && showUI && (
+                                            <View style={styles.videoOverlay}>
+                                                <ImageBackground
+                                                    source={bgImage}
+                                                    style={{ padding: 3 }}
+                                                >
+                                                    <View style={styles.userInfoContainer}>
+                                                        <TouchableOpacity
+                                                            onPress={() => HnadleSendGiftToCoHost(streamLayout[0]?.userId, streamLayout[0]?.Name)}
+                                                        >
+                                                            <Image source={GiftIcon} height={35} width={35} />
+                                                        </TouchableOpacity>
+                                                        <Text style={styles.userName}>
+                                                            {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
+                                                        </Text>
+                                                        <TouchableOpacity
+                                                            style={styles.friendRequestIcon}
+                                                            disabled={streamLayout[0]?.isFriend}
+                                                            onPress={() => handleFriendRequest(streamLayout[0]?.userId)}
+                                                        >
+                                                            {streamLayout[0]?.isFriend ? (
+                                                                <Image
                                                                     style={{
                                                                         width: 20,
                                                                         height: 20,
@@ -839,230 +781,294 @@ const StreamRoom = ({
                                                                     resizeMode="contain"
                                                                     tintColor="white"
                                                                 />
-                                                                ) : (
-                                                                    <Ionicons name="person-add" size={18} color="#fff" />)}
-                                                            </TouchableOpacity>
+                                                            ) : (
+                                                                <Ionicons name="person-add" size={18} color="#fff" />)}
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </ImageBackground>
+                                            </View>
+                                        )}
+                                    </View>
+                                    <View style={styles.threeUserColumnRight}>
+                                        {streamLayout.slice(1, 3).map((streamData, index) => (
+                                            <View key={index} style={{ flex: 1, position: 'relative' }}>
+                                                <RTCView
+                                                    streamURL={streamData.stream.toURL()}
+                                                    style={styles.streamVideoHalf}
+                                                    objectFit="cover"
+                                                    mirror={streamData.type === 'local' && isFrontCamera}
+                                                />
+                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                </View>
+                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
+                                                    <View style={{
+                                                        position: 'absolute',
+                                                        bottom: showUI ? 60 : 10,
+                                                        left: 10,
+                                                        right: 10,
+                                                        alignItems: 'center',
+                                                    }}>
+                                                        <AudioSpectrum
+                                                            audioLevel={streamData.audioLevel}
+                                                            streamLayout={streamLayout}
+                                                        />
+                                                    </View>
+                                                )}
+                                                {streamData?.type !== 'local' && showUI && (
+                                                    <View style={styles.videoOverlay}>
+                                                        <ImageBackground
+                                                            source={bgImage}
+                                                            style={{ padding: 3 }}
+                                                        >
+                                                            <View style={styles.userInfoContainer}>
+                                                                <TouchableOpacity
+                                                                    onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                                >
+                                                                    <Image source={GiftIcon} height={25} width={25} />
+                                                                </TouchableOpacity>
+                                                                <Text style={styles.userName}>
+                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                </Text>
+                                                                <TouchableOpacity
+                                                                    style={styles.friendRequestIcon}
+                                                                    disabled={streamData?.isFriend}
+                                                                    onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                >
+                                                                    {streamData?.isFriend ? (
+                                                                        <Image
+                                                                            style={{
+                                                                                width: 20,
+                                                                                height: 20,
+                                                                            }}
+                                                                            source={require('../../assets/images/icons/friend-added.png')}
+                                                                            resizeMode="contain"
+                                                                            tintColor="white"
+                                                                        />
+                                                                    ) : (
+                                                                        <Ionicons name="person-add" size={18} color="#fff" />)}
+                                                                </TouchableOpacity>
+                                                            </View>
+                                                        </ImageBackground>
+                                                    </View>
+                                                )}
+                                            </View>
+                                        ))}
+                                    </View>
+                                </View>
+                            ) : streamLayout.length === 5 ? (
+                                <View style={styles.fiveUserWrapper}>
+                                    <View style={styles.fiveUserRow}>
+                                        {streamLayout.slice(0, 2).map((streamData, index) => (
+                                            <View key={index} style={styles.fiveUserCol50}>
+                                                <View style={styles.videoContainer}>
+                                                    <RTCView
+                                                        streamURL={streamData.stream.toURL()}
+                                                        style={styles.streamFiveUserVideo}
+                                                        objectFit="cover"
+                                                        mirror={streamData.type === 'local' && isFrontCamera}
+                                                    />
+                                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                    </View>
+                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            bottom: showUI ? 60 : 10,
+                                                            left: 10,
+                                                            right: 10,
+                                                            alignItems: 'center',
+                                                        }}>
+                                                            <AudioSpectrum
+                                                                audioLevel={streamData.audioLevel}
+                                                                streamLayout={streamLayout}
+                                                            />
                                                         </View>
-                                                    </ImageBackground>
-                                                </View>
-                                            )}
-                                        </View>
-                                    ))}
-                                </View>
-                            </View>
-                        ) : streamLayout.length === 5 ? (
-                            <View style={styles.fiveUserWrapper}>
-                                <View style={styles.fiveUserRow}>
-                                    {streamLayout.slice(0, 2).map((streamData, index) => (
-                                        <View key={index} style={styles.fiveUserCol50}>
-                                            <View style={styles.videoContainer}>
-                                                <RTCView
-                                                    streamURL={streamData.stream.toURL()}
-                                                    style={styles.streamFiveUserVideo}
-                                                    objectFit="cover"
-                                                    mirror={streamData.type === 'local' && isFrontCamera}
-                                                />
-                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
-                                                </View>
-                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
-                                                    <View style={{
-                                                        position: 'absolute',
-                                                        bottom: showUI ? 60 : 10,
-                                                        left: 10,
-                                                        right: 10,
-                                                        alignItems: 'center',
-                                                    }}>
-                                                        <AudioSpectrum
-                                                            audioLevel={streamData.audioLevel}
-                                                            streamLayout={streamLayout}
-                                                        />
-                                                    </View>
-                                                )}
-                                                {streamData?.type !== 'local' && showUI && (
-                                                    <View style={styles.videoOverlay}>
-                                                        <ImageBackground
-                                                            source={bgImage}
-                                                            style={{ padding: 3 }}
-                                                        >
-                                                            <View style={styles.userInfoContainer}>
-                                                                <TouchableOpacity
-                                                                    onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                                >
-                                                                    <Image source={GiftIcon} style={{ height: '35', width: '35' }} />
-                                                                </TouchableOpacity>
-                                                                <Text style={styles.userName}>
-                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
-                                                                </Text>
-                                                                <TouchableOpacity
-                                                                    style={styles.friendRequestIcon}
-                                                                    disabled={streamData?.isFriend}
-                                                                    onPress={() => handleFriendRequest(streamData?.userId)}
-                                                                >
-                                                                    {streamData?.isFriend ? (
-                                                                        <Image
-                                                                        style={{
-                                                                            width: 20,
-                                                                            height: 20,
-                                                                        }}
-                                                                        source={require('../../assets/images/icons/friend-added.png')}
-                                                                        resizeMode="contain"
-                                                                        tintColor="white"
-                                                                    />
-                                                                    ) : (
-                                                                        <Ionicons name="person-add" size={16} color="#fff" />)}
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        </ImageBackground>
-                                                    </View>
-                                                )}
-                                            </View>
-                                        </View>
-                                    ))}
-                                </View>
-                                <View style={styles.fiveUserRow}>
-                                    {streamLayout.slice(2, 5).map((streamData, index) => (
-                                        <View key={index} style={styles.fiveUserCol33}>
-                                            <View style={styles.videoContainer}>
-                                                <RTCView
-                                                    streamURL={streamData.stream.toURL()}
-                                                    style={styles.streamFiveUserVideo}
-                                                    objectFit="cover"
-                                                    mirror={streamData.type === 'local' && isFrontCamera}
-                                                />
-                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
-                                                </View>
-                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
-                                                    <View style={{
-                                                        position: 'absolute',
-                                                        bottom: showUI ? 60 : 10,
-                                                        left: 10,
-                                                        right: 10,
-                                                        alignItems: 'center',
-                                                    }}>
-                                                        <AudioSpectrum
-                                                            audioLevel={streamData.audioLevel}
-                                                            streamLayout={streamLayout}
-                                                        />
-                                                    </View>
-                                                )}
-                                                {streamData?.type !== 'local' && showUI && (
-                                                    <View style={styles.videoOverlay}>
-                                                        <ImageBackground
-                                                            source={bgImage}
-                                                            style={{ padding: 3 }}
-                                                        >
-                                                            <View style={styles.userInfoContainer}>
-                                                                <TouchableOpacity
-                                                                    onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                                >
-                                                                    <Image source={GiftIcon} style={{ height: '25', width: '25' }} />
-                                                                </TouchableOpacity>
-                                                                <Text style={styles.userName}>
-                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
-                                                                </Text>
-                                                                <TouchableOpacity
-                                                                    style={styles.friendRequestIcon}
-                                                                    disabled={streamData?.isFriend}
-                                                                    onPress={() => handleFriendRequest(streamData?.userId)}
-                                                                >
-                                                                    {streamData?.isFriend ? (
-                                                                        <Image
-                                                                        style={{
-                                                                            width: 15,
-                                                                            height: 15,
-                                                                        }}
-                                                                        source={require('../../assets/images/icons/friend-added.png')}
-                                                                        resizeMode="contain"
-                                                                        tintColor="white"
-                                                                    />
-                                                                    ) : (
-                                                                        <Ionicons name="person-add" size={16} color="#fff" />)}
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        </ImageBackground>
-                                                    </View>
-                                                )}
-                                            </View>
-                                        </View>
-                                    ))}
-                                </View>
-                            </View>
-                        ) : (
-                            <View style={[styles.streamVideosInnerGrid]}>
-                                {streamLayout.map((streamData, index) => {
-                                    return (
-                                        <Fragment key={index}>
-                                            <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
-                                                <RTCView
-                                                    key={streamData.type === 'local' ? 'local' : streamData.userId}
-                                                    streamURL={streamData.stream.toURL()}
-                                                    style={[styles.streamVideo]}
-                                                    objectFit="cover"
-                                                    mirror={streamData.type === 'local' && isFrontCamera}
-                                                />
-                                                <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
-                                                </View>
-                                                {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
-                                                    <View style={{
-                                                        position: 'absolute',
-                                                        bottom: showUI ? 60 : 10,
-                                                        left: 10,
-                                                        right: 10,
-                                                        alignItems: 'center',
-                                                    }}>
-                                                        <AudioSpectrum
-                                                            audioLevel={streamData.audioLevel}
-                                                            streamLayout={streamLayout}
-                                                        />
-                                                    </View>
-                                                )}
-                                                <View style={styles.videoOverlay}>
+                                                    )}
                                                     {streamData?.type !== 'local' && showUI && (
-                                                        <ImageBackground
-                                                            source={bgImage}
-                                                            style={{ padding: 3 }}
-                                                        >
-                                                            <View style={styles.userInfoContainer}>
-                                                                <TouchableOpacity
-                                                                    onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                                >
-                                                                    <Image source={GiftIcon} height={35} width={35} />
-                                                                </TouchableOpacity>
-                                                                <Text style={styles.userName}>
-                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
-                                                                </Text>
-                                                                <TouchableOpacity
-                                                                    style={styles.friendRequestIcon}
-                                                                    disabled={streamData?.isFriend}
-                                                                    onPress={() => handleFriendRequest(streamData?.userId)}
-                                                                >
-                                                                    {streamData?.isFriend ? (
-                                                                       <Image
-                                                                       style={{
-                                                                           width: streamLayout.length == 6?15: streamLayout.length == 4  ? 20 :22,
-                                                                           height: streamLayout.length == 6?15: streamLayout.length == 4 ? 20 :22,
-                                                                       }}
-                                                                       source={require('../../assets/images/icons/friend-added.png')}
-                                                                       resizeMode="contain"
-                                                                       tintColor="white"
-                                                                   />
-                                                                    ) : (
-                                                                        <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />)}
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        </ImageBackground>
+                                                        <View style={styles.videoOverlay}>
+                                                            <ImageBackground
+                                                                source={bgImage}
+                                                                style={{ padding: 3 }}
+                                                            >
+                                                                <View style={styles.userInfoContainer}>
+                                                                    <TouchableOpacity
+                                                                        onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                                    >
+                                                                        <Image source={GiftIcon} style={{ height: '35', width: '35' }} />
+                                                                    </TouchableOpacity>
+                                                                    <Text style={styles.userName}>
+                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    </Text>
+                                                                    <TouchableOpacity
+                                                                        style={styles.friendRequestIcon}
+                                                                        disabled={streamData?.isFriend}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                    >
+                                                                        {streamData?.isFriend ? (
+                                                                            <Image
+                                                                                style={{
+                                                                                    width: 20,
+                                                                                    height: 20,
+                                                                                }}
+                                                                                source={require('../../assets/images/icons/friend-added.png')}
+                                                                                resizeMode="contain"
+                                                                                tintColor="white"
+                                                                            />
+                                                                        ) : (
+                                                                            <Ionicons name="person-add" size={16} color="#fff" />)}
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </ImageBackground>
+                                                        </View>
                                                     )}
                                                 </View>
                                             </View>
-                                        </Fragment>
-                                    );
-                                })}
-                            </View>
-                        )}
-                    </View>
+                                        ))}
+                                    </View>
+                                    <View style={styles.fiveUserRow}>
+                                        {streamLayout.slice(2, 5).map((streamData, index) => (
+                                            <View key={index} style={styles.fiveUserCol33}>
+                                                <View style={styles.videoContainer}>
+                                                    <RTCView
+                                                        streamURL={streamData.stream.toURL()}
+                                                        style={styles.streamFiveUserVideo}
+                                                        objectFit="cover"
+                                                        mirror={streamData.type === 'local' && isFrontCamera}
+                                                    />
+                                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                    </View>
+                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            bottom: showUI ? 60 : 10,
+                                                            left: 10,
+                                                            right: 10,
+                                                            alignItems: 'center',
+                                                        }}>
+                                                            <AudioSpectrum
+                                                                audioLevel={streamData.audioLevel}
+                                                                streamLayout={streamLayout}
+                                                            />
+                                                        </View>
+                                                    )}
+                                                    {streamData?.type !== 'local' && showUI && (
+                                                        <View style={styles.videoOverlay}>
+                                                            <ImageBackground
+                                                                source={bgImage}
+                                                                style={{ padding: 3 }}
+                                                            >
+                                                                <View style={styles.userInfoContainer}>
+                                                                    <TouchableOpacity
+                                                                        onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                                    >
+                                                                        <Image source={GiftIcon} style={{ height: '25', width: '25' }} />
+                                                                    </TouchableOpacity>
+                                                                    <Text style={styles.userName}>
+                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    </Text>
+                                                                    <TouchableOpacity
+                                                                        style={styles.friendRequestIcon}
+                                                                        disabled={streamData?.isFriend}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                    >
+                                                                        {streamData?.isFriend ? (
+                                                                            <Image
+                                                                                style={{
+                                                                                    width: 15,
+                                                                                    height: 15,
+                                                                                }}
+                                                                                source={require('../../assets/images/icons/friend-added.png')}
+                                                                                resizeMode="contain"
+                                                                                tintColor="white"
+                                                                            />
+                                                                        ) : (
+                                                                            <Ionicons name="person-add" size={16} color="#fff" />)}
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </ImageBackground>
+                                                        </View>
+                                                    )}
+                                                </View>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </View>
+                            ) : (
+                                <View style={[styles.streamVideosInnerGrid]}>
+                                    {streamLayout.map((streamData, index) => {
+                                        return (
+                                            <Fragment key={index}>
+                                                <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
+                                                    <RTCView
+                                                        key={streamData.type === 'local' ? 'local' : streamData.userId}
+                                                        streamURL={streamData.stream.toURL()}
+                                                        style={[styles.streamVideo]}
+                                                        objectFit="cover"
+                                                        mirror={streamData.type === 'local' && isFrontCamera}
+                                                    />
+                                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
+                                                    </View>
+                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
+                                                        <View style={{
+                                                            position: 'absolute',
+                                                            bottom: showUI ? 60 : 10,
+                                                            left: 10,
+                                                            right: 10,
+                                                            alignItems: 'center',
+                                                        }}>
+                                                            <AudioSpectrum
+                                                                audioLevel={streamData.audioLevel}
+                                                                streamLayout={streamLayout}
+                                                            />
+                                                        </View>
+                                                    )}
+                                                    <View style={styles.videoOverlay}>
+                                                        {streamData?.type !== 'local' && showUI && (
+                                                            <ImageBackground
+                                                                source={bgImage}
+                                                                style={{ padding: 3 }}
+                                                            >
+                                                                <View style={styles.userInfoContainer}>
+                                                                    <TouchableOpacity
+                                                                        onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
+                                                                    >
+                                                                        <Image source={GiftIcon} height={35} width={35} />
+                                                                    </TouchableOpacity>
+                                                                    <Text style={styles.userName}>
+                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    </Text>
+                                                                    <TouchableOpacity
+                                                                        style={styles.friendRequestIcon}
+                                                                        disabled={streamData?.isFriend}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId)}
+                                                                    >
+                                                                        {streamData?.isFriend ? (
+                                                                            <Image
+                                                                                style={{
+                                                                                    width: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
+                                                                                    height: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
+                                                                                }}
+                                                                                source={require('../../assets/images/icons/friend-added.png')}
+                                                                                resizeMode="contain"
+                                                                                tintColor="white"
+                                                                            />
+                                                                        ) : (
+                                                                            <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />)}
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </ImageBackground>
+                                                        )}
+                                                    </View>
+                                                </View>
+                                            </Fragment>
+                                        );
+                                    })}
+                                </View>
+                            )}
+                        </View>
                     </Pressable>
                 )}
                 {isStreaming && (
@@ -1095,7 +1101,7 @@ const StreamRoom = ({
                                     socket.emit('RoomTotalCount')
                                 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6',marginRight:'3' }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6', marginRight: '3' }}>
                                             <Ionicons name="eye" size={15} color="#1F85F5" />
                                             <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
                                         </View>
@@ -1114,14 +1120,22 @@ const StreamRoom = ({
                                 </TouchableOpacity>
                             </View>
                         </View>)}
+
+                        {/* gradient fix box   */}
                         <LinearGradient
                             colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
-                            start={{ x: 0.5, y: showUI ? 1 : 0 }}
+                            start={{ x: 0.5, y: 1 }}
                             end={{ x: 0.5, y: 0 }}
                             style={[styles.strRoomFooter, { bottom: insets.bottom > 3 ? insets.bottom : 0 }]}
                         >
-                            <>
-                                <View style={[styles.strRoomFooterChatOrActionsBox, { display: openMoreSettingList ? 'none' : 'flex' }]}>
+                        </LinearGradient>
+                        <>
+                            {/* chat message container */}
+                            {!openMoreSettingList && (
+                                <View style={[styles.strRoomFooterChatOrActionsBox, {
+                                    bottom: insets.bottom + 60,
+                                }]}>
+                                    {/* chat message box */}
                                     <View style={[styles.streamChatContainer]}>
                                         <ScrollView
                                             ref={scrollViewRef}
@@ -1151,6 +1165,7 @@ const StreamRoom = ({
                                             )}
                                         </ScrollView>
                                     </View>
+                                    {/* chat message icon box right side */}
                                     {showUI && (<View style={styles.strRoomFooterSocialActions}>
                                         <TouchableOpacity
                                             style={styles.strRoomFooterSocialActionsBtn}
@@ -1194,68 +1209,15 @@ const StreamRoom = ({
                                         </TouchableOpacity>
                                     </View>)}
                                 </View>
-                            </>
-                            {openMoreSettingList && showUI && (
-                                <LinearGradient
-                                    colors={['rgba(8, 8, 8, 0.28)', 'rgba(8, 8, 8, 0)']}
-                                    start={{ x: 0.5, y: 1 }}
-                                    end={{ x: 0.5, y: 0 }}
-                                    style={{ minHeight: 200 }}
-                                >
-                                    <Animated.View
-                                        style={[
-                                            styles.strMoreSettingListContainer,
-                                            {
-                                                opacity: animatedOpacity,
-                                                transform: [{ translateY: animatedTranslateY }],
-                                            },
-                                        ]}
-                                    >
-                                        <TouchableOpacity onPress={() => {
-                                            switchCamera();
-                                            HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
-                                            <Ionicons name="camera-reverse" size={20} color="#fff" />
-                                        </TouchableOpacity>
-                                        {!isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                requestStreamPermission(),
-                                                    HidesettingPanel(),
-                                                    setVisibleModal('message-modal'),
-                                                    setMessage('Request Send To the Host')
-                                            }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
-                                                <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
-                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
-                                            </TouchableOpacity>
-                                        )}                                        
-                                        <TouchableOpacity onPress={() => {
-                                            toggleMute(),
-                                                HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
-                                            {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
-                                        </TouchableOpacity>
-                                        {isHost && (<TouchableOpacity onPress={() => {
-                                            setEditStreamDescription(true)
-                                            HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Edit Stream Title </Text>
-                                             <AntDesign name="edit" size={20} color="#fff" />
-                                        </TouchableOpacity>) }
-                                        {!isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                HidesettingPanel()
-                                                HandleReport()
-                                            }} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Report</Text>
-                                                <Ionicons name="flag" size={20} color="#dc3131" />
-                                            </TouchableOpacity>
-                                        )}
-                                    </Animated.View>
-                                </LinearGradient>
                             )}
-                            {showUI && (<View style={[styles.strRoomBottomBox, { marginBottom: Platform.OS === 'android' ? keyboardOffset : 0 }]}>
+
+
+
+                            {/* input box container */}
+                            {showUI && (<View style={[
+                                styles.strRoomBottomBox,
+                                { bottom: keyboardOffset > 0 ? keyboardOffset : insets.bottom },
+                            ]}>
                                 <TextInput
                                     placeholder=""
                                     placeholderTextColor="#414141"
@@ -1320,8 +1282,62 @@ const StreamRoom = ({
                                         )}
                                     </>
                                 )}
+                                {/* more setting icon box */}
+                                {openMoreSettingList && showUI && (
+                                    <Animated.View
+                                        style={[
+                                            styles.strMoreSettingListContainer,
+                                            {
+                                                opacity: animatedOpacity,
+                                                transform: [{ translateY: animatedTranslateY }],
+                                            },
+                                        ]}
+                                    >
+                                        <TouchableOpacity onPress={() => {
+                                            switchCamera();
+                                            HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
+                                            <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
+                                            <Ionicons name="camera-reverse" size={20} color="#fff" />
+                                        </TouchableOpacity>
+                                        {!isHost && (
+                                            <TouchableOpacity onPress={() => {
+                                                requestStreamPermission(),
+                                                    HidesettingPanel(),
+                                                    setVisibleModal('message-modal'),
+                                                    setMessage('Request Send To the Host')
+                                            }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
+                                                <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
+                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
+                                            </TouchableOpacity>
+                                        )}
+                                        <TouchableOpacity onPress={() => {
+                                            toggleMute(),
+                                                HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
+                                            <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
+                                            {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                        </TouchableOpacity>
+                                        {isHost && (<TouchableOpacity onPress={() => {
+                                            setEditStreamDescription(true)
+                                            HidesettingPanel()
+                                        }} style={styles.strMoreSettingListItem}>
+                                            <Text style={styles.strMoreSettingListItemText}>Edit Stream Title </Text>
+                                            <AntDesign name="edit" size={20} color="#fff" />
+                                        </TouchableOpacity>)}
+                                        {!isHost && (
+                                            <TouchableOpacity onPress={() => {
+                                                HidesettingPanel()
+                                                HandleReport()
+                                            }} style={styles.strMoreSettingListItem}>
+                                                <Text style={styles.strMoreSettingListItemText}>Report</Text>
+                                                <Ionicons name="flag" size={20} color="#dc3131" />
+                                            </TouchableOpacity>
+                                        )}
+                                    </Animated.View>
+                                )}
                             </View>)}
-                        </LinearGradient>
+                        </>
                     </>
                 )}
             </View>
@@ -1517,7 +1533,7 @@ const StreamRoom = ({
                     RoomID={streamInfo?.roomID}
                 />
             )}
-        </View>
+        </>
     );
 };
 
