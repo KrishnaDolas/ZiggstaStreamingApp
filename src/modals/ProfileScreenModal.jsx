@@ -615,7 +615,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                     size={34}
                                                                     color={
                                                                         socialLinks?.instagram
-                                                                            ? theme === 'dark' ? '#fff' : '#833ab4'
+                                                                            ? theme === 'dark' ? '#833ab4' : '#833ab4'
                                                                             : '#A9A9A9'
                                                                     }
                                                                     style={!socialLinks?.instagram ? { opacity: 0.5 } : {}}
@@ -634,7 +634,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                                     size={34}
                                                                     color={
                                                                         socialLinks?.facebook
-                                                                            ? theme === 'dark' ? '#fff' : '#445fed'
+                                                                            ? theme === 'dark' ? '#445fed' : '#445fed'
                                                                             : '#A9A9A9'
                                                                     }
                                                                     style={!socialLinks?.facebook ? { opacity: 0.5 } : {}}
