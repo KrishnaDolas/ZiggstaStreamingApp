@@ -622,6 +622,7 @@ const StreamRoom = ({
             if (responce.data?.success) {
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
+                socket.emit('Sent-request',userid)
             } else {
                 setMessage(`${responce.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
                 setVisibleModal('message-modal')
