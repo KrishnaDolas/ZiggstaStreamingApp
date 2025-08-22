@@ -1153,7 +1153,7 @@ const StreamRoom = ({
                                                             />
                                                         </TouchableOpacity>
                                                         <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                            <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? `0` : `0`}` }]}>
+                                                            <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? 10 : 0}` }]}>
                                                                 {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
                                                             <Text numberOfLines={3} style={styles.streamChatMessage}>
