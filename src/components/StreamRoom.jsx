@@ -542,6 +542,10 @@ const StreamRoom = ({
             SendErrorTotheServer(error, "HandleGiftReceived")
         }
     }
+    const HandleFriendRequestMessage=(msg)=>{
+        setMessage(msg)
+        setVisibleModal('message-modal')
+    }
     const getFriendsData = useCallback(async () => {
         if (!userData.userid) return
         try {
@@ -564,9 +568,11 @@ const StreamRoom = ({
         getFriendsData();
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
+        socket.on('receive-request',HandleFriendRequestMessage)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
+            socket.off('receive-request',HandleFriendRequestMessage)
         }
     }, [])
 
@@ -622,7 +628,7 @@ const StreamRoom = ({
             if (responce.data?.success) {
                 setMessage(`Request Sent To ${userDetails?.screenName}`)
                 setVisibleModal('message-modal')
-                socket.emit('Sent-request',userid)
+                socket.emit('Sent-request',userid,userData?.userid)
             } else {
                 setMessage(`${responce.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
                 setVisibleModal('message-modal')
