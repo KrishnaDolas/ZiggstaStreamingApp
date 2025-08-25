@@ -20,7 +20,6 @@ import { styles } from '../../assets/styles/ThemeStyles';
 import { SendErrorTotheServer, socket } from '../utils/constant';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
-import { BlurView } from '@react-native-community/blur';
 import CustomConfirmDialog from './CustomConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -573,62 +572,6 @@ const LuckyWheelModal = (
         setClosePlaceBetDialog(true);
     };
 
-    // const handleSpin = (resultLabel) => {
-    //     stopIdleRotation();
-    //     idleSpin.setValue(0);
-    //     spinValue.setValue(0);
-    //     setHideBetButtons(true); // Hide bet buttons during spin
-
-    //     const segmentCount = SEGMENTS.length;
-    //     const anglePerSegment = 360 / segmentCount;
-
-    //     const targetIndices = SEGMENTS.map((label, idx) => ({ label, idx }))
-    //         .filter(s => s.label === resultLabel);
-
-    //     if (targetIndices.length === 0) {
-    //         console.warn("No matching segment found for:", resultLabel);
-    //         return;
-    //     }
-
-    //     const selected = targetIndices[0]; // Test with first index
-
-    //     const segmentStartAngle = selected.idx * anglePerSegment - 90;
-    //     const segmentCenterAngle = segmentStartAngle + anglePerSegment / 2;
-
-    //     // Normalize to 0–360°
-    //     let normalizedCenter = segmentCenterAngle;
-    //     while (normalizedCenter < 0) normalizedCenter += 360;
-    //     while (normalizedCenter >= 360) normalizedCenter -= 360;
-
-    //     // Rotate to align center with 0° (arrow)
-    //     let rotationNeeded = 360 - normalizedCenter;
-    //     if (rotationNeeded === 360) rotationNeeded = 0; // Avoid unnecessary full rotation
-
-    //     const fullRotations = Math.floor(8 + Math.random() * 4);
-    //     const baseRotations = fullRotations * 360;
-    //     const finalRotation = baseRotations + rotationNeeded;
-
-    //     // console.log(
-    //     //     "🎯 Target:", resultLabel,
-    //     //     "| Index:", selected.idx,
-    //     //     "| Segment Start:", segmentStartAngle,
-    //     //     "| Segment Center:", normalizedCenter,
-    //     //     "| Rotation Needed:", rotationNeeded,
-    //     //     "| Final Rotation:", finalRotation
-    //     // );
-
-    //     Animated.timing(spinValue, {
-    //         toValue: finalRotation,
-    //         duration: 4000,
-    //         easing: Easing.out(Easing.cubic),
-    //         useNativeDriver: true,
-    //     }).start(() => {
-    //         // console.log("✅ Stopped on:", resultLabel, "at index:", selected.idx, "under arrow at TOP");
-    //         setSelectedMultiplier('Double'); // Reset multiplier after spin
-    //     });
-    // };
-
-
     const handleSpin = (resultLabel) => {
         stopIdleRotation();
         idleSpin.setValue(0);
@@ -669,12 +612,12 @@ const LuckyWheelModal = (
         const baseRotations = fullRotations * 360;
         const finalRotation = baseRotations + rotationNeeded + alignmentOffset;
 
-        console.log(
-            `🎯 Target: ${resultLabel} | Index: ${selected.idx} | ` +
-            `Segment Start: ${segmentStartAngle}° | Segment Center: ${segmentCenterAngle}° | ` +
-            `Normalized Center: ${normalizedCenter}° | Rotation Needed: ${rotationNeeded}° | ` +
-            `Final Rotation: ${finalRotation}°`
-        );
+        // console.log(
+        //     `🎯 Target: ${resultLabel} | Index: ${selected.idx} | ` +
+        //     `Segment Start: ${segmentStartAngle}° | Segment Center: ${segmentCenterAngle}° | ` +
+        //     `Normalized Center: ${normalizedCenter}° | Rotation Needed: ${rotationNeeded}° | ` +
+        //     `Final Rotation: ${finalRotation}°`
+        // );
 
         Animated.timing(spinValue, {
             toValue: finalRotation,
@@ -682,7 +625,7 @@ const LuckyWheelModal = (
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
-            console.log(`✅ Stopped on: ${resultLabel} at index: ${selected.idx} under arrow at TOP`);
+            // console.log(`✅ Stopped on: ${resultLabel} at index: ${selected.idx} under arrow at TOP`);
             setSelectedMultiplier('Double'); // Reset multiplier after spin
         });
     };
@@ -790,13 +733,6 @@ const LuckyWheelModal = (
                 animationType="slide"
                 style={[styles.profileModalMain]}
             >
-                {/* <BlurView
-                    style={StyleSheet.absoluteFill}
-                    blurType="dark"
-                    blurAmount={30}
-                // reducedTransparencyFallbackColor="white"
-                /> */}
-                {/* <View style={mainStyle.overlayBackground} /> */}
                 <LinearGradient
                     colors={['rgba(0, 0, 0, 0.34)', 'rgba(0, 0, 0, 0.34)', '#000000']}
                     locations={[0, 0.4, 1]}
@@ -1172,16 +1108,10 @@ export default LuckyWheelModal;
 const mainStyle = StyleSheet.create({
     LWModalOverlay: {
         flex: 1,
-        // maxHeight: screenHeight * 0.9 - insets.top,
         padding: 10,
         zIndex: 10,
-        // backgroundColor: '#0000008c',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-    },
-    overlayBackground: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.34)',
     },
     header: {
         flexDirection: 'row',
@@ -1317,7 +1247,7 @@ const mainStyle = StyleSheet.create({
         justifyContent: 'space-between',
         paddingVertical: 8,
         paddingHorizontal: 10,
-        backgroundColor: '#ffffff1a', // Semi-transparent white for a subtle background
+        backgroundColor: '#ffffff1a',
         borderRadius: 6,
         marginBottom: 8,
     },
