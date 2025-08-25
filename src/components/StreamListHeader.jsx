@@ -130,14 +130,14 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.strHeaderScrollCategoryContainer}
                         >
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 onPress={() => setHeaderMainTab('foryou')}
                                 style={[styles.strHeaderCategoryButton, { marginLeft: 2, display: headerMainTab === 'foryou' ? 'none' : 'flex' }, themeStyles[theme].strHeaderCategoryButton, headerMainTab === 'foryou' &&
                                     styles.btnInterestActive]}>
                                 <Text style={[styles.strHeaderCategoryText, themeStyles[theme].strHeaderCategoryText, headerMainTab === 'foryou' && styles.btnInterestActiveText]}>
                                     For You
                                 </Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                             <TouchableOpacity onPress={() => {
                                 setIsNearBy(!isNearBy);
                                 setHeaderMainTab('foryou');

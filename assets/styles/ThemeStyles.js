@@ -768,6 +768,7 @@ export const styles = StyleSheet.create({
   },
 
   profileModalOverlay: {
+    overflow: 'hidden',
     padding: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -3325,7 +3326,7 @@ export const themeStyles = {
       color: '#fff',
     },
     reportLoadingContainer: {
-      backgroundColor: Colors.blackBgColor,
+      backgroundColor: Colors.blackLargeModalBgColor,
     },
     reportDescriptionLabel: {
       color: '#fff',
