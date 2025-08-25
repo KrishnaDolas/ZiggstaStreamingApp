@@ -5,9 +5,6 @@ import {
     ActivityIndicator,
     Pressable, BackHandler,
     ImageBackground, Share,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
     LayoutAnimation,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
@@ -81,7 +78,6 @@ const StreamRoom = ({
     const [openMoreSettingList, setOpenMoreSettingList] = useState(false);
     const [showTooltip, setShowTooltip] = useState(true);
     const scrollRef = useRef(null);
-    const HideUiInterval = useRef(null);
     const [showArrow, setShowArrow] = useState(true);
     const arrowAnim = useRef(new Animated.Value(0)).current;
     const animatedOpacity = useRef(new Animated.Value(0)).current;
@@ -333,26 +329,13 @@ const StreamRoom = ({
     const confirmleaveRoom = () => {
         setCloseStreamModal(true);
     };
-    const HideUifewSecond = () => {
-        if (!showUI) {
-            HideUiInterval.current = setTimeout(() => {
-                setShowUI(false)
-            }, 10000);
-        } else {
-            clearTimeout(HideUiInterval.current)
-        }
-    }
 
     // Handle keyboard events
     useEffect(() => {
-        if (showUI) {
-            HideUifewSecond()
-        }
-        //    if(!isHost){
+
         if (streamInfo) {
             GetUserDetails(streamInfo?.hostID)
         }
-        //    }
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
             HidesettingPanel()
             LayoutAnimation.easeInEaseOut();
@@ -659,7 +642,6 @@ const StreamRoom = ({
         setSelectedUser(data)
     }
     const HandleShowUi = () => {
-        HideUifewSecond()
         setShowUI(!showUI)
     }
     const HandleNewStreamDesciption = async (description) => {

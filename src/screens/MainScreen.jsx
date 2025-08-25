@@ -654,7 +654,7 @@ export const MainScreen = () => {
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address);
+      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address,userData?.avatar,userData?.gender);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }
