@@ -22,6 +22,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { BlurView } from '@react-native-community/blur';
 import CustomConfirmDialog from './CustomConfirmDialog';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -54,6 +55,7 @@ const LuckyWheelModal = (
     { visible, onClose, userData,
         hostDetails, RoomID }
 ) => {
+    const insets = useSafeAreaInsets();
     const [countdown, setCountdown] = useState(0);
     const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
     const [message, setMessage] = useState('Get Ready');
@@ -796,9 +798,9 @@ const LuckyWheelModal = (
                 /> */}
                 {/* <View style={mainStyle.overlayBackground} /> */}
                 <LinearGradient
-                    colors={['rgba(0, 0, 0, 0.34)', 'rgba(0, 0, 0, 0.34)', '#000000']} // Top and middle: semi-transparent black, bottom: fully black
-                    locations={[0, 0.4, 1]} // Adjust gradient stops to increase black color height at bottom
-                    style={mainStyle.LWModalOverlay}
+                    colors={['rgba(0, 0, 0, 0.34)', 'rgba(0, 0, 0, 0.34)', '#000000']}
+                    locations={[0, 0.4, 1]}
+                    style={[mainStyle.LWModalOverlay, { maxHeight: screenHeight * 0.9 - insets.top - 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                 >
@@ -1170,7 +1172,7 @@ export default LuckyWheelModal;
 const mainStyle = StyleSheet.create({
     LWModalOverlay: {
         flex: 1,
-        maxHeight: screenHeight * 0.9 - 50,
+        // maxHeight: screenHeight * 0.9 - insets.top,
         padding: 10,
         zIndex: 10,
         // backgroundColor: '#0000008c',
