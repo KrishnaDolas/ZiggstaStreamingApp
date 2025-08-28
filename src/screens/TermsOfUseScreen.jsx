@@ -3,7 +3,6 @@ import {
     View,
     TouchableOpacity,
     StyleSheet,
-    SafeAreaView,
     StatusBar,
     Text,
 } from 'react-native';
@@ -13,11 +12,11 @@ import { WebView } from 'react-native-webview';
 
 const TermsOfUseScreen = ({ route, navigation }) => {
     const { url, title } = route.params;
-    const insetsTop = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
 
 
     return (
-        <SafeAreaView style={[styles.container, { paddingBottom: 80, paddingTop: insetsTop.top }]}>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <StatusBar barStyle="dark-content" backgroundColor="#fff" />
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
@@ -33,7 +32,7 @@ const TermsOfUseScreen = ({ route, navigation }) => {
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
             />
-        </SafeAreaView>
+        </View>
     );
 };
 

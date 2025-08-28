@@ -279,12 +279,18 @@ export const Signup = ({
           <View style={styles.Loginerror}>
             {error ? <Text style={[styles.error, themeStyles[theme].error]}>{error}</Text> : null}
           </View>
-          <TouchableOpacity disabled={!isFormValid} style={[themeStyles[theme].button, { opacity: isFormValid ? 1 : 0.5 }]} onPress={handleSignUp}>
+          <TouchableOpacity
+            disabled={!isFormValid}
+            style={[styles.button,
+            themeStyles[theme].button,
+            { marginTop: 0, opacity: isFormValid ? 1 : 0.5 }]}
+            onPress={handleSignUp}
+          >
             <LinearGradient
               colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
               start={{ x: 1, y: 0 }}
               end={{ x: 0, y: 1 }}
-              style={[styles.button, { marginTop: 0 }]}
+              style={styles.gradientBackground}
             >
               <Text style={styles.buttonText}>Sign Up</Text>
             </LinearGradient>

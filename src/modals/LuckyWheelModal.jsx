@@ -289,10 +289,13 @@ const LuckyWheelModal = (
         // Use myCreditRef.current instead of mycredit
         const currentCredit = isNaN(myCreditRef.current) || myCreditRef.current === null ? 0 : myCreditRef.current;
 
+        // if host then winAmount multiply by resultLabel
+        // let isHost = true;
         // const increaseWinAmount = resultLabel === 'Double' ? 2 * winAmount :
         //     resultLabel === 'Triple' ? 3 * winAmount :
         //         resultLabel === '5x' ? 5 * winAmount :
         //             resultLabel === '25x' ? 25 * winAmount : 2 * winAmount;
+        // const targetCredit = currentCredit + (isHost ? increaseWinAmount : winAmount);
 
 
         const targetCredit = currentCredit + winAmount;
@@ -612,12 +615,12 @@ const LuckyWheelModal = (
         const baseRotations = fullRotations * 360;
         const finalRotation = baseRotations + rotationNeeded + alignmentOffset;
 
-        // console.log(
-        //     `🎯 Target: ${resultLabel} | Index: ${selected.idx} | ` +
-        //     `Segment Start: ${segmentStartAngle}° | Segment Center: ${segmentCenterAngle}° | ` +
-        //     `Normalized Center: ${normalizedCenter}° | Rotation Needed: ${rotationNeeded}° | ` +
-        //     `Final Rotation: ${finalRotation}°`
-        // );
+        console.log(
+            `🎯 Target: ${resultLabel} | Index: ${selected.idx} | ` +
+            `Segment Start: ${segmentStartAngle}° | Segment Center: ${segmentCenterAngle}° | ` +
+            `Normalized Center: ${normalizedCenter}° | Rotation Needed: ${rotationNeeded}° | ` +
+            `Final Rotation: ${finalRotation}°`
+        );
 
         Animated.timing(spinValue, {
             toValue: finalRotation,

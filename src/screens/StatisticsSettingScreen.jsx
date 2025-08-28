@@ -20,7 +20,7 @@ const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
     const { profileData } = useAppContext();
-    const insetsTop = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
     const [averageIncomeData, setAverageIncomeData] = useState({});
     const [isUserError, setIsUserError] = useState(null);
@@ -200,7 +200,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
 
     return (
-        <SafeAreaView style={{ flex: 1, position: 'relative' }}>
+        <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <StatusBar
                 barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
                 backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
@@ -216,7 +216,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                     </View>
                 ) : null} */}
                 {/* Fixed Header */}
-                <View style={[styles.profileHeader, themeStyles[theme].profileHeader, { paddingTop: insetsTop.top + 5 }]}>
+                <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                     <View style={[styles.profileBlockLeftBox]}>
                         <Image
                             source={require('../../assets/images/logo-icon.png')}
@@ -374,6 +374,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                 )}
                 {/* <Footer /> */}
             </>
-        </SafeAreaView>
+        </View>
     );
 };

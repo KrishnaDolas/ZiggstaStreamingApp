@@ -334,7 +334,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
     return (
         <LinearGradient
-            style={{ height: '100%', width: '100%', position: 'relative' }}
+            style={{ flex: 1, position: 'relative' }}
             colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}>
@@ -463,8 +463,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         />
                     </TouchableOpacity> */}
                     <View style={[
-                        styles.streamListFiltersBtnGroup,
-                        insets.bottom > 0 && { paddingBottom: insets.bottom },
+                        styles.streamListFiltersBtnGroup, { bottom: insets.bottom + 68 },
                     ]}>
                         {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="wrench" size={24} color="#262628" />

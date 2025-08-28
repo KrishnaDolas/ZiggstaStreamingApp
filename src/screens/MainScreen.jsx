@@ -1,4 +1,4 @@
-import { View, StatusBar, SafeAreaView } from 'react-native';
+import { View, StatusBar } from 'react-native';
 import {
   Alert,
 } from 'react-native';
@@ -7,7 +7,7 @@ import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
-import { styles } from '../../assets/styles/ThemeStyles';
+import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
@@ -31,7 +31,7 @@ export const MainScreen = () => {
   const [isloading, setIsLoading] = useState(false);
   const peersRef = useRef({});
   const pendingCandidates = useRef({});
-  const insetsTop = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const [joined, setJoined] = useState(false);
   const [roomchat, setRoomchat] = useState([]);
   const [isMuted, setIsMuted] = useState({ HostControl: false, muted: false });
@@ -790,48 +790,43 @@ export const MainScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient
-        colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-        start={{ x: 0.5, y: 0 }} style={{ height: '100%', width: '100%', paddingTop: insetsTop.top }}>
-        <StatusBar
-          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-          backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-          translucent={false}
-        />
+    <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top }]}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+      />
+      <View style={[styles.container]}>
         {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
-        <View style={[styles.container]}>
-          {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
-          {!joined ? (
-            <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
-          ) : (<StreamRoom
-            remoteStreams={remoteStreams}
-            localStream={localStream}
-            isStreaming={isStreaming}
-            requestStreamPermission={requestStreamPermission}
-            isFrontCamera={isFrontCamera}
-            Streamupdated={Streamupdated}
-            setStreamupdated={setStreamupdated}
-            toggleMute={toggleMute}
-            switchCamera={switchCamera}
-            leaveRoom={leaveRoom}
-            isMuted={isMuted}
-            isHost={isHost}
-            HandleChatmessages={HandleChatmessages}
-            roomchat={roomchat}
-            streamInfo={streamInfo}
-            streamrequestlist={streamrequestlist}
-            streamGuest={streamGuest}
-            hasRequestedStream={hasRequestedStream}
-            streamerList={streamerList}
-            isuserstreaming={isuserstreaming}
-            streammsg={streammsg}
-            isInStreamRoom={isInStreamRoom}
-            totalGiftValue={totalGiftValue}
-            connectingpanel={connectingpanel}
-          />)}
-        </View>
-      </LinearGradient>
-    </SafeAreaView>
+        {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
+        {!joined ? (
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
+        ) : (<StreamRoom
+          remoteStreams={remoteStreams}
+          localStream={localStream}
+          isStreaming={isStreaming}
+          requestStreamPermission={requestStreamPermission}
+          isFrontCamera={isFrontCamera}
+          Streamupdated={Streamupdated}
+          setStreamupdated={setStreamupdated}
+          toggleMute={toggleMute}
+          switchCamera={switchCamera}
+          leaveRoom={leaveRoom}
+          isMuted={isMuted}
+          isHost={isHost}
+          HandleChatmessages={HandleChatmessages}
+          roomchat={roomchat}
+          streamInfo={streamInfo}
+          streamrequestlist={streamrequestlist}
+          streamGuest={streamGuest}
+          hasRequestedStream={hasRequestedStream}
+          streamerList={streamerList}
+          isuserstreaming={isuserstreaming}
+          streammsg={streammsg}
+          isInStreamRoom={isInStreamRoom}
+          totalGiftValue={totalGiftValue}
+          connectingpanel={connectingpanel}
+        />)}
+      </View>
+    </View>
   );
 };

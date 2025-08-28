@@ -22,6 +22,7 @@ import NetInfo from '@react-native-community/netinfo';
 import Geolocation from 'react-native-geolocation-service';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import SystemNavigationBar from 'react-native-system-navigation-bar';
 import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -41,6 +42,7 @@ import { themeStyles } from './assets/styles/ThemeStyles';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { SendErrorTotheServer, socket } from './src/utils/constant';
 import NetworkCheck from './src/components/NetworkCheck';
+import Colors from './assets/styles/Colors';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -74,22 +76,23 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   const footerStyles = {
     footer: {
       position: 'absolute',
-      bottom: 0,
+      bottom: insets.bottom,
       left: 0,
       right: 0,
       backgroundColor: isDark ? themeStyles.dark.footer?.backgroundColor || '#000' : 'white',
       paddingVertical: 10,
-      paddingBottom: insets.bottom, // Add safe area padding
+      // marginBottom: insets.bottom, // Add safe area padding
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
       borderTopWidth: 1,
       borderTopColor: isDark ? themeStyles.dark.footer?.borderTopColor || '#333' : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? themeStyles.dark.footer?.borderTopColor || '#333' : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
     },
     footerItem: {
       alignItems: 'center',
       justifyContent: 'center',
-      paddingBottom: 10,
     },
     footerText: {
       fontSize: 12,
@@ -252,6 +255,7 @@ const BottomTabNavigator = ({ onLogout, userData, userAddress }) => {
 };
 
 const App = () => {
+  const { theme } = useContext(ThemeContext) || 'dark';
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(true);
@@ -267,12 +271,19 @@ const App = () => {
     setIpAddress,
     fetchProfileDetails,
     setSubscriptionStatus,
-    setIsInStreamRoom
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
 
   const handleLogin = () => setIsAuthenticated(true);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      SystemNavigationBar.setNavigationColor('#000000', 'light', 'navigation');
+    } else {
+      SystemNavigationBar.setNavigationColor('#ffffff', 'dark', 'navigation');
+    }
+  }, [theme]);
 
 
   const handleLogout = async () => {
@@ -529,63 +540,60 @@ const App = () => {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <ThemeProvider >
-          <NavigationContainer ref={navigationRef} onReady={() => {
-            setIsNavigationReady(true);
-            setCurrentRouteName(navigationRef.current.getCurrentRoute()?.name);
-          }}
-            onStateChange={async () => {
-              if (isNavigationReady && navigationRef.current) {
-                const currentRoute = navigationRef.current.getCurrentRoute();
-                setCurrentRouteName(currentRoute?.name);
-              }
-            }}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
-              {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
-              {isAuthenticated ? (
-                <>
-                  <Stack.Screen name="MainTabs">
-                    {(props) => (
-                      <BottomTabNavigator
-                        {...props}
-                        onLogout={handleLogout}
-                        userData={userData}
-                        userAddress={userAddress}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="TermsOfUse">
-                    {(props) => (
-                      <TermsOfUseScreen
-                        {...props}
-                        userData={userData}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="ChatScreen">
-                    {(props) => (
-                      <ChatScreen
-                        {...props}
-                        userData={userData}
-                      />
-                    )}
-                  </Stack.Screen>
-                </>
-              ) : (
-                <Stack.Screen name="Auth">
-                  {props => (
-                    <AuthScreen
+        <NavigationContainer ref={navigationRef} onReady={() => {
+          setIsNavigationReady(true);
+          setCurrentRouteName(navigationRef.current.getCurrentRoute()?.name);
+        }}
+          onStateChange={async () => {
+            if (isNavigationReady && navigationRef.current) {
+              const currentRoute = navigationRef.current.getCurrentRoute();
+              setCurrentRouteName(currentRoute?.name);
+            }
+          }}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
+            {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
+            {isAuthenticated ? (
+              <>
+                <Stack.Screen name="MainTabs">
+                  {(props) => (
+                    <BottomTabNavigator
                       {...props}
-                      onLogin={handleLogin}
+                      onLogout={handleLogout}
+                      userData={userData}
+                      userAddress={userAddress}
                     />
                   )}
                 </Stack.Screen>
-              )}
-            </Stack.Navigator>
-          </NavigationContainer>
-        </ThemeProvider>
-
+                <Stack.Screen name="TermsOfUse">
+                  {(props) => (
+                    <TermsOfUseScreen
+                      {...props}
+                      userData={userData}
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="ChatScreen">
+                  {(props) => (
+                    <ChatScreen
+                      {...props}
+                      userData={userData}
+                    />
+                  )}
+                </Stack.Screen>
+              </>
+            ) : (
+              <Stack.Screen name="Auth">
+                {props => (
+                  <AuthScreen
+                    {...props}
+                    onLogin={handleLogin}
+                  />
+                )}
+              </Stack.Screen>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
       </SafeAreaProvider>
 
     </ErrorBoundary>
