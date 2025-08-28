@@ -1,15 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import { View, Text, Image, ScrollView, StatusBar } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { ActivityIndicator } from 'react-native';
-import Footer from '../components/Footer';
 import Apiclient from '../utils/Apiclient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const ProfileScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
-    const insetsTop = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
     const [profileData, setProfileData] = useState({});
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
@@ -64,7 +63,7 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
 
 
     return (
-        <SafeAreaView style={{ flex: 1, position: 'relative', paddingBottom: 80, paddingTop: insetsTop.top }}>
+        <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <StatusBar
                 hidden={false} // Show the status bar
                 barStyle="dark-content"
@@ -118,6 +117,6 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
 
                     {/* <Footer /> */}
                 </>)}
-        </SafeAreaView>
+        </View>
     );
 };

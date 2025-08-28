@@ -19,7 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();
-    const insetsTop = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
     const navigation = useNavigation();
     const { theme } = useContext(ThemeContext);
     const [visibleModal, setVisibleModal] = useState(null);
@@ -58,8 +58,8 @@ export const MessageListScreen = () => {
             console.log('response getFriendsList', response.data);
             if (response.status === 200) {
                 const data = response.data?.friends || [];
-                const uniqueUsers = Array.from(new Map(data.map(user => [user.userid, user])).values());
-                setFriendsData(uniqueUsers);
+                // const uniqueUsers = Array.from(new Map(data.map(user => [user.userid, user])).values());
+                setFriendsData(data);
             }
         } catch (error) {
             console.error('Error fetching friends data list:', error);
@@ -296,9 +296,9 @@ export const MessageListScreen = () => {
     }, [friendListType]);
 
     return (
-        <SafeAreaView style={styles.messageListSafeView}>
+        <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
             <LinearGradient
-                style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
+                style={[styles.messageListGradientBox]}
                 colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 1 }}>
@@ -423,7 +423,7 @@ export const MessageListScreen = () => {
                     />
                 )}
             </LinearGradient>
-        </SafeAreaView>
+        </View>
 
     );
 };

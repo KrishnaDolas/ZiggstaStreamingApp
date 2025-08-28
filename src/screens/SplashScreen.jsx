@@ -22,12 +22,20 @@ export const SplashScreen = () => {
         }
       />
       <Image source={logo} style={styles.splashImage} />
-      <LinearGradient
-        colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
-        start={{ x: 0, y: 0 }} // top-left
-        end={{ x: 1, y: 1 }} // bottom-right (135°)
-        style={[styles.splashButton, themeStyles[theme].splashButton]}>
-        <TouchableOpacity onPress={() => navigation.navigate('Auth')}>
+      <TouchableOpacity
+        style={[
+          styles.splashButton,
+          { bottom: insets.bottom + 30 },
+          themeStyles[theme].splashButton,
+        ]}
+        onPress={() => navigation.navigate('Auth')}
+      >
+        <LinearGradient
+          colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
+          start={{ x: 0, y: 0 }} // top-left
+          end={{ x: 1, y: 1 }} // bottom-right (135°)
+          style={styles.gradientBackground}
+        >
           <Text
             style={[
               styles.splashButtonText,
@@ -35,8 +43,8 @@ export const SplashScreen = () => {
             ]}>
             Get Started
           </Text>
-        </TouchableOpacity>
-      </LinearGradient>
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   );
 };

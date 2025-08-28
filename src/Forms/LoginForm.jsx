@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
@@ -149,7 +148,7 @@ export const LoginForm = ({
             ) : null}
           </View>
           <TouchableOpacity
-            style={[themeStyles[theme].button]}
+            style={[styles.button, themeStyles[theme].button]}
             onPress={handleLogin}
             disabled={loading}
           >
@@ -157,7 +156,7 @@ export const LoginForm = ({
               colors={['rgb(238, 41, 123)', 'rgb(183, 1, 255)']}
               start={{ x: 1, y: 0 }}
               end={{ x: 0, y: 1 }}
-              style={styles.button}>
+              style={styles.gradientBackground}>
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (

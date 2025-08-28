@@ -9,6 +9,10 @@ const giftCardItemWidth = (screenWidth - (31 * (4 + 1))) / 4;
 
 // This file contains the styles for the application, including light and dark themes.
 export const styles = StyleSheet.create({
+  SafeAreaView: {
+    flex: 1,
+    position: 'relative',
+  },
   container: {
     padding: 0,
     flexGrow: 1,
@@ -99,20 +103,20 @@ export const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 20,
+    borderRadius: 30,
     padding: 12,
     width: '100%',
     marginVertical: 10,
     fontSize: 16,
   },
   button: {
-    paddingVertical: 12,
-    // paddingHorizontal: 30,
-    borderRadius: 20,
-    marginVertical: 10,
-    width: '95%',
-    marginHorizontal: 10,
+    borderRadius: 30,
+    marginHorizontal: 7,
     alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    minWidth: 200,
+    height: 50,
   },
   themeButton: {
     paddingVertical: 10,
@@ -414,20 +418,23 @@ export const styles = StyleSheet.create({
   },
   splashButton: {
     position: 'absolute',
-    bottom: '60',
-    flex: '1',
     alignItems: 'center',
-    paddingVertical: 12, // Top & Bottom
-    paddingHorizontal: 30, // Left & Right
+    justifyContent: 'center',
     borderRadius: 30,
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
-    fontFamily: 'sans-serif',
-    fontSize: 22,
-    border: 'none',
+    overflow: 'hidden',
+    minWidth: 140,
+    height: 50,
   },
   splashButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  gradientBackground: {
+    flex: 1,                    // ✅ fills button size
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   //Footer Styles
@@ -567,7 +574,8 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingTop: 5,
+    paddingBottom: 10,
     zIndex: 10,
   },
 
@@ -1065,13 +1073,11 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    bottom: '8.2%',
-    left: '50%',
-    transform: [{ translateX: -0.475 * screenWidth }],
-    flexDirection: 'column',
-    width: '95%',
+    flexDirection: 'column', // ✅ align horizontally
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    alignSelf: 'center', // ✅ centers the whole group
     paddingHorizontal: 0,
   },
 
@@ -1382,7 +1388,6 @@ export const styles = StyleSheet.create({
   messageListSafeView: {
     flex: 1,
     position: 'relative',
-    paddingBottom: 60,
   },
   messageListMainCardLayout: {
     flex: 1,
@@ -2456,7 +2461,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   leaderBoardFilterButton: {
-    flex: 1,
+    width: screenWidth / 4,
     paddingVertical: 10,
     paddingHorizontal: 12,
     alignItems: 'center',
@@ -2658,6 +2663,7 @@ export const themeStyles = {
       backgroundColor: '#fff',
     },
     // common styles
+    SafeAreaView: { backgroundColor: '#fff' },
     container: { backgroundColor: '#f0f4f8' },
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
@@ -3041,6 +3047,7 @@ export const themeStyles = {
       backgroundColor: Colors.blackBgColor,
     },
     // common styles
+    SafeAreaView: { backgroundColor: Colors.blackBgColor },
     container: { backgroundColor: Colors.blackBgColor },
     formContainer: { backgroundColor: Colors.blackCardColor, borderWidth: 2, borderColor: Colors.blackCardBorderColor },
     text: { color: '#fff' },

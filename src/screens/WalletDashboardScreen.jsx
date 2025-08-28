@@ -18,7 +18,7 @@ const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
 
 export const WalletDashboardScreen = () => {
     const { profileData, userData, fetchProfileDetails } = useAppContext();
-    const insetsTop = useSafeAreaInsets();
+    const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
     const scrollRef = useRef(null);
     const [activeTab, setActiveTab] = useState('Deposit');
@@ -215,9 +215,9 @@ export const WalletDashboardScreen = () => {
     );
 
     return (
-        <SafeAreaView style={[styles.messageListSafeView]}>
+        <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom + 20 }]}>
             <LinearGradient
-                style={[styles.messageListGradientBox, { paddingTop: insetsTop.top }]}
+                style={[styles.messageListGradientBox]}
                 colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 1 }}>
@@ -576,7 +576,7 @@ export const WalletDashboardScreen = () => {
                 )}
                 {/* <Footer /> */}
             </LinearGradient>
-        </SafeAreaView>
+        </View>
 
     );
 };

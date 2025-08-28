@@ -7,6 +7,10 @@
         <item name="colorPrimary">#d93a63</item>
         <item name="colorPrimaryDark">#b82d50</item>
         <item name="colorAccent">#d93a63</item>
+
+        <!-- 👇 Force opaque navigation bar -->
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowTranslucentNavigation">false</item>
     </style>
 
 </resources>

@@ -525,7 +525,7 @@ const StreamRoom = ({
             SendErrorTotheServer(error, "HandleGiftReceived")
         }
     }
-    const HandleFriendRequestMessage=(msg)=>{
+    const HandleFriendRequestMessage = (msg) => {
         setMessage(msg)
         setVisibleModal('message-modal')
     }
@@ -551,11 +551,11 @@ const StreamRoom = ({
         getFriendsData();
         socket.on('like-count', HandleLikeCount)
         socket.on('received-Gift', HandleGiftReceived)
-        socket.on('receive-request',HandleFriendRequestMessage)
+        socket.on('receive-request', HandleFriendRequestMessage)
         return () => {
             socket.off('like-count', HandleLikeCount)
             socket.off('received-Gift', HandleGiftReceived)
-            socket.off('receive-request',HandleFriendRequestMessage)
+            socket.off('receive-request', HandleFriendRequestMessage)
         }
     }, [])
 
@@ -597,7 +597,7 @@ const StreamRoom = ({
         setGiftSendData({ userName: UserName, userId: UserID })
         setGiftModalVisible(true)
     }
-    const handleFriendRequest = async (userid,username) => {
+    const handleFriendRequest = async (userid, username) => {
         try {
             if (!userData?.userid || !userid) {
                 socket.emit('Clientlogs', "handleFriendRequest", `userData?.userid--${userData?.userid}, userid--${userid}`);
@@ -611,7 +611,7 @@ const StreamRoom = ({
             if (responce.data?.success) {
                 setMessage(`Request Sent To ${username}`)
                 setVisibleModal('message-modal')
-                socket.emit('Sent-request',userid,userData?.userid)
+                socket.emit('Sent-request', userid, userData?.userid)
             } else {
                 setMessage(`${responce.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
                 setVisibleModal('message-modal')
@@ -758,7 +758,7 @@ const StreamRoom = ({
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
                                                             disabled={streamLayout[0]?.isFriend}
-                                                            onPress={() => handleFriendRequest(streamLayout[0]?.userId,streamLayout[0]?.Name)}
+                                                            onPress={() => handleFriendRequest(streamLayout[0]?.userId, streamLayout[0]?.Name)}
                                                         >
                                                             {streamLayout[0]?.isFriend ? (
                                                                 <Image
@@ -822,7 +822,7 @@ const StreamRoom = ({
                                                                 <TouchableOpacity
                                                                     style={styles.friendRequestIcon}
                                                                     disabled={streamData?.isFriend}
-                                                                    onPress={() => handleFriendRequest(streamData?.userId,streamData?.Name)}
+                                                                    onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
                                                                 >
                                                                     {streamData?.isFriend ? (
                                                                         <Image
@@ -892,7 +892,7 @@ const StreamRoom = ({
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
                                                                         disabled={streamData?.isFriend}
-                                                                        onPress={() => handleFriendRequest(streamData?.userId,streamData?.Name)}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
                                                                     >
                                                                         {streamData?.isFriend ? (
                                                                             <Image
@@ -960,7 +960,7 @@ const StreamRoom = ({
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
                                                                         disabled={streamData?.isFriend}
-                                                                        onPress={() => handleFriendRequest(streamData?.userId,streamData?.Name)}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
                                                                     >
                                                                         {streamData?.isFriend ? (
                                                                             <Image
@@ -1032,7 +1032,7 @@ const StreamRoom = ({
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
                                                                         disabled={streamData?.isFriend}
-                                                                        onPress={() => handleFriendRequest(streamData?.userId,streamData?.Name)}
+                                                                        onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
                                                                     >
                                                                         {streamData?.isFriend ? (
                                                                             <Image
@@ -1115,7 +1115,7 @@ const StreamRoom = ({
                             colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
                             start={{ x: 0.5, y: 1 }}
                             end={{ x: 0.5, y: 0 }}
-                            style={[styles.strRoomFooter, { bottom: insets.bottom > 3 ? insets.bottom : 0 }]}
+                            style={[styles.strRoomFooter, { bottom: insets.bottom }]}
                         >
                         </LinearGradient>
                         <>
@@ -1172,7 +1172,7 @@ const StreamRoom = ({
                                             />
                                         </TouchableOpacity>
                                         {!isHost && streamerList?.length === 1 && (<>
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid,userDetails?.screenName)}>
+                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid, userDetails?.screenName)}>
                                                 {streamLayout[0]?.isFriend ? (
                                                     <>
                                                         {/* <Ionicons name="person-remove" size={30} color="#fff" /> */}
@@ -1199,9 +1199,6 @@ const StreamRoom = ({
                                     </View>)}
                                 </View>
                             )}
-
-
-
                             {/* input box container */}
                             {showUI && (<View style={[
                                 styles.strRoomBottomBox,
