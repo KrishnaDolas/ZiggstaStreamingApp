@@ -50,6 +50,7 @@ export const ChatScreen = ({route, navigation}) => {
   const typingAnimation = useRef(new Animated.Value(0)).current;
   const typingTimeoutRef = useRef(null);
 
+  console.log("testing push")
   // Simulate user status changes
   useEffect(() => {
     if (socket.connected) {
