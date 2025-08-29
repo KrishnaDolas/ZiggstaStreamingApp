@@ -318,7 +318,6 @@ export const ChatScreen = ({ route, navigation }) => {
                 chatStyles.header,
                 {
                     backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
-                    paddingTop: insets.top,
                     borderBottomColor:
                         theme === 'dark' ? Colors.blackDividers : '#e0e0e0',
                 },
@@ -494,12 +493,13 @@ export const ChatScreen = ({ route, navigation }) => {
     );
 
     return (
-        <SafeAreaView
+        <View
             style={[
                 chatStyles.container,
                 {
                     backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
                     paddingBottom: insets.bottom,
+                    paddingTop: insets.top,
                 },
             ]}>
             <StatusBar
@@ -517,7 +517,7 @@ export const ChatScreen = ({ route, navigation }) => {
                         chatStyles.messagesContainer,
                         {
                             backgroundColor:
-                                theme === 'dark' ? Colors.blackBgColor : '#f8f8f8',
+                                theme === 'dark' ? Colors.blackBgColor : '#fff',
                         },
                     ]}>
                     <FlatList
@@ -541,7 +541,7 @@ export const ChatScreen = ({ route, navigation }) => {
 
                 {renderInputArea()}
             </KeyboardAvoidingView>
-        </SafeAreaView>
+        </View>
     );
 };
 
@@ -551,11 +551,6 @@ const chatStyles = {
     },
     header: {
         borderBottomWidth: 1,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
     },
     headerContent: {
         flexDirection: 'row',

@@ -1110,7 +1110,7 @@ const StreamRoom = ({
                             </View>
                         </View>)}
 
-                        <View style={styles.strGradientBox}>
+                        <View style={[styles.strGradientBox, { bottom: insets.bottom || 0 }]}>
                             {/* gradient fix box   */}
                             <LinearGradient
                                 colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
