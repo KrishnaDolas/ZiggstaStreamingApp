@@ -1573,13 +1573,24 @@ export const styles = StyleSheet.create({
     fontWeight: '500',
     marginLeft: 8,
   },
-  strRoomFooter: {
-    width: '100%',
-    paddingVertical: 20,
+  strGradientBox: {
     position: 'absolute',
-    zIndex: 9,
+    left: 0,
+    right: 0,
     bottom: 0,
+    zIndex: 9,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
+  strRoomFooter: {
+    // position: 'absolute',
+    // left: 0,
+    // right: 0,
+    // bottom: 0,        // ✅ fixed at bottom always
     height: 250,
+    width: '100%',
+    // zIndex: 9,
+    paddingVertical: 20,
   },
   strRoomFooterChatOrActionsBox: {
     flexDirection: 'row',

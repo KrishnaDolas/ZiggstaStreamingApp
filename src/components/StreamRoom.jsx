@@ -1111,14 +1111,16 @@ const StreamRoom = ({
                             </View>
                         </View>)}
 
-                        {/* gradient fix box   */}
-                        <LinearGradient
-                            colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
-                            start={{ x: 0.5, y: 1 }}
-                            end={{ x: 0.5, y: 0 }}
-                            style={[styles.strRoomFooter, { bottom: insets.bottom }]}
-                        >
-                        </LinearGradient>
+                        <View style={styles.strGradientBox}>
+                            {/* gradient fix box   */}
+                            <LinearGradient
+                                colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
+                                start={{ x: 0.5, y: 1 }}
+                                end={{ x: 0.5, y: 0 }}
+                                style={[styles.strRoomFooter]}
+                            >
+                            </LinearGradient>
+                        </View>
                         <>
                             {/* chat message container */}
                             {!openMoreSettingList && (
