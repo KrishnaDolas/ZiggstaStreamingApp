@@ -1062,6 +1062,7 @@ const StreamRoom = ({
                 )}
                 {isStreaming && (
                     <>
+                        {/* Stream Room Header */}
                         {showUI && (<View style={styles.strRoomHeader}>
                             <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
@@ -1327,6 +1328,8 @@ const StreamRoom = ({
                     </>
                 )}
             </View>
+
+            {/* Gift Modal */}
             {giftModalVisible && (
                 <Modal
                     isVisible={giftModalVisible}
@@ -1430,6 +1433,8 @@ const StreamRoom = ({
                     </View>
                 </Modal>
             )}
+
+            {/* Message Modal */}
             {visibleModal === 'message-modal' && (
                 <MessageModal
                     visible={visibleModal === 'message-modal'}
@@ -1437,14 +1442,22 @@ const StreamRoom = ({
                     onClose={() => setVisibleModal(null)}
                 />
             )}
+            {/* Request Modal */}
+
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} />}
+
+
             {/* close stream modal  */}
             {closeStreamModal && (
                 <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
             )}
+
+            {/* Update Stream Description Modal */}
             {editstreamdescription && (
                 <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamDescription} HandleNewStreamDesciption={HandleNewStreamDesciption} />
             )}
+
+            {/* Report Video Modal */}
             {visibleModal === 'ReportVideo' && (
                 <ReportUserModal
                     visible={visibleModal === 'ReportVideo'}
@@ -1456,6 +1469,8 @@ const StreamRoom = ({
                     reportType="Video"
                 />
             )}
+
+            {/* Viewer List Modal */}
             {OpenViewerLIst && (
                 <ViewerTotalLIst
                     visible={OpenViewerLIst}
@@ -1464,6 +1479,7 @@ const StreamRoom = ({
                     RoomID={streamInfo?.roomID}
                 />
             )}
+
             {/* Send Animation - shown to the gift sender */}
             {showSendAnimation && sendAnimationData && (
                 <GiftSendAnimation
@@ -1482,6 +1498,8 @@ const StreamRoom = ({
                     onComplete={handleReceiveAnimationComplete}
                 />
             )}
+
+            {/* Profile Modal */}
             {OpenHostPorfile && (
                 <ProfileScreenModal
                     visible="true"
@@ -1491,6 +1509,8 @@ const StreamRoom = ({
                     isViewer={true}
                 />
             )}
+
+            {/* Chat User Profile Modal */}
             {openChatUserProfile && (
                 <ProfileScreenModal
                     visible="true"
@@ -1500,6 +1520,8 @@ const StreamRoom = ({
                     isViewer={true}
                 />
             )}
+
+            {/* Notification Modal */}
             {notification.isVisible && (
                 <AnimatedNotification
                     message={notification.message}
@@ -1508,6 +1530,8 @@ const StreamRoom = ({
                     type={notification.type}
                 />
             )}
+
+            {/* Lucky Wheel Modal */}
             {visibleModal === 'luckyWheel' && (
                 <LuckyWheelModal
                     visible={visibleModal === 'luckyWheel'}

@@ -15,6 +15,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
 import { getGenderFallbackImage } from '../utils/constant';
+import LinearGradient from 'react-native-linear-gradient';
+import themeColors from '../../assets/styles/Colors';
+
 
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
@@ -201,179 +204,185 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
     return (
         <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-            <StatusBar
-                barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-                backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-                translucent={false}
-            />
-            <>
-                {/* Error Message */}
-                {/* {isUserError ? (
+            <LinearGradient
+                style={[styles.messageListGradientBox]}
+                colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}>
+                <StatusBar
+                    barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+                    backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+                    translucent={false}
+                />
+                <>
+                    {/* Error Message */}
+                    {/* {isUserError ? (
                     <View style={[styles.profileErrorBoxMain, themeStyles[theme].profileErrorBoxMain]}>
                         <Text style={styles.profileErrorText}>
                             {isUserError}
                         </Text>
                     </View>
                 ) : null} */}
-                {/* Fixed Header */}
-                <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
-                    <View style={[styles.profileBlockLeftBox]}>
-                        <Image
-                            source={require('../../assets/images/logo-icon.png')}
-                            style={styles.profileHeaderLogo}
-                            resizeMode="contain"
-                        />
-                        <Image
-                            source={!profileData?.avatar || profileData?.avatar === 'default'
-                                ? getGenderFallbackImage(profileData?.gender)
-                                : { uri: profileData?.avatar }
-                            }
-                            style={styles.profileAvatar}
-                        />
-                    </View>
-                    <View style={styles.profileBlockRightBox}>
-                        <View style={styles.profileBlock}>
-                            <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Username</Text>
-                            {profileData?.screenName ? (
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
-                                    {profileData.screenName}
-                                </Text>
-                            ) : (
-                                <ActivityIndicator size="small" />
-                            )}
+                    {/* Fixed Header */}
+                    <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
+                        <View style={[styles.profileBlockLeftBox]}>
+                            <Image
+                                source={require('../../assets/images/logo-icon.png')}
+                                style={styles.profileHeaderLogo}
+                                resizeMode="contain"
+                            />
+                            <Image
+                                source={!profileData?.avatar || profileData?.avatar === 'default'
+                                    ? getGenderFallbackImage(profileData?.gender)
+                                    : { uri: profileData?.avatar }
+                                }
+                                style={styles.profileAvatar}
+                            />
                         </View>
-
-                        <View style={styles.profileBlock}>
-                            <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Image
-                                    source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                    style={{ width: 14, height: 14, marginRight: 5 }}
-                                    resizeMode="contain"
-                                />
-                                <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
-                                    {profileData?.CreditBalance}
-                                </Text>
+                        <View style={styles.profileBlockRightBox}>
+                            <View style={styles.profileBlock}>
+                                <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Username</Text>
+                                {profileData?.screenName ? (
+                                    <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
+                                        {profileData.screenName}
+                                    </Text>
+                                ) : (
+                                    <ActivityIndicator size="small" />
+                                )}
                             </View>
 
-                        </View>
-                    </View>
-
-
-                </View>
-                {/* Scrollable Content */}
-                <ScrollView showsVerticalScrollIndicator={false} style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
-                    {/* Stat Cards */}
-                    <View style={styles.profileStatCards}>
-                        <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
-                            <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Revenue</Text>
-                            {isAvgLoading ? (
-                                <ActivityIndicator size="small" />
-                            ) : (
+                            <View style={styles.profileBlock}>
+                                <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Image
                                         source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
                                         style={{ width: 14, height: 14, marginRight: 5 }}
                                         resizeMode="contain"
                                     />
-                                    <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>{averageIncomeData?.averageIncome}</Text>
+                                    <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
+                                        {profileData?.CreditBalance}
+                                    </Text>
                                 </View>
-                            )}
-                        </View>
-                        <View style={{ width: 5 }} />
-                        <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
-                            <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Time</Text>
-                            {isTotalTimeLoading ? (
-                                <ActivityIndicator size="small" />
-                            ) : (
-                                <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}> {liveOnlineTime || totalDailyTime?.TotalOnlineTime}</Text>
-                            )}
-                        </View>
-                    </View>
-                    {/* History Table */}
-                    <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
-                        <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
-                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
-                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
-                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
-                        </View>
-                        <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
-                            {topGiftersData.length === 0 ? <>
-                                <>
-                                    <View style={{ height: screenHeight * 0.2, justifyContent: 'center', alignItems: 'center' }}>
-                                        <Text style={{ color: theme === 'light' ? '#777' : '#ccc', fontSize: 16, fontWeight: '500' }}>
-                                            No data found
-                                        </Text>
-                                    </View>
-                                </>
-                            </> : topGiftersData.map((item, index) => {
-                                return (
-                                    <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
-                                        <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
-                                    </View>
-                                );
-                            })}
-                        </ScrollView>
-                    </View>
-                    {/* Action Buttons */}
-                    <View style={styles.profileButtonGrid}>
-                        <TouchableOpacity
-                            onPress={() => setVisibleModal('bank-details')}
-                            style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                        >
-                            <Icon name="card-outline" size={26} color="#4CAF50" style={styles.actionButtonIcon} />
-                            <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setVisibleModal('shop-manager')}
-                            style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                        >
-                            <Icon name="storefront-outline" size={24} color="#FF9800" style={styles.actionButtonIcon} />
-                            <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Shop Manager</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setVisibleModal('social')}
-                            style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                        >
-                            <Icon name="people-outline" size={28} color="#2196F3" style={styles.actionButtonIcon} />
-                            <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setVisibleModal('setting')}
-                            style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                        >
-                            <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
-                            <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-                {/* Modals */}
-                {/* full screen modal */}
-                {visibleModal === 'bank-details' && (
-                    <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                )}
-                {visibleModal === 'shop-manager' && (
-                    <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
-                )}
-                {visibleModal === 'social' && (
-                    <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                )}
-                {visibleModal === 'setting' && (
-                    <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} address={address} />
-                )}
 
-                {/* center modal */}
-                {visibleModal === 'center-modal' && (
-                    <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
-                )}
-                {/* full screen modal */}
-                {visibleModal === 'half-screen-modal' && (
-                    <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
-                )}
-                {/* <Footer /> */}
-            </>
+                            </View>
+                        </View>
+
+
+                    </View>
+                    {/* Scrollable Content */}
+                    <ScrollView showsVerticalScrollIndicator={false} style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
+                        {/* Stat Cards */}
+                        <View style={styles.profileStatCards}>
+                            <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
+                                <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Revenue</Text>
+                                {isAvgLoading ? (
+                                    <ActivityIndicator size="small" />
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image
+                                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                            style={{ width: 14, height: 14, marginRight: 5 }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>{averageIncomeData?.averageIncome}</Text>
+                                    </View>
+                                )}
+                            </View>
+                            <View style={{ width: 5 }} />
+                            <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
+                                <Text style={[styles.profileStatLabel, themeStyles[theme].profileStatLabel]}>Avg. Daily Time</Text>
+                                {isTotalTimeLoading ? (
+                                    <ActivityIndicator size="small" />
+                                ) : (
+                                    <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}> {liveOnlineTime || totalDailyTime?.TotalOnlineTime}</Text>
+                                )}
+                            </View>
+                        </View>
+                        {/* History Table */}
+                        <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
+                            <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
+                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
+                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
+                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
+                            </View>
+                            <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
+                                {topGiftersData.length === 0 ? <>
+                                    <>
+                                        <View style={{ height: screenHeight * 0.2, justifyContent: 'center', alignItems: 'center' }}>
+                                            <Text style={{ color: theme === 'light' ? '#777' : '#ccc', fontSize: 16, fontWeight: '500' }}>
+                                                No data found
+                                            </Text>
+                                        </View>
+                                    </>
+                                </> : topGiftersData.map((item, index) => {
+                                    return (
+                                        <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
+                                            <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
+                                        </View>
+                                    );
+                                })}
+                            </ScrollView>
+                        </View>
+                        {/* Action Buttons */}
+                        <View style={styles.profileButtonGrid}>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('bank-details')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
+                                <Icon name="card-outline" size={26} color="#4CAF50" style={styles.actionButtonIcon} />
+                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('shop-manager')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
+                                <Icon name="storefront-outline" size={24} color="#FF9800" style={styles.actionButtonIcon} />
+                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Shop Manager</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('social')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
+                                <Icon name="people-outline" size={28} color="#2196F3" style={styles.actionButtonIcon} />
+                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setVisibleModal('setting')}
+                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
+                            >
+                                <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
+                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                    {/* Modals */}
+                    {/* full screen modal */}
+                    {visibleModal === 'bank-details' && (
+                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                    )}
+                    {visibleModal === 'shop-manager' && (
+                        <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    {visibleModal === 'social' && (
+                        <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                    )}
+                    {visibleModal === 'setting' && (
+                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} address={address} />
+                    )}
+
+                    {/* center modal */}
+                    {visibleModal === 'center-modal' && (
+                        <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    {/* full screen modal */}
+                    {visibleModal === 'half-screen-modal' && (
+                        <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
+                    )}
+                    {/* <Footer /> */}
+                </>
+            </LinearGradient>
         </View>
     );
 };
