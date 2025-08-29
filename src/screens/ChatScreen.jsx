@@ -1,5 +1,3 @@
-Copy
-
 import React, {
     useState,
     useRef,
