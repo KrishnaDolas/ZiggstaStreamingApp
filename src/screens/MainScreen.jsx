@@ -53,7 +53,7 @@ export const MainScreen = () => {
   const [currentStreamData, setCurrentStreamData] = useState({});
   const [totalGiftValue, setTotalGiftValue] = useState(0);
   const IsIdentify = useRef(false)
-  const IsVerified=useRef(false)
+  const IsVerified = useRef(false)
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
@@ -119,7 +119,7 @@ export const MainScreen = () => {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar,Gender:userData?.gender } : { country: 'India', city: 'Pune' }
+        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar, Gender: userData?.gender } : { country: 'India', city: 'Pune' }
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);
       }
@@ -134,7 +134,7 @@ export const MainScreen = () => {
     if (!IsIdentify.current && userData && socket.connected) {
       if (streamInfo) {
         const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar,userData?.gender)
+        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar, userData?.gender)
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
@@ -249,13 +249,13 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleSignal');
     }
   }
-  const HandleNewMessage = ({ userName, message, id, userProfile,Gender }) => {
+  const HandleNewMessage = ({ userName, message, id, userProfile, Gender }) => {
     try {
       let own = userName
       if (userName === userData?.screenName) {
         own = "You"
       }
-      const data = { userID: id, userProfile: userProfile,Gender:Gender, userName: own, message: message, TYPE: "PLAYERCHAT" }
+      const data = { userID: id, userProfile: userProfile, Gender: Gender, userName: own, message: message, TYPE: "PLAYERCHAT" }
       setRoomchat(prev => [...prev, data]);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
@@ -428,12 +428,12 @@ export const MainScreen = () => {
     setStrimerList(list)
   }
   const HandlenewUserJoined = (userinfo) => {
-    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,Gender:userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
+    const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, Gender: userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
   }
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
-      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar,Gender:userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
+      const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, Gender: userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
   }
@@ -483,17 +483,17 @@ export const MainScreen = () => {
     HandleConnect()
   }, [])
 
-  useEffect(()=>{
-    if(!IsVerified.current){
+  useEffect(() => {
+    if (!IsVerified.current) {
       // Check if user is verified
-      if (userData?.userid &&socket.connected) {
-        socket.emit('identity', userData?.userid, userData?.screenName,userData?.avatar,userData?.gender);
+      if (userData?.userid && socket.connected) {
+        socket.emit('identity', userData?.userid, userData?.screenName, userData?.avatar, userData?.gender);
         IsVerified.current = true; // Set verified flag to true
       } else {
         IsVerified.current = false;
       }
     }
-  },[IsVerified,socket.connected,userData])
+  }, [IsVerified, socket.connected, userData])
 
 
 
@@ -599,8 +599,8 @@ export const MainScreen = () => {
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
-       // ---- AUDIO LEVEL DETECTION ----
-       setInterval(async () => {
+      // ---- AUDIO LEVEL DETECTION ----
+      setInterval(async () => {
         const receivers = peer.getReceivers();
         const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
         if (audioReceiver) {
@@ -613,7 +613,7 @@ export const MainScreen = () => {
               if (audioLevel === undefined && report.totalAudioEnergy && report.totalSamplesDuration) {
                 audioLevel = Math.sqrt(report.totalAudioEnergy / report.totalSamplesDuration);
               }
-      
+
               audioLevel = audioLevel || 0;
               const isSpeaking = audioLevel > 0.05; // threshold
               setRemoteStreams(prev => prev.map(s =>
@@ -623,7 +623,7 @@ export const MainScreen = () => {
           });
         }
       }, 200);
-      
+
 
       return peer;
     } catch (error) {
@@ -643,7 +643,7 @@ export const MainScreen = () => {
       }
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar,userData?.gender);
+      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar, userData?.gender);
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -654,7 +654,7 @@ export const MainScreen = () => {
       const roomID = RoomInfo?.roomID.toString()
       setStreamInfo(RoomInfo);
       const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address,userData?.avatar,userData?.gender);
+      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar, userData?.gender);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }
@@ -765,7 +765,7 @@ export const MainScreen = () => {
         id: userData.userid,
         timestamp: new Date().toLocaleTimeString(),
         userProfile: userData?.avatar,
-        Gender:userData?.gender
+        Gender: userData?.gender
       };
       console.log(newMessage);
 
@@ -791,42 +791,48 @@ export const MainScreen = () => {
 
   return (
     <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top }]}>
-      <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-      />
-      <View style={[styles.container]}>
-        {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
-        {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
-        {!joined ? (
-          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
-        ) : (<StreamRoom
-          remoteStreams={remoteStreams}
-          localStream={localStream}
-          isStreaming={isStreaming}
-          requestStreamPermission={requestStreamPermission}
-          isFrontCamera={isFrontCamera}
-          Streamupdated={Streamupdated}
-          setStreamupdated={setStreamupdated}
-          toggleMute={toggleMute}
-          switchCamera={switchCamera}
-          leaveRoom={leaveRoom}
-          isMuted={isMuted}
-          isHost={isHost}
-          HandleChatmessages={HandleChatmessages}
-          roomchat={roomchat}
-          streamInfo={streamInfo}
-          streamrequestlist={streamrequestlist}
-          streamGuest={streamGuest}
-          hasRequestedStream={hasRequestedStream}
-          streamerList={streamerList}
-          isuserstreaming={isuserstreaming}
-          streammsg={streammsg}
-          isInStreamRoom={isInStreamRoom}
-          totalGiftValue={totalGiftValue}
-          connectingpanel={connectingpanel}
-        />)}
-      </View>
+      <LinearGradient
+        style={[styles.messageListGradientBox]}
+        colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}>
+        <StatusBar
+          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+          backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+        />
+        <View style={[styles.container]}>
+          {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
+          {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
+          {!joined ? (
+            <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
+          ) : (<StreamRoom
+            remoteStreams={remoteStreams}
+            localStream={localStream}
+            isStreaming={isStreaming}
+            requestStreamPermission={requestStreamPermission}
+            isFrontCamera={isFrontCamera}
+            Streamupdated={Streamupdated}
+            setStreamupdated={setStreamupdated}
+            toggleMute={toggleMute}
+            switchCamera={switchCamera}
+            leaveRoom={leaveRoom}
+            isMuted={isMuted}
+            isHost={isHost}
+            HandleChatmessages={HandleChatmessages}
+            roomchat={roomchat}
+            streamInfo={streamInfo}
+            streamrequestlist={streamrequestlist}
+            streamGuest={streamGuest}
+            hasRequestedStream={hasRequestedStream}
+            streamerList={streamerList}
+            isuserstreaming={isuserstreaming}
+            streammsg={streammsg}
+            isInStreamRoom={isInStreamRoom}
+            totalGiftValue={totalGiftValue}
+            connectingpanel={connectingpanel}
+          />)}
+        </View>
+      </LinearGradient>
     </View>
   );
 };

@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
   container: {
     padding: 0,
-    flexGrow: 1,
+    flex: 1,
   },
   authContainer: {
     flex: 1,
