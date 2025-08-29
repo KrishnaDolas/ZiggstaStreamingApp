@@ -1088,7 +1088,6 @@ const StreamRoom = ({
                             <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
                                 <TouchableOpacity onPress={() => {
                                     setOpenViewerList(true)
-                                    socket.emit('RoomTotalCount')
                                 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6', marginRight: '3' }}>
