@@ -23,6 +23,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { getGenderFallbackImage, socket } from '../utils/constant';
 import Colors from '../../assets/styles/Colors';
 import { useAppContext } from '../context/AppContext';
+import Apiclient from '../utils/Apiclient';
 
 const { width } = Dimensions.get('window');
 
@@ -117,7 +118,46 @@ export const ChatScreen = ({ route, navigation }) => {
             socket.off('stopTyping', HandleStopTyping)
             socket.off('receive-msg', HandleReceiveMsg)
         }
-    }, [])
+    }, []);
+
+
+
+    const getChatLogs = useCallback(async () => {
+        const payload = {
+            fromUserID: userData.userid,
+            toUserID: chatUser?.userid,
+            limit: 50,
+            offset: 0,
+        };
+        try {
+            const response = await Apiclient.post('/chatlogs/getChatLogs', payload);
+            console.log('message', response.data.messages);
+            if (response.status === 200) {
+                // Sort messages by created_at to ensure correct order
+                const sortedMessages = response.data.messages.sort(
+                    (a, b) => a.created_at - b.created_at
+                );
+                setMessages(sortedMessages);
+                console.log('Fetched messages:', sortedMessages.length); // Debug log
+            }
+        } catch (error) {
+        }
+    }, [chatUser?.userid, userData.userid]);
+
+
+    useEffect(() => {
+        getChatLogs();
+    }, [getChatLogs]);
+
+
+    // Scroll to the last message when messages are updated
+    useEffect(() => {
+        if (messages.length > 0 && flatListRef.current) {
+            setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: false });
+            }, 100);
+        }
+    }, [messages]);
 
     // Typing animation
     useEffect(() => {
@@ -144,17 +184,22 @@ export const ChatScreen = ({ route, navigation }) => {
 
         const newMessage = {
             id: Date.now().toString(),
-            text: inputText.trim(),
-            from: userData?.userid,
-            to: chatUser?.userid,
-            timestamp: new Date().getTime(),
+            message: inputText.trim(),
+            sender_id: userData?.userid,
+            receiver_id: chatUser?.userid,
+            created_at: new Date().getTime(),
             status: 'pending',
-            replyTo: replyingTo
+            replyTo: replyingTo?.message,
         };
         socket.emit('send-msg', newMessage);
         setInputText('');
         setReplyingTo(null);
-    }, [inputText, replyingTo]);
+        setTimeout(() => {
+            flatListRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+    }, [inputText, replyingTo, chatUser?.userid, userData?.userid]);
+
+
 
     const handleLongPress = useCallback((message) => {
         Alert.alert(
@@ -162,7 +207,7 @@ export const ChatScreen = ({ route, navigation }) => {
             'What would you like to do?',
             [
                 { text: 'Reply', onPress: () => setReplyingTo(message) },
-                { text: 'Copy', onPress: () => { } },
+                // { text: 'Copy', onPress: () => { } },
                 { text: 'Delete', onPress: () => { }, style: 'destructive' },
                 { text: 'Cancel', style: 'cancel' }
             ]
@@ -187,8 +232,9 @@ export const ChatScreen = ({ route, navigation }) => {
         }
     }, []);
 
+
     const renderMessage = useCallback(({ item, index }) => {
-        const isMe = item.from === userData?.userid;
+        const isMe = item.sender_id === userData?.userid;
         const isLastMessage = index === messages.length - 1;
 
         return (
@@ -220,7 +266,7 @@ export const ChatScreen = ({ route, navigation }) => {
                         chatStyles.messageText,
                         { color: isMe ? '#fff' : (theme === 'dark' ? '#fff' : '#333') }
                     ]}>
-                        {item.text}
+                        {item.message}
                     </Text>
 
                     <View style={chatStyles.messageFooter}>
@@ -228,7 +274,7 @@ export const ChatScreen = ({ route, navigation }) => {
                             chatStyles.timeText,
                             { color: isMe ? 'rgba(255,255,255,0.8)' : (theme === 'dark' ? '#999' : '#666') }
                         ]}>
-                            {formatTime(item.timestamp)}
+                            {formatTime(item.created_at)}
                         </Text>
                         {isMe && (
                             <View style={chatStyles.statusContainer}>
@@ -351,7 +397,7 @@ export const ChatScreen = ({ route, navigation }) => {
                             chatStyles.replyPreviewText,
                             { color: theme === 'dark' ? '#ccc' : '#666' }
                         ]}>
-                            Replying to: {replyingTo.text}
+                            Replying to: {replyingTo?.message}
                         </Text>
                     </View>
                     <TouchableOpacity onPress={() => setReplyingTo(null)}>
