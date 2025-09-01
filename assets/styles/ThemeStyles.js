@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
   },
   formContainer: {
     width: '100%',
-    height: '100%',
+    // height: '100%',
     position: 'relative',
     borderRadius: 12,
     ...Platform.select({
@@ -565,6 +565,9 @@ export const styles = StyleSheet.create({
   },
   btnInterestActive: {
     backgroundColor: '#d93a63',
+  },
+  btnInterestActiveBlue: {
+    backgroundColor: '#0035ff',
   },
 
 

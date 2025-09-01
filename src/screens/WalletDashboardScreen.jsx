@@ -261,7 +261,7 @@ export const WalletDashboardScreen = () => {
                         >
                             {/* wallet tabs button */}
                             <View style={[styles.wdTabContainer, themeStyles[theme].wdTabContainer]}>
-                                {['Deposit', 'Withdraw', 'Transfer'].map((tab, index) => (
+                                {['Deposit', 'Withdraw'].map((tab, index) => (
                                     <TouchableOpacity
                                         key={tab}
                                         style={[styles.wdTabButton, themeStyles[theme].wdTabButton, activeTab === tab && themeStyles[theme].wdActiveTab, activeTab === tab && styles.wdActiveTab, { marginLeft: index === 0 ? 0 : 8 }]}

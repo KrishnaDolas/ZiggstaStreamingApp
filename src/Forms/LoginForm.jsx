@@ -93,13 +93,12 @@ export const LoginForm = ({
   return (
     <>
       <ScrollView
-        style={{
-          position: 'absolute',
-          flex: 1,
-          width: '100%',
-          height: '100%',
-          top: '20%',
-        }}>
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
           <Text style={[styles.formTitle, themeStyles[theme].text]}>
             Sign In
@@ -108,14 +107,16 @@ export const LoginForm = ({
             <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>
               Email
             </Text>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              style={[styles.input, themeStyles[theme].input]}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              placeholderTextColor={themeStyles[theme].placeholder.color}
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                style={[styles.input, themeStyles[theme].input]}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholderTextColor={themeStyles[theme].placeholder.color}
+              />
+            </View>
           </View>
           <View style={[{ width: '100%', padding: '7' }]}>
             <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>

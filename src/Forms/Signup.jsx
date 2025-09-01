@@ -23,6 +23,7 @@ export const Signup = ({
   const [isAbove18, setIsAbove18] = useState(false);
   const [error, setError] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
+  const [referrerCode, setReferrerCode] = useState('');
 
   const [checkingEmail, setCheckingEmail] = useState(false);
   const [emailAvailable, setEmailAvailable] = useState(null); // null = untouched
@@ -156,7 +157,13 @@ export const Signup = ({
 
   return (
     <>
-      <ScrollView style={{ position: 'absolute', flex: 1, width: '100%', height: '100%', top: '10%' }}>
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <View style={[styles.formContainer, themeStyles[theme].formContainer]}>
           <Text style={[styles.formTitle, themeStyles[theme].text]}>Sign Up</Text>
           <View style={[{ width: '100%', padding: '7' }]}>
@@ -230,6 +237,19 @@ export const Signup = ({
                   color={theme === 'light' ? '#1e1e1e' : 'white'}
                 />
               </TouchableOpacity>
+            </View>
+          </View>
+          <View style={[{ width: '100%', padding: '7' }]}>
+            {/* <Text style={[styles.SingInlabel, themeStyles[theme].SingInlabel]}>Referrer Code</Text> */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TextInput
+                value={referrerCode}
+                onChangeText={setReferrerCode}
+                style={[styles.input, themeStyles[theme].input]}
+                placeholderTextColor={themeStyles[theme].placeholder.color}
+                placeholder="Referrer Code"
+                maxLength={6}
+              />
             </View>
           </View>
           {/* accept terms and conditions */}

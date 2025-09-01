@@ -46,12 +46,12 @@ const questions = [
   { label: 'Gender', field: 'gender' },
   // { label: 'Choose your Interests (Any 2)', field: 'interests' },
   {
-    label: 'Choose your Interests (Any 2)', // This will be overridden by renderLabel
+    label: 'Choose your Interests (Any 3)', // This will be overridden by renderLabel
     field: 'interests',
     renderLabel: (theme) => (
       <Text style={[styles.question, themeStyles[theme].question]}>
         Choose your{' '}
-        <Text style={{ color: '#0035ff', fontWeight: 500 }}>Interests</Text> (Any 2)
+        <Text style={{ color: '#0035ff', fontWeight: 500 }}>Interests</Text> (Any 3)
       </Text>
     ),
   },
@@ -678,11 +678,14 @@ export const RegisterForm = ({
               </TouchableOpacity>
             ))}
           </ScrollView>
-          {errors[question.field] ? (
+          {/* {errors[question.field] && formData.interests.length > 0 ? (
             <Text style={{ color: '#0035ff', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
-          ) : null}
+          ) : null} */}
+          <Text style={{ color: formData.interests.length === 0 ? '#000' : '#0035ff', marginTop: 5 }}>
+            choose 3 Interests to help you attract the right audience.
+          </Text>
         </View>
       );
     }
@@ -847,12 +850,12 @@ export const RegisterForm = ({
           <Text
             style={{
               fontSize: 14,
-              color: theme === 'dark' ? '#ccc' : '#666',
+              color: '#0035ff',
               marginTop: 8,
               marginLeft: 4,
               textAlign: 'left',
             }}>
-            Enter city name for best search results
+            Users will only see the location entered and not your exact location.
           </Text>
           {errors.location && (
             <Text style={{ color: 'red' }}>{errors.location}</Text>
@@ -1235,8 +1238,8 @@ export const RegisterForm = ({
           }
           break;
         case 'interests':
-          if (!value || value.length < 2) {
-            error.interests = 'Select at least 2 interests';
+          if (!value || value.length < 3) {
+            error.interests = 'Choose 3 Interests to help you attract the right audience.';
             isValid = false;
           } else {
             error.interests = ''; // Clear error
