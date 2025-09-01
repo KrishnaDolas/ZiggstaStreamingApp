@@ -512,7 +512,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             </View>
                             <View style={styles.strHedSearchModalForm}>
                                 <TextInput
-                                    placeholder="Enter Stream Title"
+                                    placeholder="Enter Stream Title (optional)"
                                     placeholderTextColor="#888"
                                     value={roomIdInput}
                                     onChangeText={setRoomIdInput}

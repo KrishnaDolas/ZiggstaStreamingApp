@@ -1064,7 +1064,7 @@ const StreamRoom = ({
                     <>
                         {/* Stream Room Header */}
                         {showUI && (<View style={styles.strRoomHeader}>
-                            <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
+                            <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }} onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
@@ -1084,6 +1084,17 @@ const StreamRoom = ({
                                         </View>
                                     </View>
                                 </View>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(36, 32, 32, 0.75)', height: '25', borderRadius: 21, paddingHorizontal: 10 }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Ionicons name="heart" size={15} color="white" />
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>10k</Text>
+                                    </View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Ionicons name="eye" size={15} color="#fff" />
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>100k</Text>
+                                    </View>
+                                </View>
+
                             </Pressable>
                             <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
                                 <TouchableOpacity onPress={() => {
