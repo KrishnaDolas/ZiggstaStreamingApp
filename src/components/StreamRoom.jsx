@@ -270,6 +270,20 @@ const StreamRoom = ({
         }
     };
 
+    const GetViewerAndLikeCount = async()=>{
+        try {
+             const params = {
+                hostId: streamInfo?.hostID,
+                }
+            const response = await Apiclient.post(`/rooms/getTotalLikesCount`,params);
+            if (response) {
+                console.log(response.data)
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, "GetViewerAndLikeCount")
+        }
+    }
+
     useEffect(() => {
         getGifts();
     }, [giftModalVisible, selectedGiftCategory]);
@@ -332,7 +346,7 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
-
+        GetViewerAndLikeCount()
         if (streamInfo) {
             GetUserDetails(streamInfo?.hostID)
         }
