@@ -20,23 +20,24 @@ import {
   Animated,
   Dimensions,
 } from 'react-native';
-import {ThemeContext} from '../context/ThemeContext';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { ThemeContext } from '../context/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
+import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import {getGenderFallbackImage, socket} from '../utils/constant';
+import { getGenderFallbackImage, socket } from '../utils/constant';
 import Colors from '../../assets/styles/Colors';
-import {useAppContext} from '../context/AppContext';
+import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export const ChatScreen = ({route, navigation}) => {
-  const {chatUser} = route.params; // User data passed from MessageListScreen
-  const {userData} = useAppContext();
-  const {theme} = useContext(ThemeContext);
+export const ChatScreen = ({ route, navigation }) => {
+  const { chatUser } = route.params; // User data passed from MessageListScreen
+  const { userData } = useAppContext();
+  const { theme } = useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState([]);
@@ -106,7 +107,7 @@ export const ChatScreen = ({route, navigation}) => {
     // setTimeout(() => {
     //   flatListRef.current?.scrollToEnd({animated: true});
     // }, 100);
-    flatListRef.current?.scrollToEnd({animated: true});
+    flatListRef.current?.scrollToEnd({ animated: true });
   };
 
   useEffect(() => {
@@ -142,7 +143,7 @@ export const ChatScreen = ({route, navigation}) => {
         setMessages(sortedMessages);
         console.log('Fetched messages:', sortedMessages.length); // Debug log
       }
-    } catch (error) {}
+    } catch (error) { }
   }, [chatUser?.userid, userData.userid]);
 
   useEffect(() => {
@@ -153,7 +154,7 @@ export const ChatScreen = ({route, navigation}) => {
   useEffect(() => {
     if (messages.length > 0 && flatListRef.current) {
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd({animated: false});
+        flatListRef.current?.scrollToEnd({ animated: false });
       }, 100);
     }
   }, [messages]);
@@ -195,7 +196,7 @@ export const ChatScreen = ({route, navigation}) => {
     setReplyingTo(null);
 
     setTimeout(() => {
-      flatListRef.current?.scrollToEnd({animated: true});
+      flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
 
     // insted of settimeout use this to remove after 100ms, force scroll to bottom
@@ -204,16 +205,16 @@ export const ChatScreen = ({route, navigation}) => {
 
   const handleLongPress = useCallback(message => {
     Alert.alert('Message Options', 'What would you like to do?', [
-      {text: 'Reply', onPress: () => setReplyingTo(message)},
+      { text: 'Reply', onPress: () => setReplyingTo(message) },
       // { text: 'Copy', onPress: () => { } },
-      {text: 'Delete', onPress: () => {}, style: 'destructive'},
-      {text: 'Cancel', style: 'cancel'},
+      { text: 'Delete', onPress: () => { }, style: 'destructive' },
+      { text: 'Cancel', style: 'cancel' },
     ]);
   }, []);
 
   const formatTime = useCallback(timestamp => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }, []);
 
   const getStatusIcon = useCallback(status => {
@@ -234,7 +235,7 @@ export const ChatScreen = ({route, navigation}) => {
   }, []);
 
   const renderMessage = useCallback(
-    ({item, index}) => {
+    ({ item, index }) => {
       const isMe = item.sender_id === userData?.userid;
       const isLastMessage = index === messages.length - 1;
 
@@ -246,6 +247,20 @@ export const ChatScreen = ({route, navigation}) => {
               ? chatStyles.myMessageContainer
               : chatStyles.otherMessageContainer,
           ]}>
+          {!isMe && (
+            <TouchableOpacity
+              // onPress={() => navigation.navigate('Profile', { userId: item.sender_id })}
+              style={chatStyles.profileContainer}>
+              <Image
+                source={
+                  !chatUser?.avatar || chatUser?.avatar === 'default'
+                    ? getGenderFallbackImage(chatUser?.gender)
+                    : { uri: chatUser?.avatar }
+                }
+                style={chatStyles.profileAvatar}
+              />
+            </TouchableOpacity>
+          )}
           {item.replyTo && (
             <View
               style={[
@@ -258,12 +273,11 @@ export const ChatScreen = ({route, navigation}) => {
               ]}>
               <View style={chatStyles.replyBorder} />
               <Text
-                style={[chatStyles.replyText, {color: isMe ? '#fff' : '#666'}]}>
+                style={[chatStyles.replyText, { color: isMe ? '#fff' : '#666' }]}>
                 {item.replyTo.text}
               </Text>
             </View>
           )}
-
           <TouchableOpacity
             onLongPress={() => handleLongPress(item)}
             style={[
@@ -273,18 +287,17 @@ export const ChatScreen = ({route, navigation}) => {
                 backgroundColor: isMe
                   ? '#d93a63'
                   : theme === 'dark'
-                  ? Colors.blackCardColor
-                  : '#f0f0f0',
+                    ? Colors.blackCardColor
+                    : '#f0f0f0',
               },
             ]}>
             <Text
               style={[
                 chatStyles.messageText,
-                {color: isMe ? '#fff' : theme === 'dark' ? '#fff' : '#333'},
+                { color: isMe ? '#fff' : theme === 'dark' ? '#fff' : '#333' },
               ]}>
               {item.message}
             </Text>
-
             <View style={chatStyles.messageFooter}>
               <Text
                 style={[
@@ -293,8 +306,8 @@ export const ChatScreen = ({route, navigation}) => {
                     color: isMe
                       ? 'rgba(255,255,255,0.8)'
                       : theme === 'dark'
-                      ? '#999'
-                      : '#666',
+                        ? '#999'
+                        : '#666',
                   },
                 ]}>
                 {formatTime(item.created_at)}
@@ -312,27 +325,26 @@ export const ChatScreen = ({route, navigation}) => {
     [messages, theme, handleLongPress, formatTime, getStatusIcon],
   );
 
-    const renderHeader = () => (
-        <View
-            style={[
-                chatStyles.header,
-                {
-                    backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
-                    paddingTop: insets.top,
-                    borderBottomColor:
-                        theme === 'dark' ? Colors.blackDividers : '#e0e0e0',
-                },
-            ]}>
-            <View style={chatStyles.headerContent}>
-                <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={chatStyles.backButton}>
-                    <Feather
-                        name="arrow-left"
-                        size={24}
-                        color={theme === 'dark' ? '#fff' : '#333'}
-                    />
-                </TouchableOpacity>
+  const renderHeader = () => (
+    <View
+      style={[
+        chatStyles.header,
+        {
+          backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
+          borderBottomColor:
+            theme === 'dark' ? Colors.blackDividers : '#e0e0e0',
+        },
+      ]}>
+      <View style={chatStyles.headerContent}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={chatStyles.backButton}>
+          <Feather
+            name="arrow-left"
+            size={24}
+            color={theme === 'dark' ? '#fff' : '#333'}
+          />
+        </TouchableOpacity>
 
         <TouchableOpacity style={chatStyles.userInfo}>
           <View style={chatStyles.avatarContainer}>
@@ -340,7 +352,7 @@ export const ChatScreen = ({route, navigation}) => {
               source={
                 !chatUser?.avatar || chatUser?.avatar === 'default'
                   ? getGenderFallbackImage(chatUser?.gender)
-                  : {uri: chatUser?.avatar}
+                  : { uri: chatUser?.avatar }
               }
               style={chatStyles.avatar}
             />
@@ -361,7 +373,7 @@ export const ChatScreen = ({route, navigation}) => {
             <Text
               style={[
                 chatStyles.userName,
-                {color: theme === 'dark' ? '#fff' : '#333'},
+                { color: theme === 'dark' ? '#fff' : '#333' },
               ]}>
               {chatUser?.screenName || chatUser?.screenName || 'User'}
             </Text>
@@ -370,9 +382,9 @@ export const ChatScreen = ({route, navigation}) => {
               <Animated.View
                 style={[
                   chatStyles.typingContainer,
-                  {opacity: typingAnimation},
+                  { opacity: typingAnimation },
                 ]}>
-                <Text style={[chatStyles.statusText, {color: '#d93a63'}]}>
+                <Text style={[chatStyles.statusText, { color: '#d93a63' }]}>
                   typing...
                 </Text>
               </Animated.View>
@@ -380,7 +392,7 @@ export const ChatScreen = ({route, navigation}) => {
               <Text
                 style={[
                   chatStyles.statusText,
-                  {color: userStatus === 'online' ? '#4CAF50' : '#999'},
+                  { color: userStatus === 'online' ? '#4CAF50' : '#999' },
                 ]}>
                 {userStatus}
               </Text>
@@ -438,7 +450,7 @@ export const ChatScreen = ({route, navigation}) => {
             <Text
               style={[
                 chatStyles.replyPreviewText,
-                {color: theme === 'dark' ? '#ccc' : '#666'},
+                { color: theme === 'dark' ? '#ccc' : '#666' },
               ]}>
               Replying to: {replyingTo?.message}
             </Text>
@@ -451,7 +463,8 @@ export const ChatScreen = ({route, navigation}) => {
 
       <View style={chatStyles.inputRow}>
         <TouchableOpacity style={chatStyles.attachButton}>
-          <Feather name="paperclip" size={20} color="#999" />
+          {/* <Feather name="paperclip" size={20} color="#999" /> */}
+          <Entypo name="emoji-happy" size={20} color="#999" />
         </TouchableOpacity>
 
         <View
@@ -466,7 +479,7 @@ export const ChatScreen = ({route, navigation}) => {
             ref={inputRef}
             style={[
               chatStyles.textInput,
-              {color: theme === 'dark' ? '#fff' : '#333'},
+              { color: theme === 'dark' ? '#fff' : '#333' },
             ]}
             placeholder="Type a message..."
             placeholderTextColor={theme === 'dark' ? '#999' : '#666'}
@@ -481,7 +494,7 @@ export const ChatScreen = ({route, navigation}) => {
           onPress={sendMessage}
           style={[
             chatStyles.sendButton,
-            {opacity: inputText.trim().length > 0 ? 1 : 0.5},
+            { opacity: inputText.trim().length > 0 ? 1 : 0.5 },
           ]}>
           <LinearGradient
             colors={['#d93a63', '#e85a7a']}
@@ -493,41 +506,42 @@ export const ChatScreen = ({route, navigation}) => {
     </View>
   );
 
-    return (
-        <SafeAreaView
-            style={[
-                chatStyles.container,
-                {
-                    backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
-                    paddingBottom: insets.bottom,
-                },
-            ]}>
-            <StatusBar
-                barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-                backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-                translucent={false}
-            />
-            {renderHeader()}
+  return (
+    <View
+      style={[
+        chatStyles.container,
+        {
+          backgroundColor: theme === 'dark' ? Colors.blackBgColor : '#fff',
+          paddingBottom: insets.bottom,
+          paddingTop: insets.top,
+        },
+      ]}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+        translucent={false}
+      />
+      {renderHeader()}
 
-            <KeyboardAvoidingView
-                style={chatStyles.content}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <View
-                    style={[
-                        chatStyles.messagesContainer,
-                        {
-                            backgroundColor:
-                                theme === 'dark' ? Colors.blackBgColor : '#f8f8f8',
-                        },
-                    ]}>
-                    <FlatList
-                        ref={flatListRef}
-                        data={messages}
-                        keyExtractor={item => item.id}
-                        renderItem={renderMessage}
-                        contentContainerStyle={chatStyles.messagesList}
-                        showsVerticalScrollIndicator={false}
-                        // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      <KeyboardAvoidingView
+        style={chatStyles.content}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View
+          style={[
+            chatStyles.messagesContainer,
+            {
+              backgroundColor:
+                theme === 'dark' ? Colors.blackBgColor : '#f8f8f8',
+            },
+          ]}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={item => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={chatStyles.messagesList}
+            showsVerticalScrollIndicator={false}
+            // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
 
             // New props for direct jump to the last message
             initialScrollIndex={messages.length > 0 ? messages.length - 1 : 0}
@@ -538,209 +552,220 @@ export const ChatScreen = ({route, navigation}) => {
             })}
           />
         </View>
-
-                {renderInputArea()}
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+        {renderInputArea()}
+      </KeyboardAvoidingView>
+    </View>
+  );
 };
 
 const chatStyles = {
-    container: {
-        flex: 1,
-    },
-    header: {
-        borderBottomWidth: 1,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-    },
-    headerContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        height: 60,
-    },
-    backButton: {
-        marginRight: 12,
-        padding: 4,
-    },
-    userInfo: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    avatarContainer: {
-        position: 'relative',
-        marginRight: 12,
-    },
-    avatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-    },
-    statusDot: {
-        position: 'absolute',
-        bottom: 0,
-        right: 0,
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        borderWidth: 2,
-        borderColor: '#fff',
-    },
-    userDetails: {
-        flex: 1,
-    },
-    userName: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 2,
-    },
-    statusText: {
-        fontSize: 12,
-        fontWeight: '400',
-    },
-    typingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    headerActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    actionButton: {
-        marginLeft: 16,
-        padding: 4,
-    },
-    content: {
-        flex: 1,
-    },
-    messagesContainer: {
-        flex: 1,
-    },
-    messagesList: {
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-    },
-    messageContainer: {
-        marginBottom: 12,
-    },
-    myMessageContainer: {
-        alignItems: 'flex-end',
-    },
-    otherMessageContainer: {
-        alignItems: 'flex-start',
-    },
-    messageBubble: {
-        maxWidth: width * 0.75,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 20,
-        elevation: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 1,
-    },
-    myMessageBubble: {
-        borderBottomRightRadius: 4,
-    },
-    otherMessageBubble: {
-        borderBottomLeftRadius: 4,
-    },
-    messageText: {
-        fontSize: 16,
-        lineHeight: 20,
-    },
-    messageFooter: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        marginTop: 4,
-    },
-    timeText: {
-        fontSize: 11,
-        marginRight: 4,
-    },
-    statusContainer: {
-        marginLeft: 4,
-    },
-    replyContainer: {
-        marginBottom: 6,
-        paddingLeft: 12,
-        paddingRight: 16,
-        paddingVertical: 6,
-        borderRadius: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    replyBorder: {
-        width: 3,
-        height: '100%',
-        backgroundColor: '#d93a63',
-        marginRight: 8,
-        borderRadius: 2,
-    },
-    replyText: {
-        fontSize: 13,
-        fontStyle: 'italic',
-    },
-    inputContainer: {
-        borderTopWidth: 1,
-        paddingBottom: 16,
-    },
-    replyPreview: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    replyPreviewContent: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    replyPreviewText: {
-        marginLeft: 8,
-        fontSize: 13,
-        flex: 1,
-    },
-    inputRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        paddingHorizontal: 16,
-        paddingTop: 12,
-    },
-    attachButton: {
-        marginRight: 12,
-        padding: 8,
-    },
-    textInputContainer: {
-        flex: 1,
-        borderRadius: 20,
-        paddingHorizontal: 16,
-        marginRight: 12,
-        minHeight: 40,
-        justifyContent: 'center',
-    },
-    textInput: {
-        fontSize: 16,
-        maxHeight: 100,
-        paddingVertical: 8,
-    },
-    sendButton: {
-        marginBottom: 0,
-    },
-    sendButtonGradient: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+  container: {
+    flex: 1,
+  },
+  header: {
+    borderBottomWidth: 1,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    height: 60,
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
+  },
+  userInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  statusDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '400',
+  },
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionButton: {
+    marginLeft: 16,
+    padding: 4,
+  },
+  content: {
+    flex: 1,
+  },
+  messagesContainer: {
+    flex: 1,
+  },
+  messagesList: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+  },
+  messageContainer: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  myMessageContainer: {
+    justifyContent: 'flex-end',
+  },
+  otherMessageContainer: {
+    justifyContent: 'flex-start',
+  },
+  profileContainer: {
+    marginRight: 8,
+  },
+  profileAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  profilePlaceholder: {
+    width: 32,
+    height: 32,
+    marginLeft: 8,
+  },
+  messageBubble: {
+    maxWidth: width * 0.75,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  myMessageBubble: {
+    borderBottomRightRadius: 4,
+  },
+  otherMessageBubble: {
+    borderBottomLeftRadius: 4,
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  messageFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 4,
+  },
+  timeText: {
+    fontSize: 11,
+    marginRight: 4,
+  },
+  statusContainer: {
+    marginLeft: 4,
+  },
+  replyContainer: {
+    marginBottom: 6,
+    paddingLeft: 12,
+    paddingRight: 16,
+    paddingVertical: 6,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  replyBorder: {
+    width: 3,
+    height: '100%',
+    backgroundColor: '#d93a63',
+    marginRight: 8,
+    borderRadius: 2,
+  },
+  replyText: {
+    fontSize: 13,
+    fontStyle: 'italic',
+  },
+  inputContainer: {
+    borderTopWidth: 1,
+    paddingBottom: 16,
+  },
+  replyPreview: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  replyPreviewContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  replyPreviewText: {
+    marginLeft: 8,
+    fontSize: 13,
+    flex: 1,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  attachButton: {
+    marginRight: 12,
+    padding: 8,
+  },
+  textInputContainer: {
+    flex: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    marginRight: 12,
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  textInput: {
+    fontSize: 16,
+    maxHeight: 100,
+    paddingVertical: 8,
+  },
+  sendButton: {
+    marginBottom: 0,
+  },
+  sendButtonGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 };

@@ -15,7 +15,7 @@ import { ActivityIndicator } from 'react-native';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import MessageModal from '../modals/MessageModal';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 export const MessageListScreen = () => {
     const { userData } = useAppContext();
@@ -68,6 +68,13 @@ export const MessageListScreen = () => {
             setLoading(false);
         }
     }, [userData.userid, friendListType]);
+
+
+    useFocusEffect(
+        useCallback(() => {
+            getFriendsData();
+        }, [])
+    );
 
     useEffect(() => {
         if (friendListType !== 'requests') {
