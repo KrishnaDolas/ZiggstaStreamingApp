@@ -525,7 +525,9 @@ export const ChatScreen = ({ route, navigation }) => {
 
       <KeyboardAvoidingView
         style={chatStyles.content}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+      >
         <View
           style={[
             chatStyles.messagesContainer,
@@ -561,6 +563,7 @@ export const ChatScreen = ({ route, navigation }) => {
 const chatStyles = {
   container: {
     flex: 1,
+    position: 'relative',
   },
   header: {
     borderBottomWidth: 1,

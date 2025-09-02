@@ -573,7 +573,10 @@ const App = () => {
                     />
                   )}
                 </Stack.Screen>
-                <Stack.Screen name="ChatScreen">
+                <Stack.Screen name="ChatScreen"
+                  options={{
+                    windowSoftInputMode: "adjustResize",
+                  }}>
                   {(props) => (
                     <ChatScreen
                       {...props}
