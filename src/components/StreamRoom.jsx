@@ -106,7 +106,7 @@ const StreamRoom = ({
         message: '',
         type: 'info',
     });
- const [likeAndViewerCount, setLikeAndViewerCount] = useState({ viewerCount: 0, likeCount: 0 });
+    const [likeAndViewerCount, setLikeAndViewerCount] = useState({ viewerCount: 0, likeCount: 0 });
     const [editstreamdescription, setEditStreamDescription] = useState(false);
     const [streamDescription, setStreamDescription] = useState(streamInfo?.RoomName?.trim() || '');
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
@@ -271,16 +271,16 @@ const StreamRoom = ({
         }
     };
 
-    const GetViewerAndLikeCount = async()=>{
+    const GetViewerAndLikeCount = async () => {
         try {
-             const params = {
+            const params = {
                 hostId: streamInfo?.hostID,
-                }
-            const response = await Apiclient.post(`/rooms/getTotalLikesCount`,params);
+            }
+            const response = await Apiclient.post(`/rooms/getTotalLikesCount`, params);
             if (response) {
                 setLikeAndViewerCount({
-                  viewerCount: response.data.totalViews || 0,
-                  likeCount: response.data.totalLikes || 0,
+                    viewerCount: response.data.totalViews || 0,
+                    likeCount: response.data.totalLikes || 0,
                 });
                 console.log(response.data)
             }
@@ -699,6 +699,19 @@ const StreamRoom = ({
         }
     };
 
+
+    const formatCount = (num) => {
+        if (num >= 1000000) {
+            const m = Math.floor(num / 100000) / 10; // keep 1 decimal floored
+            return (m % 1 === 0 ? m.toFixed(0) : m) + 'M';
+        }
+        if (num >= 1000) {
+            const k = Math.floor(num / 100) / 10; // keep 1 decimal floored
+            return (k % 1 === 0 ? k.toFixed(0) : k) + 'k';
+        }
+        return num.toString();
+    };
+
     return (
         <>
             <View style={[styles.streamBox]}>
@@ -1106,11 +1119,11 @@ const StreamRoom = ({
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(36, 32, 32, 0.75)', height: '25', borderRadius: 21, paddingHorizontal: 10 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Ionicons name="heart" size={15} color="white" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{likeAndViewerCount.likeCount}</Text>
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Ionicons name="eye" size={15} color="#fff" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{likeAndViewerCount.viewerCount}</Text>
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.viewerCount)}</Text>
                                     </View>
                                 </View>
 
@@ -1122,12 +1135,12 @@ const StreamRoom = ({
                                     <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6', marginRight: '3' }}>
                                             <Ionicons name="eye" size={15} color="#1F85F5" />
-                                            <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{Streamupdated.TotalViewerCount}</Text>
+                                            <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{formatCount(Streamupdated.TotalViewerCount)}</Text>
                                         </View>
                                         <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
                                             {isHost && (<>
                                                 <Ionicons name="eye" size={15} color="#00BD35" />
-                                                <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{Streamupdated.viewerCount}</Text>
+                                                <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{formatCount(Streamupdated.viewerCount)}</Text>
                                             </>)}
                                         </View>
                                     </View>
