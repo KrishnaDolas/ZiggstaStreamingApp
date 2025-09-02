@@ -106,6 +106,7 @@ const StreamRoom = ({
         message: '',
         type: 'info',
     });
+ const [likeAndViewerCount, setLikeAndViewerCount] = useState({ viewerCount: 0, likeCount: 0 });
     const [editstreamdescription, setEditStreamDescription] = useState(false);
     const [streamDescription, setStreamDescription] = useState(streamInfo?.RoomName?.trim() || '');
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
@@ -277,6 +278,10 @@ const StreamRoom = ({
                 }
             const response = await Apiclient.post(`/rooms/getTotalLikesCount`,params);
             if (response) {
+                setLikeAndViewerCount({
+                  viewerCount: response.data.totalViews || 0,
+                  likeCount: response.data.totalLikes || 0,
+                });
                 console.log(response.data)
             }
         } catch (error) {
@@ -1101,11 +1106,11 @@ const StreamRoom = ({
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(36, 32, 32, 0.75)', height: '25', borderRadius: 21, paddingHorizontal: 10 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Ionicons name="heart" size={15} color="white" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>10k</Text>
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{likeAndViewerCount.likeCount}</Text>
                                     </View>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Ionicons name="eye" size={15} color="#fff" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>100k</Text>
+                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{likeAndViewerCount.viewerCount}</Text>
                                     </View>
                                 </View>
 
