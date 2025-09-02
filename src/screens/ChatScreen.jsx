@@ -19,6 +19,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -41,6 +42,11 @@ export const ChatScreen = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [currentScrollOffset, setCurrentScrollOffset] = useState(0);
+  const [isAddingMessage, setIsAddingMessage] = useState(false);
 
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -101,14 +107,19 @@ export const ChatScreen = ({ route, navigation }) => {
       return;
     }
   };
-  const HandleReceiveMsg = message => {
-    setMessages(prev => [...prev, message]);
-    // Scroll to bottom
-    // setTimeout(() => {
-    //   flatListRef.current?.scrollToEnd({animated: true});
-    // }, 100);
-    flatListRef.current?.scrollToEnd({ animated: true });
-  };
+  const HandleReceiveMsg = useCallback(
+    message => {
+      setIsAddingMessage(true); // Disable pagination
+      setMessages(prev => [message, ...prev]);
+      if (currentScrollOffset < 200) {
+        setTimeout(() => {
+          flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+        }, 100);
+      }
+      setTimeout(() => setIsAddingMessage(false), 500); // Re-enable pagination
+    },
+    [currentScrollOffset],
+  );
 
   useEffect(() => {
     socket.on('user-online', HandleUserOnline);
@@ -125,39 +136,62 @@ export const ChatScreen = ({ route, navigation }) => {
     };
   }, []);
 
-  const getChatLogs = useCallback(async () => {
+  const loadMessages = useCallback(async (currentOffset) => {
     const payload = {
       fromUserID: userData.userid,
       toUserID: chatUser?.userid,
       limit: 50,
-      offset: 0,
+      offset: currentOffset,
     };
-    try {
-      const response = await Apiclient.post('/chatlogs/getChatLogs', payload);
-      console.log('message', response.data.messages);
-      if (response.status === 200) {
-        // Sort messages by created_at to ensure correct order
-        const sortedMessages = response.data.messages.sort(
-          (a, b) => a.created_at - b.created_at,
-        );
-        setMessages(sortedMessages);
-        console.log('Fetched messages:', sortedMessages.length); // Debug log
-      }
-    } catch (error) { }
+    const response = await Apiclient.post('/chatlogs/getChatLogs', payload);
+    console.log('response loadMessages', response.data.messages);
+
+    return response.data.messages;
   }, [chatUser?.userid, userData.userid]);
 
-  useEffect(() => {
-    getChatLogs();
-  }, [getChatLogs]);
+  const loadInitialMessages = useCallback(async () => {
+    setLoadingMore(true);
+    try {
+      const msgs = await loadMessages(0);
+      console.log('response loadInitialMessages', msgs);
 
-  // Scroll to the last message when messages are updated
-  useEffect(() => {
-    if (messages.length > 0 && flatListRef.current) {
+      const sortedMessages = msgs.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      setMessages(sortedMessages);
+      setOffset(sortedMessages.length);
+      setHasMore(sortedMessages.length >= 50);
       setTimeout(() => {
-        flatListRef.current?.scrollToEnd({ animated: false });
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
       }, 100);
+    } catch (error) {
+      console.error('Failed to load initial messages:', error);
     }
-  }, [messages]);
+    setLoadingMore(false);
+  }, [loadMessages]);
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!hasMore || loadingMore || isAddingMessage) return; // Prevent pagination during new message
+    setLoadingMore(true);
+    try {
+      const msgs = await loadMessages(offset);
+      console.log('response loadMoreMessages', msgs);
+
+      const sortedMessages = msgs.sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      );
+      setMessages(prev => [...prev, ...sortedMessages]);
+      setOffset(prevOffset => prevOffset + sortedMessages.length);
+      setHasMore(sortedMessages.length >= 50);
+    } catch (error) {
+      console.error('Failed to load more messages:', error);
+    }
+    setLoadingMore(false);
+  }, [hasMore, loadingMore, isAddingMessage, offset, loadMessages]);
+
+  useEffect(() => {
+    loadInitialMessages();
+  }, [loadInitialMessages]);
 
   // Typing animation
   useEffect(() => {
@@ -191,16 +225,15 @@ export const ChatScreen = ({ route, navigation }) => {
       status: 'pending',
       replyTo: replyingTo?.message,
     };
+    setIsAddingMessage(true); // Disable pagination
+    // setMessages(prev => [newMessage, ...prev]);
     socket.emit('send-msg', newMessage);
     setInputText('');
     setReplyingTo(null);
-
     setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      setIsAddingMessage(false); // Re-enable pagination
     }, 100);
-
-    // insted of settimeout use this to remove after 100ms, force scroll to bottom
-    // flatListRef.current?.scrollToEnd({animated: true});
   }, [inputText, replyingTo, chatUser?.userid, userData?.userid]);
 
   const handleLongPress = useCallback(message => {
@@ -506,6 +539,13 @@ export const ChatScreen = ({ route, navigation }) => {
     </View>
   );
 
+
+  const renderLoader = () => (
+    <View style={{ transform: [{ scaleY: -1 }], padding: 10, alignItems: 'center' }}>
+      <ActivityIndicator size="small" color="#d93a63" />
+    </View>
+  );
+
   return (
     <View
       style={[
@@ -539,16 +579,17 @@ export const ChatScreen = ({ route, navigation }) => {
           <FlatList
             ref={flatListRef}
             data={messages}
-            keyExtractor={item => item.id}
+            keyExtractor={(item, index) => index.toString()}
             renderItem={renderMessage}
             contentContainerStyle={chatStyles.messagesList}
             showsVerticalScrollIndicator={false}
-            // onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-
-            // New props for direct jump to the last message
-            initialScrollIndex={messages.length > 0 ? messages.length - 1 : 0}
+            inverted={true}
+            onEndReached={loadMoreMessages}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={loadingMore ? renderLoader : null}
+            onScroll={e => setCurrentScrollOffset(e.nativeEvent.contentOffset.y)}
             getItemLayout={(data, index) => ({
-              length: 80, // 🔹 adjust approx height of a chat bubble
+              length: 80,
               offset: 90 * index,
               index,
             })}
