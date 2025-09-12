@@ -17,6 +17,7 @@ import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 import LuckyWheelModal from '../modals/LuckyWheelModal';
+import SlotGameModal from '../modals/SlotGameModal';
 
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
@@ -26,6 +27,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         userAddress,
         subscriptionStatus,
         headerMainTab } = useAppContext();
+
     const screenHeight = Dimensions.get('window').height;
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
@@ -449,19 +451,19 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 onRefresh={handleRefresh}
                             />)}
                     </View>
-                    {/* <TouchableOpacity
+                    <TouchableOpacity
                         style={[
                             styles.streamListLuckyWheelBtn,
                             insets.bottom > 0 && { paddingBottom: insets.bottom },
                         ]}
-                        onPress={() => setModalVisible('lucky-wheel')}
+                        onPress={() => setModalVisible('slot-game-modal')}
                     >
                         <Image
                             style={{ width: 60, height: 60 }}
                             source={require('../../assets/images/lucky-wheel/lw-home.png')}
                             resizeMode="contain"
                         />
-                    </TouchableOpacity> */}
+                    </TouchableOpacity>
                     <View style={[
                         styles.streamListFiltersBtnGroup, { bottom: insets.bottom + 68 },
                     ]}>
@@ -562,8 +564,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     </Modal>
                 )
             }
-            {modalVisible === 'lucky-wheel' && (
-                <LuckyWheelModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+            {modalVisible === 'slot-game-modal' && (
+                <SlotGameModal visible={modalVisible} onClose={() => setModalVisible(false)} userData={userData} />
             )}
             {/* <Footer /> */}
         </LinearGradient>

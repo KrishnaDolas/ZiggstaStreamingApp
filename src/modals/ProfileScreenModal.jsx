@@ -472,6 +472,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                 avoidKeyboard={false}
                 backdropOpacity={0}
                 style={[styles.profileModalMain]}
+                onRequestClose={onClose}
             >
                 <Animated.View
                     style={[

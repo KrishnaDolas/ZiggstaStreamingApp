@@ -8,6 +8,7 @@ import {
     StyleSheet,
     Dimensions,
     Animated,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import Colors from '../../assets/styles/Colors';
@@ -49,7 +50,9 @@ const CustomConfirmDialog = ({
             visible={visible}
             animationType="fade"
             statusBarTranslucent
+            onRequestClose={() => onCancel()}
         >
+         <TouchableWithoutFeedback onPress={onCancel}>
             <View style={styles.overlay}>
                 {/* Backdrop blur effect - you can remove this if @react-native-community/blur is not available */}
                 <View style={styles.backdrop} />
@@ -111,6 +114,7 @@ const CustomConfirmDialog = ({
                     </View>
                 </Animated.View>
             </View>
+         </TouchableWithoutFeedback>
         </Modal>
     );
 };

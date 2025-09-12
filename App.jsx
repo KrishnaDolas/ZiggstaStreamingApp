@@ -532,7 +532,10 @@ const App = () => {
   }, [currentRouteName]);
 
   useEffect(() => {
-    LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore specific warning
+    LogBox.ignoreLogs([
+      'new NativeEventEmitter', // your existing ignore
+      'useInsertionEffect must not schedule updates', // 👈 add this line
+    ]);
   }, []);
 
 
