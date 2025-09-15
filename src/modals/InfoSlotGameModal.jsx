@@ -73,35 +73,35 @@ export default function InfoSlotGameModal({ visible, onClose }) {
 
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>Match 2 or 3 symbols in a row to win</Text>
+                                <Text style={styles.infoRuleText}>Match 2 or 3 symbols on a payline to win.</Text>
                             </View>
 
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>Wild symbols substitute for any symbol</Text>
+                                <Text style={styles.infoRuleText}>Wild symbols substitute for any symbol (no payout for all-Wild lines).</Text>
                             </View>
 
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>3 or more Scatter symbols award free spins</Text>
+                                <Text style={styles.infoRuleText}>2 Scatter symbols pay 1x; 3 or more award 5 free spins.</Text>
                             </View>
 
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>Higher bet = higher potential winnings</Text>
+                                <Text style={styles.infoRuleText}>Higher bets increase payouts for 3-of-a-kind wins.</Text>
                             </View>
 
                             <Text style={styles.infoSectionTitle}>Paylines:</Text>
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>3 Horizontal lines (top, middle, bottom)</Text>
+                                <Text style={styles.infoRuleText}>3 Horizontal lines (top, middle, bottom).</Text>
                             </View>
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>2 Diagonal lines (left-to-right, right-to-left)</Text>
+                                <Text style={styles.infoRuleText}>2 Diagonal lines (top-left to bottom-right, top-right to bottom-left).</Text>
                             </View>
 
-                            <Text style={styles.infoSectionTitle}>Symbol Payouts:</Text>
+                            <Text style={styles.infoSectionTitle}>Symbol Payouts (2 / 3 symbols):</Text>
                             <View style={styles.payoutContainer}>
                                 <View style={styles.payoutRow}>
                                     <Image source={symbolIcons.Seven} style={styles.payoutSymbol} />
@@ -117,7 +117,7 @@ export default function InfoSlotGameModal({ visible, onClose }) {
                                 </View>
                                 <View style={styles.payoutRow}>
                                     <Image source={symbolIcons.Scatter} style={styles.payoutSymbol} />
-                                    <Text style={styles.payoutText}>Scatter: 1x / Free Spins</Text>
+                                    <Text style={styles.payoutText}>Scatter: 1x / 5 Free Spins</Text>
                                 </View>
                                 <View style={styles.payoutRow}>
                                     <Image source={symbolIcons.Cherry} style={styles.payoutSymbol} />
@@ -134,6 +134,10 @@ export default function InfoSlotGameModal({ visible, onClose }) {
                                 <View style={styles.payoutRow}>
                                     <Image source={symbolIcons.Queen} style={styles.payoutSymbol} />
                                     <Text style={styles.payoutText}>Queen: 0x / 2x</Text>
+                                </View>
+                                <View style={styles.payoutRow}>
+                                    <Image source={symbolIcons.Wild} style={styles.payoutSymbol} />
+                                    <Text style={styles.payoutText}>Wild: 0x / 0x (Substitutes)</Text>
                                 </View>
                             </View>
                         </View>
