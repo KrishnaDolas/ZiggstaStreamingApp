@@ -38,6 +38,7 @@ import bgImage from '../../assets/images/icons/name_bg.png'
 import AudioSpectrum from './AudioSpectrum';
 import LuckyWheelModal from '../modals/LuckyWheelModal';
 import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
+import SlotGameModal from '../modals/SlotGameModal';
 
 const StreamRoom = ({
     remoteStreams,
@@ -1203,6 +1204,21 @@ const StreamRoom = ({
                                     {showUI && (<View style={styles.strRoomFooterSocialActions}>
                                         <TouchableOpacity
                                             style={styles.strRoomFooterSocialActionsBtn}
+                                            onPress={() => setVisibleModal('slot-game')}
+                                        >
+                                            <Animated.Image
+                                                style={{
+                                                    width: 35,
+                                                    height: 35,
+                                                    // transform: [{ rotate: spin }], // always the animated value
+                                                }}
+                                                source={require('../../assets/images/solt-game/slot-machine.png')}
+                                                resizeMode="contain"
+
+                                            />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.strRoomFooterSocialActionsBtn}
                                             onPress={() => setVisibleModal('luckyWheel')}
                                         >
                                             <Animated.Image
@@ -1585,6 +1601,18 @@ const StreamRoom = ({
                     userData={userData}
                     hostDetails={userDetails}
                     RoomID={streamInfo?.roomID}
+                />
+            )}
+            {/* Lucky Wheel Modal */}
+            {visibleModal === 'slot-game' && (
+                <SlotGameModal
+                    visible={visibleModal === 'slot-game'}
+                    onClose={() => {
+                        setVisibleModal(null);
+                    }}
+                    userData={userData}
+                    hostDetails={userDetails}
+                    roomId={streamInfo?.roomID}
                 />
             )}
         </>

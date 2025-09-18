@@ -451,7 +451,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                 onRefresh={handleRefresh}
                             />)}
                     </View>
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={[
                             styles.streamListLuckyWheelBtn,
                             insets.bottom > 0 && { paddingBottom: insets.bottom },
@@ -463,7 +463,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             source={require('../../assets/images/lucky-wheel/lw-home.png')}
                             resizeMode="contain"
                         />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <View style={[
                         styles.streamListFiltersBtnGroup, { bottom: insets.bottom + 68 },
                     ]}>
