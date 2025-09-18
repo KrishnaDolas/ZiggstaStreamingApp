@@ -16,7 +16,7 @@ import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomConfirmDialog from './CustomConfirmDialog';
 import InfoSlotGameModal from './InfoSlotGameModal';
-import { io } from 'socket.io-client';
+import { SendErrorTotheServer, socket } from '../utils/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Master list of all possible slot symbols.
@@ -44,8 +44,6 @@ const REEL_WIDTH = 90;
 const SYMBOL_HEIGHT = 85;
 const SYMBOL_WIDTH = 85;
 
-// Socket server URL —
-const SOCKET_URL = 'http://192.168.0.114:5000';
 
 export default function SlotGameModal({ visible, onClose, userData,
     hostDetails, roomId }) {
@@ -78,20 +76,9 @@ export default function SlotGameModal({ visible, onClose, userData,
     ]).current;
 
     useEffect(() => {
-        // connect socket
-        const socket = io(SOCKET_URL, {
-            transports: ['websocket'],
-            // If you want to pass user id or token for auth, add it here:
-            // auth: { token: 'xxx' }
-        });
-
+       
         socketRef.current = socket;
-
-        socket.on('connect', () => {
-            console.log('Socket connected', socket.id);
-            // register the player server-side with roomId and hostDetails
-            socket.emit('register_player', { userId: userData?.userid, hostId: hostDetails?.userid, roomId });
-        });
+        socket.emit('register_player', { userId: userData?.userid, hostId: hostDetails?.userid, roomId });
 
         // Listen for session start
         socket.on('session_started', async ({ sessionID }) => {
