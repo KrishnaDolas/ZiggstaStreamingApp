@@ -702,6 +702,7 @@ const StreamRoom = ({
 
 
     const formatCount = (num) => {
+        if (num == null) return "0";
         if (num >= 1000000) {
             const m = Math.floor(num / 100000) / 10; // keep 1 decimal floored
             return (m % 1 === 0 ? m.toFixed(0) : m) + 'M';
