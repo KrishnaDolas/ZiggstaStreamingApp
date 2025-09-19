@@ -1207,15 +1207,13 @@ const StreamRoom = ({
                                             style={styles.strRoomFooterSocialActionsBtn}
                                             onPress={() => setVisibleModal('slot-game')}
                                         >
-                                            <Animated.Image
+                                            <Image
                                                 style={{
                                                     width: 35,
                                                     height: 35,
-                                                    // transform: [{ rotate: spin }], // always the animated value
                                                 }}
                                                 source={require('../../assets/images/solt-game/slot-machine.png')}
                                                 resizeMode="contain"
-
                                             />
                                         </TouchableOpacity>
                                         <TouchableOpacity
