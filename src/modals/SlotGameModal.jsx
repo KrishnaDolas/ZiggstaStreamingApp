@@ -75,58 +75,63 @@ export default function SlotGameModal({ visible, onClose, userData,
         new Animated.Value(1), new Animated.Value(1), new Animated.Value(1),
     ]).current;
 
+
+    // ✅ Add listeners
+    const handleSessionStarted = async ({ sessionID }) => {
+        try {
+            await AsyncStorage.setItem('slotSessionID', sessionID.toString());
+            console.log('SessionID saved:', sessionID);
+        } catch (e) {
+            console.error('Failed to save sessionID', e);
+        }
+    };
+
+
+    const handleBuyConfirmed = (payload) => {
+        console.log('buy_confirmed', payload);
+        setHasPurchased(true);
+        setSpinPurchased(payload.spinPurchased);
+        setTotalSpinCost(payload.totalCost);
+        setBalance(payload.balance ?? 0);
+        setSpinsRemaining(payload.spinsRemaining ?? 0);
+        setPurchasedSpins(payload.purchasedSpins ?? 0);
+        setActiveButtonIndex(payload.buttonIndex ?? null);
+    };
+
+
+    const handleBuyFailed = (data) => {
+        console.error('❌ Buy failed:', data.message);
+        Alert.alert('Purchase Failed', data.message || 'Unable to complete purchase.');
+    };
+
+    const handleErrorMsg = (msg) => {
+        Alert.alert('Server error', String(msg));
+    };
+
+
     useEffect(() => {
-       
+        if (!socket) return;
         socketRef.current = socket;
         socket.emit('register_player', { userId: userData?.userid, hostId: hostDetails?.userid, roomId });
 
         // Listen for session start
-        socket.on('session_started', async ({ sessionID }) => {
-            try {
-                await AsyncStorage.setItem('slotSessionID', sessionID.toString());
-                console.log('SessionID saved:', sessionID);
-            } catch (e) {
-                console.error('Failed to save sessionID', e);
-            }
-        });
 
-        socket.on('buy_confirmed', (payload) => {
-            // server confirms buy: payload contains { balance, spinPurchased, spinsRemaining, purchasedSpins, totalCost }
-            console.log('buy_confirmed', payload);
-            setHasPurchased(true);
-            setSpinPurchased(payload.spinPurchased);
-            setTotalSpinCost(payload.totalCost);
-            setBalance(payload.balance ?? 0);
-            setSpinsRemaining(payload.spinsRemaining ?? 0);
-            setPurchasedSpins(payload.purchasedSpins ?? 0);
-            setActiveButtonIndex(payload.buttonIndex ?? null);
-        });
+        socket.on('session_started', handleSessionStarted);
+        socket.on('buy_confirmed', handleBuyConfirmed);
+        socket.on('buy_failed', handleBuyFailed);
+        socket.on('error_msg', handleErrorMsg);
 
-        // Listen for failure
-        socket.on('buy_failed', (data) => {
-            console.error('❌ Buy failed:', data.message);
-            Alert.alert('Purchase Failed', data.message || 'Unable to complete purchase.');
-        });
 
-        // socket.on('spin_result_failed', (data) => {
-        //     console.error('❌ Spin result failed:', data.message);
-        //     Alert.alert('Record Slots Spins', data.message);
-        // });
 
-        socket.on('error_msg', (msg) => {
-            Alert.alert('Server error', String(msg));
-        });
-
-        // The server may emit spontaneous spin_result (usually in response to our spin)
-        // We'll also attach one-time listener when we emit spin.
-
-        // When component unmounts or modal closes: disconnect socket
+        // ✅ Cleanup listeners when component unmounts
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-                socketRef.current = null;
-            }
+            socket.off('session_started', handleSessionStarted);
+            socket.off('buy_confirmed', handleBuyConfirmed);
+            socket.off('buy_failed', handleBuyFailed);
+            socket.off('error_msg', handleErrorMsg);
         };
+
+
     }, [roomId, userData?.userid, hostDetails]);
 
 
@@ -178,7 +183,6 @@ export default function SlotGameModal({ visible, onClose, userData,
     // Confirmed in UI -> emit to server to actually do buy
     const confirmBuy = (perSpinPrice, buttonIndex) => {
         setConfirmDialog({ show: false, price: null, buttonIndex: null });
-        const socket = socketRef.current;
         if (!socket) {
             Alert.alert('No connection', 'Not connected to server.');
             return;
