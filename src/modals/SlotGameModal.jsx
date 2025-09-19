@@ -101,7 +101,7 @@ export default function SlotGameModal({ visible, onClose, userData,
 
     const handleBuyFailed = (data) => {
         console.error('❌ Buy failed:', data.message);
-        Alert.alert('Purchase Failed', data.message || 'Unable to complete purchase.');
+        Alert.alert('Message', data.message || 'inefficient credit');
     };
 
     const handleErrorMsg = (msg) => {
@@ -228,8 +228,7 @@ export default function SlotGameModal({ visible, onClose, userData,
             Alert.alert('No spins', 'Please buy spins to play.');
             return;
         }
-        const socket = socketRef.current;
-        if (!socket) {
+        if (!socketRef.current) {
             Alert.alert('No connection', 'Not connected to server.');
             return;
         }
