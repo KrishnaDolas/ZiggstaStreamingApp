@@ -1149,7 +1149,7 @@ const mainStyle = StyleSheet.create({
     flyingChipIcon: {
         width: 25,
         height: 25,
-        tintColor: '#FFD700',
+        // tintColor: '#FFD700',
     },
     winTextContainer: {
         position: 'absolute',
