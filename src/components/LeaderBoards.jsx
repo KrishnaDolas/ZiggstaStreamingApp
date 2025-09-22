@@ -244,8 +244,8 @@ export const LeaderBoards = () => {
                         styles.lbDiamondBadge,
                     ]}>
                         <Image
-                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                            style={{ width: 10, height: 10 }}
+                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                            style={{ width: 18, height: 18 }}
                             resizeMode="contain"
                         />
                         <Text style={[

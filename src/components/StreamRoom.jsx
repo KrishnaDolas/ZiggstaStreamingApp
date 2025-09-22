@@ -1110,7 +1110,7 @@ const StreamRoom = ({
                                             <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
                                             <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
                                             <Image
-                                                source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
+                                                source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
                                                 style={{ width: 14, height: 14, marginLeft: '5' }}
                                                 resizeMode="contain"
                                             />

@@ -713,7 +713,7 @@ const LuckyWheelModal = (
                 ]}
             >
                 <Image
-                    source={require('../../assets/images/icons/star.png')}
+                    source={require('../../assets/images/icons/icon_z.png')}
                     style={mainStyle.flyingChipIcon}
                     resizeMode="contain"
                 />
@@ -770,8 +770,8 @@ const LuckyWheelModal = (
                             ]}
                         >
                             <Image
-                                source={require('../../assets/images/icons/star.png')}
-                                style={{ width: 14, height: 14 }}
+                                source={require('../../assets/images/icons/icon_z.png')}
+                                style={{ width: 16, height: 16, marginTop: 2, }}
                                 resizeMode="contain"
                             />
                             <Text style={[mainStyle.chips]}>{displayCredit}</Text>
@@ -786,7 +786,7 @@ const LuckyWheelModal = (
                         {winParticles.map(p => (
                             <Animated.Image
                                 key={p.id}
-                                source={require('../../assets/images/icons/star.png')}
+                                source={require('../../assets/images/icons/icon_z.png')}
                                 style={{
                                     position: 'absolute',
                                     left: '50%',

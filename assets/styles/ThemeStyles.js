@@ -936,9 +936,9 @@ export const styles = StyleSheet.create({
     backgroundColor: '#d93a63',
     borderRadius: 30,
     // padding: 5,
-    paddingLeft: 8,
-    paddingRight: 5,
-    paddingVertical: 3,
+    // paddingLeft: 8,
+    paddingRight: 8,
+    // paddingVertical: 3,
     minWidth: 65,
   },
 
@@ -946,8 +946,8 @@ export const styles = StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
-    marginLeft: 10,
-    paddingEnd: 10,
+    marginLeft: 8,
+    // paddingEnd: 10,
   },
 
   streamListHeaderBottom: {
@@ -2639,8 +2639,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#d93a63',
-    paddingHorizontal: 8,
-    paddingVertical: 1,
+    paddingRight:6,
     borderRadius: 15,
     shadowColor: '#d93a63',
     shadowOffset: { width: 0, height: 2 },

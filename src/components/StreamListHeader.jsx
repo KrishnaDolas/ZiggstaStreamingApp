@@ -87,8 +87,8 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                         <View style={styles.streamHeaderCountBox}>
                             {/* <FontAwesome name='dollar' solid size={14} color="#fff" /> */}
                             <Image
-                                source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                style={{ width: 14, height: 14 }}
+                                source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                style={{ width: 26, height: 26 }}
                                 resizeMode="contain"
                             />
                             <Text style={styles.streamHeaderCountTitle}>{profileData?.CreditBalance}</Text>

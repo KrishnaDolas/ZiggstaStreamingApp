@@ -536,8 +536,8 @@ export const WalletDashboardScreen = () => {
                                         <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Balance</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Image
-                                                source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                                style={{ width: 14, height: 14, marginRight: 5 }}
+                                                source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                                style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
                                                 resizeMode="contain"
                                             />
                                             <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{profileData?.CreditBalance}</Text>

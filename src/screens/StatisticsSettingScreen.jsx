@@ -255,8 +255,8 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 <Text style={[styles.profileMainText, themeStyles[theme].profileMainText]}>Balance</Text>
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <Image
-                                        source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                        style={{ width: 14, height: 14, marginRight: 5 }}
+                                        source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                        style={{ width: 20, height: 20, marginRight: 5 }}
                                         resizeMode="contain"
                                     />
                                     <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
@@ -280,8 +280,8 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 ) : (
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <Image
-                                            source={require('../../assets/images/icons/star.png')} // Adjust the path as needed
-                                            style={{ width: 14, height: 14, marginRight: 5 }}
+                                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                            style={{ width: 20, height: 20, marginRight: 5 }}
                                             resizeMode="contain"
                                         />
                                         <Text style={[styles.profileStatValue, themeStyles[theme].profileStatValue]}>{averageIncomeData?.averageIncome}</Text>
