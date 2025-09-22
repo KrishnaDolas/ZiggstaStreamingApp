@@ -931,7 +931,7 @@ export const styles = StyleSheet.create({
   streamHeaderCountBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     marginRight: 12,
     backgroundColor: '#d93a63',
     borderRadius: 30,
