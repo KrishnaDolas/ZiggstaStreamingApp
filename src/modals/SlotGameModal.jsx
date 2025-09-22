@@ -175,6 +175,13 @@ export default function SlotGameModal({ visible, onClose, userData,
             Alert.alert('No connection', 'Not connected to server.');
             return;
         }
+
+        // 🚫 Host restriction
+        if (userData?.userid === hostDetails?.userid) {
+            Alert.alert('Message', 'You are host, you can’t play the game.');
+            return;
+        }
+
         if (hasPurchased) return;
         // show confirm dialog (UI)
         setConfirmDialog({ show: true, price: perSpinPrice, buttonIndex });

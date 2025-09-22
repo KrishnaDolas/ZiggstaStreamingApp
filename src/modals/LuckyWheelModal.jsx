@@ -549,6 +549,11 @@ const LuckyWheelModal = (
 
 
     const placeBet = (val) => {
+        // 🚫 Host restriction
+        if (userData?.userid === hostDetails?.userid) {
+            Alert.alert('Message', 'You are host, you can’t play the game.');
+            return;
+        }
         if (!placeBetButtonRef.current) {
             socket.emit('place_bet', {
                 userID: userData?.userid,
@@ -572,6 +577,11 @@ const LuckyWheelModal = (
     };
 
     const handlePlaceBet = () => {
+        // 🚫 Host restriction
+        if (userData?.userid === hostDetails?.userid) {
+            Alert.alert('Message', 'You are host, you can’t play the game.');
+            return;
+        }
         setClosePlaceBetDialog(true);
     };
 

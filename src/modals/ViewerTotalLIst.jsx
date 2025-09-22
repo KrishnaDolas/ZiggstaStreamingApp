@@ -163,11 +163,16 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             alignItems: 'center',
                             borderRadius: 20,
                             backgroundColor: '#d93a63',
-                            paddingHorizontal: 10,
-                            paddingVertical: 3,
+                            paddingRight: 10,
+                            // paddingVertical: 3,
                         }}
                     >
-                        <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
+                        {/* <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} /> */}
+                        <Image
+                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                            style={{ width: 20, height: 20, marginRight: 6 }}
+                            resizeMode="contain"
+                        />
                         <Text style={{ fontSize: 12, fontWeight: '500', color: 'white' }}>
                             {item.totalGiftValue}
                         </Text>
@@ -263,11 +268,14 @@ const ViewerTotalLIst = ({ visible, onClose, RoomID, userDetails }) => {
                             alignItems: 'center',
                             borderRadius: 12,
                             backgroundColor: '#d93a63',
-                            paddingHorizontal: 9,
-                            paddingVertical: 4,
+                            paddingRight: 9,
                         }}
                     >
-                        <Ionicons name="star" size={14} color="white" style={{ marginRight: 4 }} />
+                        <Image
+                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                            style={{ width: 20, height: 20, marginRight: 6 }}
+                            resizeMode="contain"
+                        />
                         <Text style={{ fontSize: 13, fontWeight: '500', color: 'white' }}>
                             {item.giftValue}
                         </Text>
