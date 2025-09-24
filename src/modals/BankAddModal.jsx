@@ -9,16 +9,14 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Apiclient from '../utils/Apiclient';
-import MessageModal from './MessageModal';
 import { SendErrorTotheServer } from '../utils/constant';
 import { ThemeContext } from '../context/ThemeContext';
 
-const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) => {
+const BankAddModal = ({ visible, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
     const [selectedRegion, setSelectedRegion] = useState('');
     const [isModalRendered, setIsModalRendered] = useState(false);
-    const [visibleModal, setVisibleModal] = useState(null);
-    const [message, setMessage] = useState(null);
+    const [bankListData, setBankListData] = useState([]);
     const [formData, setFormData] = useState({
         accountHolder: '',
         accountNumber: '',
@@ -34,15 +32,40 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
         bsbCode: '',
     });
 
-    // Cleanup modals on unmount
-    useEffect(() => {
-        return () => {
-            setVisibleModal(null); // Close all modals
-        };
-    }, []);
-
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+
+
+    // Function to fetch social data from the API
+    const getBankListData = async () => {
+        setLoading(true);
+        try {
+            const response = await Apiclient.post(`/saveuserbank/getUserBankList?userID=${userData.userid}`);
+            const apiData = response.data?.data || [];
+
+            // Transform API data to local format
+            const transformedData = apiData.map((item, index) => ({
+                id: index + 1, // Unique ID for rendering
+                BankID: item.BankID,
+                bankName: item.BankName,
+                accountNumber: item.AccountNumber,
+                isPrimaryAccount: item.IsPrimary === 1 ? 'Y' : 'N',
+            }));
+
+            setBankListData(transformedData);
+        } catch (error) {
+            console.error('Error fetching bank list:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (userData.userid) {
+            getBankListData();
+        }
+    }, []);
+
 
     // Modified handleInputChange - no uppercase conversion here
     const handleInputChange = (field, value) => {
@@ -264,8 +287,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
             const response = await Apiclient.post('https://api.streamalong.live/saveuserbank', payload);
             console.log('response of saveuserbank', response);
             if (response?.status === 201) {
-                setMessage('Bank details saved successfully.');
-                setVisibleModal('message-modal');
+                Alert.alert('Message', 'Bank details saved successfully.');
                 setFormData({
                     accountHolder: '',
                     accountNumber: '',
@@ -281,16 +303,12 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     bsbCode: '',
                 });
                 setSelectedRegion('');
-                setTimeout(() => {
-                    onSuccess?.();
-                }, 2000);
             } else {
-                // Alert.alert('Error', response?.data?.message || 'Something went wrong.');
-                setMessage('Error', response?.data?.message || 'Something went wrong.');
-                setVisibleModal('message-modal');
+                Alert.alert('Error', response?.data?.message || 'Something went wrong.');
             }
         } catch (error) {
             Alert.alert('API Error', 'Unable to save bank details. Please try again later.');
+            console.log(error);
             SendErrorTotheServer(error, 'handleAddBankDetails');
         } finally {
             setLoading(false);
@@ -543,7 +561,7 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                         keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
                         style={[styles.profileSettingModalBody, { flex: 1 }]}
                     >
-                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5, paddingTop: Platform.OS === 'ios' ? 30 : 0, }}>
                             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
                                 <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                             </TouchableOpacity>
@@ -598,28 +616,6 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                                         }}
                                     />
                                 </View>
-                                {/* <View style={styles.bdPickerWrapper}>
-                                    <Picker
-                                        selectedValue={selectedRegion}
-                                        onValueChange={(value) => {
-                                            setSelectedRegion(value);
-                                            setErrors(prev => ({ ...prev, selectedRegion: '' }));
-                                        }}
-                                        style={styles.bdPicker}
-                                        dropdownIconColor="#414141"
-                                        mode="dropdown"
-                                    >
-                                        <Picker.Item label="-- Select Region --" value="" />
-                                        <Picker.Item label="United States" value="us" />
-                                        <Picker.Item label="European Union" value="eu" />
-                                        <Picker.Item label="United Kingdom" value="uk" />
-                                        <Picker.Item label="India" value="in" />
-                                        <Picker.Item label="Australia" value="au" />
-                                        <Picker.Item label="SE Asia" value="sea" />
-                                        <Picker.Item label="Other International" value="intl" />
-                                    </Picker>
-
-                                </View> */}
                                 <ErrorText field="selectedRegion" />
 
                                 <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Account Holder Name:</Text>
@@ -671,13 +667,6 @@ const BankAddModal = ({ visible, onClose, userData, bankListData, onSuccess }) =
                     </KeyboardAvoidingView>
                 </View>
             </Modal>
-            {visibleModal === 'message-modal' && (
-                <MessageModal
-                    visible={visibleModal === 'message-modal'}
-                    message={message}
-                    onClose={() => setVisibleModal(null)}
-                />
-            )}
         </>
     );
 };

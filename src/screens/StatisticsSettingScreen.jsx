@@ -20,6 +20,7 @@ import ChangeEmailModal from '../modals/ChangeEmailModal';
 import ChangePasswordModal from '../modals/ChangePasswordModal';
 import EmailConfirmModal from '../modals/EmailConfirmModal';
 import UserInterestUpdateModal from '../modals/UserInterestUpdateModal';
+import BankAddModal from '../modals/BankAddModal';
 
 
 const screenHeight = Dimensions.get('window').height;
@@ -338,7 +339,11 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                         {/* Action Buttons */}
                         <View style={styles.profileButtonGrid}>
                             <TouchableOpacity
-                                onPress={() => setVisibleModal('bank-details')}
+                                onPress={() => {
+                                    setModalVisibleStage('bank-details');
+                                    setModalStage('first');
+                                    setModalLabelName(null);
+                                }}
                                 style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
                             >
                                 <Icon name="card-outline" size={26} color="#4CAF50" style={styles.actionButtonIcon} />
@@ -437,8 +442,23 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                     )
                     }
                     {/* full screen modal */}
-                    {visibleModal === 'bank-details' && (
-                        <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
+                    {modalVisibleStage === 'bank-details' && (
+                        <BankDetailsModal
+                            visible={modalVisibleStage === 'bank-details'}
+                            onClose={() => setModalVisibleStage(null)}
+                            userData={userData}
+                        />
+                    )}
+                    {modalVisibleStage === 'add-bank' && modalStage === 'second' && (
+                        <BankAddModal
+                            visible={modalVisibleStage === 'add-bank'}
+                            onClose={() => {
+                                setModalVisibleStage('bank-details');
+                                setModalStage('first');
+                                setModalLabelName(null);
+                            }}
+                            userData={userData}
+                        />
                     )}
                     {visibleModal === 'shop-manager' && (
                         <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />

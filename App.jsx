@@ -271,6 +271,9 @@ const App = () => {
     setIpAddress,
     fetchProfileDetails,
     setSubscriptionStatus,
+    setModalStage,
+    setModalLabelName,
+    setModalVisibleStage,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -299,7 +302,9 @@ const App = () => {
         'userAddress', // Clear userAddress on logout
         'locationPermission', // Clear location permission to prompt again
       ]);
-
+      setModalStage('first');
+      setModalLabelName(null);
+      setModalVisibleStage(null);
       setUserAddress(null);
       setUserData(null);
       setProfileData(null);

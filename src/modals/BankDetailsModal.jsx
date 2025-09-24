@@ -3,15 +3,20 @@ import { View, TouchableOpacity, Text, ScrollView, ActivityIndicator, Alert, Sta
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import BankAddModal from './BankAddModal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Colors from '../../assets/styles/Colors';
+import { useAppContext } from '../context/AppContext';
 
 const BankDetailsModal = ({ visible, onClose, userData }) => {
     const { theme } = useContext(ThemeContext);
     const [bankListData, setBankListData] = useState([]);
+    const {
+        setModalStage,
+        setModalVisibleStage,
+        setModalLabelName,
+    } = useAppContext();
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
     const [visibleModal, setVisibleModal] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -145,7 +150,12 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 10 }}>
                                     <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { fontWeight: '500', marginBottom: 0 }]}>Your Bank Details List</Text>
                                     {bankListData.length < 3 && (
-                                        <TouchableOpacity onPress={() => setVisibleModal('add-bank')} style={styles.btnNav}>
+                                        <TouchableOpacity onPress={() => {
+                                            setModalVisibleStage('add-bank');
+                                            setModalStage('second');
+                                            setModalLabelName(null);
+                                        }}
+                                            style={styles.btnNav}>
                                             <Text style={{ color: 'white' }}>Add</Text>
                                         </TouchableOpacity>
                                     )}
@@ -230,26 +240,11 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
                                         </>
                                     }
                                 </ScrollView>}
-
                             </>
                         )}
-
                     </View>
                 </View>
             </Modal>
-            {visibleModal === 'add-bank' && bankListData.length < 3 && (
-                <BankAddModal
-                    visible={true}
-                    onClose={() => setVisibleModal(null)}
-                    userData={userData}
-                    bankListData={bankListData}
-                    onSuccess={() => {
-                        getBankListData();
-                        setVisibleModal(null);
-                    }}
-                />
-            )}
-
         </>
     );
 };
