@@ -315,13 +315,15 @@ export const MainScreen = () => {
   }
   const HandleUserLeft = (socketId, userinfo) => {
     try {
+      const userId = userinfo?.userID || socketId; 
+
       if (userinfo) {
         HandleUserLeftStream(userinfo)
       }
     // ✅ Remove all remote streams of this user
-      setRemoteStreams(prev =>
-        prev.filter(s => s.id !== socketId && s.userID !== customId)
-      );
+    setRemoteStreams(prev =>
+      prev.filter(s => s.id !== socketId && s.userID !== userId)
+    );
 
     // ✅ Close peer connection
       if (peersRef.current[socketId]) {
@@ -333,8 +335,7 @@ export const MainScreen = () => {
       }
          // ✅ Cleanup ICE candidates
     delete pendingCandidates.current[socketId];
-
-    console.log(`Cleaned up user ${customId || socketId}`);
+    console.log(`Cleaned up user ${userId}`);
 
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserLeft');
@@ -572,6 +573,7 @@ export const MainScreen = () => {
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined', HandlenewUserJoined)
         socket.off('Total-GiftValue', HandleTotalGiftValue)
+        socket.off('user-leftStream', HandleUserLeftStream)
       }
     }
   }, [isHost, isSocketConnected]);
