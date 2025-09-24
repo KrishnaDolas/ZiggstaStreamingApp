@@ -316,31 +316,17 @@ export const MainScreen = () => {
   const HandleUserLeft = (socketId, userinfo) => {
     try {
       if (userinfo) {
-        HandleUserLeftStream(userinfo);
+        HandleUserLeftStream(userinfo)
       }
-  
-      // Close and remove the peer connection if present
       if (peersRef.current[socketId]) {
-        try { peersRef.current[socketId].close(); } catch(e){ /* ignore */ }
+        peersRef.current[socketId].close();
         delete peersRef.current[socketId];
+        setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
       }
-  
-      // Clear any buffered ICE candidates for this (old) socket id
-      if (pendingCandidates.current && pendingCandidates.current[socketId]) {
-        pendingCandidates.current[socketId] = [];
-      }
-      
-  
-      // Remove remote stream UI tile(s) that reference this socket id
-      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
-  
-      // Also remove this socket id from streamerList state (defensive - avoids undefined names)
-      setStrimerList(prev => (prev || []).filter(s => s.ID !== socketId));
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserLeft');
     }
   }
-  
   const HandleHostLeft = () => {
     try {
       Alert.alert('Host Left', 'The host has left the Stream. You will be disconnected.', [{ text: 'OK' }]);
