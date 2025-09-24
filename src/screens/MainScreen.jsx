@@ -318,15 +318,29 @@ export const MainScreen = () => {
       if (userinfo) {
         HandleUserLeftStream(userinfo)
       }
+    // ✅ Remove all remote streams of this user
+      setRemoteStreams(prev =>
+        prev.filter(s => s.id !== socketId && s.userID !== customId)
+      );
+
+    // ✅ Close peer connection
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
         delete peersRef.current[socketId];
+
+            // ✅ Remove from guest list
         setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
       }
+         // ✅ Cleanup ICE candidates
+    delete pendingCandidates.current[socketId];
+
+    console.log(`Cleaned up user ${customId || socketId}`);
+
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserLeft');
     }
   }
+  
   const HandleHostLeft = () => {
     try {
       Alert.alert('Host Left', 'The host has left the Stream. You will be disconnected.', [{ text: 'OK' }]);
