@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView, ActivityIndicator, Alert, StatusBar, Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -134,7 +134,7 @@ const BankDetailsModal = ({ visible, onClose, userData }) => {
             >
                 <View style={[styles.fullScreenModalOverlay, themeStyles[theme].fullScreenModalOverlay, { flex: 1 }]}>
                     <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
-                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5, paddingTop: Platform.OS === 'ios' ? 30 : 0, }}>
                             <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn]}>
                                 <Ionicons name="close" size={28} color={theme === 'dark' ? '#fff' : '#000'} />
                             </TouchableOpacity>

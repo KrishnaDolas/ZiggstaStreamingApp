@@ -8,7 +8,6 @@ import Modal from 'react-native-modal';
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import { Picker } from '@react-native-picker/picker';
 import Apiclient from '../utils/Apiclient';
 import MessageModal from './MessageModal';
 import { SendErrorTotheServer } from '../utils/constant';
