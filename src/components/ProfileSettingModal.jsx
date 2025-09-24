@@ -8,13 +8,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { Dimensions, ScrollView } from 'react-native';
-import MySettingSubModal from '../modals/MySettingSubModal';
+import { useAppContext } from '../context/AppContext';
 
-const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) => {
+const ProfileSettingModal = ({ visible, onClose, onLogout }) => {
     const { theme, toggleTheme } = useContext(ThemeContext);
+    const {
+        setModalStage,
+        setModalVisibleStage,
+        setModalLabelName,
+    } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
-    const [visibleModal, setVisibleModal] = useState(false);
-    const [modalLabelName, setModalLabelName] = useState('');
     const [layoutReady, setLayoutReady] = useState(false);
     const isDark = theme === 'dark';
 
@@ -56,17 +59,17 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
         {
             label: 'My Account',
             icon: 'user',
-            onPress: () => { setVisibleModal(true); setModalLabelName('My Account'); },
+            onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('My Account'); },
         },
         {
             label: 'Privacy Settings',
             icon: 'user-secret',
-            onPress: () => { setVisibleModal(true); setModalLabelName('Privacy Settings'); },
+            onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('Privacy Settings'); },
         },
         {
             label: 'Search Settings',
             icon: 'search-sharp',
-            onPress: () => { setVisibleModal(true); setModalLabelName('Search Settings'); },
+            onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('Search Settings'); },
         },
         {
             label: 'Log Out',
@@ -76,14 +79,13 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
         {
             label: 'Notification',
             icon: 'notifications-outline',
-            onPress: () => { setVisibleModal(true); setModalLabelName('Notification'); },
+            onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('Notification'); },
         },
         {
             label: 'About Ziggsta',
             icon: 'info-circle',
             // onPress: () => { navigation.navigate('TermsOfUse'); },
-            onPress: () => { setVisibleModal(true); setModalLabelName('About Ziggsta'); },
-
+            onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('About Ziggsta'); },
         },
     ];
 
@@ -141,7 +143,7 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                                 <View style={[styles.profileSettingMDivider, themeStyles[theme].profileSettingMDivider]} />
                                 {/* Menu Items */}
                                 {menuItems.map((item, index) => (
-                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList,themeStyles[theme].profileSettingMMenuList, {
+                                    <TouchableOpacity onPress={item.onPress} key={index} style={[styles.profileSettingMMenuList, themeStyles[theme].profileSettingMMenuList, {
                                         borderBottomWidth: index < menuItems.length - 1 ? 1 : 0,
                                     }]}>
                                         <View style={styles.profileSettingMMenuListItem}>
@@ -158,18 +160,6 @@ const ProfileSettingModal = ({ visible, onClose, onLogout, userData, address }) 
                     }
                 </View>
             </Modal>
-            {visibleModal && (
-                <MySettingSubModal
-                    visible="true"
-                    modalLabelName={modalLabelName}
-                    onClose={() => setVisibleModal(null)}
-                    onLogout={onLogout}
-                    userData={userData}
-                    address={address}
-                />
-            )
-            }
-
         </>
 
     );

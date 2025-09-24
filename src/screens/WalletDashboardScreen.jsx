@@ -502,7 +502,7 @@ export const WalletDashboardScreen = () => {
                                         colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 1 }}
-                                        style={styles.wdFormGradientButton}
+                                        style={styles.gradientBackground}
                                     >
                                         {loadingSubmit ? (
                                             <ActivityIndicator size="small" color="#fff" />

@@ -5,7 +5,6 @@ import Modal from 'react-native-modal';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
-import { globalStyles } from '../../assets/styles/GlobalStyles';
 import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Colors from '../../assets/styles/Colors';

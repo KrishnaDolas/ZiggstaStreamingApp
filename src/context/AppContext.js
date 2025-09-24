@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import Apiclient from '../utils/Apiclient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -15,6 +15,16 @@ export const AppProvider = ({ children }) => {
     const [subscriptionStatus, setSubscriptionStatus] = useState(null);
     const [isInStreamRoom, setIsInStreamRoom] = useState(false);
     const [headerMainTab, setHeaderMainTab] = useState('foryou');
+    const [modalStage, setModalStage] = useState('first');
+    const [modalLabelName, setModalLabelName] = useState(null);
+    const [modalVisibleStage, setModalVisibleStage] = useState(null);
+
+    useEffect(() => {
+        console.log('modalStage changed to ', modalStage);
+        console.log('modalLabelName changed to ', modalLabelName);
+        console.log('modalVisibleStage changed to ', modalVisibleStage);
+    }, [modalStage, modalLabelName, modalVisibleStage]);
+
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
         try {
@@ -53,6 +63,12 @@ export const AppProvider = ({ children }) => {
             setIsInStreamRoom,
             headerMainTab,
             setHeaderMainTab,
+            modalStage,
+            setModalStage,
+            modalLabelName,
+            setModalLabelName,
+            modalVisibleStage,
+            setModalVisibleStage,
         }}>
             {children}
         </AppContext.Provider>

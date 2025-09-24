@@ -7,25 +7,25 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
 import Slider from '@react-native-community/slider';
-import ChangeEmailModal from './ChangeEmailModal';
-import ChangePasswordModal from './ChangePasswordModal';
-import EmailConfirmModal from './EmailConfirmModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAppContext } from '../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
-import UserInterestUpdateModal from './UserInterestUpdateModal';
 import { ThemeContext } from '../context/ThemeContext';
 import Colors from '../../assets/styles/Colors';
 
-const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
+const MySettingSubModal = ({ visible, onClose }) => {
     const { theme } = useContext(ThemeContext);
+    const {
+        setModalStage,
+        modalLabelName,
+        setModalVisibleStage,
+    } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [isLocationTrackingEnabled, setIsLocationTrackingEnabled] = useState(false);
     const [isAdultContentEnabled, setIsAdultContentEnabled] = useState(false);
     const [onlyProfileVerified, setOnlyProfileVerified] = useState(false);
     const [allowNotification, setAllowNotification] = useState(false);
     const [distanceRange, setDistanceRange] = useState(10);
-    const [visibleModal, setVisibleModal] = useState('');
     const { setFriendListType } = useAppContext();
     const navigation = useNavigation();
 
@@ -60,12 +60,6 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
     };
 
 
-    // Handle other toggle changes with persistence
-    // const handleAdultContentToggle = async (value) => {
-    //     setIsAdultContentEnabled(value);
-    //     await AsyncStorage.setItem('adultContentEnabled', value.toString());
-    // };
-
     const handleProfileVerifiedToggle = async (value) => {
         setOnlyProfileVerified(value);
         await AsyncStorage.setItem('onlyProfileVerified', value.toString());
@@ -82,31 +76,37 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
     };
 
 
-    // useEffect(() => {
-    //     const checkVerifiedStatus = async () => {
-    //         const status = await AsyncStorage.getItem('onlyProfileVerified');
-    //         console.log('onlyProfileVerified', status);
-    //     };
-    //     checkVerifiedStatus();
-    // }, [onlyProfileVerified]);
-
-
-    // useEffect(() => {
-    //     const checkDistanceStatus = async () => {
-    //         const status = await AsyncStorage.getItem('distanceRange');
-    //         console.log('distanceRange', status);
-    //     };
-    //     checkDistanceStatus();
-    // }, [distanceRange]);
-
-
     const getMenuItems = () => {
         switch (modalLabelName) {
             case 'My Account':
                 return [
-                    { label: 'Change email address:', icon: 'envelope', onPress: () => { setVisibleModal('change-email'); }, rightArrowVisible: true },
-                    { label: 'Confirm email:', icon: 'check-square', onPress: () => { setVisibleModal('email-confirm'); }, rightArrowVisible: true },
-                    { label: 'Change password:', icon: 'unlock-alt', onPress: () => { setVisibleModal('change-password'); }, rightArrowVisible: true },
+                    {
+                        label: 'Change email address:',
+                        icon: 'envelope',
+                        onPress: () => {
+                            setModalVisibleStage('change-email');
+                            setModalStage('third');
+                        },
+                        rightArrowVisible: true,
+                    },
+                    {
+                        label: 'Confirm email:',
+                        icon: 'check-square',
+                        onPress: () => {
+                            setModalVisibleStage('confirm-email');
+                            setModalStage('third');
+                        },
+                        rightArrowVisible: true,
+                    },
+                    {
+                        label: 'Change password:',
+                        icon: 'unlock-alt',
+                        onPress: () => {
+                            setModalVisibleStage('change-password');
+                            setModalStage('third');
+                        },
+                        rightArrowVisible: true,
+                    },
                     { label: 'Delete account', icon: 'trash-alt', onPress: () => { }, rightArrowVisible: true },
                 ];
             case 'Privacy Settings':
@@ -123,7 +123,15 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                 ];
             case 'Search Settings':
                 return [
-                    { label: 'Categories', icon: 'icons', onPress: () => { setVisibleModal('categories'); }, rightArrowVisible: true },
+                    {
+                        label: 'Categories',
+                        icon: 'icons',
+                        onPress: () => {
+                            setModalVisibleStage('update-interest');
+                            setModalStage('third');
+                        },
+                        rightArrowVisible: true,
+                    },
                     // { label: 'Distance (km)', icon: 'people-arrows', type: 'slider', onPress: () => { }, rightArrowVisible: false },
                     // { label: 'Adult content:', icon: 'male', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                     { label: 'Only verified profiles:', icon: 'user-check', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
@@ -290,25 +298,6 @@ const MySettingSubModal = ({ visible, modalLabelName, onClose, userData }) => {
                     </View>
                 </View>
             </Modal>
-            {visibleModal === 'change-email' && (
-                <ChangeEmailModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-            )
-            }
-            {
-                visibleModal === 'change-password' && (
-                    <ChangePasswordModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                )
-            }
-            {
-                visibleModal === 'email-confirm' && (
-                    <EmailConfirmModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                )
-            }
-            {
-                visibleModal === 'categories' && (
-                    <UserInterestUpdateModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                )
-            }
         </>
     );
 };

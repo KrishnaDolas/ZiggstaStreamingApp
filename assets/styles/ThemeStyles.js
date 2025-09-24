@@ -1903,6 +1903,12 @@ export const styles = StyleSheet.create({
   wdFormButtonOverlay: {
     borderRadius: 30,
     alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    minWidth: 200,
+    width: '100%',
+    height: 50,
+    marginVertical: 12,
   },
   wdFormSubmitText: {
     color: '#fff',
@@ -2639,7 +2645,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#d93a63',
-    paddingRight:6,
+    paddingRight: 6,
     borderRadius: 15,
     shadowColor: '#d93a63',
     shadowOffset: { width: 0, height: 2 },

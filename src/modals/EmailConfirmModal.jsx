@@ -8,7 +8,7 @@ import { Dimensions, ScrollView } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import Colors from '../../assets/styles/Colors';
 
-const EmailConfirmModal = ({ visible, onClose, userData }) => {
+const EmailConfirmModal = ({ visible, onClose }) => {
     const { theme } = useContext(ThemeContext);
     const screenHeight = Dimensions.get('window').height;
     return (
@@ -85,7 +85,7 @@ const EmailConfirmModal = ({ visible, onClose, userData }) => {
 
                 </View>
             </View>
-        </Modal >
+        </Modal>
     );
 };
 

@@ -7,8 +7,6 @@ import ProfileSocialsModal from '../components/ProfileSocialsModal';
 import ProfileSettingModal from '../components/ProfileSettingModal';
 import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
 import Apiclient from '../utils/Apiclient';
-import { CenterModal } from '../components/CenterModal';
-import HalfScreenModal from '../components/HalfScreenModal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BankDetailsModal from '../modals/BankDetailsModal';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -17,12 +15,24 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getGenderFallbackImage } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import themeColors from '../../assets/styles/Colors';
+import MySettingSubModal from '../modals/MySettingSubModal';
+import ChangeEmailModal from '../modals/ChangeEmailModal';
+import ChangePasswordModal from '../modals/ChangePasswordModal';
+import EmailConfirmModal from '../modals/EmailConfirmModal';
+import UserInterestUpdateModal from '../modals/UserInterestUpdateModal';
 
 
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
-    const { profileData } = useAppContext();
+    const { profileData,
+        modalStage,
+        setModalStage,
+        modalLabelName,
+        setModalLabelName,
+        modalVisibleStage,
+        setModalVisibleStage,
+    } = useAppContext();
     const insets = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
     const [averageIncomeData, setAverageIncomeData] = useState({});
@@ -349,7 +359,11 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                onPress={() => setVisibleModal('setting')}
+                                onPress={() => {
+                                    setModalVisibleStage('setting');
+                                    setModalStage('first');
+                                    setModalLabelName(null);
+                                }}
                                 style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
                             >
                                 <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
@@ -358,6 +372,70 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                         </View>
                     </ScrollView>
                     {/* Modals */}
+                    {modalVisibleStage === 'setting' && modalStage === 'first' && (
+                        <ProfileSettingModal
+                            visible={modalVisibleStage === 'setting'}
+                            onClose={() => setModalVisibleStage(null)}
+                            onLogout={onLogout}
+                        />
+                    )}
+                    {modalVisibleStage === 'sub-setting' && modalStage === 'second' && (
+                        <MySettingSubModal
+                            visible={modalVisibleStage === 'sub-setting'}
+                            modalLabelName={modalLabelName}
+                            onClose={() => {
+                                setModalVisibleStage('setting');
+                                setModalStage('first');
+                                setModalLabelName(null);
+                            }}
+                        />
+                    )}
+                    {modalVisibleStage === 'change-email' && modalStage === 'third' && (
+                        <ChangeEmailModal
+                            visible={modalVisibleStage === 'change-email'}
+                            onClose={() => {
+                                setModalVisibleStage('sub-setting');
+                                setModalStage('second');
+                                setModalLabelName('My Account');
+                            }}
+                            userData={userData}
+                        />
+                    )
+                    }
+                    {modalVisibleStage === 'confirm-email' && modalStage === 'third' && (
+                        <EmailConfirmModal
+                            visible={modalVisibleStage === 'confirm-email'}
+                            onClose={() => {
+                                setModalVisibleStage('sub-setting');
+                                setModalStage('second');
+                                setModalLabelName('My Account');
+                            }}
+                        />
+                    )
+                    }
+                    {modalVisibleStage === 'change-password' && modalStage === 'third' && (
+                        <ChangePasswordModal
+                            visible={modalVisibleStage === 'change-password'}
+                            onClose={() => {
+                                setModalVisibleStage('sub-setting');
+                                setModalStage('second');
+                                setModalLabelName('My Account');
+                            }}
+                            userData={userData}
+                        />
+                    )
+                    }
+                    {modalVisibleStage === 'update-interest' && modalStage === 'third' && (
+                        <UserInterestUpdateModal
+                            visible={modalVisibleStage === 'update-interest'}
+                            onClose={() => {
+                                setModalVisibleStage('sub-setting');
+                                setModalStage('second');
+                                setModalLabelName('Search Settings');
+                            }}
+                        />
+                    )
+                    }
                     {/* full screen modal */}
                     {visibleModal === 'bank-details' && (
                         <BankDetailsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
@@ -368,19 +446,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                     {visibleModal === 'social' && (
                         <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
                     )}
-                    {visibleModal === 'setting' && (
-                        <ProfileSettingModal visible="true" onClose={() => setVisibleModal(null)} onLogout={onLogout} userData={userData} address={address} />
-                    )}
-
-                    {/* center modal */}
-                    {visibleModal === 'center-modal' && (
-                        <CenterModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {/* full screen modal */}
-                    {visibleModal === 'half-screen-modal' && (
-                        <HalfScreenModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {/* <Footer /> */}
                 </>
             </LinearGradient>
         </View>
