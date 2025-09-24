@@ -521,14 +521,7 @@ export const MainScreen = () => {
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
       socket.on('Stop-Stream', HandleStopStream)
-  
-      // old socket   
-      
-      // socket.on('Host-Disconnected', HandleUserLeft)
-      // Host-Disconnected should only trigger host-left logic (full room shutdown)
-      socket.on('Host-Disconnected', HandleHostLeft)
-
-
+      socket.on('Host-Disconnected', HandleUserLeft)
       socket.on('stream-Resume', HandleUserStreamStoped)
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined', HandlenewUserJoined)
@@ -560,8 +553,7 @@ export const MainScreen = () => {
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
         socket.off('Stop-Stream', HandleStopStream)
-        // changed
-        socket.off('Host-Disconnected', HandleHostLeft)
+        socket.off('Host-Disconnected', HandleUserLeft)
         socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined', HandlenewUserJoined)
