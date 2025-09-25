@@ -1,10 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   View,
   Text,
-  StyleSheet,
-  AppState,
   Platform,
   PermissionsAndroid,
   TouchableOpacity,
@@ -23,7 +20,6 @@ import Geolocation from 'react-native-geolocation-service';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
-import { ThemeProvider } from './src/context/ThemeProvider';
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
@@ -42,25 +38,25 @@ import { themeStyles } from './assets/styles/ThemeStyles';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { SendErrorTotheServer, socket } from './src/utils/constant';
 import NetworkCheck from './src/components/NetworkCheck';
-import Colors from './assets/styles/Colors';
+import AvatarPrevModal from './src/modals/AvatarPrevModal';
+import ReportUserModal from './src/modals/ReportUserModal';
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
-
-// const NetworkCheck = () => (
-//   <View style={styles.center}>
-//     <ActivityIndicator size="large" color="#0000ff" />
-//     <Text style={styles.text}>No Internet Connection</Text>
-//   </View>
-// );
+const Tab = createBottomTabNavigator();;
 
 // Custom Tab Bar Component to handle Profile Modal
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
   const { theme } = useContext(ThemeContext);
-  const { userData, isInStreamRoom } = useAppContext();
-  const [visibleModal, setVisibleModal] = useState(null);
-
+  const {
+    isInStreamRoom,
+    userData,
+    setModalVisibleStage,
+    modalVisibleStage,
+    modalStage,
+    setModalStage,
+    setIsMainProfileOpened,
+  } = useAppContext();
   const isDark = theme === 'dark';
 
   const iconColor = (isFocused) => {
@@ -151,7 +147,9 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           const onPress = () => {
             if (route.name === 'Profile') {
               // Show modal instead of navigating
-              setVisibleModal('profile-screen-modal');
+              setModalVisibleStage('profile-screen-modal');
+              setModalStage('first');
+              setIsMainProfileOpened(true);
               return;
             }
 
@@ -186,10 +184,10 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
       </View>
 
       {/* Profile Modal */}
-      {visibleModal === 'profile-screen-modal' && (
+      {modalVisibleStage === 'profile-screen-modal' && modalStage === 'first' && (
         <ProfileScreenModal
-          visible="true"
-          onClose={() => setVisibleModal(null)}
+          visible={modalVisibleStage === 'profile-screen-modal'}
+          onClose={() => setModalVisibleStage(null)}
           profileData={userData}
           isMainProfile={true}
           isProfileAvatarUpdate={true}
@@ -274,6 +272,11 @@ const App = () => {
     setModalStage,
     setModalLabelName,
     setModalVisibleStage,
+    modalStage,
+    modalVisibleStage,
+    setShowAvatarPreview,
+    userProfileDetails,
+    isMainProfileOpened,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -607,20 +610,32 @@ const App = () => {
         </NavigationContainer>
       </SafeAreaProvider>
 
+
+      {/* modals  */}
+      {modalVisibleStage === 'profile-avatar-prv' && modalStage === 'second' && (
+        <AvatarPrevModal
+          visible={modalVisibleStage === 'profile-avatar-prv'}
+          onClose={() => {
+            setShowAvatarPreview(false);
+            setModalVisibleStage('profile-screen-modal');
+            setModalStage('first');
+          }}
+        />
+      )}
+
+      {modalVisibleStage === 'report-user' && modalStage === 'second' && (
+        <ReportUserModal
+          visible={modalVisibleStage === 'report-user'}
+          onClose={() => {
+            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+            setModalStage('first');
+          }}
+          reportData={userProfileDetails}
+          reportType="User"
+        />
+      )}
     </ErrorBoundary>
   );
 };
-
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    marginTop: 10,
-    fontSize: 16,
-  },
-});
 
 export default App;
