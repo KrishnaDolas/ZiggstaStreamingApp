@@ -308,31 +308,61 @@ const StreamRoom = ({
     useEffect(() => {
         const streams = [];
         remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-            const hostInfo = streamerList.find((item) => item.IsHost === true)
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
-            let Alevel = audioLevel || 0.04
-            if (stream && typeof stream.toURL === 'function') {
-                const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-                if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
-                } else {
-                    streams.push({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
-                }
+          const hostInfo = streamerList.find(item => item.IsHost === true);
+          const StreamerInfo = streamerList.find(streamer => streamer.ID === id);
+      
+          const Alevel = audioLevel ?? 0.04;
+      
+          if (stream && typeof stream.toURL === 'function') {
+            const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+      
+            const entry = {
+              type: 'remote',
+              stream,
+              isFriend,
+              userId: StreamerInfo?.UserID ?? null,
+              isMuted: StreamerInfo?.isMuted ?? false,
+              Name: StreamerInfo?.Name ?? null, // ✅ no "undefined" string anymore
+              isSpeaking: !!isSpeaking,
+              audioLevel: Alevel,
+              id,
+            };
+      
+            if (hostInfo?.ID === id) {
+              streams.unshift(entry);
             } else {
-                SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
+              streams.push(entry);
             }
+          }
         });
-        // Add local stream if available and user is streaming
+      
         if (localStream && isStreaming) {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id)
-            if (isHost) {
-                streams.unshift({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName}` });
-            } else {
-                streams.push({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
-            }
+          const StreamerInfo = streamerList.find(streamer => streamer.ID === socket.id);
+          const localEntry = {
+            type: 'local',
+            stream: localStream,
+            isMuted: StreamerInfo?.isMuted ?? false,
+            Name: userDetails?.screenName ?? 'You',
+            id: socket.id,
+          };
+          if (isHost) {
+            streams.unshift(localEntry);
+          } else {
+            streams.push({ ...localEntry, Name: `${localEntry.Name} (You)` });
+          }
         }
-        setStreamLayout(streams);
-    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList]);
+      
+        // 🔒 Prevent multiple re-renders: compare shallow layout
+        setStreamLayout(prev => {
+          const prevIds = prev.map(p => p.id).join(',');
+          const nextIds = streams.map(p => p.id).join(',');
+          if (prevIds === nextIds) return prev; // no change → no render
+          return streams;
+        });
+      }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList]);
+
+
+
 
     const getVideoTileStyle = (count) => {
         if (count === 1) {
@@ -787,7 +817,7 @@ const StreamRoom = ({
                                                             <Image source={GiftIcon} height={35} width={35} />
                                                         </TouchableOpacity>
                                                         <Text style={styles.userName}>
-                                                            {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
+                                                            {streamLayout[0]?.Name ? streamLayout[0]?.Name : 'Unknown User'}
                                                         </Text>
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
@@ -851,7 +881,7 @@ const StreamRoom = ({
                                                                     <Image source={GiftIcon} height={25} width={25} />
                                                                 </TouchableOpacity>
                                                                 <Text style={styles.userName}>
-                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                 </Text>
                                                                 <TouchableOpacity
                                                                     style={styles.friendRequestIcon}
@@ -921,7 +951,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} style={{ height: '35', width: '35' }} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
@@ -989,7 +1019,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} style={{ height: '25', width: '25' }} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
@@ -1061,7 +1091,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} height={35} width={35} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
