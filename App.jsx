@@ -40,6 +40,7 @@ import { SendErrorTotheServer, socket } from './src/utils/constant';
 import NetworkCheck from './src/components/NetworkCheck';
 import AvatarPrevModal from './src/modals/AvatarPrevModal';
 import ReportUserModal from './src/modals/ReportUserModal';
+import CameraActionSheet from './src/components/CameraActionSheet';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();;
@@ -282,6 +283,7 @@ const App = () => {
     userProfileDetails,
     isMainProfileOpened,
     setAvatarToPreview,
+    setProfileUserId,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -638,6 +640,19 @@ const App = () => {
           }}
           reportData={userProfileDetails}
           reportType="User"
+        />
+      )}
+      {modalVisibleStage === 'camera-action-sheet' && modalStage === 'second' && (
+        <CameraActionSheet
+          visible={modalVisibleStage === 'camera-action-sheet'}
+          onClose={() => {
+            setModalVisibleStage('profile-screen-modal');
+            setModalStage('first');
+            setProfileUserId(null);
+          }}
+          title="Update Profile Picture"
+          options={['Take Photo', 'Choose from Gallery', 'Cancel']}
+          theme={theme}
         />
       )}
     </ErrorBoundary>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
     View,
     Text,
@@ -10,6 +10,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../assets/styles/Colors';
+import { useAppContext } from '../context/AppContext';
 
 
 const CameraActionSheet = ({
@@ -17,12 +18,12 @@ const CameraActionSheet = ({
     onClose,
     title = 'Select Option',
     options = [],
-    onPress,
     theme = 'light'
 }) => {
-    const slideAnim = React.useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(0)).current;
+    const { onSelectImage } = useAppContext();
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (visible) {
             Animated.spring(slideAnim, {
                 toValue: 1,
@@ -39,6 +40,16 @@ const CameraActionSheet = ({
             }).start();
         }
     }, [visible]);
+
+
+    const handleOptionPress = async (index) => {
+        if (index === 0) {
+            await onSelectImage('camera');
+        } else if (index === 1) {
+            await onSelectImage('gallery');
+        }
+        onClose();
+    };
 
     const translateY = slideAnim.interpolate({
         inputRange: [0, 1],
@@ -65,6 +76,8 @@ const CameraActionSheet = ({
         if (index === 1) return '#45B7D1';
         return '#96CEB4';
     };
+
+
 
     return (
         <Modal
@@ -118,10 +131,7 @@ const CameraActionSheet = ({
                                             borderBottomColor: theme === 'dark' ? '#3A3A3C' : '#E5E5EA'
                                         }
                                     ]}
-                                    onPress={() => {
-                                        onPress(index);
-                                        onClose();
-                                    }}
+                                    onPress={() => handleOptionPress(index)}
                                     activeOpacity={0.7}
                                 >
                                     <LinearGradient

@@ -1,7 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Text, Animated, Image, Linking, Alert, Platform, PermissionsAndroid, ActivityIndicator, StatusBar } from 'react-native';
-import ImagePickerCrop from 'react-native-image-crop-picker';
+import { View, TouchableOpacity, Text, Animated, Image, Linking, Platform, ActivityIndicator, StatusBar } from 'react-native';
 import Modal from 'react-native-modal';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { Dimensions, ScrollView } from 'react-native';
@@ -12,10 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
-import MessageModal from './MessageModal';
 import { ThemeContext } from '../context/ThemeContext';
-import ReportUserModal from './ReportUserModal';
-import CameraActionSheet from '../components/CameraActionSheet';
 import { useAppContext } from '../context/AppContext';
 import Colors from '../../assets/styles/Colors';
 
@@ -24,26 +20,21 @@ import Colors from '../../assets/styles/Colors';
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
     const { theme } = useContext(ThemeContext);
     const {
-        fetchProfileDetails,
-        modalStage,
         setModalStage,
-        modalLabelName,
-        setModalLabelName,
-        modalVisibleStage,
         setModalVisibleStage,
-        showAvatarPreview,
         setShowAvatarPreview,
-        avatarToPreview,
         setAvatarToPreview,
         userProfileDetails,
         setUserProfileDetails,
         setIsMainProfileOpened,
+        avatarUploading,
+        isImagePickerOpen,
+        setProfileUserId,
     } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
-    // const [userProfileDetails, setUserProfileDetails] = useState({});
     const [socialLinks, setSocialLinks] = useState({});
     const [socialError, setSocialError] = useState('');
     const [topGiftersData, setTopGiftersData] = useState([]);
@@ -51,12 +42,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [visibleModal, setVisibleModal] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
-    const [avatarUploading, setAvatarUploading] = useState(false);
-    const [showActionSheet, setShowActionSheet] = useState(false);
-    const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
     const [profileUserData, setProfileUserData] = useState({});
-    // const [showAvatarPreview, setShowAvatarPreview] = useState(false);
-    // const [avatarToPreview, setAvatarToPreview] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
@@ -159,140 +145,11 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     }, [visible]);
 
 
-
+    //  edit profile avatar
     const handleEditAvatar = () => {
-        setShowActionSheet(true);
-    };
-
-    const onSelectImage = async (type) => {
-        setAvatarUploading(true);
-        setIsImagePickerOpen(true);
-
-        try {
-            let image = null;
-
-            if (type === 'camera') {
-                if (Platform.OS === 'android') {
-                    const permission = PermissionsAndroid.PERMISSIONS.CAMERA;
-                    const granted = await PermissionsAndroid.request(permission, {
-                        title: 'Camera Permission',
-                        message: 'App needs access to your camera to take photos.',
-                        buttonNeutral: 'Ask Me Later',
-                        buttonNegative: 'Cancel',
-                        buttonPositive: 'OK',
-                    });
-
-                    if (granted === PermissionsAndroid.RESULTS.DENIED) {
-                        Alert.alert(
-                            'Permission Required',
-                            'Camera permission is required to take a photo. Please allow it.'
-                        );
-                        setAvatarUploading(false);
-                        setIsImagePickerOpen(false);
-                        return;
-                    }
-
-                    if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-                        Alert.alert(
-                            'Permission Denied',
-                            'Camera permission was denied permanently. Open settings to allow access.',
-                            [
-                                { text: 'Cancel', style: 'cancel' },
-                                { text: 'Open Settings', onPress: () => Linking.openSettings() },
-                            ]
-                        );
-                        setAvatarUploading(false);
-                        setIsImagePickerOpen(false);
-                        return;
-                    }
-
-                    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                        setAvatarUploading(false);
-                        setIsImagePickerOpen(false);
-                        return;
-                    }
-                }
-
-                image = await ImagePickerCrop.openCamera({
-                    width: 256,
-                    height: 256,
-                    cropping: true,
-                    hideBottomControls: true,
-                    freeStyleCropEnabled: false,
-                    compressImageQuality: 0.7,
-                    mediaType: 'photo',
-                    includeBase64: false,
-                });
-
-            } else if (type === 'gallery') {
-                image = await ImagePickerCrop.openPicker({
-                    width: 256,
-                    height: 256,
-                    cropping: true,
-                    hideBottomControls: true,
-                    freeStyleCropEnabled: false,
-                    compressImageQuality: 0.7,
-                    mediaType: 'photo',
-                    includeBase64: false,
-                });
-            }
-
-            if (!image || image.cancelled) {
-                setAvatarUploading(false);
-                return;
-            }
-
-            const avatarFile = {
-                uri: image.path,
-                name: image.filename || `avatar_${Date.now()}.jpg`,
-                type: image.mime,
-            };
-
-            uploadAvatarToServer(avatarFile);
-
-        } catch (error) {
-            if (error.message?.includes('cancelled') || error.code === 'E_PICKER_CANCELLED') {
-                console.log('Image selection cancelled');
-            } else {
-                console.error('Image selection error:', error);
-                Alert.alert('Error', 'Failed to select or crop image.');
-            }
-            setAvatarUploading(false);
-        } finally {
-            setIsImagePickerOpen(false);
-        }
-    };
-
-
-    const uploadAvatarToServer = async (avatarFile) => {
-        setIsImagePickerOpen(false); // Reset flag when starting upload
-        const formData = new FormData();
-        formData.append('avatar', {
-            uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
-            type: avatarFile.type,
-            name: avatarFile.name,
-        });
-        formData.append('userId', profileUserId);
-
-        try {
-            const response = await Apiclient.post('/avatar/upload', formData);
-            const resJson = response.data;
-            console.log('response avatar upload', resJson);
-            if (response.status === 200) {
-                Alert.alert('Message', resJson.message);
-                setTimeout(() => {
-                    onClose();
-                    fetchProfileDetails();
-                }, 1500);
-            } else {
-                Alert.alert('Message', resJson.message || 'Please try again.');
-            }
-        } catch (error) {
-            console.error('Avatar upload error:', error);
-            Alert.alert('Error', 'Failed to upload avatar.');
-        } finally {
-            setAvatarUploading(false);
-        }
+        setProfileUserId(profileUserId);
+        setModalVisibleStage('camera-action-sheet');
+        setModalStage('second');
     };
 
     // get profile details from API
@@ -460,13 +317,14 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         });
     };
 
-
+    // report modal open
     const handleReport = () => {
         setModalVisibleStage('report-user');
         setModalStage('second');
         // setVisibleModal('ReportUser');
     };
 
+    // another profile modal open
     const handleProfileOpen = useCallback((item) => {
         setProfileUserData(item);
         setVisibleModal('profile-screen-modal');
@@ -795,27 +653,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
 
                 </Animated.View>
             </Modal>
-            {/* {visibleModal === 'ReportUser' && (
-                <ReportUserModal
-                    visible={visibleModal === 'ReportUser'}
-                    onClose={() => {
-                        setVisibleModal(null);
-                    }}
-                    reportData={userProfileDetails}
-                    reportType="User"
-                />
-            )} */}
-            <CameraActionSheet
-                visible={showActionSheet}
-                onClose={() => setShowActionSheet(false)}
-                title="Update Profile Picture"
-                options={['Take Photo', 'Choose from Gallery', 'Cancel']}
-                theme={theme}
-                onPress={(index) => {
-                    if (index === 0) onSelectImage('camera');
-                    if (index === 1) onSelectImage('gallery');
-                }}
-            />
             {visibleModal === 'profile-screen-modal' && (
                 <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
             )}
