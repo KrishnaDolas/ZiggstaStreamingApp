@@ -290,6 +290,11 @@ const StreamRoom = ({
         }
     }
 
+    useEffect(()=>{
+        GetViewerAndLikeCount()
+    },[Streamupdated])
+
+
     useEffect(() => {
         getGifts();
     }, [giftModalVisible, selectedGiftCategory]);
@@ -352,7 +357,7 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
-        GetViewerAndLikeCount()
+  
         if (streamInfo) {
             GetUserDetails(streamInfo?.hostID)
         }
@@ -787,7 +792,7 @@ const StreamRoom = ({
                                                             <Image source={GiftIcon} height={35} width={35} />
                                                         </TouchableOpacity>
                                                         <Text style={styles.userName}>
-                                                            {streamLayout[0]?.Name || streamLayout[0]?.Name || 'Unknown User'}
+                                                            {streamLayout[0]?.Name ? streamLayout[0]?.Name : 'Unknown User'}
                                                         </Text>
                                                         <TouchableOpacity
                                                             style={styles.friendRequestIcon}
@@ -851,7 +856,7 @@ const StreamRoom = ({
                                                                     <Image source={GiftIcon} height={25} width={25} />
                                                                 </TouchableOpacity>
                                                                 <Text style={styles.userName}>
-                                                                    {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                    {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                 </Text>
                                                                 <TouchableOpacity
                                                                     style={styles.friendRequestIcon}
@@ -921,7 +926,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} style={{ height: '35', width: '35' }} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
@@ -989,7 +994,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} style={{ height: '25', width: '25' }} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
@@ -1061,7 +1066,7 @@ const StreamRoom = ({
                                                                         <Image source={GiftIcon} height={35} width={35} />
                                                                     </TouchableOpacity>
                                                                     <Text style={styles.userName}>
-                                                                        {streamData?.Name || streamData?.Name || 'Unknown User'}
+                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
                                                                     <TouchableOpacity
                                                                         style={styles.friendRequestIcon}
