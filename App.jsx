@@ -55,7 +55,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
     modalVisibleStage,
     modalStage,
     setModalStage,
-    setIsMainProfileOpened,
+    setShowAvatarPreview,
+    setAvatarToPreview,
   } = useAppContext();
   const isDark = theme === 'dark';
 
@@ -149,7 +150,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               // Show modal instead of navigating
               setModalVisibleStage('profile-screen-modal');
               setModalStage('first');
-              setIsMainProfileOpened(true);
               return;
             }
 
@@ -187,7 +187,11 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
       {modalVisibleStage === 'profile-screen-modal' && modalStage === 'first' && (
         <ProfileScreenModal
           visible={modalVisibleStage === 'profile-screen-modal'}
-          onClose={() => setModalVisibleStage(null)}
+          onClose={() => {
+            setModalVisibleStage(null);
+            setShowAvatarPreview(false);
+            setAvatarToPreview(null);
+          }}
           profileData={userData}
           isMainProfile={true}
           isProfileAvatarUpdate={true}
@@ -277,6 +281,7 @@ const App = () => {
     setShowAvatarPreview,
     userProfileDetails,
     isMainProfileOpened,
+    setAvatarToPreview,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -617,8 +622,9 @@ const App = () => {
           visible={modalVisibleStage === 'profile-avatar-prv'}
           onClose={() => {
             setShowAvatarPreview(false);
-            setModalVisibleStage('profile-screen-modal');
+            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
             setModalStage('first');
+            setAvatarToPreview(null);
           }}
         />
       )}
