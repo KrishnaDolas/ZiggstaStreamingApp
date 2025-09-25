@@ -24,7 +24,8 @@ export const MessageListScreen = () => {
         setModalVisibleStage,
         modalStage,
         modalVisibleStage,
-        setIsMainProfileOpened
+        setShowAvatarPreview,
+        setAvatarToPreview,
     } = useAppContext();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
@@ -188,7 +189,6 @@ export const MessageListScreen = () => {
         setProfileUserData(item);
         setModalVisibleStage('profile-modal');
         setModalStage('first');
-        setIsMainProfileOpened(false);
     }, []);
 
 
@@ -431,7 +431,11 @@ export const MessageListScreen = () => {
                 {modalVisibleStage === 'profile-modal' && modalStage === 'first' && (
                     <ProfileScreenModal
                         visible={modalVisibleStage === 'profile-modal'}
-                        onClose={() => setModalVisibleStage(null)}
+                        onClose={() => {
+                            setModalVisibleStage(null);
+                            setShowAvatarPreview(false);
+                            setAvatarToPreview(null);
+                        }}
                         profileData={profileUserData}
                     />
                 )}

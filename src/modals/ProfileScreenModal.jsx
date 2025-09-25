@@ -37,6 +37,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         setAvatarToPreview,
         userProfileDetails,
         setUserProfileDetails,
+        setIsMainProfileOpened,
     } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
@@ -60,6 +61,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
 
+    useEffect(() => {
+        setIsMainProfileOpened(isMainProfile ? true : false);
+    }, [isMainProfile]);
 
     // Handle status bar and navigation bar visibility
     useEffect(() => {
@@ -563,28 +567,41 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                         {/* Profile Image */}
                                                         <View style={[styles.psmProfileImageContainer, themeStyles[theme].psmProfileImageContainer]}>
                                                             <View style={styles.profileImageWrapper}>
-                                                                <TouchableOpacity
-                                                                    onPress={() => {
-                                                                        const uri = !userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
-                                                                            ? null
-                                                                            : userProfileDetails.avatar;
-                                                                        if (uri) {
-                                                                            setAvatarToPreview(uri);
-                                                                            setShowAvatarPreview(true);
-                                                                            setModalVisibleStage('profile-avatar-prv');
-                                                                            setModalStage('second');
-                                                                        }
-                                                                    }}
-                                                                    activeOpacity={0.9}
-                                                                >
-                                                                    <Image
-                                                                        source={!userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
-                                                                            ? getGenderFallbackImage(userProfileDetails?.gender)
-                                                                            : { uri: userProfileDetails?.avatar }
-                                                                        }
-                                                                        style={styles.psmProfileImage}
-                                                                    />
-                                                                </TouchableOpacity>
+                                                                {isMainProfile ? (
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+                                                                            const uri = !userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
+                                                                                ? null
+                                                                                : userProfileDetails.avatar;
+                                                                            if (uri) {
+                                                                                setAvatarToPreview(uri);
+                                                                                setShowAvatarPreview(true);
+                                                                                setModalVisibleStage('profile-avatar-prv');
+                                                                                setModalStage('second');
+                                                                            }
+                                                                        }}
+                                                                        activeOpacity={0.9}
+                                                                    >
+                                                                        <Image
+                                                                            source={!userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
+                                                                                ? getGenderFallbackImage(userProfileDetails?.gender)
+                                                                                : { uri: userProfileDetails?.avatar }
+                                                                            }
+                                                                            style={styles.psmProfileImage}
+                                                                        />
+                                                                    </TouchableOpacity>
+                                                                ) : (
+                                                                    <View>
+                                                                        <Image
+                                                                            source={!userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
+                                                                                ? getGenderFallbackImage(userProfileDetails?.gender)
+                                                                                : { uri: userProfileDetails?.avatar }
+                                                                            }
+                                                                            style={styles.psmProfileImage}
+                                                                        />
+                                                                    </View>
+                                                                )}
+
                                                                 {isProfileAvatarUpdate && (
                                                                     <TouchableOpacity
                                                                         style={styles.editIconContainer}

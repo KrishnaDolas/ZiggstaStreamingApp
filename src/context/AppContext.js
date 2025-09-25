@@ -21,7 +21,7 @@ export const AppProvider = ({ children }) => {
     const [showAvatarPreview, setShowAvatarPreview] = useState(false);
     const [avatarToPreview, setAvatarToPreview] = useState(null);
     const [userProfileDetails, setUserProfileDetails] = useState({});
-    const [isMainProfileOpened, setIsMainProfileOpened] = useState(true);
+    const [isMainProfileOpened, setIsMainProfileOpened] = useState(false);
 
     useEffect(() => {
         console.log('modalStage changed to ', modalStage);
