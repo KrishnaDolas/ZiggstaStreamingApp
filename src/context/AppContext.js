@@ -18,12 +18,17 @@ export const AppProvider = ({ children }) => {
     const [modalStage, setModalStage] = useState('first');
     const [modalLabelName, setModalLabelName] = useState(null);
     const [modalVisibleStage, setModalVisibleStage] = useState(null);
+    const [showAvatarPreview, setShowAvatarPreview] = useState(false);
+    const [avatarToPreview, setAvatarToPreview] = useState(null);
+    const [userProfileDetails, setUserProfileDetails] = useState({});
+    const [isMainProfileOpened, setIsMainProfileOpened] = useState(true);
 
     useEffect(() => {
         console.log('modalStage changed to ', modalStage);
         console.log('modalLabelName changed to ', modalLabelName);
         console.log('modalVisibleStage changed to ', modalVisibleStage);
-    }, [modalStage, modalLabelName, modalVisibleStage]);
+        console.log('is-main-profile ', isMainProfileOpened);
+    }, [modalStage, modalLabelName, modalVisibleStage, isMainProfileOpened]);
 
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
@@ -69,6 +74,14 @@ export const AppProvider = ({ children }) => {
             setModalLabelName,
             modalVisibleStage,
             setModalVisibleStage,
+            showAvatarPreview,
+            setShowAvatarPreview,
+            avatarToPreview,
+            setAvatarToPreview,
+            userProfileDetails,
+            setUserProfileDetails,
+            isMainProfileOpened,
+            setIsMainProfileOpened,
         }}>
             {children}
         </AppContext.Provider>

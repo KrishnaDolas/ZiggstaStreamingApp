@@ -18,7 +18,14 @@ import MessageModal from '../modals/MessageModal';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 export const MessageListScreen = () => {
-    const { userData } = useAppContext();
+    const {
+        userData,
+        setModalStage,
+        setModalVisibleStage,
+        modalStage,
+        modalVisibleStage,
+        setIsMainProfileOpened
+    } = useAppContext();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
     const { theme } = useContext(ThemeContext);
@@ -179,7 +186,9 @@ export const MessageListScreen = () => {
 
     const handleProfileOpen = useCallback((item) => {
         setProfileUserData(item);
-        setVisibleModal('profile-screen-modal');
+        setModalVisibleStage('profile-modal');
+        setModalStage('first');
+        setIsMainProfileOpened(false);
     }, []);
 
 
@@ -419,8 +428,12 @@ export const MessageListScreen = () => {
                         getFriendsData={getFriendsData}
                     />
                 )}
-                {visibleModal === 'profile-screen-modal' && (
-                    <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
+                {modalVisibleStage === 'profile-modal' && modalStage === 'first' && (
+                    <ProfileScreenModal
+                        visible={modalVisibleStage === 'profile-modal'}
+                        onClose={() => setModalVisibleStage(null)}
+                        profileData={profileUserData}
+                    />
                 )}
                 {visibleModal === 'message-modal' && (
                     <MessageModal

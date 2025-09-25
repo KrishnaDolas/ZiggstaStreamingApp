@@ -23,26 +23,39 @@ import Colors from '../../assets/styles/Colors';
 
 const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
     const { theme } = useContext(ThemeContext);
-    const { fetchProfileDetails } = useAppContext();
+    const {
+        fetchProfileDetails,
+        modalStage,
+        setModalStage,
+        modalLabelName,
+        setModalLabelName,
+        modalVisibleStage,
+        setModalVisibleStage,
+        showAvatarPreview,
+        setShowAvatarPreview,
+        avatarToPreview,
+        setAvatarToPreview,
+        userProfileDetails,
+        setUserProfileDetails,
+    } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
     const [isUserLoading, setIsUserLoading] = useState(false);
     const [isUserError, setIsUserError] = useState(null);
-    const [userProfileDatails, setUserProfileDetails] = useState({});
+    // const [userProfileDetails, setUserProfileDetails] = useState({});
     const [socialLinks, setSocialLinks] = useState({});
     const [socialError, setSocialError] = useState('');
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [visibleModal, setVisibleModal] = useState(null);
-    const [message, setMessage] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
     const [avatarUploading, setAvatarUploading] = useState(false);
     const [showActionSheet, setShowActionSheet] = useState(false);
     const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
     const [profileUserData, setProfileUserData] = useState({});
-    const [showAvatarPreview, setShowAvatarPreview] = useState(false);
-    const [avatarToPreview, setAvatarToPreview] = useState(null);
+    // const [showAvatarPreview, setShowAvatarPreview] = useState(false);
+    // const [avatarToPreview, setAvatarToPreview] = useState(null);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
@@ -262,17 +275,13 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
             const resJson = response.data;
             console.log('response avatar upload', resJson);
             if (response.status === 200) {
-                // Alert.alert('Upload successFully', resJson.message);
-                setMessage(resJson.message);
-                setVisibleModal('message-modal');
+                Alert.alert('Message', resJson.message);
                 setTimeout(() => {
                     onClose();
                     fetchProfileDetails();
                 }, 1500);
             } else {
-                // Alert.alert('Upload Failed', resJson.message || 'Please try again.');
-                setMessage(resJson.message || 'Please try again.');
-                setVisibleModal('message-modal');
+                Alert.alert('Message', resJson.message || 'Please try again.');
             }
         } catch (error) {
             console.error('Avatar upload error:', error);
@@ -449,7 +458,9 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
 
 
     const handleReport = () => {
-        setVisibleModal('ReportUser');
+        setModalVisibleStage('report-user');
+        setModalStage('second');
+        // setVisibleModal('ReportUser');
     };
 
     const handleProfileOpen = useCallback((item) => {
@@ -554,20 +565,22 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                             <View style={styles.profileImageWrapper}>
                                                                 <TouchableOpacity
                                                                     onPress={() => {
-                                                                        const uri = !userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
+                                                                        const uri = !userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
                                                                             ? null
-                                                                            : userProfileDatails.avatar;
+                                                                            : userProfileDetails.avatar;
                                                                         if (uri) {
                                                                             setAvatarToPreview(uri);
                                                                             setShowAvatarPreview(true);
+                                                                            setModalVisibleStage('profile-avatar-prv');
+                                                                            setModalStage('second');
                                                                         }
                                                                     }}
                                                                     activeOpacity={0.9}
                                                                 >
                                                                     <Image
-                                                                        source={!userProfileDatails?.avatar || userProfileDatails?.avatar === 'default'
-                                                                            ? getGenderFallbackImage(userProfileDatails?.gender)
-                                                                            : { uri: userProfileDatails?.avatar }
+                                                                        source={!userProfileDetails?.avatar || userProfileDetails?.avatar === 'default'
+                                                                            ? getGenderFallbackImage(userProfileDetails?.gender)
+                                                                            : { uri: userProfileDetails?.avatar }
                                                                         }
                                                                         style={styles.psmProfileImage}
                                                                     />
@@ -584,8 +597,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                         </View>
 
                                                         {/* Name and ID */}
-                                                        <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDatails?.screenName}</Text>
-                                                        <Text style={styles.psmProfileId}>ID: {userProfileDatails?.userid}</Text>
+                                                        <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDetails?.screenName}</Text>
+                                                        <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text>
 
                                                         {/* Stats Section */}
                                                         <View style={styles.psmStatsContainer}>
@@ -765,26 +778,16 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
 
                 </Animated.View>
             </Modal>
-            {visibleModal === 'message-modal' && (
-                <MessageModal
-                    visible={visibleModal === 'message-modal'}
-                    message={message}
-                    onClose={() => {
-                        setVisibleModal(null);
-                        setReportClicked(false); // allow future clicks again
-                    }}
-                />
-            )}
-            {visibleModal === 'ReportUser' && (
+            {/* {visibleModal === 'ReportUser' && (
                 <ReportUserModal
                     visible={visibleModal === 'ReportUser'}
                     onClose={() => {
                         setVisibleModal(null);
                     }}
-                    reportData={userProfileDatails}
+                    reportData={userProfileDetails}
                     reportType="User"
                 />
-            )}
+            )} */}
             <CameraActionSheet
                 visible={showActionSheet}
                 onClose={() => setShowActionSheet(false)}
@@ -799,31 +802,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
             {visibleModal === 'profile-screen-modal' && (
                 <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
             )}
-            <Modal
-                isVisible={showAvatarPreview}
-                onBackdropPress={() => setShowAvatarPreview(false)}
-                useNativeDriver
-                style={{ margin: 0, justifyContent: 'center', alignItems: 'center' }}
-            >
-                <View style={{ backgroundColor: theme === 'dark' ? Colors.blackModalBgColor : '#fff', padding: 10, borderRadius: 10 }}>
-                    <Image
-                        source={{ uri: avatarToPreview }}
-                        style={{
-                            width: Dimensions.get('window').width * 0.8,
-                            height: Dimensions.get('window').width * 0.8,
-                            borderRadius: 10,
-                            resizeMode: 'contain',
-                        }}
-                    />
-                    <TouchableOpacity
-                        onPress={() => setShowAvatarPreview(false)}
-                        style={{ marginTop: 10, alignSelf: 'center' }}
-                    >
-                        <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>Close</Text>
-                    </TouchableOpacity>
-                </View>
-            </Modal>
-
         </>
 
     );

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, ScrollView, Alert, Animated, TextInput, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView, Alert, Animated, TextInput, ActivityIndicator, Platform } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -7,8 +7,7 @@ import Apiclient from '../utils/Apiclient';
 import { ThemeContext } from '../context/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
-import MessageModal from './MessageModal';
-const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) => {
+const ReportUserModal = ({ visible, onClose, reportData, reportType, RoomID }) => {
     const { userData } = useAppContext();
     const { theme } = useContext(ThemeContext);
     const [isModalRendered, setIsModalRendered] = useState(false); // prevent content shifts
@@ -16,8 +15,6 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) =>
     const [selectedMainCategory, setSelectedMainCategory] = useState(null);
     const [selectedSubCategory, setSelectedSubCategory] = useState(null);
     const [description, setDescription] = useState('');
-    const [visibleModal, setVisibleModal] = useState(null);
-    const [message, setMessage] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [fadeAnim] = useState(new Animated.Value(0));
@@ -92,21 +89,18 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) =>
             const response = await Apiclient.post('/flagReporting/submitReport', payload);
             console.log('response submitReport', response);
             if (response?.status === 200 && response?.data?.success) {
-                setMessage(response.data.message);
-                setVisibleModal('message-modal');
+                Alert.alert('Message', response.data.message);
             } else {
-                setMessage(response.data.message || 'Unexpected error occurred');
-                setVisibleModal('message-modal');
+                Alert.alert('Message', response.data.message || 'Unexpected error occurred');
             }
         } catch (error) {
             if (error?.response) {
-                setMessage(error.response.data?.message || 'Server error occurred.');
+                Alert.alert('Message', error.response.data?.message || 'Server error occurred.');
             } else if (error?.request) {
-                setMessage('No response from server. Please check your internet connection.');
+                Alert.alert('Message', 'No response from server. Please check your internet connection.');
             } else {
-                setMessage('Something went wrong. Please try again later.');
+                Alert.alert('Message', 'Something went wrong. Please try again later.');
             }
-            setVisibleModal('message-modal');
         } finally {
             setSubmitLoading(false); // End loading
         }
@@ -214,7 +208,7 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) =>
             >
                 <View style={[styles.fullScreenModalOverlay, themeStyles[theme].fullScreenModalOverlay, { flex: 1 }]}>
                     <View style={[styles.profileSettingModalBody, { flex: 1 }]}>
-                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5, paddingTop: Platform.OS === 'ios' ? 30 : 0, }}>
                             <TouchableOpacity onPress={onClose} style={[styles.modalCloseBtn]}>
                                 <Ionicons name="close" size={28} color={theme === 'dark' ? '#fff' : '#000'} />
                             </TouchableOpacity>
@@ -354,13 +348,6 @@ const ReportUserModal = ({ visible, onClose, reportData, reportType,RoomID }) =>
                     </View>
                 </View>
             </Modal>
-            {visibleModal === 'message-modal' && (
-                <MessageModal
-                    visible={visibleModal === 'message-modal'}
-                    message={message}
-                    onClose={() => setVisibleModal(null)}
-                />
-            )}
         </>
     );
 };
