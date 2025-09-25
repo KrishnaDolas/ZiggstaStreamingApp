@@ -54,6 +54,9 @@ export const MainScreen = () => {
   const [totalGiftValue, setTotalGiftValue] = useState(0);
   const IsIdentify = useRef(false)
   const IsVerified = useRef(false)
+
+
+
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
@@ -495,6 +498,20 @@ export const MainScreen = () => {
     }
   }, [IsVerified, socket.connected, userData])
 
+  useEffect(() => {
+    // 🚨 Listen for unstable connection kicks
+    socket.on('user-kicked', ({ userID }) => {
+      if (userID === userData?.userid) {
+        Alert.alert("⚠️ Your connection is unstable. You have been removed. Please rejoin the stream.");
+        leaveRoom(); // ✅ cleanup: stop streams, clear refs, etc.
+      }
+    });
+  
+    return () => {
+      socket.off('user-kicked');
+    };
+  }, [socket]);
+
 
 
   useEffect(() => {
@@ -527,7 +544,6 @@ export const MainScreen = () => {
       socket.on('newuser-joined', HandlenewUserJoined)
       socket.on('user-leftStream', HandleUserLeftStream)
       socket.on('Total-GiftValue', HandleTotalGiftValue)
-      
     }
 
     return () => {
