@@ -284,6 +284,8 @@ const App = () => {
     isMainProfileOpened,
     setAvatarToPreview,
     setProfileUserId,
+    profileUserData,
+    setProfileUserData,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -653,6 +655,17 @@ const App = () => {
           title="Update Profile Picture"
           options={['Take Photo', 'Choose from Gallery', 'Cancel']}
           theme={theme}
+        />
+      )}
+      {modalVisibleStage === 'friend-profile-modal' && modalStage === 'second' && (
+        <ProfileScreenModal
+          visible={modalVisibleStage === 'friend-profile-modal'}
+          onClose={() => {
+            setModalVisibleStage(null);
+            setModalStage('first');
+            setProfileUserData({});
+          }}
+          profileData={profileUserData}
         />
       )}
     </ErrorBoundary>

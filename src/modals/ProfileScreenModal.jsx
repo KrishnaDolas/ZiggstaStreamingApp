@@ -30,6 +30,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         avatarUploading,
         isImagePickerOpen,
         setProfileUserId,
+        setProfileUserData,
     } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
@@ -40,9 +41,8 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
-    const [visibleModal, setVisibleModal] = useState(null);
     const [reportClicked, setReportClicked] = useState(false);
-    const [profileUserData, setProfileUserData] = useState({});
+    // const [profileUserData, setProfileUserData] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
@@ -105,13 +105,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
             }
         };
     }, [isImagePickerOpen]);
-
-    // Cleanup modals on unmount
-    useEffect(() => {
-        return () => {
-            setVisibleModal(null); // Close all modals
-        };
-    }, []);
 
     const panResponder = useRef(
         PanResponder.create({
@@ -321,14 +314,13 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const handleReport = () => {
         setModalVisibleStage('report-user');
         setModalStage('second');
-        // setVisibleModal('ReportUser');
     };
 
     // another profile modal open
     const handleProfileOpen = useCallback((item) => {
         setProfileUserData(item);
-        setVisibleModal('profile-screen-modal');
-
+        setModalVisibleStage('friend-profile-modal');
+        setModalStage('second');
     }, []);
 
 
@@ -653,9 +645,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
 
                 </Animated.View>
             </Modal>
-            {visibleModal === 'profile-screen-modal' && (
-                <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
-            )}
         </>
 
     );
