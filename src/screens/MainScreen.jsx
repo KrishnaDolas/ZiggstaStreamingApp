@@ -60,45 +60,77 @@ export const MainScreen = () => {
   }, [joined, isSocketConnected]);
 
   useEffect(() => {
-    const handleAppStateChange = async (nextAppState) => {
-      const IsValid = isuserstreaming || isHost;
+ // inside StreamRoom.jsx
 
-      if (nextAppState === 'active') {
-        if (isStreaming && IsValid && socket.connected) {
-          socket.emit('stream-Resume', socket.id);
-          setTimeout(async () => {
-            try {
-              socket.emit('stream-negotiate');
-              setTimeout(() => {
-                HandleApprovedStream();
-              }, 1000);
-            } catch (err) {
-              SendErrorTotheServer(err, "handleAppStateChange");
-            }
-          }, 1000);
-        }
-      } else if (nextAppState === 'background' && isStreaming && IsValid) {
-        try {
-          if (localStreamRef.current) {
-            localStreamRef.current.getTracks().forEach(track => track.stop());
-            localStreamRef.current = null;
-            setLocalStream(null);
-            // Stop InCallManager
-            InCallManager.stop();
-          }
-          setRemoteStreams([])
-          peersRef.current = {};
-          for (const [userId, peer] of Object.entries(peersRef.current)) {
-            if (peersRef.current[userId]) {
-              peersRef.current[userId].close();
-              delete peersRef.current[userId]
-            }
-          }
-        } catch (err) {
-          SendErrorTotheServer(err, "handleAppStateChange")
-        }
-      }
-    };
+ // the functinality which disabled for backgroud stream pause or activate when app minimise  
+
+// const handleAppStateChange = async (nextAppState) => {
+//   console.log("📱 AppState changed:", nextAppState);
+//   try {
+//     if (nextAppState === 'background' && isStreaming && IsValid) {
+//       // 🔹 Pause local media instead of stopping
+//       if (localStreamRef.current) {
+//         localStreamRef.current.getTracks().forEach(track => {
+//           track.enabled = false; // just mute/disable
+//         });
+//       }
+
+//       InCallManager.stop(); // stop audio routing
+//       // ❌ Do NOT clear peersRef or remoteStreams
+//       console.log("⏸️ Local tracks disabled (background)");
+//     }
+//     if (nextAppState === 'active' && isStreaming ) {
+//       // 🔹 Re-enable tracks
+//       // Some iOS devices actually kill tracks when backgrounded
+//       // Fallback: if no tracks exist, create fresh stream and replace tracks on existing peers
+//       if (localStreamRef.current && localStreamRef.current.getTracks().length === 0) {
+//         console.log("⚠️ No local tracks found, recreating stream...");
+//         const newStream = await mediaDevices.getUserMedia({
+//           audio: true,
+//           video: true,
+//         });
+//         localStreamRef.current = newStream;
+
+//         // Replace tracks in all peers
+//         Object.values(peersRef.current).forEach(peer => {
+//           newStream.getTracks().forEach(track => {
+//             const sender = peer.getSenders().find(s => s.track && s.track.kind === track.kind);
+//             if (sender) {
+//               sender.replaceTrack(track);
+//             } else {
+//               peer.addTrack(track, newStream);
+//             }
+//           });
+//         });
+//       }
+
+//       // ❌ Do not emit 'stream-negotiate' as new user
+//       // Instead just tell server you resumed
+//       socket.emit('stream-Resume', {
+//         roomId: RoomID,
+//         userId: userDetails?.id,
+//       });
+
+//       setIsUserStreaming(true);
+//     }
+//   } catch (err) {
+//     SendErrorTotheServer(err, "handleAppStateChange");
+//   }
+// };
+
+
+
+
+const handleAppStateChange = (nextAppState) => {
+  try {
+    // Intentionally do nothing on background/active to keep mic/camera intact.
+    // This prevents any renegotiation or stopping of tracks when the user minimizes the app.
+    console.log('[handleAppStateChange] app state =>', nextAppState, '- no-op (tracks preserved)');
+  } catch (err) {
+    // Use your existing error logger
+    SendErrorTotheServer(err, 'handleAppStateChange');
+  }
+};
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
 
@@ -407,23 +439,105 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleHostAction');
     }
   };
-  const HandleUserStreamStoped = (userId) => {
+  const HandleUserStreamStoped = async (payloadOrSocketId) => {
     try {
-      if (socket.id !== userId) {
-        if (peersRef.current[userId]) {
-          peersRef.current[userId].close();
-          delete peersRef.current[userId];
-          setRemoteStreams(prev => prev.filter(s => s.id !== userId));
-        } else {
-          SendErrorTotheServer(`No peer connection found for ${userId}`, 'HandleUserStreamStoped');
+      // Normalize payload: accept string or object
+      let socketId = null;
+      let userID = null;
+      let name = null;
+      let isHostFlag = null;
+  
+      if (!payloadOrSocketId) {
+        console.warn('[stream-Resume] empty payload received');
+        return;
+      }
+      if (typeof payloadOrSocketId === 'string') {
+        socketId = payloadOrSocketId;
+      } else if (typeof payloadOrSocketId === 'object') {
+        socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
+        userID = payloadOrSocketId.userID || payloadOrSocketId.userId || payloadOrSocketId.customId || null;
+        name = payloadOrSocketId.name || payloadOrSocketId.Name || null;
+        isHostFlag = payloadOrSocketId.isHost ?? null;
+      }
+  
+      console.log('[stream-Resume] received resume for socketId=', socketId, ' userID=', userID, ' name=', name);
+  
+      if (!socketId) {
+        console.warn('[stream-Resume] no socketId found, ignoring');
+        return;
+      }
+  
+      // if resume is for myself, nothing to do here (maybe update UI)
+      if (socket.id === socketId) {
+        console.log('[stream-Resume] resume event for self; updating local UI only');
+        // Optionally set state to clear any "paused" indicator
+        return;
+      }
+  
+      // If name/userID present, ensure streamerList contains up-to-date metadata for this socketId
+      if (userID || name) {
+        setStrimerList(prev => {
+          try {
+            const copy = Array.isArray(prev) ? [...prev] : [];
+            const idx = copy.findIndex(s => s.ID === socketId || s.UserID === userID);
+            const newEntry = {
+              ID: socketId,
+              UserID: userID ?? (copy[idx]?.UserID || null),
+              Name: name ?? (copy[idx]?.Name || null),
+              IsHost: isHostFlag ?? (copy[idx]?.IsHost || false),
+              isMuted: copy[idx]?.isMuted ?? false,
+              avatar: copy[idx]?.avatar ?? null
+            };
+            if (idx >= 0) {
+              copy[idx] = { ...copy[idx], ...newEntry };
+            } else {
+              copy.push(newEntry);
+            }
+            return copy;
+          } catch (e) {
+            SendErrorTotheServer(e, 'setStrimerList in HandleUserStreamStoped');
+            return prev;
+          }
+        });
+      }
+  
+      const existingPeer = peersRef.current[socketId];
+      const hasRemoteStream = remoteStreams.some(s => s.id === socketId);
+  
+      if (existingPeer) {
+        console.log(`[stream-Resume] existing peer for ${socketId}. hasRemoteStream=${hasRemoteStream}`);
+  
+        // If peer exists and remote stream is missing, request a renegotiate (optional)
+        if (!hasRemoteStream) {
+          try {
+            console.log(`[stream-Resume] asking for renegotiate for ${socketId}`);
+            socket.emit('request-renegotiate', socketId);
+          } catch (e) {
+            SendErrorTotheServer(e, 'request-renegotiate emit');
+          }
         }
-      } else {
-        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
+        return;
+      }
+  
+      // No existing peer => create one and start offer/answer
+      console.log(`[stream-Resume] creating peer for ${socketId} to resume stream`);
+      try {
+        const peer = createPeer(socketId);
+        peersRef.current[socketId] = peer;
+  
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+  
+        socket.emit('signal', { to: socketId, data: peer.localDescription });
+        console.log(`[stream-Resume] sent offer to ${socketId}`);
+      } catch (err) {
+        SendErrorTotheServer(err, 'HandleUserStreamStoped createPeer/offer');
       }
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserStreamStoped');
     }
-  }
+  };
+  
   const HandleStreamList = (list) => {
     setStrimerList(list)
   }
@@ -440,9 +554,11 @@ export const MainScreen = () => {
   const HandleTotalGiftValue = (totalValue) => {
     setTotalGiftValue(totalValue)
   }
+
   const HandleDisconnected = () => {
     IsVerified.current = false;
     console.log('❌ Disconnected from socket server');
+    socket.emit("forceLeave", { socketId: socket.id });
     setIsSocketConnected(false)
     setconnectingpanel(true)
     setHasRequestedStream(false)
@@ -461,6 +577,8 @@ export const MainScreen = () => {
       pendingCandidates.current = {};
     }
   }
+
+
   const HandleStopStream = (streamlist) => {
 
     streamlist.forEach((userId) => {
@@ -495,6 +613,27 @@ export const MainScreen = () => {
     }
   }, [IsVerified, socket.connected, userData])
 
+
+  //   useEffect(() => {
+  //   const subscription = AppState.addEventListener("change", (nextAppState) => {
+  //     // Detect when app is killed/closed
+  //     if (appState.current.match(/active/) && nextAppState === "inactive") {
+  //       if (socket && socket.connected) {
+  //         // 🔥 Tell server immediately before OS kills process
+  //         socket.emit("forceLeave", { socketId: socket.id });
+  //       }
+  //     }
+  //     AppState.current = nextAppState;
+  //   });
+
+  //   // Cleanup (when component unmounts or app is swiped away)
+  //   return () => {
+  //     if (socket && socket.connected) {
+  //       socket.emit("forceLeave", { socketId: socket.id });
+  //     }
+  //     subscription.remove();
+  //   };
+  // }, []);
 
 
   useEffect(() => {
@@ -572,12 +711,15 @@ export const MainScreen = () => {
   const createPeer = (socketId) => {
     try {
       const peer = new RTCPeerConnection(iceServers);
-
+  
+      // Add local tracks if present
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track =>
           peer.addTrack(track, localStreamRef.current)
         );
       }
+  
+      // ontrack sets remote stream in state exactly as before
       peer.ontrack = (event) => {
         const stream = event.streams[0];
         if (!stream || !stream.getVideoTracks().length) return;
@@ -586,50 +728,76 @@ export const MainScreen = () => {
           if (exists) {
             return prev.map(s => s.id === socketId ? { ...s, stream } : s);
           }
-          // add the audio level
           return [...prev, { id: socketId, stream, isSpeaking: false }];
         });
-        // Route audio to speaker because it's a video call
-        InCallManager.start({ media: 'video', auto: true });
-        InCallManager.setForceSpeakerphoneOn(true);
+  
+        // Ensure audio routes to speaker
+        try {
+          InCallManager.start({ media: 'video', auto: true });
+          InCallManager.setForceSpeakerphoneOn(true);
+        } catch (e) {
+          // ignore if InCallManager is unavailable on platform
+        }
       };
-
+  
+      // ICE candidate forwarding
       peer.onicecandidate = (event) => {
         if (event.candidate) {
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
+  
       // ---- AUDIO LEVEL DETECTION ----
-      setInterval(async () => {
-        const receivers = peer.getReceivers();
-        const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
-        if (audioReceiver) {
-          const stats = await audioReceiver.getStats();
-          stats.forEach(report => {
-            // check inbound-rtp for audio
-            if (report.type === 'inbound-rtp' && (report.mediaType === 'audio' || report.kind === 'audio')) {
-              let audioLevel = report.audioLevel;
-              // if audioLevel is undefined, calculate manually (Chrome-like)
-              if (audioLevel === undefined && report.totalAudioEnergy && report.totalSamplesDuration) {
-                audioLevel = Math.sqrt(report.totalAudioEnergy / report.totalSamplesDuration);
+      // store interval id so we can clear it when peer is closed
+      const audioIntervalId = setInterval(async () => {
+        try {
+          const receivers = peer.getReceivers();
+          const audioReceiver = receivers.find(r => r.track && r.track.kind === 'audio');
+          if (audioReceiver) {
+            const stats = await audioReceiver.getStats();
+            stats.forEach(report => {
+              if (report.type === 'inbound-rtp' && (report.mediaType === 'audio' || report.kind === 'audio')) {
+                let audioLevel = report.audioLevel;
+                if (audioLevel === undefined && report.totalAudioEnergy && report.totalSamplesDuration) {
+                  audioLevel = Math.sqrt(report.totalAudioEnergy / report.totalSamplesDuration);
+                }
+                audioLevel = audioLevel || 0;
+                const isSpeaking = audioLevel > 0.05;
+                setRemoteStreams(prev => prev.map(s =>
+                  s.id === socketId ? { ...s, audioLevel, isSpeaking } : s
+                ));
               }
-
-              audioLevel = audioLevel || 0;
-              const isSpeaking = audioLevel > 0.05; // threshold
-              setRemoteStreams(prev => prev.map(s =>
-                s.id === socketId ? { ...s, audioLevel, isSpeaking } : s
-              ));
-            }
-          });
+            });
+          }
+        } catch (err) {
+          // swallow per-interval errors but report them
+          SendErrorTotheServer(err, 'audio-level-interval');
         }
       }, 200);
-
-
+  
+      // attach interval id so we can clear it later
+      peer._audioIntervalId = audioIntervalId;
+  
+      // Wrap the original close so we can clear interval and then close peer
+      const origClose = peer.close.bind(peer);
+      peer.close = () => {
+        try {
+          if (peer._audioIntervalId) {
+            clearInterval(peer._audioIntervalId);
+            peer._audioIntervalId = null;
+          }
+        } catch (e) {
+          // ignore clearing errors
+        }
+        try { origClose(); } catch (e) { /* ignore */ }
+      };
+  
       return peer;
     } catch (error) {
       SendErrorTotheServer(error, 'createPeer');
     }
   };
+  
 
   const joinRoom = (roomID, RoomInfo) => {
     try {
