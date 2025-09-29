@@ -36,7 +36,10 @@ const UserInterestUpdateModal = ({ visible, onClose }) => {
         const getCategoryData = async () => {
             try {
                 setIsCategoryLoading(true);
-                const response = await Apiclient.post('/getcategories');
+                const payload = {
+                    isEnabled: 1,
+                };
+                const response = await Apiclient.post('/getcategories', payload);
                 // console.log('getcategories response', response.data);
                 if (response?.data?.categories) {
                     setCategoryData(response.data.categories);

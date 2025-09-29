@@ -287,7 +287,12 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const getInterestData = async () => {
         try {
             setIsInterestLoading(true);
-            const response = await Apiclient.post('/getcategories');
+
+            const payload = {
+                isEnabled: 1,
+            };
+
+            const response = await Apiclient.post('/getcategories', payload);
             if (response?.data?.categories) {
                 setCategoryData(response.data.categories);
             }

@@ -285,7 +285,10 @@ export const RegisterForm = ({
   useEffect(() => {
     const getInterestData = async () => {
       try {
-        const response = await Apiclient.post('/getcategories');
+        const payload = {
+          isEnabled: 1,
+        };
+        const response = await Apiclient.post('/getcategories', payload);
         // console.log('response getcategories', response);
         if (response?.data?.categories) {
           const categoriesData = response.data.categories;

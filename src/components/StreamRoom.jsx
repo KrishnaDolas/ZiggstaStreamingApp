@@ -102,6 +102,7 @@ const StreamRoom = ({
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
     const [showUI, setShowUI] = useState(true);
     const [myFriendList, setMyFriendList] = useState([]);
+    const [totalGiftCoinReceived, setTotalGiftCoinReceived] = useState(null);
     const [notification, setNotification] = useState({
         isVisible: false,
         message: '',
@@ -290,9 +291,9 @@ const StreamRoom = ({
         }
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         GetViewerAndLikeCount()
-    },[Streamupdated])
+    }, [Streamupdated]);
 
 
     useEffect(() => {
@@ -357,7 +358,7 @@ const StreamRoom = ({
 
     // Handle keyboard events
     useEffect(() => {
-  
+
         if (streamInfo) {
             GetUserDetails(streamInfo?.hostID)
         }
@@ -536,7 +537,7 @@ const StreamRoom = ({
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
     }
 
-    const HandleGiftReceived = (senderName, receiverName, giftName) => {
+    const HandleGiftReceived = async (senderName, receiverName, giftName) => {
         try {
             if (userData?.screenName === senderName) return
             playGiftSound()
@@ -545,6 +546,7 @@ const StreamRoom = ({
                 senderName: senderName,
                 ReceiverName: receiverName
             });
+            await getTotalGiftsReceivedCoins();
             setShowReceiveAnimation(true);
         } catch (error) {
             SendErrorTotheServer(error, "HandleGiftReceived")
@@ -584,6 +586,29 @@ const StreamRoom = ({
         }
     }, [])
 
+
+    const getTotalGiftsReceivedCoins = async () => {
+        try {
+            const params = {
+                toUserId: streamInfo?.hostID,
+                gifterCount: 10000,
+            };
+            const response = await Apiclient.post('/topgifters', params);
+            console.log('total gifts coins res', response.data);
+            const data = response.data;
+            if (data) {
+                const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
+                setTotalGiftCoinReceived(totalAmount);
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
+        }
+    };
+
+    useEffect(() => {
+        getTotalGiftsReceivedCoins();
+    }, []);
+
     const SendGift = async (item) => {
         try {
             if (!GiftSenderData) return;
@@ -592,7 +617,7 @@ const StreamRoom = ({
                 toUserID: GiftSenderData.userId,
                 giftID: item?.giftID,
                 roomId: streamInfo?.roomID
-            }
+            };
             const Responce = await Apiclient.post('/sendGifts', params)
             if (Responce.data) {
                 if (Responce.data.success) {
@@ -601,13 +626,16 @@ const StreamRoom = ({
                     } else {
                         socket.emit('Send-gift', userData?.screenName, false, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
                     }
-
+                    // Show animation
                     setSendAnimationData({
                         giftName: item?.giftIcon,
                         recipientName: GiftSenderData.userName
                     });
                     setShowSendAnimation(true);
+                    // Close modal
                     setGiftModalVisible(false);
+                    // ✅ Call API again to update coins
+                    await getTotalGiftsReceivedCoins();
                 } else if (Responce.data.message) {
                     setMessage(Responce.data.message)
                     setVisibleModal('message-modal')
@@ -617,11 +645,14 @@ const StreamRoom = ({
         } catch (error) {
             SendErrorTotheServer(error, "SendGift")
         }
-    }
+    };
+
     const HnadleSendGiftToCoHost = (UserID, UserName) => {
         setGiftSendData({ userName: UserName, userId: UserID })
         setGiftModalVisible(true)
-    }
+    };
+
+
     const handleFriendRequest = async (userid, username) => {
         try {
             if (!userData?.userid || !userid) {
@@ -719,6 +750,7 @@ const StreamRoom = ({
         return num.toString();
     };
 
+
     return (
         <>
             <View style={[styles.streamBox]}>
@@ -779,7 +811,7 @@ const StreamRoom = ({
                                                 />
                                             </View>
                                         )}
-                                        {streamLayout[0]?.type !== 'local' && showUI && (
+                                        {/* {streamLayout[0]?.type !== 'local' && showUI && (
                                             <View style={styles.videoOverlay}>
                                                 <ImageBackground
                                                     source={bgImage}
@@ -815,7 +847,7 @@ const StreamRoom = ({
                                                     </View>
                                                 </ImageBackground>
                                             </View>
-                                        )}
+                                        )} */}
                                     </View>
                                     <View style={styles.threeUserColumnRight}>
                                         {streamLayout.slice(1, 3).map((streamData, index) => (
@@ -1054,7 +1086,7 @@ const StreamRoom = ({
                                                         </View>
                                                     )}
                                                     <View style={styles.videoOverlay}>
-                                                        {streamData?.type !== 'local' && showUI && (
+                                                        {index !== 0 && streamData?.type !== 'local' && showUI && (
                                                             <ImageBackground
                                                                 source={bgImage}
                                                                 style={{ padding: 3 }}
@@ -1103,39 +1135,86 @@ const StreamRoom = ({
                     <>
                         {/* Stream Room Header */}
                         {showUI && (<View style={styles.strRoomHeader}>
-                            <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }} onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
+                            <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }} onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
                                 <View style={styles.strRoomHeaderLeft}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
                                     <View>
+                                        {/* host name */}
                                         <Text style={[styles.strRoomHeaderLeftProfileName]}>
                                             {userDetails?.screenName}
                                         </Text>
+                                        {/* All total likes & All time coins */}
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
-                                            <Ionicons name="heart" size={15} color={Streamupdated.LikeCount === 0 ? "white" : "red"} />
-                                            <Text style={{ color: 'white', paddingLeft: '5' }}>{Streamupdated.LikeCount}</Text>
-                                            <Image
-                                                source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
-                                                style={{ width: 14, height: 14, marginLeft: '5' }}
-                                                resizeMode="contain"
-                                            />
-                                            <Text style={styles.strRoomHeaderRWalletInfoText}>{totalGiftValue}</Text>
+                                            {/* total likes */}
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                                <Ionicons name="heart" size={13} color="white" />
+                                                {/* <Text style={{ color: 'white' }}>{Streamupdated.LikeCount}</Text> */}
+                                                <Text style={{ color: 'white', fontSize: 12, fontWeight: 600 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
+                                            </View>
+                                            {/* total coins */}
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                                <Image
+                                                    source={require('../../assets/images/icons/icon_z.png')}
+                                                    style={{ width: 14, height: 14 }}
+                                                    resizeMode="contain"
+                                                />
+                                                <Text style={{ color: '#ffea23', fontSize: 12, fontWeight: 600 }}>{totalGiftCoinReceived}</Text>
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: 'rgba(36, 32, 32, 0.75)', height: '25', borderRadius: 21, paddingHorizontal: 10 }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Ionicons name="heart" size={15} color="white" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <Ionicons name="eye" size={15} color="#fff" />
-                                        <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.viewerCount)}</Text>
+                                {/* viewer count management */}
+                                <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
+                                    <TouchableOpacity
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            backgroundColor: 'rgba(36, 32, 32, 0.75)',
+                                            gap: 10,
+                                            paddingHorizontal: 8,
+                                            paddingVertical: 1,
+                                            borderRadius: 21,
+                                        }}
+                                        onPress={() => {
+                                            setOpenViewerList(true);
+                                        }}
+                                    >
+                                        {/* total view count */}
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                            <Ionicons name="eye" size={13} color="#1F85F5" />
+                                            <Text style={{ color: '#1F85F5', fontSize: 12, fontWeight: 600 }}>{formatCount(Streamupdated.TotalViewerCount)}</Text>
+                                        </View>
+                                        {/* current viewer count */}
+                                        {isHost && (
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                                <Ionicons name="eye" size={13} color="#00BD35" />
+                                                <Text style={{ color: '#00BD35', fontSize: 12, fontWeight: 600 }}>{formatCount(Streamupdated.viewerCount)}</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                    {/* coins earned in current stream */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', gap: 10, paddingRight: 8, paddingVertical: 1, borderRadius: 21 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                            <Image
+                                                source={require('../../assets/images/icons/icon_z.png')}
+                                                style={{ width: 14, height: 14 }}
+                                                resizeMode="contain"
+                                            />
+                                            <Text style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>{totalGiftValue}</Text>
+                                        </View>
+                                        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Ionicons name="heart" size={15} color="white" />
+                                            <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Ionicons name="eye" size={15} color="#fff" />
+                                            <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.viewerCount)}</Text>
+                                        </View> */}
                                     </View>
                                 </View>
-
                             </Pressable>
-                            <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
+                            {/* <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
                                 <TouchableOpacity onPress={() => {
                                     setOpenViewerList(true)
                                 }}>
@@ -1152,7 +1231,7 @@ const StreamRoom = ({
                                         </View>
                                     </View>
                                 </TouchableOpacity>
-                            </View>
+                            </View> */}
                             <View style={styles.strRoomHeaderRight}>
                                 <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                     <Ionicons name="close" size={30} color="#fff" />
@@ -1207,61 +1286,77 @@ const StreamRoom = ({
                                         </ScrollView>
                                     </View>
                                     {/* chat message icon box right side */}
-                                    {showUI && (<View style={styles.strRoomFooterSocialActions}>
-                                        <TouchableOpacity
-                                            style={styles.strRoomFooterSocialActionsBtn}
-                                            onPress={() => setVisibleModal('slot-game')}
-                                        >
-                                            <Image
-                                                style={{
-                                                    width: 35,
-                                                    height: 35,
-                                                }}
-                                                source={require('../../assets/images/solt-game/slot-machine.png')}
-                                                resizeMode="contain"
-                                            />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={styles.strRoomFooterSocialActionsBtn}
-                                            onPress={() => setVisibleModal('luckyWheel')}
-                                        >
-                                            <Animated.Image
-                                                style={{
-                                                    width: 35,
-                                                    height: 35,
-                                                    transform: [{ rotate: spin }], // always the animated value
-                                                }}
-                                                source={require('../../assets/images/lucky-wheel/lw-home.png')}
-                                                resizeMode="contain"
+                                    {showUI && (
+                                        <View style={styles.strRoomFooterSocialActions}>
+                                            {/* gift icon for user */}
+                                            {!isHost && (
+                                                <TouchableOpacity
+                                                    onPress={() => setGiftModalVisible(true)}
+                                                    style={styles.strRoomFooterSocialActionsBtn}
+                                                >
+                                                    <Ionicons name="gift" size={35} color="#FF00FF" />
+                                                </TouchableOpacity>
+                                            )}
+                                            {/* solt game */}
+                                            {!isHost && (
+                                                <TouchableOpacity
+                                                    style={styles.strRoomFooterSocialActionsBtn}
+                                                    onPress={() => setVisibleModal('slot-game')}
+                                                >
+                                                    <Image
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                        }}
+                                                        source={require('../../assets/images/solt-game/slot-machine.png')}
+                                                        resizeMode="contain"
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
+                                            {/* lucky wheel */}
+                                            {!isHost && (
+                                                <TouchableOpacity
+                                                    style={styles.strRoomFooterSocialActionsBtn}
+                                                    onPress={() => setVisibleModal('luckyWheel')}
+                                                >
+                                                    <Animated.Image
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                            transform: [{ rotate: spin }], // always the animated value
+                                                        }}
+                                                        source={require('../../assets/images/lucky-wheel/lw-home.png')}
+                                                        resizeMode="contain"
 
-                                            />
-                                        </TouchableOpacity>
-                                        {!isHost && streamerList?.length === 1 && (<>
-                                            <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid, userDetails?.screenName)}>
-                                                {streamLayout[0]?.isFriend ? (
-                                                    <>
-                                                        {/* <Ionicons name="person-remove" size={30} color="#fff" /> */}
-                                                        <Image
-                                                            style={{
-                                                                width: 32,
-                                                                height: 32,
-                                                            }}
-                                                            source={require('../../assets/images/icons/friend-added.png')}
-                                                            resizeMode="contain"
-                                                            tintColor="#4dff17ff"
-                                                        />
-                                                    </>
-                                                ) : (
-                                                    <Ionicons name="person-add" size={30} color="#fff" />)}
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
+                                            {/* send friend request to host  */}
+                                            {/* {!isHost && streamerList?.length === 1 && (
+                                                <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid, userDetails?.screenName)}>
+                                                    {streamLayout[0]?.isFriend ? (
+                                                        <>
+                                                            <Image
+                                                                style={{
+                                                                    width: 32,
+                                                                    height: 32,
+                                                                }}
+                                                                source={require('../../assets/images/icons/friend-added.png')}
+                                                                resizeMode="contain"
+                                                                tintColor="#4dff17ff"
+                                                            />
+                                                        </>
+                                                    ) : (
+                                                        <Ionicons name="person-add" size={30} color="#fff" />)}
+                                                </TouchableOpacity>
+                                            )} */}
+
+                                            {/* {!isHost &&
+                                            <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
+                                                <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                             </TouchableOpacity>
-                                        </>)}
-                                        {!isHost && (<TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} onPress={ToggleLike} disabled={isHost} >
-                                            <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
-                                        </TouchableOpacity>)}
-                                        <TouchableOpacity style={[styles.strRoomFooterSocialActionsBtn, { display: openMoreSettingList ? 'none' : 'flex' }]}>
-                                            <Ionicons name="share-social-sharp" size={30} color="#fff" />
-                                        </TouchableOpacity>
-                                    </View>)}
+                                        } */}
+                                        </View>)}
                                 </View>
                             )}
                             {/* input box container */}
@@ -1290,22 +1385,40 @@ const StreamRoom = ({
                                             setOpenMoreSettingList(!openMoreSettingList);
                                         }} style={styles.strRoomBottomBoxIconBox}>
                                             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                                                {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{ height: '35', width: '35' }} />}
+                                                {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{ height: 28, width: 28 }} resizeMode="contain" />}
                                             </Animated.View>
                                         </TouchableOpacity>
-                                        {!isHost && streamLayout.length === 1 && (<>
-                                            <TouchableOpacity onPress={() => setGiftModalVisible(true)} style={[styles.strRoomBottomBoxIconBox]}>
-                                                <Ionicons name="gift" size={30} color="#FF00FF" />
+                                        {isHost && (
+                                            <TouchableOpacity style={[styles.strRoomBottomBoxIconBox, { marginLeft: 20 }]}>
+                                                <Ionicons name="share-social-sharp" size={30} color="#fff" />
                                             </TouchableOpacity>
-                                            <TouchableOpacity style={styles.strRoomBottomBoxIconBox}>
+                                        )}
+                                        {/* like-dislike */}
+                                        {!isHost &&
+                                            (
+                                                <TouchableOpacity
+                                                    style={styles.strRoomBottomBoxIconBox}
+                                                    onPress={ToggleLike}
+                                                    disabled={isHost}
+                                                >
+                                                    <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
+                                                </TouchableOpacity>
+                                            )}
+                                        {/* shopping cart */}
+                                        {!isHost && (<>
+                                            <TouchableOpacity style={[styles.strRoomBottomBoxIconBox, { marginRight: 4 }]}>
                                                 <Ionicons name="cart" size={30} color="#fff" />
                                             </TouchableOpacity>
                                         </>)}
+                                        {/* co-host pending request box */}
                                         {isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                setTogglerequest(!togglerequest)
-                                                setShowTooltip(false)
-                                            }} style={styles.strRoomBottomBoxIconBox}>
+                                            <TouchableOpacity
+                                                style={[styles.strRoomBottomBoxIconBox]}
+                                                onPress={() => {
+                                                    setTogglerequest(!togglerequest);
+                                                    setShowTooltip(false);
+                                                }}
+                                            >
                                                 {showTooltip && streamrequestlist.length > 0 && (
                                                     <Animated.View
                                                         style={[
@@ -1326,9 +1439,15 @@ const StreamRoom = ({
                                                             },
                                                         ]}
                                                     />)}
-
-                                                <Ionicons name="people" size={30} color="#fff" />
-
+                                                {/* <Ionicons name="people" size={30} color="#fff" /> */}
+                                                <Image
+                                                    source={require('../../assets/images/icons/icon_add_users.png')}
+                                                    style={{
+                                                        width: 32,
+                                                        height: 32,
+                                                    }}
+                                                    resizeMode="contain"
+                                                />
                                             </TouchableOpacity>
                                         )}
                                     </>
@@ -1346,7 +1465,7 @@ const StreamRoom = ({
                                     >
                                         <TouchableOpacity onPress={() => {
                                             switchCamera();
-                                            HidesettingPanel()
+                                            HidesettingPanel();
                                         }} style={styles.strMoreSettingListItem}>
                                             <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
@@ -1394,231 +1513,257 @@ const StreamRoom = ({
             </View>
 
             {/* Gift Modal */}
-            {giftModalVisible && (
-                <Modal
-                    isVisible={giftModalVisible}
-                    animationIn="slideInUp"
-                    animationOut="slideOutDown"
-                    animationInTiming={300}
-                    animationOutTiming={200}
-                    useNativeDriver={true}
-                    avoidKeyboard={false}
-                    backdropOpacity={0}
-                    style={[styles.profileModalMain]}
-                >
-                    <View style={[styles.profileModalOverlay,
-                    themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
-                        <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
-                            <TouchableOpacity
-                                onPress={() => setGiftModalVisible(false)}
-                                style={[styles.modalCloseBtn]}
-                            >
-                                <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={[styles.giftModalCategoryMainLayout, themeStyles[theme].giftModalCategoryMainLayout]}>
-                            <ScrollView
-                                ref={scrollRef}
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                onScroll={handleScroll}
-                                scrollEventThrottle={16}
-                            >
-                                <View style={styles.giftModalCategoryContainer}>
-                                    {Array.from(
-                                        new Map(
-                                            giftsCategoryData
-                                                .sort((a, b) => a.giftValue - b.giftValue)
-                                                .map(gift => [gift.giftValue, gift])
-                                        ).values()
-                                    ).map((category, index) => {
-                                        const isSelected = selectedGiftCategory === category.giftValue;
-                                        return (
-                                            <TouchableOpacity key={index}
-                                                onPress={() => setSelectedGiftCategory(category.giftValue)}
-                                                style={[
-                                                    styles.giftModalCatTab, themeStyles[theme].giftModalCatTab,
-                                                    isSelected && styles.giftModalCatTabActive,
-                                                ]}
-                                            >
-                                                <Text style={[styles.giftModalCatTabText, themeStyles[theme].giftModalCatTabText, isSelected && styles.giftModalCatTabActiveText]}>{category.giftValue}</Text>
-                                            </TouchableOpacity>
-                                        );
-                                    })}
-                                </View>
-                            </ScrollView>
-                            {giftModalVisible && showArrow && (
-                                <Animated.View
-                                    style={[
-                                        styles.giftModalCatRightArrow,
-                                        { transform: [{ translateX: arrowAnim }] },
-                                    ]}
-                                    pointerEvents="none"
+            {
+                giftModalVisible && (
+                    <Modal
+                        isVisible={giftModalVisible}
+                        animationIn="slideInUp"
+                        animationOut="slideOutDown"
+                        animationInTiming={300}
+                        animationOutTiming={200}
+                        useNativeDriver={true}
+                        avoidKeyboard={false}
+                        backdropOpacity={0}
+                        style={[styles.profileModalMain]}
+                    >
+                        <View style={[styles.profileModalOverlay,
+                        themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
+                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                                <TouchableOpacity
+                                    onPress={() => setGiftModalVisible(false)}
+                                    style={[styles.modalCloseBtn]}
                                 >
-                                    <Ionicons name="chevron-forward" size={16} color="#fff" />
-                                </Animated.View>
-                            )}
-                        </View>
-                        <View style={[styles.giftModalItemsMainLayout, themeStyles[theme].giftModalItemsMainLayout]}>
-                            {giftsData.length > 0 ? (
+                                    <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
+                                </TouchableOpacity>
+                            </View>
+                            <View style={[styles.giftModalCategoryMainLayout, themeStyles[theme].giftModalCategoryMainLayout]}>
                                 <ScrollView
-                                    showsVerticalScrollIndicator={true}
-                                    indicatorStyle="#d9d9d9"
+                                    ref={scrollRef}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
+                                    onScroll={handleScroll}
+                                    scrollEventThrottle={16}
                                 >
-                                    <View style={styles.giftModalCategoryItemsContainer}>
-                                        {giftDataLoading ? (
-                                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
-                                                <ActivityIndicator size="large" />
-                                            </View>
-                                        ) : giftsData.map((item, index) => {
-                                            const localImage = giftImages[item.giftIcon];
-                                            if (!localImage) return null;
+                                    <View style={styles.giftModalCategoryContainer}>
+                                        {Array.from(
+                                            new Map(
+                                                giftsCategoryData
+                                                    .sort((a, b) => a.giftValue - b.giftValue)
+                                                    .map(gift => [gift.giftValue, gift])
+                                            ).values()
+                                        ).map((category, index) => {
+                                            const isSelected = selectedGiftCategory === category.giftValue;
                                             return (
                                                 <TouchableOpacity key={index}
-                                                    style={styles.giftModalCatItem}
-                                                    onPress={() => SendGift(item)}
+                                                    onPress={() => setSelectedGiftCategory(category.giftValue)}
+                                                    style={[
+                                                        styles.giftModalCatTab, themeStyles[theme].giftModalCatTab,
+                                                        isSelected && styles.giftModalCatTabActive,
+                                                    ]}
                                                 >
-                                                    <FastImage
-                                                        style={[styles.giftModalCatItemImage]}
-                                                        source={localImage}
-                                                        resizeMode={FastImage.resizeMode.contain}
-                                                    />
+                                                    <Text style={[styles.giftModalCatTabText, themeStyles[theme].giftModalCatTabText, isSelected && styles.giftModalCatTabActiveText]}>{category.giftValue}</Text>
                                                 </TouchableOpacity>
                                             );
                                         })}
                                     </View>
                                 </ScrollView>
-                            ) : (
-                                <View style={styles.noGiftsTextContainer}>
-                                    <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>
-                                </View>
-                            )}
+                                {giftModalVisible && showArrow && (
+                                    <Animated.View
+                                        style={[
+                                            styles.giftModalCatRightArrow,
+                                            { transform: [{ translateX: arrowAnim }] },
+                                        ]}
+                                        pointerEvents="none"
+                                    >
+                                        <Ionicons name="chevron-forward" size={16} color="#fff" />
+                                    </Animated.View>
+                                )}
+                            </View>
+                            <View style={[styles.giftModalItemsMainLayout, themeStyles[theme].giftModalItemsMainLayout]}>
+                                {giftsData.length > 0 ? (
+                                    <ScrollView
+                                        showsVerticalScrollIndicator={true}
+                                        indicatorStyle="#d9d9d9"
+                                    >
+                                        <View style={styles.giftModalCategoryItemsContainer}>
+                                            {giftDataLoading ? (
+                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
+                                                    <ActivityIndicator size="large" />
+                                                </View>
+                                            ) : giftsData.map((item, index) => {
+                                                const localImage = giftImages[item.giftIcon];
+                                                if (!localImage) return null;
+                                                return (
+                                                    <TouchableOpacity key={index}
+                                                        style={styles.giftModalCatItem}
+                                                        onPress={() => SendGift(item)}
+                                                    >
+                                                        <FastImage
+                                                            style={[styles.giftModalCatItemImage]}
+                                                            source={localImage}
+                                                            resizeMode={FastImage.resizeMode.contain}
+                                                        />
+                                                    </TouchableOpacity>
+                                                );
+                                            })}
+                                        </View>
+                                    </ScrollView>
+                                ) : (
+                                    <View style={styles.noGiftsTextContainer}>
+                                        <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>
+                                    </View>
+                                )}
+                            </View>
                         </View>
-                    </View>
-                </Modal>
-            )}
+                    </Modal>
+                )
+            }
 
             {/* Message Modal */}
-            {visibleModal === 'message-modal' && (
-                <MessageModal
-                    visible={visibleModal === 'message-modal'}
-                    message={message}
-                    onClose={() => setVisibleModal(null)}
-                />
-            )}
+            {
+                visibleModal === 'message-modal' && (
+                    <MessageModal
+                        visible={visibleModal === 'message-modal'}
+                        message={message}
+                        onClose={() => setVisibleModal(null)}
+                    />
+                )
+            }
             {/* Request Modal */}
 
             {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} />}
 
 
             {/* close stream modal  */}
-            {closeStreamModal && (
-                <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
-            )}
+            {
+                closeStreamModal && (
+                    <ConfirmModal visible={closeStreamModal} onClose={() => setCloseStreamModal(false)} leaveRoom={leaveRoom} />
+                )
+            }
 
             {/* Update Stream Description Modal */}
-            {editstreamdescription && (
-                <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamDescription} HandleNewStreamDesciption={HandleNewStreamDesciption} />
-            )}
+            {
+                editstreamdescription && (
+                    <UpdateStreamDescriptionModal visible={editstreamdescription} onClose={() => setEditStreamDescription(false)} description={streamDescription} HandleNewStreamDesciption={HandleNewStreamDesciption} />
+                )
+            }
 
             {/* Report Video Modal */}
-            {visibleModal === 'ReportVideo' && (
-                <ReportUserModal
-                    visible={visibleModal === 'ReportVideo'}
-                    onClose={() => {
-                        setVisibleModal(null);
-                    }}
-                    reportData={userDetails}
-                    RoomID={streamInfo?.roomID}
-                    reportType="Video"
-                />
-            )}
+            {
+                visibleModal === 'ReportVideo' && (
+                    <ReportUserModal
+                        visible={visibleModal === 'ReportVideo'}
+                        onClose={() => {
+                            setVisibleModal(null);
+                        }}
+                        reportData={userDetails}
+                        RoomID={streamInfo?.roomID}
+                        reportType="Video"
+                    />
+                )
+            }
 
             {/* Viewer List Modal */}
-            {OpenViewerLIst && (
-                <ViewerTotalLIst
-                    visible={OpenViewerLIst}
-                    onClose={() => setOpenViewerList(false)}
-                    userDetails={userDetails}
-                    RoomID={streamInfo?.roomID}
-                />
-            )}
+            {
+                OpenViewerLIst && (
+                    <ViewerTotalLIst
+                        visible={OpenViewerLIst}
+                        onClose={() => setOpenViewerList(false)}
+                        userDetails={userDetails}
+                        RoomID={streamInfo?.roomID}
+                    />
+                )
+            }
 
             {/* Send Animation - shown to the gift sender */}
-            {showSendAnimation && sendAnimationData && (
-                <GiftSendAnimation
-                    giftName={sendAnimationData.giftName}
-                    recipientName={sendAnimationData.recipientName}
-                    onComplete={handleSendAnimationComplete}
-                />
-            )}
+            {
+                showSendAnimation && sendAnimationData && (
+                    <GiftSendAnimation
+                        giftName={sendAnimationData.giftName}
+                        recipientName={sendAnimationData.recipientName}
+                        onComplete={handleSendAnimationComplete}
+                    />
+                )
+            }
 
             {/* Receive Animation - shown to the gift receiver (host) */}
-            {showReceiveAnimation && receiveAnimationData && (
-                <GiftReceiveAnimation
-                    giftName={receiveAnimationData.giftName}
-                    senderName={receiveAnimationData.senderName}
-                    ReceiverName={receiveAnimationData.ReceiverName}
-                    onComplete={handleReceiveAnimationComplete}
-                />
-            )}
+            {
+                showReceiveAnimation && receiveAnimationData && (
+                    <GiftReceiveAnimation
+                        giftName={receiveAnimationData.giftName}
+                        senderName={receiveAnimationData.senderName}
+                        ReceiverName={receiveAnimationData.ReceiverName}
+                        onComplete={handleReceiveAnimationComplete}
+                    />
+                )
+            }
 
             {/* Profile Modal */}
-            {OpenHostPorfile && (
-                <ProfileScreenModal
-                    visible="true"
-                    onClose={() => setOpenHostPorfile(false)}
-                    profileData={userDetails}
-                    isMainProfile={true}
-                    isViewer={true}
-                />
-            )}
+            {
+                OpenHostPorfile && (
+                    <ProfileScreenModal
+                        visible="true"
+                        onClose={() => setOpenHostPorfile(false)}
+                        profileData={userDetails}
+                        isMainProfile={true}
+                        isViewer={true}
+                    />
+                )
+            }
 
             {/* Chat User Profile Modal */}
-            {openChatUserProfile && (
-                <ProfileScreenModal
-                    visible="true"
-                    onClose={() => setOpenChatUserProfile(false)}
-                    profileData={SelectedUser}
-                    isMainProfile={true}
-                    isViewer={true}
-                />
-            )}
+            {
+                openChatUserProfile && (
+                    <ProfileScreenModal
+                        visible="true"
+                        onClose={() => setOpenChatUserProfile(false)}
+                        profileData={SelectedUser}
+                        isMainProfile={true}
+                        isViewer={true}
+                    />
+                )
+            }
 
             {/* Notification Modal */}
-            {notification.isVisible && (
-                <AnimatedNotification
-                    message={notification.message}
-                    isVisible={notification.isVisible}
-                    onHide={hideNotification}
-                    type={notification.type}
-                />
-            )}
+            {
+                notification.isVisible && (
+                    <AnimatedNotification
+                        message={notification.message}
+                        isVisible={notification.isVisible}
+                        onHide={hideNotification}
+                        type={notification.type}
+                    />
+                )
+            }
 
             {/* Lucky Wheel Modal */}
-            {visibleModal === 'luckyWheel' && (
-                <LuckyWheelModal
-                    visible={visibleModal === 'luckyWheel'}
-                    onClose={() => {
-                        setVisibleModal(null);
-                    }}
-                    userData={userData}
-                    hostDetails={userDetails}
-                    RoomID={streamInfo?.roomID}
-                />
-            )}
+            {
+                visibleModal === 'luckyWheel' && (
+                    <LuckyWheelModal
+                        visible={visibleModal === 'luckyWheel'}
+                        onClose={() => {
+                            setVisibleModal(null);
+                        }}
+                        userData={userData}
+                        hostDetails={userDetails}
+                        RoomID={streamInfo?.roomID}
+                    />
+                )
+            }
             {/* Lucky Wheel Modal */}
-            {visibleModal === 'slot-game' && (
-                <SlotGameModal
-                    visible={visibleModal === 'slot-game'}
-                    onClose={() => {
-                        setVisibleModal(null);
-                    }}
-                    userData={userData}
-                    hostDetails={userDetails}
-                    roomId={streamInfo?.roomID}
-                />
-            )}
+            {
+                visibleModal === 'slot-game' && (
+                    <SlotGameModal
+                        visible={visibleModal === 'slot-game'}
+                        onClose={() => {
+                            setVisibleModal(null);
+                        }}
+                        userData={userData}
+                        hostDetails={userDetails}
+                        roomId={streamInfo?.roomID}
+                    />
+                )
+            }
         </>
     );
 };

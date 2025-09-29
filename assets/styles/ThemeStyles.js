@@ -1492,12 +1492,14 @@ export const styles = StyleSheet.create({
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',
+    alignItems:'center',
     backgroundColor: 'rgba(36, 32, 32, 0.75)',
     padding: 4,
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
-    minWidth: 130
+    paddingRight:15,
+    // minWidth: 130
   },
 
   strRoomHeaderLeftProfileImg: {
@@ -1518,6 +1520,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderLeftProfileSubInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap:5,
   },
   strRoomHeaderLeftProfileSubText: {
     color: '#fff',
@@ -1652,13 +1655,14 @@ export const styles = StyleSheet.create({
   },
   strRoomFooterSocialActionsBtn: {
     marginBottom: 0,
+    alignSelf:'flex-end',
   },
   strRoomBottomBox: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
