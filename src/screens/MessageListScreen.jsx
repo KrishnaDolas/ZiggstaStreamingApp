@@ -192,10 +192,14 @@ export const MessageListScreen = () => {
     }, []);
 
 
+    const handleFriendActionOpen = useCallback((item) => {
+        setFriendInfo(item);
+        setModalVisibleStage('friend-action');
+        setModalStage('first');
+    }, []);
+
+
     const handleChatOpen = useCallback((item) => {
-        // setMessage(`Chat feature is not implemented yet.`)
-        // setVisibleModal('message-modal');
-        // Navigate to ChatScreen instead of showing message modal
         if (friendListType === 'friends') {
             navigation.navigate('ChatScreen', {
                 chatUser: item,
@@ -286,7 +290,7 @@ export const MessageListScreen = () => {
                 ) : (
                     <>
                         <TouchableOpacity
-                            onPress={() => { setVisibleModal('friend-action'); setFriendInfo(item); }}
+                            onPress={() => handleFriendActionOpen(item)}
                             style={[styles.flUserModalBtn, {
                                 backgroundColor: theme === 'dark' ? '#1e1e1e' : '#fafafa',
 
@@ -419,10 +423,12 @@ export const MessageListScreen = () => {
                     )}
                 </View>
                 {/* <Footer /> */}
-                {visibleModal === 'friend-action' && (
+                {modalVisibleStage === 'friend-action' && modalStage === 'first' && (
                     <FriendActionsModal
-                        visible="true"
-                        onClose={() => setVisibleModal(null)}
+                        visible={modalVisibleStage === 'friend-action'}
+                        onClose={() => {
+                            setModalVisibleStage(null);
+                        }}
                         userData={userData}
                         friendInfo={friendInfo}
                         getFriendsData={getFriendsData}

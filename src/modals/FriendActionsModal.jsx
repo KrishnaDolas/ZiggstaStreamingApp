@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, Image } from 'react-native';
+import { View, TouchableOpacity, Text, Image, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,7 +9,6 @@ import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ScrollView } from 'react-native';
 import { useAppContext } from '../context/AppContext';
 import Apiclient from '../utils/Apiclient';
-import MessageModal from './MessageModal';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import ProfileScreenModal from './ProfileScreenModal';
 import { ThemeContext } from '../context/ThemeContext';
@@ -20,15 +19,15 @@ import Colors from '../../assets/styles/Colors';
 const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) => {
     const navigation = useNavigation();
     const { theme } = useContext(ThemeContext);
-    const { userData } = useAppContext();
+    const {
+        userData,
+        setProfileUserData,
+        setModalVisibleStage,
+        setModalStage,
+    } = useAppContext();
     const [isModalRendered, setIsModalRendered] = useState(false);
     const [visibleModal, setVisibleModal] = useState(null);
-    const [message, setMessage] = useState(null);
 
-
-    // useEffect(() => {
-    //     console.log('friendInfo', friendInfo);
-    // }, [friendInfo]);
 
     // Cleanup modals on unmount
     useEffect(() => {
@@ -51,8 +50,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
             // console.log(`block user response`, response.data);
 
             if (response.status === 200 && response.data?.message) {
-                setMessage(response.data.message);
-                setVisibleModal('message-modal');
+                Alert.alert('Message', response.data.message);
                 // Refresh request list after short delay
                 setTimeout(async () => {
                     onClose();
@@ -81,8 +79,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
             const response = await Apiclient.post('/followers', payload);
 
             if (response.status === 200 && response.data?.message) {
-                setMessage(response.data.message);
-                setVisibleModal('message-modal');
+                Alert.alert('Message', response.data.message);
 
                 // Refresh the parent data after a short delay
                 setTimeout(async () => {
@@ -98,8 +95,6 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
 
 
     const handleChat = async () => {
-        // setMessage('Not implemented yet');
-        // setVisibleModal('message-modal');
         navigation.navigate('ChatScreen', {
             chatUser: friendInfo,
         });
@@ -135,7 +130,12 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
 
 
 
-
+    //  profile modal open
+    const handleProfileOpen = useCallback(() => {
+        setProfileUserData(friendInfo);
+        setModalVisibleStage('friend-profile-modal');
+        setModalStage('second');
+    }, []);
 
 
     return (
@@ -181,7 +181,7 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                     alignItems: 'center',
                                     flex: 1,
                                 }}
-                                onPress={() => setVisibleModal('profile-screen-modal')}>
+                                onPress={handleProfileOpen}>
                                 <Image
                                     source={!friendInfo?.avatar || friendInfo?.avatar === 'default'
                                         ? getGenderFallbackImage(friendInfo?.gender)
@@ -228,23 +228,13 @@ const FriendActionsModal = ({ visible, onClose, friendInfo, getFriendsData }) =>
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>
-
                         </View>
-
                     </View>
                 }
-
             </Modal>
-            {visibleModal === 'message-modal' && (
-                <MessageModal
-                    visible={visibleModal === 'message-modal'}
-                    message={message}
-                    onClose={() => setVisibleModal(null)}
-                />
-            )}
-            {visibleModal === 'profile-screen-modal' && (
+            {/* {visibleModal === 'profile-screen-modal' && (
                 <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={friendInfo} />
-            )}
+            )} */}
         </>
 
     );
