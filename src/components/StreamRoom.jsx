@@ -61,7 +61,6 @@ const StreamRoom = ({
     hasRequestedStream,
     streamerList,
     streammsg,
-    totalGiftValue,
     connectingpanel,
 }) => {
     const insets = useSafeAreaInsets();
@@ -1370,31 +1369,25 @@ const StreamRoom = ({
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            gap: 7,
+                                            minWidth: 45,
                                             backgroundColor: 'rgba(36, 32, 32, 0.75)',
-                                            gap: 10,
-                                            paddingRight: 8,
-                                            paddingVertical: 1,
                                             borderRadius: 21,
+                                            paddingRight: 5,
+                                            paddingVertical: 1,
+
                                         }}>
-                                        <View
-                                            style={{
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                gap: 3,
-                                                minWidth: 40,
-                                            }}>
-                                            <Image
-                                                source={require('../../assets/images/icons/icon_z.png')}
-                                                style={{ width: 14, height: 14 }}
-                                                resizeMode="contain"
-                                            />
-                                            <Text
-                                                style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}
-                                            >
-                                                {totalGiftByRoom}
-                                            </Text>
-                                        </View>
+                                        <Image
+                                            source={require('../../assets/images/icons/icon_z.png')}
+                                            style={{ width: 14, height: 14 }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text
+                                            style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}
+                                        >
+                                            {totalGiftByRoom}
+                                        </Text>
                                     </View>
                                 </View>
                             </Pressable>
