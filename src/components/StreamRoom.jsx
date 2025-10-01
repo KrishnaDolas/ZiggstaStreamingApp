@@ -62,7 +62,7 @@ const StreamRoom = ({
     streamerList,
     streammsg,
     totalGiftValue,
-    connectingpanel
+    connectingpanel,
 }) => {
     const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
@@ -102,7 +102,9 @@ const StreamRoom = ({
     const [receiveAnimationData, setReceiveAnimationData] = useState(null);
     const [showUI, setShowUI] = useState(true);
     const [myFriendList, setMyFriendList] = useState([]);
+    const [hostFriendRequestList, setHostFriendRequestList] = useState([]);
     const [totalGiftCoinReceived, setTotalGiftCoinReceived] = useState(null);
+    const [totalGiftByRoom, setTotalGiftByRoom] = useState(0);
     const [notification, setNotification] = useState({
         isVisible: false,
         message: '',
@@ -114,7 +116,7 @@ const StreamRoom = ({
     const scaleAnim1 = useRef(new Animated.Value(0)).current;
     const opacityAnim = useRef(new Animated.Value(1)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
-
+    const scrollViewRef = useRef();
 
     // Create interpolated spin value ONCE
     const spin = rotateAnim.interpolate({
@@ -136,6 +138,7 @@ const StreamRoom = ({
         return () => loopAnimation.stop(); // cleanup when unmounted
     }, [rotateAnim]);
 
+    // if socket is disconnect every time then show connecting panel
     useEffect(() => {
         if (connectingpanel) {
             setVisibleModal(null);
@@ -181,22 +184,22 @@ const StreamRoom = ({
 
         const backAction = () => {
             Alert.alert(
-                "Close Stream",
-                "Do you want to close The stream ?",
+                'Close Stream',
+                'Do you want to close The stream ?',
                 [
-                    { text: "Cancel", onPress: () => null, style: "cancel" },
+                    { text: 'Cancel', onPress: () => null, style: 'cancel' },
                     {
-                        text: "Yes", onPress: () => {
-                            leaveRoom()
-                        }
-                    }
+                        text: 'Yes', onPress: () => {
+                            leaveRoom();
+                        },
+                    },
                 ]
             );
             return true; // Prevent default back button behavior
         };
 
         const backHandler = BackHandler.addEventListener(
-            "hardwareBackPress",
+            'hardwareBackPress',
             backAction
         );
 
@@ -204,8 +207,8 @@ const StreamRoom = ({
 
     }, []);
 
-    const scrollViewRef = useRef();
-    // Function to fetch gifts from the API
+
+    // get gifts from api
     const getGiftsCategory = async () => {
         try {
             const response = await Apiclient.get('/getgifts');
@@ -213,9 +216,15 @@ const StreamRoom = ({
                 setGiftCategoryItems(response.data.data || []);
             }
         } catch (error) {
-            SendErrorTotheServer(error, "getGiftsCategory")
+            SendErrorTotheServer(error, 'getGiftsCategory');
         }
     };
+
+    useEffect(() => {
+        getGiftsCategory();
+    }, [giftModalVisible]);
+
+
     useEffect(() => {
         // Preload all images
         Object.values(giftImages).forEach((img) => {
@@ -230,6 +239,7 @@ const StreamRoom = ({
         }
     }, []);
 
+    // show notification if
     const showNotification = (message, type = 'info') => {
         setNotification({
             isVisible: true,
@@ -237,6 +247,8 @@ const StreamRoom = ({
             type,
         });
     };
+
+    // hide notification
     const hideNotification = () => {
         setNotification({
             isVisible: false,
@@ -244,12 +256,9 @@ const StreamRoom = ({
             type: 'info',
         });
     };
-    useEffect(() => {
-        getGiftsCategory();
-    }, [giftModalVisible])
 
+    // Scroll to the bottom when roomchat updates
     useEffect(() => {
-        // Scroll to the bottom when roomchat updates
         if (scrollViewRef.current) {
             scrollViewRef.current.scrollToEnd({ animated: true });
         }
@@ -258,7 +267,7 @@ const StreamRoom = ({
         }
     }, [roomchat]);
 
-    // Function to fetch gifts from the API
+    // get gifts category wise
     const getGifts = async () => {
         setGiftDataLoading(true);
         try {
@@ -267,39 +276,41 @@ const StreamRoom = ({
                 setGiftItems(response.data.data || []);
             }
         } catch (error) {
-            SendErrorTotheServer(error, "getGifts")
+            SendErrorTotheServer(error, 'getGifts');
         } finally {
             setGiftDataLoading(false);
         }
     };
 
+    useEffect(() => {
+        getGifts();
+    }, [giftModalVisible, selectedGiftCategory]);
+
+
+    // get total likes & view count from api
     const GetViewerAndLikeCount = async () => {
         try {
             const params = {
                 hostId: streamInfo?.hostID,
             }
-            const response = await Apiclient.post(`/rooms/getTotalLikesCount`, params);
+            const response = await Apiclient.post('/rooms/getTotalLikesCount', params);
+            console.log('getTotalLikesCount', response.data);
             if (response) {
                 setLikeAndViewerCount({
                     viewerCount: response.data.totalViews || 0,
                     likeCount: response.data.totalLikes || 0,
                 });
-                console.log(response.data)
             }
         } catch (error) {
-            SendErrorTotheServer(error, "GetViewerAndLikeCount")
+            SendErrorTotheServer(error, 'GetViewerAndLikeCount');
         }
-    }
+    };
 
     useEffect(() => {
-        GetViewerAndLikeCount()
-    }, [Streamupdated]);
+        GetViewerAndLikeCount();
+    }, []);
 
-
-    useEffect(() => {
-        getGifts();
-    }, [giftModalVisible, selectedGiftCategory]);
-
+    // sort gift category
     useEffect(() => {
         if (giftsData?.length > 0) {
             const sortedByValue = [...giftsData].sort((a, b) => a.giftValue - b.giftValue);
@@ -314,32 +325,62 @@ const StreamRoom = ({
     useEffect(() => {
         const streams = [];
         remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-            const hostInfo = streamerList.find((item) => item.IsHost === true)
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id)
-            let Alevel = audioLevel || 0.04
+            const hostInfo = streamerList.find((item) => item.IsHost === true);
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
+            let Alevel = audioLevel || 0.04;
             if (stream && typeof stream.toURL === 'function') {
                 const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
                 if (hostInfo?.ID === id) {
-                    streams.unshift({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
+                    streams.unshift({
+                        type: 'remote',
+                        stream,
+                        isFriend: isFriend,
+                        userId: StreamerInfo?.UserID,
+                        isMuted: StreamerInfo?.isMuted,
+                        Name: `${StreamerInfo?.Name}`,
+                        isSpeaking: isSpeaking,
+                        audioLevel: Alevel,
+                    });
                 } else {
-                    streams.push({ type: 'remote', stream, isFriend: isFriend, userId: StreamerInfo?.UserID, isMuted: StreamerInfo?.isMuted, Name: `${StreamerInfo?.Name}`, isSpeaking: isSpeaking, audioLevel: Alevel });
+                    streams.push({
+                        type: 'remote',
+                        stream,
+                        isFriend: isFriend,
+                        userId: StreamerInfo?.UserID,
+                        isMuted: StreamerInfo?.isMuted,
+                        Name: `${StreamerInfo?.Name}`,
+                        isSpeaking: isSpeaking,
+                        audioLevel: Alevel
+                    });
                 }
             } else {
-                SendErrorTotheServer('⚠️ Invalid remote stream:', "remoteStreams.forEach")
+                SendErrorTotheServer('⚠️ Invalid remote stream:', 'remoteStreams.forEach');
             }
         });
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id)
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
             if (isHost) {
-                streams.unshift({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName}` });
+                streams.unshift({
+                    type: 'local',
+                    stream: localStream,
+                    isMuted: StreamerInfo?.isMuted,
+                    Name: `${userDetails?.screenName}`,
+                });
             } else {
-                streams.push({ type: 'local', stream: localStream, isMuted: StreamerInfo?.isMuted, Name: `${userDetails?.screenName} (You)` });
+                streams.push({
+                    type: 'local',
+                    stream: localStream,
+                    isMuted: StreamerInfo?.isMuted,
+                    Name: `${userDetails?.screenName} (You)`,
+                });
             }
         }
         setStreamLayout(streams);
     }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList]);
 
+
+    // stream layout style according layout length
     const getVideoTileStyle = (count) => {
         if (count === 1) {
             return { width: '100%', height: '100%' };
@@ -453,7 +494,7 @@ const StreamRoom = ({
         ]).start();
     };
 
-
+    // send chat
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
             Alert.alert('Chat Error', 'Please enter a message before sending.', [{ text: 'OK' }]);
@@ -461,8 +502,9 @@ const StreamRoom = ({
         }
         HandleChatmessages(userChatInput);
         setUserChatInput('');
-    }
+    };
 
+    // get user details
     const GetUserDetails = async (userid) => {
         try {
             const formData = { userid: userid };
@@ -470,39 +512,109 @@ const StreamRoom = ({
             if (response) {
                 const user = response.data.user;
                 setUserDetails(user);
-                setGiftSendData({ userName: user?.screenName, userId: user?.userid })
+                setGiftSendData({ userName: user?.screenName, userId: user?.userid });
             }
         } catch (error) {
-            SendErrorTotheServer(error, 'GetUserDetails')
+            SendErrorTotheServer(error, 'GetUserDetails');
         }
-    }
+    };
 
+    // listen someone want to join
     useEffect(() => {
         if (streamrequestlist.length > 0) {
-            setShowUI(true)
-            showNotification("Someone wants to join as a guest", "")
-            playNotification()
-            setShowTooltip(true)
+            setShowUI(true);
+            showNotification('Someone wants to join as a guest', '');
+            playNotification();
+            setShowTooltip(true);
         }
     }, [streamrequestlist.length]);
 
+    // hide setting modal
     const HidesettingPanel = () => {
-        setOpenMoreSettingList(false)
-    }
-    const ToggleLike = () => {
-        if (isLiked) {
-            socket.emit('Dislike-count')
-            setisLiked(!isLiked)
-        } else {
-            setisLiked(!isLiked)
-            socket.emit('like-count')
+        setOpenMoreSettingList(false);
+    };
+
+    // send friend request to host only
+    const handleFriendRequestToHostOnly = async () => {
+        try {
+            const params = {
+                requesterID: userData?.userid,
+                receiverID: streamInfo?.hostID,
+            }
+            console.log('friend request to host params', params);
+            const response = await Apiclient.post('/friends/request', params);
+            console.log('response friend request to host only', response.data);
+
+            if (response.data?.success) {
+                // setMessage(`Request Sent To ${username}`)
+                // setVisibleModal('message-modal')
+                console.log('request sent to host successfully');
+            }
+            // else {
+            //     setMessage(`${response.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
+            //     setVisibleModal('message-modal')
+            // }
+        } catch (error) {
+            SendErrorTotheServer(error, 'handleFriendRequestToHostOnly');
         }
-    }
+    };
+
+
+    // check friend request is pending in list or not 
+    const checkFriendRequestIsPendingOrNot = async () => {
+        try {
+            const response = await Apiclient.get(`/friends/requests/${streamInfo?.hostID}`);
+            console.log('response checkFriendRequestIsPendingOrNot', response.data);
+            if (response.data) {
+                setHostFriendRequestList(response.data);
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, 'checkFriendRequestIsPendingOrNot');
+        }
+    };
+
+    useEffect(() => {
+        checkFriendRequestIsPendingOrNot();
+    }, []);
+
+    // toggle like-dislike
+    const ToggleLike = () => {
+        // checkFriendRequestIsPendingOrNot();
+        if (isLiked) {
+            socket.emit('Dislike-count');
+            setisLiked(!isLiked);
+        } else {
+            setisLiked(!isLiked);
+            socket.emit('like-count');
+            console.log('myFriendList', myFriendList);
+
+            // check if already friend
+            const checkIsFriend = myFriendList.some(
+                (ele) => ele.userid === streamInfo?.hostID
+            );
+
+            // check if friend request is already pending
+            const checkIsFriendRequestPendingOrNot = hostFriendRequestList.some(
+                (ele) => ele.RequesterID === userData?.userid
+            );
+
+            console.log('checkIsFriend', checkIsFriend);
+            console.log('checkIsFriendRequestPendingOrNot', checkIsFriendRequestPendingOrNot);
+
+
+            // ✅ only call API if NOT already friend AND NOT already requested
+            if (!checkIsFriend && !checkIsFriendRequestPendingOrNot) {
+                handleFriendRequestToHostOnly();
+            }
+        }
+    };
+
+    // play gift sound
     const playGiftSound = () => {
         try {
             const sound = new Sound('gift_received', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    SendErrorTotheServer(error, "playGiftSound")
+                    SendErrorTotheServer(error, 'playGiftSound');
                     return;
                 }
                 sound.play(() => {
@@ -510,14 +622,16 @@ const StreamRoom = ({
                 });
             });
         } catch (error) {
-            SendErrorTotheServer(error, "playGiftSound")
+            SendErrorTotheServer(error, 'playGiftSound');
         }
     };
+
+    // play notification sound
     const playNotification = () => {
         try {
             const sound = new Sound('notification', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
-                    SendErrorTotheServer(error, "playNotification")
+                    SendErrorTotheServer(error, 'playNotification');
                     return;
                 }
                 sound.play(() => {
@@ -525,37 +639,69 @@ const StreamRoom = ({
                 });
             });
         } catch (error) {
-            SendErrorTotheServer(error, "playNotification")
+            SendErrorTotheServer(error, 'playNotification');
         }
     };
 
+    // open report modal
     const HandleReport = () => {
-        setVisibleModal('ReportVideo')
-    }
+        setVisibleModal('ReportVideo');
+    };
 
+    // handle like count
     const HandleLikeCount = (count) => {
         setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
-    }
+        GetViewerAndLikeCount();
+    };
 
+    // get total gift by room
+    const getTotalGiftByRoom = async () => {
+        try {
+            const params = {
+                toUserID: streamInfo?.hostID,
+                roomId: streamInfo?.roomID,
+            };
+            const response = await Apiclient.post('topgifters/getGiftsByRoom', params);
+            console.log('gift by room response', response.data);
+            if (response.data.success && Array.isArray(response.data.data)) {
+                let sortedData = response.data.data[0].totalGiftValue;
+                console.log('gift by room sortedData', sortedData);
+                setTotalGiftByRoom(sortedData);
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, 'getTotalGiftByRoom');
+        }
+    };
+
+    useEffect(() => {
+        getTotalGiftByRoom();
+    }, []);
+
+    // handle gift received
     const HandleGiftReceived = async (senderName, receiverName, giftName) => {
         try {
             if (userData?.screenName === senderName) return
-            playGiftSound()
+            playGiftSound();
             setReceiveAnimationData({
                 giftName: giftName,
                 senderName: senderName,
-                ReceiverName: receiverName
+                ReceiverName: receiverName,
             });
             await getTotalGiftsReceivedCoins();
+            await getTotalGiftByRoom();
             setShowReceiveAnimation(true);
         } catch (error) {
-            SendErrorTotheServer(error, "HandleGiftReceived")
+            SendErrorTotheServer(error, 'HandleGiftReceived');
         }
-    }
+    };
+
+    // friend request modal open
     const HandleFriendRequestMessage = (msg) => {
-        setMessage(msg)
-        setVisibleModal('message-modal')
-    }
+        setMessage(msg);
+        setVisibleModal('message-modal');
+    };
+
+    // get friend data
     const getFriendsData = useCallback(async () => {
         if (!userData.userid) return
         try {
@@ -574,19 +720,20 @@ const StreamRoom = ({
         }
     }, []);
 
+    // socket event listen
     useEffect(() => {
         getFriendsData();
-        socket.on('like-count', HandleLikeCount)
-        socket.on('received-Gift', HandleGiftReceived)
-        socket.on('receive-request', HandleFriendRequestMessage)
+        socket.on('like-count', HandleLikeCount);
+        socket.on('received-Gift', HandleGiftReceived);
+        socket.on('receive-request', HandleFriendRequestMessage);
         return () => {
-            socket.off('like-count', HandleLikeCount)
-            socket.off('received-Gift', HandleGiftReceived)
-            socket.off('receive-request', HandleFriendRequestMessage)
-        }
-    }, [])
+            socket.off('like-count', HandleLikeCount);
+            socket.off('received-Gift', HandleGiftReceived);
+            socket.off('receive-request', HandleFriendRequestMessage);
+        };
+    }, []);
 
-
+    // get total gifts received coins of host
     const getTotalGiftsReceivedCoins = async () => {
         try {
             const params = {
@@ -609,6 +756,7 @@ const StreamRoom = ({
         getTotalGiftsReceivedCoins();
     }, []);
 
+    // send gift
     const SendGift = async (item) => {
         try {
             if (!GiftSenderData) return;
@@ -616,129 +764,120 @@ const StreamRoom = ({
                 fromUserID: userData?.userid,
                 toUserID: GiftSenderData.userId,
                 giftID: item?.giftID,
-                roomId: streamInfo?.roomID
+                roomId: streamInfo?.roomID,
             };
-            const Responce = await Apiclient.post('/sendGifts', params)
+            const Responce = await Apiclient.post('/sendGifts', params);
             if (Responce.data) {
                 if (Responce.data.success) {
                     if (streamInfo?.hostID === GiftSenderData.userId) {
                         socket.emit('Send-gift', userData?.screenName, true, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
                     } else {
-                        socket.emit('Send-gift', userData?.screenName, false, GiftSenderData.userName, item?.giftIcon, item?.giftValue)
+                        socket.emit('Send-gift', userData?.screenName, false, GiftSenderData.userName, item?.giftIcon, item?.giftValue);
                     }
                     // Show animation
                     setSendAnimationData({
                         giftName: item?.giftIcon,
-                        recipientName: GiftSenderData.userName
+                        recipientName: GiftSenderData.userName,
                     });
                     setShowSendAnimation(true);
                     // Close modal
                     setGiftModalVisible(false);
                     // ✅ Call API again to update coins
                     await getTotalGiftsReceivedCoins();
+                    await getTotalGiftByRoom();
                 } else if (Responce.data.message) {
-                    setMessage(Responce.data.message)
-                    setVisibleModal('message-modal')
+                    setMessage(Responce.data.message);
+                    setVisibleModal('message-modal');
                     setGiftModalVisible(false);
                 }
             }
         } catch (error) {
-            SendErrorTotheServer(error, "SendGift")
+            SendErrorTotheServer(error, 'SendGift');
         }
     };
 
+    // send gift to cost
     const HnadleSendGiftToCoHost = (UserID, UserName) => {
-        setGiftSendData({ userName: UserName, userId: UserID })
-        setGiftModalVisible(true)
+        setGiftSendData({ userName: UserName, userId: UserID });
+        setGiftModalVisible(true);
     };
 
-
+    // send friend request
     const handleFriendRequest = async (userid, username) => {
         try {
             if (!userData?.userid || !userid) {
-                socket.emit('Clientlogs', "handleFriendRequest", `userData?.userid--${userData?.userid}, userid--${userid}`);
+                socket.emit('Clientlogs', 'handleFriendRequest', `userData?.userid--${userData?.userid}, userid--${userid}`);
                 return;
             }
             const params = {
                 requesterID: userData?.userid,
-                receiverID: userid
+                receiverID: userid,
             }
-            const responce = await Apiclient.post(`/friends/request`, params)
+            const responce = await Apiclient.post('/friends/request', params);
             if (responce.data?.success) {
-                setMessage(`Request Sent To ${username}`)
-                setVisibleModal('message-modal')
-                socket.emit('Sent-request', userid, userData?.userid)
+                setMessage(`Request Sent To ${username}`);
+                setVisibleModal('message-modal');
+                socket.emit('Sent-request', userid, userData?.userid);
             } else {
-                setMessage(`${responce.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
-                setVisibleModal('message-modal')
+                setMessage(`${responce.data?.message || 'Request Already Sent'}`);
+                setVisibleModal('message-modal');
             }
         } catch (error) {
-            SendErrorTotheServer(error, "handleFriendRequest")
+            SendErrorTotheServer(error, 'handleFriendRequest');
         }
-    }
+    };
+
+    // listen stream message if any
     useEffect(() => {
         if (streammsg !== null) {
             setMessage(streammsg)
-            setVisibleModal('message-modal')
+            setVisibleModal('message-modal');
         }
-    }, [streammsg])
+    }, [streammsg]);
 
+    // handle send animation completed
     const handleSendAnimationComplete = () => {
         setShowSendAnimation(false);
         setSendAnimationData(null);
     };
 
+    // handle received animation complete
     const handleReceiveAnimationComplete = () => {
         setShowReceiveAnimation(false);
         setReceiveAnimationData(null);
     };
 
+    // open chat message profile
     const HandleOpenChatUserProfile = (data) => {
-        setOpenChatUserProfile(!openChatUserProfile)
-        setSelectedUser(data)
-    }
+        setOpenChatUserProfile(!openChatUserProfile);
+        setSelectedUser(data);
+    };
+
+    // toggle show ui or not
     const HandleShowUi = () => {
-        setShowUI(!showUI)
-    }
+        setShowUI(!showUI);
+    };
+
+    // update stream description
     const HandleNewStreamDesciption = async (description) => {
         try {
-            const response = await Apiclient.get(`/rooms/updaterooms?roomID=${streamInfo?.roomID}&RoomName=${description}`)
+            const response = await Apiclient.get(`/rooms/updaterooms?roomID=${streamInfo?.roomID}&RoomName=${description}`);
             if (response.status === 200) {
-                setStreamDescription(description)
-                setEditStreamDescription(false)
-                showNotification("Stream description updated successfully", "");
+                setStreamDescription(description);
+                setEditStreamDescription(false);
+                showNotification('Stream description updated successfully', '');
             } else {
             }
         } catch (error) {
-            SendErrorTotheServer(error, "HandleNewStreamDesciption")
-        }
-
-    }
-    const onShare = async () => {
-        try {
-            const result = await Share.share({
-                message: 'Check out this awesome link: https://streamalong.live',
-                url: 'https://example.com', // Optional, used more on iOS
-                title: 'Ziggsta'
-            });
-
-            if (result.action === Share.sharedAction) {
-                if (result.activityType) {
-                    console.log('Shared with activity type: ', result.activityType);
-                } else {
-                    console.log('Shared');
-                }
-            } else if (result.action === Share.dismissedAction) {
-                console.log('Dismissed');
-            }
-        } catch (error) {
-            SendErrorTotheServer(error, "onShare")
+            SendErrorTotheServer(error, 'HandleNewStreamDesciption');
         }
     };
 
-
+    // format count number
     const formatCount = (num) => {
-        if (num == null) return "0";
+        if (num == null) {
+            return '0';
+        }
         if (num >= 1000000) {
             const m = Math.floor(num / 100000) / 10; // keep 1 decimal floored
             return (m % 1 === 0 ? m.toFixed(0) : m) + 'M';
@@ -750,6 +889,28 @@ const StreamRoom = ({
         return num.toString();
     };
 
+
+    // const onShare = async () => {
+    //     try {
+    //         const result = await Share.share({
+    //             message: 'Check out this awesome link: https://streamalong.live',
+    //             url: 'https://example.com', // Optional, used more on iOS
+    //             title: 'Ziggsta'
+    //         });
+
+    //         if (result.action === Share.sharedAction) {
+    //             if (result.activityType) {
+    //                 console.log('Shared with activity type: ', result.activityType);
+    //             } else {
+    //                 console.log('Shared');
+    //             }
+    //         } else if (result.action === Share.dismissedAction) {
+    //             console.log('Dismissed');
+    //         }
+    //     } catch (error) {
+    //         SendErrorTotheServer(error, "onShare")
+    //     }
+    // };
 
     return (
         <>
@@ -1135,10 +1296,21 @@ const StreamRoom = ({
                     <>
                         {/* Stream Room Header */}
                         {showUI && (<View style={styles.strRoomHeader}>
-                            <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5 }} onPress={() => setOpenHostPorfile(!OpenHostPorfile)}>
+                            <Pressable
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 5,
+                                }}
+                                onPress={() => setOpenHostPorfile(!OpenHostPorfile)}
+                            >
                                 <View style={styles.strRoomHeaderLeft}>
-                                    <Image style={styles.strRoomHeaderLeftProfileImg}
-                                        source={!userDetails?.avatar || userDetails?.avatar === 'default' ? getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }} />
+                                    <Image
+                                        style={styles.strRoomHeaderLeftProfileImg}
+                                        source={!userDetails?.avatar || userDetails?.avatar === 'default' ?
+                                            getGenderFallbackImage(userDetails?.gender) : { uri: userDetails?.avatar }}
+                                    />
                                     <View>
                                         {/* host name */}
                                         <Text style={[styles.strRoomHeaderLeftProfileName]}>
@@ -1194,59 +1366,54 @@ const StreamRoom = ({
                                         )}
                                     </TouchableOpacity>
                                     {/* coins earned in current stream */}
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', gap: 10, paddingRight: 8, paddingVertical: 1, borderRadius: 21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            backgroundColor: 'rgba(36, 32, 32, 0.75)',
+                                            gap: 10,
+                                            paddingRight: 8,
+                                            paddingVertical: 1,
+                                            borderRadius: 21,
+                                        }}>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                gap: 3,
+                                                minWidth: 40,
+                                            }}>
                                             <Image
                                                 source={require('../../assets/images/icons/icon_z.png')}
                                                 style={{ width: 14, height: 14 }}
                                                 resizeMode="contain"
                                             />
-                                            <Text style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>{totalGiftValue}</Text>
+                                            <Text
+                                                style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}
+                                            >
+                                                {totalGiftByRoom}
+                                            </Text>
                                         </View>
-                                        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Ionicons name="heart" size={15} color="white" />
-                                            <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
-                                        </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Ionicons name="eye" size={15} color="#fff" />
-                                            <Text style={{ color: '#fff', marginLeft: 3 }}>{formatCount(likeAndViewerCount.viewerCount)}</Text>
-                                        </View> */}
                                     </View>
                                 </View>
                             </Pressable>
-                            {/* <View style={{ height: '35', position: 'absolute', left: '10', top: '55', display: 'flex' }}>
-                                <TouchableOpacity onPress={() => {
-                                    setOpenViewerList(true)
-                                }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(36, 32, 32, 0.75)', width: '100%', height: '25', margin: '5', borderRadius: 21 }}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6', marginRight: '3' }}>
-                                            <Ionicons name="eye" size={15} color="#1F85F5" />
-                                            <Text style={{ color: '#1F85F5', paddingLeft: '5' }}>{formatCount(Streamupdated.TotalViewerCount)}</Text>
-                                        </View>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: '6' }}>
-                                            {isHost && (<>
-                                                <Ionicons name="eye" size={15} color="#00BD35" />
-                                                <Text style={{ color: '#00BD35', paddingLeft: '5' }}>{formatCount(Streamupdated.viewerCount)}</Text>
-                                            </>)}
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                            </View> */}
+                            {/* close stream button */}
                             <View style={styles.strRoomHeaderRight}>
                                 <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
                                     <Ionicons name="close" size={30} color="#fff" />
                                 </TouchableOpacity>
                             </View>
                         </View>)}
-
+                        {/* stream gradient fix box */}
                         <View style={[styles.strGradientBox, { bottom: insets.bottom || 0 }]}>
-                            {/* gradient fix box   */}
                             <LinearGradient
                                 colors={streamLayout.length === 1 ? ['rgba(8, 8, 8, 1)', 'rgba(8, 8, 8, 0)'] : ['#1d1d1d', '#1d1d1d']}
                                 start={{ x: 0.5, y: 1 }}
                                 end={{ x: 0.5, y: 0 }}
                                 style={[styles.strRoomFooter]}
                             >
+                                {''}
                             </LinearGradient>
                         </View>
                         <>
@@ -1264,8 +1431,11 @@ const StreamRoom = ({
                                             {showUI && (
                                                 roomchat.map((chat, ind) => (
                                                     <View key={ind} style={styles.streamChatItem}>
-                                                        <TouchableOpacity onPress={() => HandleOpenChatUserProfile(chat)}>
-                                                            <Image style={styles.streamChatItemProfileImg}
+                                                        <TouchableOpacity
+                                                            onPress={() => HandleOpenChatUserProfile(chat)}
+                                                        >
+                                                            <Image
+                                                                style={styles.streamChatItemProfileImg}
                                                                 source={!chat.userProfile || chat.userProfile === 'default'
                                                                     ? getGenderFallbackImage(chat.Gender)
                                                                     : { uri: chat.userProfile }
@@ -1273,8 +1443,17 @@ const StreamRoom = ({
                                                             />
                                                         </TouchableOpacity>
                                                         <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                            <Text numberOfLines={1} style={[styles.streamChatUserName, { color: `${chat?.TYPE === "USERJOINED" ? `#00F6CD` : chat.TYPE === "USERLEFT" ? '#DC112C' : `#DEEE4F`}`, paddingTop: `${chat?.TYPE === "USERJOINED" ? 10 : 0}` }]}>
-                                                                {chat.userName?.length > 30 ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
+                                                            <Text
+                                                                numberOfLines={1}
+                                                                style={[styles.streamChatUserName,
+                                                                {
+                                                                    color:
+                                                                        `${chat?.TYPE === 'USERJOINED' ? '#00F6CD'
+                                                                            : chat.TYPE === 'USERLEFT' ? '#DC112C' : '#DEEE4F'}`,
+                                                                    paddingTop: `${chat?.TYPE === 'USERJOINED' ? 10 : 0}`,
+                                                                }]}>
+                                                                {chat.userName?.length > 30
+                                                                    ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
                                                             </Text>
                                                             <Text numberOfLines={3} style={styles.streamChatMessage}>
                                                                 {chat?.message}
@@ -1380,14 +1559,26 @@ const StreamRoom = ({
                                     </TouchableOpacity>
                                 ) : (
                                     <>
-                                        <TouchableOpacity onPress={() => {
-                                            animateIcon();
-                                            setOpenMoreSettingList(!openMoreSettingList);
-                                        }} style={styles.strRoomBottomBoxIconBox}>
+                                        {/* open more setting */}
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                animateIcon();
+                                                setOpenMoreSettingList(!openMoreSettingList);
+                                            }}
+                                            style={styles.strRoomBottomBoxIconBox}
+                                        >
                                             <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                                                {openMoreSettingList ? <Ionicons name="close-outline" size={30} color="#fff" /> : <Image source={require('../../assets/images/icons/add-video.png')} style={{ height: 28, width: 28 }} resizeMode="contain" />}
+                                                {openMoreSettingList ?
+                                                    <Ionicons name="close-outline" size={30} color="#fff" />
+                                                    :
+                                                    <Image source={require('../../assets/images/icons/icon_video.png')}
+                                                        style={{ height: 30, width: 30 }}
+                                                        resizeMode="contain"
+                                                    />
+                                                }
                                             </Animated.View>
                                         </TouchableOpacity>
+                                        {/* share button */}
                                         {isHost && (
                                             <TouchableOpacity style={[styles.strRoomBottomBoxIconBox, { marginLeft: 20 }]}>
                                                 <Ionicons name="share-social-sharp" size={30} color="#fff" />
@@ -1431,7 +1622,7 @@ const StreamRoom = ({
                                                                 borderWidth: 1,
                                                                 borderColor: '#00F043',
                                                                 borderRadius: 15,
-                                                                transform: [{ translateX: -5 }, { translateY: -5 }], // center ring
+                                                                transform: [{ translateX: -5 }, { translateY: -5 }],
                                                             },
                                                             {
                                                                 opacity: opacityAnim,
@@ -1439,7 +1630,6 @@ const StreamRoom = ({
                                                             },
                                                         ]}
                                                     />)}
-                                                {/* <Ionicons name="people" size={30} color="#fff" /> */}
                                                 <Image
                                                     source={require('../../assets/images/icons/icon_add_users.png')}
                                                     style={{
@@ -1463,47 +1653,103 @@ const StreamRoom = ({
                                             },
                                         ]}
                                     >
-                                        <TouchableOpacity onPress={() => {
-                                            switchCamera();
-                                            HidesettingPanel();
-                                        }} style={styles.strMoreSettingListItem}>
+                                        {/* flip camera */}
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                switchCamera();
+                                                HidesettingPanel();
+                                            }}
+                                            style={styles.strMoreSettingListItem}
+                                        >
                                             <Text style={styles.strMoreSettingListItemText}>Flip Camera</Text>
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
+                                        {/* Join As a Guest */}
                                         {!isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                requestStreamPermission(),
-                                                    HidesettingPanel(),
-                                                    setVisibleModal('message-modal'),
-                                                    setMessage('Request Send To the Host')
-                                            }} style={styles.strMoreSettingListItem} disabled={hasRequestedStream}>
-                                                <Text style={[styles.strMoreSettingListItemText, { color: hasRequestedStream ? '#007ACC' : 'white' }]}  >{hasRequestedStream ? "Already Requested" : 'Join As a Guest'}</Text>
-                                                <MaterialCommunityIcons name="video-plus" size={21} color={`${hasRequestedStream ? '#007ACC' : 'white'}`} />
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    requestStreamPermission(),
+                                                        HidesettingPanel(),
+                                                        setVisibleModal('message-modal'),
+                                                        setMessage('Request Send To the Host')
+                                                }}
+                                                style={styles.strMoreSettingListItem}
+                                                disabled={hasRequestedStream}
+                                            >
+                                                <Text
+                                                    style={
+                                                        [styles.strMoreSettingListItemText,
+                                                        { color: hasRequestedStream ? '#007ACC' : 'white' }]}
+                                                >
+                                                    {hasRequestedStream ? 'Already Requested' : 'Join As a Guest'}
+                                                </Text>
+                                                <MaterialCommunityIcons
+                                                    name="video-plus"
+                                                    size={21}
+                                                    color={`${hasRequestedStream ? '#007ACC' : 'white'}`}
+                                                />
                                             </TouchableOpacity>
                                         )}
-                                        <TouchableOpacity onPress={() => {
-                                            toggleMute(),
-                                                HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Mute {isMuted?.muted ? 'OFF' : 'ON'}</Text>
-                                            {isMuted?.muted ? <Ionicons name="mic" size={20} color="#fff" /> : <Ionicons name="mic-off" size={20} color="#fff" />}
+                                        {/* mute-unmute */}
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                toggleMute();
+                                                HidesettingPanel();
+                                            }}
+                                            style={styles.strMoreSettingListItem}
+                                        >
+                                            <Text
+                                                style={styles.strMoreSettingListItemText}
+                                            >
+                                                Mute {isMuted?.muted ? 'OFF' : 'ON'}
+                                            </Text>
+                                            {isMuted?.muted ?
+                                                <Ionicons
+                                                    name="mic"
+                                                    size={20}
+                                                    color="#fff"
+                                                />
+                                                :
+                                                <Ionicons
+                                                    name="mic-off"
+                                                    size={20}
+                                                    color="#fff"
+                                                />
+                                            }
                                         </TouchableOpacity>
-                                        {isHost && (<TouchableOpacity onPress={() => {
-                                            setEditStreamDescription(true)
-                                            HidesettingPanel()
-                                        }} style={styles.strMoreSettingListItem}>
-                                            <Text style={styles.strMoreSettingListItemText}>Edit Stream Title </Text>
-                                            <AntDesign name="edit" size={20} color="#fff" />
-                                        </TouchableOpacity>)}
-                                        {!isHost && (
-                                            <TouchableOpacity onPress={() => {
-                                                HidesettingPanel()
-                                                HandleReport()
-                                            }} style={styles.strMoreSettingListItem}>
-                                                <Text style={styles.strMoreSettingListItemText}>Report</Text>
-                                                <Ionicons name="flag" size={20} color="#dc3131" />
-                                            </TouchableOpacity>
-                                        )}
+                                        {/* edit stream title */}
+                                        {isHost &&
+                                            (
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        setEditStreamDescription(true);
+                                                        HidesettingPanel();
+                                                    }}
+                                                    style={styles.strMoreSettingListItem}
+                                                >
+                                                    <Text
+                                                        style={styles.strMoreSettingListItemText}
+                                                    >
+                                                        Edit Stream Title
+                                                    </Text>
+                                                    <AntDesign name="edit" size={20} color="#fff" />
+                                                </TouchableOpacity>
+                                            )
+                                        }
+                                        {/* Report */}
+                                        {!isHost
+                                            && (
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        HidesettingPanel();
+                                                        HandleReport();
+                                                    }}
+                                                    style={styles.strMoreSettingListItem}
+                                                >
+                                                    <Text style={styles.strMoreSettingListItemText}>Report</Text>
+                                                    <Ionicons name="flag" size={20} color="#dc3131" />
+                                                </TouchableOpacity>
+                                            )}
                                     </Animated.View>
                                 )}
                             </View>)}

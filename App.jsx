@@ -629,6 +629,7 @@ const App = () => {
             setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
             setModalStage('first');
             setAvatarToPreview(null);
+            setProfileUserData({});
           }}
         />
       )}
@@ -639,6 +640,7 @@ const App = () => {
           onClose={() => {
             setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
             setModalStage('first');
+            setProfileUserData({});
           }}
           reportData={userProfileDetails}
           reportType="User"

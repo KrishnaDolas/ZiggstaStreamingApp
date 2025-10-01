@@ -441,6 +441,7 @@ export const MessageListScreen = () => {
                             setModalVisibleStage(null);
                             setShowAvatarPreview(false);
                             setAvatarToPreview(null);
+                            setProfileUserData({});
                         }}
                         profileData={profileUserData}
                     />
