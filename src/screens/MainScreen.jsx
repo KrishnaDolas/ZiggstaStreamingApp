@@ -54,6 +54,7 @@ export const MainScreen = () => {
   const [totalGiftValue, setTotalGiftValue] = useState(0);
   const IsIdentify = useRef(false)
   const IsVerified = useRef(false)
+
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
@@ -61,7 +62,6 @@ export const MainScreen = () => {
 
   useEffect(() => {
  // inside StreamRoom.jsx
-
  // the functinality which disabled for backgroud stream pause or activate when app minimise  
 
 // const handleAppStateChange = async (nextAppState) => {
@@ -117,9 +117,6 @@ export const MainScreen = () => {
 //     SendErrorTotheServer(err, "handleAppStateChange");
 //   }
 // };
-
-
-
 
 const handleAppStateChange = (nextAppState) => {
   try {
@@ -614,26 +611,6 @@ const handleAppStateChange = (nextAppState) => {
   }, [IsVerified, socket.connected, userData])
 
 
-  //   useEffect(() => {
-  //   const subscription = AppState.addEventListener("change", (nextAppState) => {
-  //     // Detect when app is killed/closed
-  //     if (appState.current.match(/active/) && nextAppState === "inactive") {
-  //       if (socket && socket.connected) {
-  //         // 🔥 Tell server immediately before OS kills process
-  //         socket.emit("forceLeave", { socketId: socket.id });
-  //       }
-  //     }
-  //     AppState.current = nextAppState;
-  //   });
-
-  //   // Cleanup (when component unmounts or app is swiped away)
-  //   return () => {
-  //     if (socket && socket.connected) {
-  //       socket.emit("forceLeave", { socketId: socket.id });
-  //     }
-  //     subscription.remove();
-  //   };
-  // }, []);
 
 
   useEffect(() => {
