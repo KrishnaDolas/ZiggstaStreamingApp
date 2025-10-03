@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { memo, useContext, useEffect } from 'react';
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
 import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -15,28 +15,74 @@ const RequestModal = ({
     streamGuest = [],
 }) => {
     const { theme } = useContext(ThemeContext);
-    const { userData, userAddress } = useAppContext();
-    const GetAction = (targetId, action) => {
-        socket.emit('host-control', { action: action, targetId: targetId }
-        )
-    }
+    const { userAddress } = useAppContext();
+    const [processingIds, setProcessingIds] = useState([]);
+
+
+    // --- Helper Functions ---
+    const lockAction = (id) => setProcessingIds((prev) => [...prev, id]);
+    const unlockAction = (id) => setProcessingIds((prev) => prev.filter((pid) => pid !== id));
+    const isProcessing = (id) => processingIds.includes(id);
+
+    // --- Accept/Reject stream request ---
     const AcceptStream = (action, requesterId, name, CustomID, item) => {
+
+        if (isProcessing(requesterId)) return; // Prevent multiple clicks
+
+        lockAction(requesterId);
+
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
+
+        const Address = userAddress ?
+            { country: userAddress?.country, city: userAddress?.city }
+            : { country: 'India', city: 'Pune' };
+
+        console.log(Address);
+
         if (action === 'approve') {
-            const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-            console.log(Address);
-            socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar)
+            socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar, () => {
+                unlockAction(requesterId); // Release lock on ack
+            });
         }
         if (action === 'reject') {
-            socket.emit('rejectStream', requesterId)
+            socket.emit('rejectStream', requesterId, () => {
+                unlockAction(requesterId);
+            });
         }
-    }
+
+        // Fallback: release lock if server never responds
+        setTimeout(() => unlockAction(requesterId), 5000);
+    };
+
+    // --- Generic host control actions (mute/unmute/stop) ---
+    const GetAction = (targetId, action) => {
+        if (isProcessing(targetId)) return;
+
+        lockAction(targetId);
+        socket.emit('host-control', { action, targetId }, () => {
+            unlockAction(targetId);
+        });
+
+        // Fallback unlock
+        setTimeout(() => unlockAction(targetId), 5000);
+
+    };
+
+    // --- Remove all pending requests ---
     const RemoveAllRequest = () => {
         StreamRequestList.forEach((item) => {
             socket.emit('rejectStream', item.ID);
         });
         onClose();
-    }
+    };
+
+    // --- Keep processingIds in sync with existing requests ---
+    useEffect(() => {
+        setProcessingIds((prev) =>
+            prev.filter((id) => StreamRequestList.some((item) => item.ID === id))
+        );
+    }, [StreamRequestList]);
+
     return (
         <Modal
             isVisible={visible}
@@ -49,68 +95,114 @@ const RequestModal = ({
             backdropOpacity={0.3}
             style={{ margin: 0, justifyContent: 'flex-end' }}
         >
-            <View style={{ backgroundColor: theme === 'light' ? '#fff' : Colors.blackModalBgColor, padding: 20, borderTopLeftRadius: 12, borderTopRightRadius: 12, maxHeight: '90%' }}>
+            <View style={{
+                backgroundColor: theme === 'light' ?
+                    '#fff' : Colors.blackModalBgColor,
+                padding: 20,
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12,
+                maxHeight: '90%',
+            }}>
                 {/* Section 1: Stream Requests */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 18, color: theme === 'light' ? '#000' : '#fff', fontWeight: 'bold', marginBottom: 10 }}>Requests</Text>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                }}>
+                    <Text style={{
+                        fontSize: 18,
+                        color: theme === 'light' ?
+                            '#000' : '#fff',
+                        fontWeight: 'bold',
+                        marginBottom: 10,
+                    }}>
+                        Requests
+                    </Text>
                     {StreamRequestList?.length > 0 && (
-                        <View style={{ borderRadius: "10%", backgroundColor: theme === 'light' ? '#f2f2f2' : Colors.blackBtnBg, paddingHorizontal: 10, paddingVertical: 0, flexDirection: 'row', alignItems: 'center', height: '25', marginBottom: 20 }}>
+                        <View style={{
+                            borderRadius: 3,
+                            backgroundColor: theme === 'light' ?
+                                '#f2f2f2' : Colors.blackBtnBg,
+                            paddingHorizontal: 10,
+                            paddingVertical: 0,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            height: '25',
+                            marginBottom: 20,
+                        }}>
                             <TouchableOpacity onPress={RemoveAllRequest}>
                                 <Text style={{ fontSize: 12, color: 'red' }}>Remove ALL</Text>
                             </TouchableOpacity>
                         </View>)}
                 </View>
                 {StreamRequestList.length === 0 ? (
-                    <Text style={{ color: theme === 'light' ? '#000' : '#fff', marginBottom: 20 }}>No Pending Requests at this time</Text>
+                    <Text style={{
+                        color: theme === 'light' ?
+                            '#000' : '#fff',
+                        marginBottom: 20,
+                    }}>No Pending Requests at this time</Text>
                 ) : (
                     <FlatList
                         data={StreamRequestList}
                         keyExtractor={(item) => item.CustomID}
-                        renderItem={({ item }) => (
-                            <View style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                marginBottom: 12,
-                                padding: 10,
-                            }}>
-                                <View style={{ position: 'relative' }}>
-                                    <Image style={styles.strRoomHeaderLeftProfileImg}
-                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
-                                    />
-                                </View>
-                                <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
-                                    <Text style={{ fontSize: 16, color: theme === 'light' ? '#000' : '#fff' }}>{item.Name}</Text>
-                                    <Text style={{ color: theme === 'light' ? '#000' : '#fff' }}>{`${item?.country} (${item?.city})`}</Text>
-                                </View>
-                                <TouchableOpacity
-                                    disabled={streamGuest.length >= 6 ? true : false}
-                                    onPress={() => AcceptStream("approve", item.ID, item.Name, item?.CustomID, item)}
-                                    style={{
-                                        backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
-                                        paddingVertical: 4,
-                                        paddingHorizontal: 9,
-                                        borderRadius: 6,
-                                    }}
-                                >
-                                    <View style={{ position: 'relative', marginRight: 6 }}>
-                                        <Ionicons name="videocam-outline" size={22} color="#fff" />
-                                        <Ionicons
-                                            name="add-circle"
-                                            size={10}
-                                            color="#fff"
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: 0,
-                                                right: 9,
-                                                backgroundColor: 'black',
-                                                borderRadius: 6,
-                                            }}
+                        renderItem={({ item }) => {
+                            const isDisabled = streamGuest.length >= 6 || isProcessing(item.ID);
+                            return (
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    marginBottom: 12,
+                                    padding: 10,
+                                }}>
+                                    <View style={{ position: 'relative' }}>
+                                        <Image
+                                            style={styles.strRoomHeaderLeftProfileImg}
+                                            source={!item?.avatar || item?.avatar === 'default' ?
+                                                getGenderFallbackImage(item.Gender) : { uri: item?.avatar }}
                                         />
                                     </View>
-                                </TouchableOpacity>
-                            </View>
-                        )}
+                                    <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
+                                        <Text style={{
+                                            fontSize: 16,
+                                            color: theme === 'light' ? '#000' : '#fff',
+                                        }}>
+                                            {item.Name}
+                                        </Text>
+                                        <Text style={{
+                                            color: theme === 'light' ? '#000' : '#fff',
+                                        }}>
+                                            {`${item?.country} (${item?.city})`}
+                                        </Text>
+                                    </View>
+                                    <TouchableOpacity
+                                        disabled={isDisabled}
+                                        onPress={() => AcceptStream('approve', item.ID, item.Name, item?.CustomID, item)}
+                                        style={{
+                                            backgroundColor: streamGuest.length >= 6 ? 'grey' : 'black',
+                                            paddingVertical: 4,
+                                            paddingHorizontal: 9,
+                                            borderRadius: 6,
+                                        }}
+                                    >
+                                        <View style={{ position: 'relative', marginRight: 6 }}>
+                                            <Ionicons name="videocam-outline" size={22} color="#fff" />
+                                            <Ionicons
+                                                name="add-circle"
+                                                size={10}
+                                                color="#fff"
+                                                style={{
+                                                    position: 'absolute',
+                                                    bottom: 0,
+                                                    right: 9,
+                                                    backgroundColor: 'black',
+                                                    borderRadius: 6,
+                                                }}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+                            )
+                        }}
                     />
                 )}
 
@@ -135,7 +227,7 @@ const RequestModal = ({
                             }}>
                                 <View style={{ position: 'relative' }}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
-                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage("") : { uri: item?.avatar }}
+                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item.Gender) : { uri: item?.avatar }}
                                     />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
@@ -173,7 +265,7 @@ const RequestModal = ({
                                                 { text: 'Cancel', style: 'cancel' },
                                                 {
                                                     text: 'Remove',
-                                                    onPress: () => GetAction(item.ID, 'stop-stream')
+                                                    onPress: () => GetAction(item.ID, 'stop-stream'),
                                                 },
                                             ],
                                             { cancelable: true },
