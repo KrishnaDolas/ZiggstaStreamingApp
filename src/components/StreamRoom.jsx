@@ -660,7 +660,7 @@ const StreamRoom = ({
                 toUserID: streamInfo?.hostID,
                 roomId: streamInfo?.roomID,
             };
-            const response = await Apiclient.post('topgifters/getGiftsByRoom', params);
+            const response = await Apiclient.post('/topgifters/getGiftsByRoom', params);
             console.log('gift by room response', response.data);
             if (response.data.success && Array.isArray(response.data.data)) {
                 let sortedData = response.data.data[0].totalGiftValue;
