@@ -31,6 +31,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         isImagePickerOpen,
         setProfileUserId,
         setProfileUserData,
+        userData,
     } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
@@ -41,7 +42,6 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
-    const [reportClicked, setReportClicked] = useState(false);
     // const [profileUserData, setProfileUserData] = useState({});
 
     const panY = useRef(new Animated.Value(0)).current;
@@ -348,13 +348,12 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     ]}
                     {...panResponder.panHandlers}
                 >
-                    <View style={{ flexDirection: 'row', justifyContent: isMainProfile ? 'flex-end' : 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: profileUserId === userData?.userid ? 'flex-end' : 'space-between', alignItems: 'center' }}>
                         {/* Header with Report button */}
-                        {!isMainProfile && (
+                        {profileUserId === userData?.userid ? null : (
                             <TouchableOpacity
                                 onPress={handleReport}
-                                style={[styles.psmReportButton, themeStyles[theme].psmReportButton, reportClicked && { opacity: 0.6 }]}
-                                disabled={reportClicked}
+                                style={[styles.psmReportButton, themeStyles[theme].psmReportButton]}
                             >
                                 <Text style={[styles.psmReportButtonText, themeStyles[theme].psmReportButtonText]}>Report</Text>
                             </TouchableOpacity>

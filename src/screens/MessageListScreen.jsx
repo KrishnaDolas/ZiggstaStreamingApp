@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, Image, SafeAreaView, FlatList, StatusBar, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { View, Text, Image, FlatList, StatusBar, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -26,6 +26,8 @@ export const MessageListScreen = () => {
         modalVisibleStage,
         setShowAvatarPreview,
         setAvatarToPreview,
+        profileUserData,
+        setProfileUserData,
     } = useAppContext();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
@@ -37,11 +39,30 @@ export const MessageListScreen = () => {
     const [loading, setLoading] = useState(false);
     const [friendsData, setFriendsData] = useState([]);
     const [friendRequestsData, setFriendRequestsData] = useState([]);
-    const [profileUserData, setProfileUserData] = useState({});
     const [message, setMessage] = useState(null);
-    const [isUnblocking, setIsUnblocking] = useState(false); // New state to prevent multiple unblock triggers
     // Add this state near other states
     const [refreshing, setRefreshing] = useState(false);
+
+    // ✅ Use ref for processingIds
+    const processingActionsRef = useRef({}); // { [id]: action }
+    const [refreshUI, setRefreshUI] = useState(false); // force re-render when ref changes
+
+
+    const addProcessingAction = (id, action) => {
+        processingActionsRef.current[id] = action;
+        setRefreshUI(prev => !prev);
+    };
+
+    const removeProcessingAction = (id) => {
+        delete processingActionsRef.current[id];
+        setRefreshUI(prev => !prev);
+    };
+
+    const getProcessingAction = (id) => {
+        return processingActionsRef.current[id] || null;
+    };
+
+    const isProcessing = (id) => !!getProcessingAction(id)
 
     // Cleanup modals on unmount
     useEffect(() => {
@@ -51,7 +72,6 @@ export const MessageListScreen = () => {
     }, []);
 
     // Function to fetch friends data blocked/unblocked user from the API
-
     const getFriendsData = useCallback(async () => {
         if (!userData.userid) return
         setLoading(true);
@@ -80,6 +100,7 @@ export const MessageListScreen = () => {
 
     useFocusEffect(
         useCallback(() => {
+            setFriendListType('friends');
             getFriendsData();
         }, [])
     );
@@ -92,7 +113,6 @@ export const MessageListScreen = () => {
 
 
     // Function to fetch friends request user from the API
-
     const getFriendRequestData = useCallback(async () => {
         if (!userData.userid) return
         setLoading(true);
@@ -120,29 +140,36 @@ export const MessageListScreen = () => {
 
 
     // manage friend request actions
-
     const handleFriendRequestResponse = useCallback(async (receiverID, responseType) => {
-        if (!userData.userid || !receiverID) return;
-
-        const payload = {
-            requesterID: receiverID,
-            receiverID: userData.userid,
-            response: responseType, // 'accepted' or 'declined'
-        };
+        if (!receiverID || !userData.userid) {
+            return;
+        }
+        // already processing this item
+        if (isProcessing(receiverID)) {
+            return;
+        }
+        // mark which action is running
+        addProcessingAction(receiverID, responseType);
         try {
-            const response = await Apiclient.post('/friends/respond', payload); // Replace with your actual endpoint
-            // console.log(`Friend request ${responseType}`, response.data);
+            const payload = {
+                requesterID: receiverID,
+                receiverID: userData.userid,
+                response: responseType, // 'accepted' or 'declined'
+            };
+            const response = await Apiclient.post('/friends/respond', payload);
             if (response.status === 200 && response.data?.message) {
                 setMessage(response.data.message);
                 setVisibleModal('message-modal');
                 // Refresh request list after short delay
                 setTimeout(() => {
-                    getFriendRequestData(); // Assuming this is accessible here
+                    getFriendRequestData();
                 }, 2000);
             }
         } catch (error) {
             console.error(`Error ${responseType} friend request:`, error);
             SendErrorTotheServer(`Error ${responseType} friend request:`, 'handleFriendRequestResponse');
+        } finally {
+            removeProcessingAction(receiverID);
         }
     }, [userData.userid, getFriendRequestData]);
 
@@ -156,33 +183,36 @@ export const MessageListScreen = () => {
 
 
     // un-block friend
-
     const handleUnBlock = useCallback(async (blockedID) => {
-        if (isUnblocking) return; // Prevent multiple unblock calls
-        setIsUnblocking(true); // Lock the unblock action
+        if (!blockedID || !userData.userid) {
+            return;
+        }
+        if (isProcessing(blockedID)) {
+            return;
+        }
+        addProcessingAction(blockedID, 'unblock');
+
         try {
             const payload = {
                 blockerID: userData?.userid,
                 blockedID: blockedID,
                 action: 'unblock',
             };
-            const response = await Apiclient.post('/friends/block', payload); // Replace with your actual endpoint
-            // console.log(`unblock user response`, response.data);
+            const response = await Apiclient.post('/friends/block', payload);
             if (response.status === 200 && response.data?.message) {
                 setMessage(response.data.message);
                 setVisibleModal('message-modal');
                 setTimeout(() => {
                     getFriendsData();
-                    setIsUnblocking(false); // Unlock after fetching data
                 }, 2000);
             }
-
         } catch (error) {
-            console.error(`Error getting when unblock user:`, error);
+            console.error('Error getting when unblock user:', error);
             SendErrorTotheServer(error, 'handleUnBlock');
-            setIsUnblocking(false); // Unlock on error
+        } finally {
+            removeProcessingAction(blockedID);
         }
-    }, [userData?.userid, getFriendsData, isUnblocking]);
+    }, [userData?.userid, getFriendsData]);
 
 
     const handleProfileOpen = useCallback((item) => {
@@ -227,6 +257,8 @@ export const MessageListScreen = () => {
 
     const renderItem = useCallback(({ item }) => {
         if (friendListType === 'requests') {
+            const procAction = getProcessingAction(item.RequesterID); // 'accepted' | 'rejected' | null
+            const isItemProcessing = isProcessing(item.RequesterID);
             return (
                 <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer, { alignItems: 'center' }]}>
                     <TouchableOpacity onPress={() => handleProfileOpen(item)}>
@@ -245,19 +277,46 @@ export const MessageListScreen = () => {
                     </TouchableOpacity>
                     <View style={styles.frActionBox}>
                         <TouchableOpacity
+                            disabled={isItemProcessing}
                             onPress={() => handleConfirm(item.RequesterID)}
-                            style={styles.frActionConfirmBtn}>
-                            <Text style={[styles.frActionBtnText, { color: '#fff' }]}>Confirm</Text>
+                            style={[styles.frActionConfirmBtn, isItemProcessing && { opacity: 0.6 }]}
+                        >
+                            <Text
+                                style={[
+                                    styles.frActionBtnText,
+                                    { color: '#fff' }]}
+                            >
+                                {procAction === 'accepted' ? 'Processing...' : 'Confirm'}
+                            </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
+                            disabled={isItemProcessing}
                             onPress={() => handleDelete(item.RequesterID)}
-                            style={[styles.frActionDeleteBtn, themeStyles[theme].frActionDeleteBtn]}>
-                            <Text style={[styles.frActionBtnText, { color: theme === 'light' ? '#111' : '#fff' }]}>Delete</Text>
+                            style={[
+                                styles.frActionDeleteBtn,
+                                themeStyles[theme].frActionDeleteBtn,
+                                isItemProcessing && { opacity: 0.6 }]}
+                        >
+                            <Text
+                                style={[
+                                    styles.frActionBtnText,
+                                    {
+                                        color: theme === 'light' ?
+                                            '#111' : '#fff',
+                                    }]}
+                            >
+                                {procAction === 'rejected' ? 'Processing...' : 'Delete'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             );
         }
+
+
+        // Friends / Blocked list item
+        const procAction = getProcessingAction(item.userid);
+        const isItemProcessing = isProcessing(item.userid);
 
         return (
             <View style={[styles.messageListContainer, themeStyles[theme].messageListContainer]}>
@@ -283,9 +342,23 @@ export const MessageListScreen = () => {
                 </TouchableOpacity>
                 {friendListType === 'blocked' ? (
                     <TouchableOpacity
+                        disabled={isItemProcessing}
                         onPress={() => handleUnBlock(item.userid)}
-                        style={[styles.frActionDeleteBtn, themeStyles[theme].frActionDeleteBtn]}>
-                        <Text style={[styles.frActionBtnText, { color: theme === 'light' ? '#111' : '#fff' }]}>Unblock</Text>
+                        style={[
+                            styles.frActionDeleteBtn,
+                            themeStyles[theme].frActionDeleteBtn,
+                            isItemProcessing && { opacity: 0.6 }]}
+                    >
+                        <Text
+                            style={[
+                                styles.frActionBtnText,
+                                {
+                                    color: theme === 'light' ?
+                                        '#111' : '#fff',
+                                }]}
+                        >
+                            {procAction === 'unblock' ? 'Processing...' : 'Unblock'}
+                        </Text>
                     </TouchableOpacity>
                 ) : (
                     <>
@@ -417,6 +490,7 @@ export const MessageListScreen = () => {
                                     initialNumToRender={10}
                                     refreshing={refreshing} // <-- Add this
                                     onRefresh={handleRefresh} // <-- And this
+                                    extraData={refreshUI}
                                 />
                             )}
                         </>

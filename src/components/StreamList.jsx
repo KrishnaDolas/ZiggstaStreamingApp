@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Modal from 'react-native-modal';
@@ -43,9 +43,11 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const [userDetails, setUserDetails] = useState([]);
     const [isFavourite, setIsFavourite] = useState(false);
     const [searchFilteredData, setSearchFilteredData] = useState([]);
-    const [isdisable, setIsDisable] = useState(false); // for disabling the button when creating room
+    const [isDisable, setIsDisable] = useState(false); // for disabling the button when creating room
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+
+    const disableBtnRef = useRef(null);
 
     // Function to fetch user details from the API
     const getUserDetails = async () => {
@@ -189,6 +191,9 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
     // Function to create a room
     const submitroomnameandcreateroom = async () => {
+        if (disableBtnRef.current === true) {
+            return;
+        }
         const IsAccepted = await requestPermissions();
         if (selectedCategoryIndices.length === 0) {
             Alert.alert('Error', 'Please select at least one category before creating a stream.');
@@ -197,13 +202,16 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             showPermissionAlert()
             return;
         }
+
+        setIsDisable(true); // disable immediately
+        disableBtnRef.current = true;
+
         callapiforcreateroom();
     };
 
 
     const callapiforcreateroom = async () => {
         try {
-            setIsDisable(true); // Disable button after room creation
             //7 character room ID
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
             const roomData = {
@@ -220,15 +228,17 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
             const response = await Apiclient.post('/rooms', roomData);
             if (response.data.roomID) {
-                setIsDisable(false); // Enable button after room creation
+                // setIsDisable(false); // Enable button after room creation
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
             }
         } catch (error) {
-            setIsDisable(false); // Disable button after room creation
             console.log(error);
+        } finally {
+            setIsDisable(false);
+            disableBtnRef.current = false;
         }
     };
     const viewerjoinedroom = (item) => {
@@ -525,7 +535,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                     onChangeText={setRoomIdInput}
                                     style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
                                 />
-                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={isdisable}>
+                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={disableBtnRef.current === true}>
                                     <LinearGradient
                                         colors={['#de0037', '#de0037']}
                                         start={{ x: 0.15, y: 1 }}
@@ -533,7 +543,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                         style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
                                         <Text
                                             style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                            Start Stream
+                                            {isDisable ? 'Processing...' : 'Start Stream'}
                                         </Text>
                                     </LinearGradient>
                                 </TouchableOpacity>

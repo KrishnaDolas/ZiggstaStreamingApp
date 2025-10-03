@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     Modal,
     View,
@@ -11,12 +11,25 @@ import {
 
 export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '', HandleNewStreamDesciption }) => {
     const [streamDescription, setStreamDescription] = useState(description);
+    const [processing, setProcessing] = useState(false);
+    const processingRef = useRef(null);
+
+
     const handleSave = () => {
-        if (!streamDescription.trim()) {
+        // prevent multiple clicks
+        if (!streamDescription.trim() || processingRef.current === true) {
             return;
         }
-        onClose();
-        HandleNewStreamDesciption(streamDescription);
+        processingRef.current = true;
+        setProcessing(true);
+
+        // simulate async operation (if HandleNewStreamDesciption is async, you can await it)
+        Promise.resolve(HandleNewStreamDesciption(streamDescription))
+            .finally(() => {
+                setProcessing(false); // unlock button
+                processingRef.current = false;
+                onClose();
+            });
     };
 
     return (
@@ -51,14 +64,23 @@ export const UpdateStreamDescriptionModal = ({ visible, onClose, description = '
                             <TouchableOpacity onPress={onClose} style={[styles.button, styles.cancelButton]}>
                                 <Text style={[styles.buttonText, styles.cancelButtonText]}>Cancel</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSave} style={[styles.button, styles.saveButton]}>
-                                <Text style={[styles.buttonText, styles.saveButtonText]}>Save</Text>
+                            <TouchableOpacity
+                                onPress={handleSave}
+                                disabled={processing}
+                                style={[
+                                    styles.button,
+                                    styles.saveButton,
+                                    processing && { opacity: 0.6 }
+                                ]}
+                            >
+                                <Text style={[styles.buttonText, styles.saveButtonText]}>
+                                    {processing ? 'Saving...' : 'Save'}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Pressable>
-
         </Modal>
     );
 };

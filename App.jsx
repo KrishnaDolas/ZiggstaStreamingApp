@@ -192,6 +192,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
             setModalVisibleStage(null);
             setShowAvatarPreview(false);
             setAvatarToPreview(null);
+            setModalStage('first');
           }}
           profileData={userData}
           isMainProfile={true}
@@ -638,7 +639,8 @@ const App = () => {
         <ReportUserModal
           visible={modalVisibleStage === 'report-user'}
           onClose={() => {
-            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+            // setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+            setModalVisibleStage(null);
             setModalStage('first');
             setProfileUserData({});
           }}

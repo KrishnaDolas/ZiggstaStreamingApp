@@ -6,6 +6,7 @@ import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant'
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Apiclient from '../utils/Apiclient';
 import ProfileScreenModal from '../modals/ProfileScreenModal';
+import { useAppContext } from '../context/AppContext';
 
 const ITEMS_PER_PAGE = 100;
 const rankBg1 = require('../../assets/images/TopGifterBedge/top_gifters_leftbg1.png');
@@ -19,14 +20,22 @@ const rankTrophy3 = require('../../assets/images/TopGifterBedge/rank_3.png');
 
 export const LeaderBoards = () => {
     const { theme } = useContext(ThemeContext);
+    const {
+        setModalStage,
+        setModalVisibleStage,
+        modalStage,
+        modalVisibleStage,
+        setShowAvatarPreview,
+        setAvatarToPreview,
+        profileUserData,
+        setProfileUserData
+    } = useAppContext();
     const [activeFilter, setActiveFilter] = useState('Today');
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [leaderBoardsData, setLeaderBoardsData] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const [profileUserData, setProfileUserData] = useState({});
-    const [visibleModal, setVisibleModal] = useState(null);
 
     const debounceRef = useRef(null);
     const isFirstRender = useRef(true);
@@ -123,7 +132,8 @@ export const LeaderBoards = () => {
 
     const handleProfileOpen = useCallback((item) => {
         setProfileUserData(item);
-        setVisibleModal('profile-screen-modal');
+        setModalVisibleStage('profile-modal');
+        setModalStage('first');
     }, []);
 
     const handleRefresh = () => {
@@ -378,8 +388,17 @@ export const LeaderBoards = () => {
 
                 </>
             )}
-            {visibleModal === 'profile-screen-modal' && (
-                <ProfileScreenModal visible="true" onClose={() => setVisibleModal(null)} profileData={profileUserData} />
+            {modalVisibleStage === 'profile-modal' && modalStage === 'first' && (
+                <ProfileScreenModal
+                    visible={modalVisibleStage === 'profile-modal'}
+                    onClose={() => {
+                        setModalVisibleStage(null);
+                        setShowAvatarPreview(false);
+                        setAvatarToPreview(null);
+                        setProfileUserData({});
+                    }}
+                    profileData={profileUserData}
+                />
             )}
         </View>
     );

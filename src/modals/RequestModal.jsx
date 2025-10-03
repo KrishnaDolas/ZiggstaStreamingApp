@@ -137,7 +137,7 @@ const RequestModal = ({
                 borderTopLeftRadius: 12,
                 borderTopRightRadius: 12,
                 flex: 1,
-                maxHeight: 220,
+                maxHeight: 250,
             }}>
                 {/* Section 1: Stream Requests */}
                 <View style={{
