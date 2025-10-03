@@ -436,100 +436,59 @@ const handleAppStateChange = (nextAppState) => {
       SendErrorTotheServer(error, 'HandleHostAction');
     }
   };
+
+
   const HandleUserStreamStoped = async (payloadOrSocketId) => {
     try {
-      // Normalize payload: accept string or object
+      // Normalize payload
       let socketId = null;
-      let userID = null;
-      let name = null;
-      let isHostFlag = null;
-  
-      if (!payloadOrSocketId) {
-        console.warn('[stream-Resume] empty payload received');
-        return;
-      }
       if (typeof payloadOrSocketId === 'string') {
         socketId = payloadOrSocketId;
       } else if (typeof payloadOrSocketId === 'object') {
         socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
-        userID = payloadOrSocketId.userID || payloadOrSocketId.userId || payloadOrSocketId.customId || null;
-        name = payloadOrSocketId.name || payloadOrSocketId.Name || null;
-        isHostFlag = payloadOrSocketId.isHost ?? null;
       }
   
-      console.log('[stream-Resume] received resume for socketId=', socketId, ' userID=', userID, ' name=', name);
+      console.log('[User-streamStopped] Processing for socketId:', socketId);
   
       if (!socketId) {
-        console.warn('[stream-Resume] no socketId found, ignoring');
+        console.warn('[User-streamStopped] no socketId found');
         return;
       }
   
-      // if resume is for myself, nothing to do here (maybe update UI)
+      //If this is the current user being stopped, stop local stream AND remove from layout
       if (socket.id === socketId) {
-        console.log('[stream-Resume] resume event for self; updating local UI only');
-        // Optionally set state to clear any "paused" indicator
-        return;
-      }
-  
-      // If name/userID present, ensure streamerList contains up-to-date metadata for this socketId
-      if (userID || name) {
-        setStrimerList(prev => {
-          try {
-            const copy = Array.isArray(prev) ? [...prev] : [];
-            const idx = copy.findIndex(s => s.ID === socketId || s.UserID === userID);
-            const newEntry = {
-              ID: socketId,
-              UserID: userID ?? (copy[idx]?.UserID || null),
-              Name: name ?? (copy[idx]?.Name || null),
-              IsHost: isHostFlag ?? (copy[idx]?.IsHost || false),
-              isMuted: copy[idx]?.isMuted ?? false,
-              avatar: copy[idx]?.avatar ?? null
-            };
-            if (idx >= 0) {
-              copy[idx] = { ...copy[idx], ...newEntry };
-            } else {
-              copy.push(newEntry);
-            }
-            return copy;
-          } catch (e) {
-            SendErrorTotheServer(e, 'setStrimerList in HandleUserStreamStoped');
-            return prev;
-          }
-        });
-      }
-  
-      const existingPeer = peersRef.current[socketId];
-      const hasRemoteStream = remoteStreams.some(s => s.id === socketId);
-  
-      if (existingPeer) {
-        console.log(`[stream-Resume] existing peer for ${socketId}. hasRemoteStream=${hasRemoteStream}`);
-  
-        // If peer exists and remote stream is missing, request a renegotiate (optional)
-        if (!hasRemoteStream) {
-          try {
-            console.log(`[stream-Resume] asking for renegotiate for ${socketId}`);
-            socket.emit('request-renegotiate', socketId);
-          } catch (e) {
-            SendErrorTotheServer(e, 'request-renegotiate emit');
-          }
+        console.log('[User-streamStopped] Current user was stopped by host - stopping local stream only');
+        
+        // Stop local stream
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+            track.stop();
+            track.enabled = false;
+          });
+          localStreamRef.current = null;
         }
+        setLocalStream(null);
+        setIsUserStreaming(false);
+        
+        // Update UI states
+        setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+      
         return;
+
       }
   
-      // No existing peer => create one and start offer/answer
-      console.log(`[stream-Resume] creating peer for ${socketId} to resume stream`);
-      try {
-        const peer = createPeer(socketId);
-        peersRef.current[socketId] = peer;
-  
-        const offer = await peer.createOffer();
-        await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-  
-        socket.emit('signal', { to: socketId, data: peer.localDescription });
-        console.log(`[stream-Resume] sent offer to ${socketId}`);
-      } catch (err) {
-        SendErrorTotheServer(err, 'HandleUserStreamStoped createPeer/offer');
+      // For other users: remove their stream (existing code)
+      console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
+      
+      if (peersRef.current[socketId]) {
+        peersRef.current[socketId].close();
+        delete peersRef.current[socketId];
       }
+      
+      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+      setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+  
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserStreamStoped');
     }
@@ -576,27 +535,44 @@ const handleAppStateChange = (nextAppState) => {
   }
 
 
-  const HandleStopStream = (streamlist) => {
+  const HandleFallbackToViewer = (data) => {
+    console.log("📩 [fallback-to-viewer] event received:", data);
+  
+    if (!data) {
+      console.warn("⚠️ No data received in fallback-to-viewer event");
+      return;
+    }
+  
+    const { hostStreamers } = data;
+    console.log("✅ Parsed hostStreamers:", hostStreamers);
+  
+    // 🔄 Update role: not host, not streaming → viewer mode
+    console.log("🔄 Switching this client to viewer mode");
+    setIsHost(false);
+    setIsUserStreaming(false);   // stop showing as streaming
+    setconnectingpanel(false);   // hide connecting panel if open
+  
+    // 👥 Update visible streamer list
+    console.log("👥 Updating streamer list with host streamers only:", hostStreamers);
+    setStrimerList(hostStreamers || []);
+  
+    // 🧹 Clear guest/co-host streams
+    console.log("🧹 Clearing guest/co-host streams");
+    setStreamGuest([]);
+  };
 
-    streamlist.forEach((userId) => {
-      if (peersRef.current[userId]) {
-        peersRef.current[userId].close();
-        delete peersRef.current[userId];
-        setRemoteStreams(prev => prev.filter(s => s.id !== userId));
-      }
-    })
-
-    streamlist.forEach(userId => {
-      if (!peersRef.current[userId]) {
-        const peer = createPeer(userId);
-        peersRef.current[userId] = peer;
-      }
-    });
-  }
 
   useEffect(() => {
     HandleConnect()
   }, [])
+
+
+  useEffect(()=>{
+
+console.log ('stream list ',streamerList)
+
+  },[streamerList])
+
 
   useEffect(() => {
     if (!IsVerified.current) {
@@ -611,7 +587,16 @@ const handleAppStateChange = (nextAppState) => {
   }, [IsVerified, socket.connected, userData])
 
 
-
+  useEffect(() => {
+    socket.on('rejoin-as-viewer', ({ roomID, RoomInfo }) => {
+      console.log('💡 Rejoining as viewer due to host removal:', roomID);
+      joinRoom(roomID, RoomInfo); // call your existing joinRoom function
+    });
+  
+    return () => {
+      socket.off('rejoin-as-viewer');
+    };
+  }, []);
 
   useEffect(() => {
     // Handles socket events
@@ -636,13 +621,13 @@ const handleAppStateChange = (nextAppState) => {
       socket.on('Close_stream', HandleLeaveStream)
       socket.on('roomFull', HandleRoomFull)
       socket.on('disconnect', HandleDisconnected);
-      socket.on('Stop-Stream', HandleStopStream)
       socket.on('Host-Disconnected', HandleUserLeft)
-      socket.on('stream-Resume', HandleUserStreamStoped)
+      // socket.on('stream-Resume', HandleUserStreamStoped)
       socket.on('streamer-List', HandleStreamList)
       socket.on('newuser-joined', HandlenewUserJoined)
       socket.on('user-leftStream', HandleUserLeftStream)
       socket.on('Total-GiftValue', HandleTotalGiftValue)
+      socket.on('fallback-to-viewer', HandleFallbackToViewer)
     }
 
     return () => {
@@ -668,12 +653,13 @@ const handleAppStateChange = (nextAppState) => {
         socket.off('Close_stream', HandleLeaveStream)
         socket.off('roomFull', HandleRoomFull)
         socket.off('disconnect', HandleDisconnected);
-        socket.off('Stop-Stream', HandleStopStream)
         socket.off('Host-Disconnected', HandleUserLeft)
-        socket.off('stream-Resume', HandleUserStreamStoped)
         socket.off('streamer-List', HandleStreamList)
         socket.off('newuser-joined', HandlenewUserJoined)
         socket.off('Total-GiftValue', HandleTotalGiftValue)
+        // socket.off('Force-Stop-Stream', HandleforceStopStream);
+      socket.off('fallback-to-viewer', HandleFallbackToViewer)
+        
       }
     }
   }, [isHost, isSocketConnected]);
@@ -793,6 +779,7 @@ const handleAppStateChange = (nextAppState) => {
       SendErrorTotheServer(err, 'joinRoom');
     }
   };
+
   const CreateRoom = async (RoomInfo) => {
     try {
       HandleClearOldInstance()

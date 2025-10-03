@@ -889,6 +889,56 @@ const StreamRoom = ({
     };
 
 
+    useEffect(() => {
+        const handleStreamStoppedForCurrentUser = (targetId) => {
+          if (socket.id === targetId) {
+            console.log('[StreamRoom] Current user was stopped - removing local stream');
+            setStreamLayout(prev => prev.filter(stream => stream.type !== 'local'));
+          }
+        };
+      
+        socket.on('User-streamStopped', handleStreamStoppedForCurrentUser);
+        
+        return () => {
+          socket.off('User-streamStopped', handleStreamStoppedForCurrentUser);
+        };
+      }, [setStreamLayout, socket.id]);
+
+
+
+      useEffect(() => {
+        const handleUserLeft = (leftUserId) => {
+            console.log('[StreamRoom] User left, cleaning stream:', leftUserId);
+            
+            setStreamLayout(prev => {
+              return prev.filter(stream => {
+                // ⭐⭐ Don't remove streams if current user left - only remove if it's other users
+                const shouldRemove = 
+                  (stream.userId === leftUserId && leftUserId !== socket.id) || 
+                  (stream.type === 'remote' && (!stream.userId || !stream.Name || stream.Name === 'undefined'));
+                
+                if (shouldRemove && stream.stream) {
+                  stream.stream.getTracks().forEach(track => {
+                    track.stop();
+                    track.enabled = false;
+                  });
+                }
+                
+                return !shouldRemove;
+              });
+            });
+          };
+      
+        // Listen for user leave events
+        socket.on('userLeft', handleUserLeft);
+        
+        return () => {
+          socket.off('userLeft', handleUserLeft);
+        };
+      }, [setStreamLayout]);
+
+      
+
     // const onShare = async () => {
     //     try {
     //         const result = await Share.share({
