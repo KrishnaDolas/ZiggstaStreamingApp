@@ -663,9 +663,9 @@ const StreamRoom = ({
             const response = await Apiclient.post('/topgifters/getGiftsByRoom', params);
             console.log('gift by room response', response.data);
             if (response.data.success && Array.isArray(response.data.data)) {
-                let sortedData = response.data.data[0].totalGiftValue;
+                let sortedData = response.data?.data[0]?.totalGiftValue;
                 console.log('gift by room sortedData', sortedData);
-                setTotalGiftByRoom(sortedData);
+                setTotalGiftByRoom(sortedData || 0);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'getTotalGiftByRoom');

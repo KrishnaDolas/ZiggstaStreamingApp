@@ -8,10 +8,14 @@ const userOtherFallbackImage = require('../../assets/images/default-avatar-trans
 //http://192.168.0.18:5000
 //https://streamalong.live
 export const socket = io('https://streamalong.live', {
-  transports: ['polling'], // Include both for fallback testing
+  transports: ['websocket', 'polling'],// Include both for fallback testing
   reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
+  reconnectionAttempts: Infinity,       // keep trying forever
+  reconnectionDelay: 1000,              // first retry after 1s
+  reconnectionDelayMax: 5000,           // cap retry at 5s
+  timeout: 20000,                       // 20s connect timeout
+  forceNew: true,                       // avoid old socket reuse
+  autoConnect: true,                    // connect immediately
 });
   
   // WebRTC ICE configuration with STUN and TURN servers
