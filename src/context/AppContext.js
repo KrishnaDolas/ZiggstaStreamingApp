@@ -47,6 +47,7 @@ export const AppProvider = ({ children }) => {
                 userid: userData?.userid,
             };
             const response = await Apiclient.post('/getUserDetails', formData);
+            // console.log('response fetch profile', response.data);
             if (response.status === 200) {
                 const userDataString = JSON.stringify(response.data.user);
                 await AsyncStorage.setItem('UserData', userDataString);
@@ -61,7 +62,6 @@ export const AppProvider = ({ children }) => {
 
     // profile on select function
     const onSelectImage = async (type) => {
-        console.log('on-select-image-type', type);
 
         setAvatarUploading(true);
         setIsImagePickerOpen(true);
@@ -163,40 +163,49 @@ export const AppProvider = ({ children }) => {
 
     // profile upload to server
     const uploadAvatarToServer = async (avatarFile) => {
-        console.log('avatarFile', avatarFile);
-
-        setIsImagePickerOpen(false); // Reset flag when starting upload
-        const formData = new FormData();
-        formData.append('avatar', {
-            uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
-            type: avatarFile.type,
-            name: avatarFile.name,
-        });
-        formData.append('userId', profileUserId);
-
         try {
-            const response = await Apiclient.post('/avatar/upload', formData);
+
+            setIsImagePickerOpen(false); // Reset flag when starting upload
+            const formData = new FormData();
+            formData.append('avatar', {
+                uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
+                type: avatarFile.type,
+                name: avatarFile.name,
+            });
+            formData.append('userId', profileUserId);
+
+            // console.log('avatar', {
+            //     uri: Platform.OS === 'ios' ? avatarFile.uri.replace('file://', '') : avatarFile.uri,
+            //     type: avatarFile.type,
+            //     name: avatarFile.name,
+            // });
+            // console.log('userId', profileUserId);
+
+            const response = await Apiclient.post('/avatar/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
             const resJson = response.data;
-            console.log('response avatar upload', resJson);
+            console.log('resJson avatar upload', resJson);
             if (response.status === 200) {
                 Alert.alert('Message', resJson.message);
                 setTimeout(() => {
                     setModalVisibleStage('profile-screen-modal');
                     setModalStage('first');
                     fetchProfileDetails();
-                    setProfileUserId(null);
+                    // setProfileUserId(null);
                 }, 1500);
             } else {
                 Alert.alert('Message', resJson.message || 'Please try again.');
-                setProfileUserId(null);
+                // setProfileUserId(null);
             }
         } catch (error) {
             console.error('Avatar upload error:', error);
-            setProfileUserId(null);
+            // setProfileUserId(null);
             Alert.alert('Error', 'Failed to upload avatar.');
         } finally {
             setAvatarUploading(false);
-            setProfileUserId(null);
+            // setProfileUserId(null);
         }
     };
 

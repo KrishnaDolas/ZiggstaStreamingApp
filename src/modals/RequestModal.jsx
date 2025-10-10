@@ -17,12 +17,17 @@ const RequestModal = ({
     const { theme } = useContext(ThemeContext);
     const { userAddress } = useAppContext();
     const [processingIds, setProcessingIds] = useState([]);
-
+    const [muteProcessingIds, setMuteProcessingIds] = useState([]);
 
     // --- Helper Functions ---
     const lockAction = (id) => setProcessingIds((prev) => [...prev, id]);
     const unlockAction = (id) => setProcessingIds((prev) => prev.filter((pid) => pid !== id));
     const isProcessing = (id) => processingIds.includes(id);
+
+
+    const lockMuteAction = (id) => setMuteProcessingIds((prev) => [...prev, id]);
+    const unlockMuteAction = (id) => setMuteProcessingIds((prev) => prev.filter((pid) => pid !== id));
+    const isMuteProcessing = (id) => muteProcessingIds.includes(id);
 
     // --- Accept/Reject stream request ---
     const AcceptStream = (action, requesterId, name, CustomID, item) => {
@@ -40,7 +45,7 @@ const RequestModal = ({
         console.log(Address);
 
         if (action === 'approve') {
-            socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar, () => {
+            socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar, item?.Gender, () => {
                 unlockAction(requesterId); // Release lock on ack
             });
         }
@@ -56,6 +61,22 @@ const RequestModal = ({
 
     // --- Generic host control actions (mute/unmute/stop) ---
     const GetAction = (targetId, action) => {
+        console.log('action', action);
+        // Handle mute/unmute separately with quick release
+        if (action === 'mute' || action === 'unmute') {
+            if (isMuteProcessing(targetId)) return;
+
+            lockMuteAction(targetId);
+            socket.emit('host-control', { action, targetId }, () => {
+                unlockMuteAction(targetId);
+            });
+
+            // Quick release for mute actions
+            setTimeout(() => unlockMuteAction(targetId), 1000);
+            return;
+        }
+
+        // Handle other actions (stop-stream, etc.) with normal processing
         if (isProcessing(targetId)) return;
 
         lockAction(targetId);
@@ -63,7 +84,6 @@ const RequestModal = ({
             unlockAction(targetId);
         });
 
-        // Fallback unlock
         setTimeout(() => unlockAction(targetId), 5000);
 
     };
@@ -82,6 +102,7 @@ const RequestModal = ({
             prev.filter((id) => StreamRequestList.some((item) => item.ID === id))
         );
     }, [StreamRequestList]);
+
 
     return (
         <Modal
@@ -227,7 +248,7 @@ const RequestModal = ({
                             }}>
                                 <View style={{ position: 'relative' }}>
                                     <Image style={styles.strRoomHeaderLeftProfileImg}
-                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item.Gender) : { uri: item?.avatar }}
+                                        source={!item?.avatar || item?.avatar === 'default' ? getGenderFallbackImage(item.gender) : { uri: item?.avatar }}
                                     />
                                 </View>
                                 <View style={{ flex: 1, marginLeft: 10, flexDirection: 'column' }}>
@@ -239,6 +260,7 @@ const RequestModal = ({
                                     {/* Mute/Unmute Button with Icon */}
                                     <TouchableOpacity
                                         onPress={() => GetAction(item.ID, item.IsMuted ? 'unmute' : 'mute')}
+                                        disabled={isMuteProcessing(item.ID)}
                                         style={{
                                             flexDirection: 'row',
                                             alignItems: 'center',
@@ -246,6 +268,7 @@ const RequestModal = ({
                                             paddingVertical: 6,
                                             paddingHorizontal: 10,
                                             borderRadius: 6,
+                                            opacity: isMuteProcessing(item.ID) ? 0.6 : 1,
                                         }}
                                     >
                                         <Ionicons

@@ -521,11 +521,23 @@ const App = () => {
   }, [isAuthenticated, userData?.userid, fetchProfileDetails, checkSubscription]);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isInternetReachable === true);
+    // 🔹 1. Check current network status on app start
+    NetInfo.fetch().then(state => {
+      setIsConnected(state.isConnected);
     });
+
+    // 🔹 2. Listen to network changes
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected);
+    });
+
     return () => unsubscribe();
   }, []);
+
+
+  useEffect(() => {
+    console.log('is app connected', isConnected);
+  }, [isConnected]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -622,6 +634,8 @@ const App = () => {
 
 
       {/* modals  */}
+
+      {/* profile avatar update modal */}
       {modalVisibleStage === 'profile-avatar-prv' && modalStage === 'second' && (
         <AvatarPrevModal
           visible={modalVisibleStage === 'profile-avatar-prv'}
@@ -635,6 +649,7 @@ const App = () => {
         />
       )}
 
+      {/* user report modal */}
       {modalVisibleStage === 'report-user' && modalStage === 'second' && (
         <ReportUserModal
           visible={modalVisibleStage === 'report-user'}
@@ -648,6 +663,8 @@ const App = () => {
           reportType="User"
         />
       )}
+
+      {/* camera action modal */}
       {modalVisibleStage === 'camera-action-sheet' && modalStage === 'second' && (
         <CameraActionSheet
           visible={modalVisibleStage === 'camera-action-sheet'}
@@ -661,6 +678,8 @@ const App = () => {
           theme={theme}
         />
       )}
+
+      {/* friend profile modal */}
       {modalVisibleStage === 'friend-profile-modal' && modalStage === 'second' && (
         <ProfileScreenModal
           visible={modalVisibleStage === 'friend-profile-modal'}

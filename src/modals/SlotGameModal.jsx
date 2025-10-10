@@ -212,17 +212,20 @@ export default function SlotGameModal({ visible, onClose, userData,
         return new Promise((resolve) => {
             const loops = 5 + col;
             const len = SYMBOLS.length;
-            // toValue should scroll down loops * len + finalIndex times symbol height:
-            const toValue = (loops * len + finalIndex) * SYMBOL_HEIGHT;
 
+            // Start from top (negative position)
+            const startPosition = - (loops * len * SYMBOL_HEIGHT);
+            reels[col].setValue(startPosition);
+
+            // Move to final position
             Animated.timing(reels[col], {
-                toValue,
+                toValue: -finalIndex * SYMBOL_HEIGHT,
                 duration: 2500 + col * 450,
                 easing: Easing.out(Easing.quad),
                 useNativeDriver: true,
             }).start(() => {
-                // Align exactly to finalIndex for consistent visuals:
-                reels[col].setValue(finalIndex * SYMBOL_HEIGHT);
+                // Set final position correctly
+                reels[col].setValue(-finalIndex * SYMBOL_HEIGHT);
                 resolve(finalIndex);
             });
         });
@@ -372,11 +375,7 @@ export default function SlotGameModal({ visible, onClose, userData,
                                 <Animated.View
                                     style={{
                                         transform: [{
-                                            translateY: anim.interpolate({
-                                                inputRange: [0, SYMBOLS.length * SYMBOL_HEIGHT],
-                                                outputRange: [0, -SYMBOLS.length * SYMBOL_HEIGHT],
-                                                extrapolate: 'extend',
-                                            }),
+                                            translateY: anim,
                                         }],
                                     }}
                                 >
