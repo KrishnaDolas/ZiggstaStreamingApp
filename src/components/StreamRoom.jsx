@@ -324,73 +324,73 @@ const StreamRoom = ({
 
     useEffect(() => {
         const streams = [];
-        
+
         // Process remote streams only if they have valid streamer info
         remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-          const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
-          
-          // Only add if we have valid streamer info
-          if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
-            const hostInfo = streamerList.find((item) => item.IsHost === true);
-            let Alevel = audioLevel || 0.04;
-            
-            if (stream && typeof stream.toURL === 'function') {
-              const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-              const streamData = {
-                type: 'remote',
-                stream,
-                isFriend: isFriend,
-                userId: StreamerInfo?.UserID,
-                socketId: id, // Add socketId for easier cleanup
-                isMuted: StreamerInfo?.isMuted,
-                Name: StreamerInfo?.Name,
-                isSpeaking: isSpeaking,
-                audioLevel: Alevel,
-              };
-      
-              if (hostInfo?.ID === id) {
-                streams.unshift(streamData);
-              } else {
-                streams.push(streamData);
-              }
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
+
+            // Only add if we have valid streamer info
+            if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
+                const hostInfo = streamerList.find((item) => item.IsHost === true);
+                let Alevel = audioLevel || 0.04;
+
+                if (stream && typeof stream.toURL === 'function') {
+                    const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+                    const streamData = {
+                        type: 'remote',
+                        stream,
+                        isFriend: isFriend,
+                        userId: StreamerInfo?.UserID,
+                        socketId: id, // Add socketId for easier cleanup
+                        isMuted: StreamerInfo?.isMuted,
+                        Name: StreamerInfo?.Name,
+                        isSpeaking: isSpeaking,
+                        audioLevel: Alevel,
+                    };
+
+                    if (hostInfo?.ID === id) {
+                        streams.unshift(streamData);
+                    } else {
+                        streams.push(streamData);
+                    }
+                }
             }
-          }
         });
-        
+
         // Add local stream if available and user is streaming
         if (localStream && isStreaming) {
-          const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
-          const streamData = {
-            type: 'local',
-            stream: localStream,
-            isMuted: StreamerInfo?.isMuted,
-            Name: `${userData?.screenName}`,
-            socketId: socket.id,
-          };
-          
-          if (isHost) {
-            streams.unshift(streamData);
-          } else {
-            streams.push(streamData);
-          }
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
+            const streamData = {
+                type: 'local',
+                stream: localStream,
+                isMuted: StreamerInfo?.isMuted,
+                Name: `${userData?.screenName}`,
+                socketId: socket.id,
+            };
+
+            if (isHost) {
+                streams.unshift(streamData);
+            } else {
+                streams.push(streamData);
+            }
         }
-        
+
         setStreamLayout(streams);
-      }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
-      
+    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
 
-      
-useEffect(() => {
-    console.log('🔍 StreamLayout debug:', {
-      streamLayoutCount: streamLayout.length,
-      remoteStreamsCount: remoteStreams.length,
-      streamerListCount: streamerList.length,
-      streamerList: streamerList.map(s => ({ ID: s.ID, Name: s.Name, UserID: s.UserID })),
-      streamLayout: streamLayout.map(s => ({ type: s.type, name: s.Name, socketId: s.socketId }))
-    });
-  }, [streamLayout, remoteStreams, streamerList]);
 
-  
+
+    useEffect(() => {
+        console.log('🔍 StreamLayout debug:', {
+            streamLayoutCount: streamLayout.length,
+            remoteStreamsCount: remoteStreams.length,
+            streamerListCount: streamerList.length,
+            streamerList: streamerList.map(s => ({ ID: s.ID, Name: s.Name, UserID: s.UserID })),
+            streamLayout: streamLayout.map(s => ({ type: s.type, name: s.Name, socketId: s.socketId }))
+        });
+    }, [streamLayout, remoteStreams, streamerList]);
+
+
 
 
     // stream layout style according layout length
@@ -667,6 +667,31 @@ useEffect(() => {
         GetViewerAndLikeCount();
     };
 
+
+    // get total gifts received coins of host
+    const getTotalGiftsReceivedCoins = async () => {
+        try {
+            const params = {
+                toUserId: streamInfo?.hostID,
+                gifterCount: 10000,
+            };
+            const response = await Apiclient.post('/topgifters', params);
+            // console.log('total gifts coins res', response);
+            if (response.status === 200) {
+                const data = response?.data;
+                const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
+                console.log('total gift Amount of host', totalAmount);
+                setTotalGiftCoinReceived(totalAmount);
+            }
+        } catch (error) {
+            SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
+        }
+    };
+
+    useEffect(() => {
+        getTotalGiftsReceivedCoins();
+    }, []);
+
     // get total gift by room
     const getTotalGiftByRoom = async () => {
         try {
@@ -746,28 +771,7 @@ useEffect(() => {
         };
     }, []);
 
-    // get total gifts received coins of host
-    const getTotalGiftsReceivedCoins = async () => {
-        try {
-            const params = {
-                toUserId: streamInfo?.hostID,
-                gifterCount: 10000,
-            };
-            const response = await Apiclient.post('/topgifters', params);
-            console.log('total gifts coins res', response.data);
-            const data = response.data;
-            if (data) {
-                const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
-                setTotalGiftCoinReceived(totalAmount);
-            }
-        } catch (error) {
-            SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
-        }
-    };
 
-    useEffect(() => {
-        getTotalGiftsReceivedCoins();
-    }, []);
 
     // send gift
     const SendGift = async (item) => {
@@ -905,99 +909,99 @@ useEffect(() => {
 
     useEffect(() => {
         const handleStreamStoppedForCurrentUser = (targetId) => {
-          if (socket.id === targetId) {
-            console.log('[StreamRoom] Current user was stopped - removing local stream');
-            setStreamLayout(prev => prev.filter(stream => stream.type !== 'local'));
-          }
+            if (socket.id === targetId) {
+                console.log('[StreamRoom] Current user was stopped - removing local stream');
+                setStreamLayout(prev => prev.filter(stream => stream.type !== 'local'));
+            }
         };
-      
+
         socket.on('User-streamStopped', handleStreamStoppedForCurrentUser);
-        
+
         return () => {
-          socket.off('User-streamStopped', handleStreamStoppedForCurrentUser);
+            socket.off('User-streamStopped', handleStreamStoppedForCurrentUser);
         };
-      }, [setStreamLayout, socket.id]);
+    }, [setStreamLayout]);
 
 
 
-      useEffect(() => {
+    useEffect(() => {
         const handleUserLeft = (leftUserId, userinfo) => {
-          console.log('[StreamRoom] User left, cleaning stream:', leftUserId, userinfo);
-      
-          // Remove from streamLayout based on socket ID
-          setStreamLayout(prev => {
-            const updated = prev.filter(stream => {
-              // For remote streams, check if the stream user ID matches the left user's socket ID
-              if (stream.type === 'remote') {
-                const streamerInfo = streamerList.find(s => s.ID === leftUserId);
-                // Remove if socket ID matches OR if streamer info is no longer available
-                const shouldRemove = stream.userId === (streamerInfo?.UserID) || !streamerInfo;
-                
-                if (shouldRemove && stream.stream) {
-                  // Clean up the stream
-                  stream.stream.getTracks().forEach(track => {
-                    track.stop();
-                    track.enabled = false;
-                  });
-                }
-                
-                return !shouldRemove;
-              }
-              
-              // Keep local streams
-              return true;
+            console.log('[StreamRoom] User left, cleaning stream:', leftUserId, userinfo);
+
+            // Remove from streamLayout based on socket ID
+            setStreamLayout(prev => {
+                const updated = prev.filter(stream => {
+                    // For remote streams, check if the stream user ID matches the left user's socket ID
+                    if (stream.type === 'remote') {
+                        const streamerInfo = streamerList.find(s => s.ID === leftUserId);
+                        // Remove if socket ID matches OR if streamer info is no longer available
+                        const shouldRemove = stream.userId === (streamerInfo?.UserID) || !streamerInfo;
+
+                        if (shouldRemove && stream.stream) {
+                            // Clean up the stream
+                            stream.stream.getTracks().forEach(track => {
+                                track.stop();
+                                track.enabled = false;
+                            });
+                        }
+
+                        return !shouldRemove;
+                    }
+
+                    // Keep local streams
+                    return true;
+                });
+
+                console.log('[StreamRoom] Updated streamLayout after user left:', updated.length);
+                return updated;
             });
-            
-            console.log('[StreamRoom] Updated streamLayout after user left:', updated.length);
-            return updated;
-          });
         };
-      
+
         // Listen for user leave events
         socket.on('userLeft', handleUserLeft);
-      
-        return () => {
-          socket.off('userLeft', handleUserLeft);
-        };
-      }, [streamerList]); // Add streamerList as dependency
 
-      useEffect(() => {
+        return () => {
+            socket.off('userLeft', handleUserLeft);
+        };
+    }, [streamerList]); // Add streamerList as dependency
+
+    useEffect(() => {
         // Clean up any streams with undefined names or missing streamer info
         const cleanupUndefinedStreams = () => {
-          setStreamLayout(prev => {
-            const validStreams = prev.filter(stream => {
-              // For remote streams, ensure they have valid streamer info
-              if (stream.type === 'remote') {
-                const hasValidInfo = streamerList.some(s => 
-                  s.ID && s.UserID === stream.userId && s.Name && s.Name !== 'undefined'
-                );
-                
-                if (!hasValidInfo && stream.stream) {
-                  // Clean up invalid stream
-                  stream.stream.getTracks().forEach(track => {
-                    track.stop();
-                    track.enabled = false;
-                  });
+            setStreamLayout(prev => {
+                const validStreams = prev.filter(stream => {
+                    // For remote streams, ensure they have valid streamer info
+                    if (stream.type === 'remote') {
+                        const hasValidInfo = streamerList.some(s =>
+                            s.ID && s.UserID === stream.userId && s.Name && s.Name !== 'undefined'
+                        );
+
+                        if (!hasValidInfo && stream.stream) {
+                            // Clean up invalid stream
+                            stream.stream.getTracks().forEach(track => {
+                                track.stop();
+                                track.enabled = false;
+                            });
+                        }
+
+                        return hasValidInfo;
+                    }
+
+                    // Keep local streams
+                    return true;
+                });
+
+                if (validStreams.length !== prev.length) {
+                    console.log('[cleanupUndefinedStreams] Removed invalid streams');
                 }
-                
-                return hasValidInfo;
-              }
-              
-              // Keep local streams
-              return true;
+
+                return validStreams;
             });
-            
-            if (validStreams.length !== prev.length) {
-              console.log('[cleanupUndefinedStreams] Removed invalid streams');
-            }
-            
-            return validStreams;
-          });
         };
-      
+
         // Run cleanup when streamerList changes
         cleanupUndefinedStreams();
-      }, [streamerList]);
+    }, [streamerList]);
 
 
     // const onShare = async () => {
