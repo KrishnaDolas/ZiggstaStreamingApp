@@ -54,6 +54,7 @@ export const MainScreen = () => {
   const [totalGiftValue, setTotalGiftValue] = useState(0);
   const IsIdentify = useRef(false)
   const IsVerified = useRef(false)
+  const audioLevelsRef = useRef({});
 
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
@@ -342,20 +343,38 @@ const handleAppStateChange = (nextAppState) => {
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
   }
-  const HandleUserLeft = (socketId, userinfo) => {
+
+
+ 
+   const HandleUserLeft = (socketId, userinfo) => {
+    console.log('user left', userinfo);
     try {
       if (userinfo) {
         HandleUserLeftStream(userinfo)
       }
-      if (peersRef.current[socketId]) {
-        peersRef.current[socketId].close();
-        delete peersRef.current[socketId];
-        setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
-      }
+
+      // Clear from audio levels ref
+      delete audioLevelsRef.current[socketId];
+  // Clean up peer connection
+  if (peersRef.current[socketId]) {
+    peersRef.current[socketId].close();
+    delete peersRef.current[socketId];
+  }
+  
+  // Immediately remove from remote streams
+  setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+  
+  // Also remove from streamerList to prevent "undefined" names
+  setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+  setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserLeft');
     }
   }
+  
+
+
   const HandleHostLeft = () => {
     try {
       Alert.alert('Host Left', 'The host has left the Stream. You will be disconnected.', [{ text: 'OK' }]);
@@ -374,6 +393,8 @@ const handleAppStateChange = (nextAppState) => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
+      console.log ("inside HostLeft Clearing streamerList");
+      setStrimerList([]);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setJoined(false);
       setIsHost(false);
@@ -438,61 +459,63 @@ const handleAppStateChange = (nextAppState) => {
   };
 
 
-  const HandleUserStreamStoped = async (payloadOrSocketId) => {
-    try {
-      // Normalize payload
-      let socketId = null;
-      if (typeof payloadOrSocketId === 'string') {
-        socketId = payloadOrSocketId;
-      } else if (typeof payloadOrSocketId === 'object') {
-        socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
-      }
-  
-      console.log('[User-streamStopped] Processing for socketId:', socketId);
-  
-      if (!socketId) {
-        console.warn('[User-streamStopped] no socketId found');
-        return;
-      }
-  
-      //If this is the current user being stopped, stop local stream AND remove from layout
-      if (socket.id === socketId) {
-        console.log('[User-streamStopped] Current user was stopped by host - stopping local stream only');
-        
-        // Stop local stream
-        if (localStreamRef.current) {
-          localStreamRef.current.getTracks().forEach(track => {
-            track.stop();
-            track.enabled = false;
-          });
-          localStreamRef.current = null;
-        }
-        setLocalStream(null);
-        setIsUserStreaming(false);
-        
-        // Update UI states
-        setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
-      
-        return;
-
-      }
-  
-      // For other users: remove their stream (existing code)
-      console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
-      
-      if (peersRef.current[socketId]) {
-        peersRef.current[socketId].close();
-        delete peersRef.current[socketId];
-      }
-      
-      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
-      setStrimerList(prev => prev.filter(s => s.ID !== socketId));
-      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
-  
-    } catch (error) {
-      SendErrorTotheServer(error, 'HandleUserStreamStoped');
+const HandleUserStreamStoped = async (payloadOrSocketId) => {
+  try {
+    // Normalize payload
+    let socketId = null;
+    if (typeof payloadOrSocketId === 'string') {
+      socketId = payloadOrSocketId;
+    } else if (typeof payloadOrSocketId === 'object') {
+      socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
     }
-  };
+
+    console.log('[User-streamStopped] Processing for socketId:', socketId);
+
+    if (!socketId) {
+      console.warn('[User-streamStopped] no socketId found');
+      return;
+    }
+
+    // If this is the current user being stopped
+    if (socket.id === socketId) {
+      console.log('[User-streamStopped] Current user was stopped by host');
+      
+      // Stop local stream
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => {
+          track.stop();
+          track.enabled = false;
+        });
+        localStreamRef.current = null;
+      }
+      setLocalStream(null);
+      setIsUserStreaming(false);
+      
+      // Update all relevant states
+      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+      setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+      
+      return;
+    }
+
+    // For other users: remove their stream from all states
+    console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
+
+    // Clean up peer connection
+    if (peersRef.current[socketId]) {
+      peersRef.current[socketId].close();
+      delete peersRef.current[socketId];
+    }
+
+    // Remove from all relevant states
+    setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+    setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+    setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
+  } catch (error) {
+    SendErrorTotheServer(error, 'HandleUserStreamStoped');
+  }
+};
   
   const HandleStreamList = (list) => {
     setStrimerList(list)
@@ -565,14 +588,6 @@ const handleAppStateChange = (nextAppState) => {
   useEffect(() => {
     HandleConnect()
   }, [])
-
-
-  useEffect(()=>{
-
-console.log ('stream list ',streamerList)
-
-  },[streamerList])
-
 
   useEffect(() => {
     if (!IsVerified.current) {
@@ -671,29 +686,38 @@ console.log ('stream list ',streamerList)
     }
 
   }, [isSocketConnected]);
-  const createPeer = (socketId) => {
+
+ const createPeer = (socketId) => {
     try {
       const peer = new RTCPeerConnection(iceServers);
-  
+
       // Add local tracks if present
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track =>
           peer.addTrack(track, localStreamRef.current)
         );
       }
-  
+
       // ontrack sets remote stream in state exactly as before
       peer.ontrack = (event) => {
         const stream = event.streams[0];
         if (!stream || !stream.getVideoTracks().length) return;
         setRemoteStreams(prev => {
-          const exists = prev.some(s => s.id === socketId);
-          if (exists) {
+          const existingStream = prev.find(s => s.id === socketId);
+          // If stream already exists and is the same, don't update
+          if (existingStream && existingStream.stream === stream) {
+            return prev;
+          }
+
+          // If stream exists but changed, update it
+          if (existingStream) {
             return prev.map(s => s.id === socketId ? { ...s, stream } : s);
           }
-          return [...prev, { id: socketId, stream, isSpeaking: false }];
+
+          // Add new stream
+          return [...prev, { id: socketId, stream, isSpeaking: false, audioLevel: 0 }];
         });
-  
+
         // Ensure audio routes to speaker
         try {
           InCallManager.start({ media: 'video', auto: true });
@@ -702,14 +726,14 @@ console.log ('stream list ',streamerList)
           // ignore if InCallManager is unavailable on platform
         }
       };
-  
+
       // ICE candidate forwarding
       peer.onicecandidate = (event) => {
         if (event.candidate) {
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
         }
       };
-  
+
       // ---- AUDIO LEVEL DETECTION ----
       // store interval id so we can clear it when peer is closed
       const audioIntervalId = setInterval(async () => {
@@ -726,9 +750,9 @@ console.log ('stream list ',streamerList)
                 }
                 audioLevel = audioLevel || 0;
                 const isSpeaking = audioLevel > 0.05;
-                setRemoteStreams(prev => prev.map(s =>
-                  s.id === socketId ? { ...s, audioLevel, isSpeaking } : s
-                ));
+
+                // Store in ref instead of immediate state update
+                audioLevelsRef.current[socketId] = { audioLevel, isSpeaking };
               }
             });
           }
@@ -737,10 +761,10 @@ console.log ('stream list ',streamerList)
           SendErrorTotheServer(err, 'audio-level-interval');
         }
       }, 200);
-  
+
       // attach interval id so we can clear it later
       peer._audioIntervalId = audioIntervalId;
-  
+
       // Wrap the original close so we can clear interval and then close peer
       const origClose = peer.close.bind(peer);
       peer.close = () => {
@@ -754,12 +778,40 @@ console.log ('stream list ',streamerList)
         }
         try { origClose(); } catch (e) { /* ignore */ }
       };
-  
+
       return peer;
     } catch (error) {
       SendErrorTotheServer(error, 'createPeer');
     }
   };
+
+  // Add a separate effect to batch audio level updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Object.keys(audioLevelsRef.current).length > 0) {
+        setRemoteStreams(prev => {
+          let hasChanges = false;
+          const updated = prev.map(stream => {
+            const newLevels = audioLevelsRef.current[stream.id];
+            if (newLevels &&
+              (stream.audioLevel !== newLevels.audioLevel ||
+                stream.isSpeaking !== newLevels.isSpeaking)) {
+              hasChanges = true;
+              return { ...stream, ...newLevels };
+            }
+            return stream;
+          });
+
+          // Clear the ref after processing
+          audioLevelsRef.current = {};
+
+          return hasChanges ? updated : prev;
+        });
+      }
+    }, 1000); // Batch updates every second
+
+    return () => clearInterval(interval);
+  }, []);
   
 
   const joinRoom = (roomID, RoomInfo) => {
@@ -815,6 +867,7 @@ console.log ('stream list ',streamerList)
   const leaveRoom = () => {
     try {
       // Stop local stream if exists
+      console.log ('emiting leaveroom for the server for the socket:', socket.id);
       socket.emit('leaveRoom', socket.id)
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
