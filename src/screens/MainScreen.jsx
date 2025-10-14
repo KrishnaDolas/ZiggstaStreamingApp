@@ -21,7 +21,7 @@ import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+global.socket = socket; // make socket global for debugging
 export const MainScreen = () => {
   const { userData, userAddress, setIsInStreamRoom, isInStreamRoom, fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
@@ -159,20 +159,36 @@ const handleAppStateChange = (nextAppState) => {
   };
   const HandleConnect = () => {
     console.log('✅ Connected to Socket.IO server');
-    setconnectingpanel(false)
-    setIsSocketConnected(true); // Update connection status
-    if (!IsIdentify.current && userData && socket.connected) {
-      if (streamInfo) {
-        const roomID = streamInfo?.roomID.toString()
-        socket.emit('reconnectUser', userData?.userid, userData?.screenName, roomID, isHost, userData?.avatar, userData?.gender)
+    setconnectingpanel(false);
+    setIsSocketConnected(true);
+
+    if (!IsIdentify.current && userData && socket.connected && streamInfo) {
+      const roomID = streamInfo?.roomID.toString();
+      
+      // Add validation before reconnecting
+      if (roomID && userData?.userid) {
+        console.log(`🔄 [Client-Reconnect] Attempting reconnection to room ${roomID}`);
+        
+        socket.emit('reconnectUser', 
+          userData.userid, 
+          userData.screenName, 
+          roomID, 
+          isHost, 
+          userData.avatar, 
+          userData.gender
+        );
+        
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
-          }, 1000);
+          }, 1500); // Slightly longer delay for stability
         }
+      } else {
+        console.error('❌ [Client-Reconnect] Missing roomID or userID');
       }
     }
-  }
+  };
+  
   const HandleClearOldInstance = () => {
     localStreamRef.current = null;
     setLocalStream(null);
@@ -322,51 +338,96 @@ const handleAppStateChange = (nextAppState) => {
   const HandleStreamReject = (Name) => {
     setHasRequestedStream(false);
     setStreamMsg(`${Name} has rejected your stream request.`);
-  }
-  const HandlereconnectWithNewPeer = async ({ socketId }) => {
-    // Only run if I'm host OR viewer and it's not my own socket
-    if (socket.id !== socketId && localStreamRef.current) {
+  };
 
-      const peer = createPeer(socketId);
-      peersRef.current[socketId] = peer;
 
-      localStreamRef.current.getTracks().forEach(track => {
-        peer.addTrack(track, localStreamRef.current);
-      });
-
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-
-      socket.emit('signal', { to: socketId, data: peer.localDescription });
+  const HandlereconnectWithNewPeer = async ({ socketId, userId, isHost }) => {
+    try {
+      console.log(`🔄 [Peer-Reconnect] Handling peer for socket: ${socketId}, user: ${userId}`);
+  
+      // Only proceed if it's not our own socket and we have local stream
+      if (socket.id !== socketId && localStreamRef.current) {
+        
+        // Clean up existing peer if any
+        if (peersRef.current[socketId]) {
+          peersRef.current[socketId].close();
+          delete peersRef.current[socketId];
+          console.log(`   ↪ Cleaned up existing peer for ${socketId}`);
+        }
+  
+        const peer = createPeer(socketId);
+        peersRef.current[socketId] = peer;
+  
+        // Add tracks if we're streaming
+        if (isuserstreaming) {
+          localStreamRef.current.getTracks().forEach(track => {
+            try {
+              peer.addTrack(track, localStreamRef.current);
+            } catch (trackError) {
+              console.warn(`⚠️ Failed to add track:`, trackError);
+            }
+          });
+        }
+  
+        const offer = await peer.createOffer();
+        await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+        socket.emit('signal', { to: socketId, data: peer.localDescription });
+        
+        console.log(`✅ [Peer-Reconnect] Offer sent to ${socketId}`);
+      }
+    } catch (error) {
+      console.error(`❌ [Peer-Reconnect] Error:`, error);
+      SendErrorTotheServer(error, 'HandlereconnectWithNewPeer');
     }
-  }
+  };
+
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
   }
 
 
- 
-   const HandleUserLeft = (socketId, userinfo) => {
-    console.log('user left', userinfo);
+
+  const HandleUserLeft = (socketId, userinfo) => {
+    console.log('user left', userinfo, 'socket:', socketId);
     try {
-      if (userinfo) {
-        HandleUserLeftStream(userinfo)
+      // Handle cases where userinfo might be missing or incomplete
+      const checkUserInfo = userinfo || {
+        ID: socketId,
+        Name: 'Unknown User',
+        customid: null,
+        avatar: null,
+        Gender: null,
+      };
+
+      if (checkUserInfo.Name && checkUserInfo.Name !== 'Unknown User') {
+        HandleUserLeftStream(checkUserInfo);
       }
 
       // Clear from audio levels ref
       delete audioLevelsRef.current[socketId];
-  // Clean up peer connection
-  if (peersRef.current[socketId]) {
-    peersRef.current[socketId].close();
-    delete peersRef.current[socketId];
-  }
-  
-  // Immediately remove from remote streams
-  setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
-  
-  // Also remove from streamerList to prevent "undefined" names
-  setStrimerList(prev => prev.filter(s => s.ID !== socketId));
-  setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
+      // Clean up peer connection
+      if (peersRef.current[socketId]) {
+        peersRef.current[socketId].close();
+        delete peersRef.current[socketId];
+      }
+
+      // Immediately remove from remote streams
+      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+
+      // Also remove from streamerList and streamGuest
+      setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
+      // If the left user was host and we're a co-host/guest, ensure we're in viewer mode
+      if (isuserstreaming && !isHost) {
+        const wasHost = streamerList.find(s => s.ID === socketId && s.IsHost);
+        if (wasHost) {
+          console.log("🏠 Host left, ensuring viewer mode");
+          setIsUserStreaming(false);
+          setStreamGuest([]);
+        }
+      }
 
     } catch (error) {
       SendErrorTotheServer(error, 'HandleUserLeft');
@@ -459,64 +520,64 @@ const handleAppStateChange = (nextAppState) => {
   };
 
 
-const HandleUserStreamStoped = async (payloadOrSocketId) => {
-  try {
-    // Normalize payload
-    let socketId = null;
-    if (typeof payloadOrSocketId === 'string') {
-      socketId = payloadOrSocketId;
-    } else if (typeof payloadOrSocketId === 'object') {
-      socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
-    }
-
-    console.log('[User-streamStopped] Processing for socketId:', socketId);
-
-    if (!socketId) {
-      console.warn('[User-streamStopped] no socketId found');
-      return;
-    }
-
-    // If this is the current user being stopped
-    if (socket.id === socketId) {
-      console.log('[User-streamStopped] Current user was stopped by host');
-      
-      // Stop local stream
-      if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track => {
-          track.stop();
-          track.enabled = false;
-        });
-        localStreamRef.current = null;
+  const HandleUserStreamStoped = async (payloadOrSocketId) => {
+    try {
+      // Normalize payload
+      let socketId = null;
+      if (typeof payloadOrSocketId === 'string') {
+        socketId = payloadOrSocketId;
+      } else if (typeof payloadOrSocketId === 'object') {
+        socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
       }
-      setLocalStream(null);
-      setIsUserStreaming(false);
-      
-      // Update all relevant states
-      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
+      console.log('[User-streamStopped] Processing for socketId:', socketId);
+
+      if (!socketId) {
+        console.warn('[User-streamStopped] no socketId found');
+        return;
+      }
+
+      // If this is the current user being stopped
+      if (socket.id === socketId) {
+        console.log('[User-streamStopped] Current user was stopped by host');
+
+        // Stop local stream
+        if (localStreamRef.current) {
+          localStreamRef.current.getTracks().forEach(track => {
+            track.stop();
+            track.enabled = false;
+          });
+          localStreamRef.current = null;
+        }
+        setLocalStream(null);
+        setIsUserStreaming(false);
+
+        // Update all relevant states
+        setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+        setStrimerList(prev => prev.filter(s => s.ID !== socketId));
+
+        return;
+      }
+
+      // For other users: remove their stream from all states
+      console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
+
+      // Clean up peer connection
+      if (peersRef.current[socketId]) {
+        peersRef.current[socketId].close();
+        delete peersRef.current[socketId];
+      }
+
+      // Remove from all relevant states
+      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
       setStrimerList(prev => prev.filter(s => s.ID !== socketId));
-      
-      return;
+      setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
+
+    } catch (error) {
+      SendErrorTotheServer(error, 'HandleUserStreamStoped');
     }
+  };
 
-    // For other users: remove their stream from all states
-    console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
-
-    // Clean up peer connection
-    if (peersRef.current[socketId]) {
-      peersRef.current[socketId].close();
-      delete peersRef.current[socketId];
-    }
-
-    // Remove from all relevant states
-    setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
-    setStrimerList(prev => prev.filter(s => s.ID !== socketId));
-    setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
-
-  } catch (error) {
-    SendErrorTotheServer(error, 'HandleUserStreamStoped');
-  }
-};
-  
   const HandleStreamList = (list) => {
     setStrimerList(list)
   }
@@ -537,7 +598,6 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
   const HandleDisconnected = () => {
     IsVerified.current = false;
     console.log('❌ Disconnected from socket server');
-    socket.emit("forceLeave", { socketId: socket.id });
     setIsSocketConnected(false)
     setconnectingpanel(true)
     setHasRequestedStream(false)
@@ -558,6 +618,7 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
   }
 
 
+
   const HandleFallbackToViewer = (data) => {
     console.log("📩 [fallback-to-viewer] event received:", data);
   
@@ -568,20 +629,34 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
   
     const { hostStreamers } = data;
     console.log("✅ Parsed hostStreamers:", hostStreamers);
-  
-    // 🔄 Update role: not host, not streaming → viewer mode
-    console.log("🔄 Switching this client to viewer mode");
-    setIsHost(false);
-    setIsUserStreaming(false);   // stop showing as streaming
-    setconnectingpanel(false);   // hide connecting panel if open
-  
-    // 👥 Update visible streamer list
-    console.log("👥 Updating streamer list with host streamers only:", hostStreamers);
-    setStrimerList(hostStreamers || []);
-  
-    // 🧹 Clear guest/co-host streams
-    console.log("🧹 Clearing guest/co-host streams");
-    setStreamGuest([]);
+
+    // Only process if we're not the host
+    if (!isHost) {
+      console.log("🔄 Switching this client to viewer mode");
+      setIsHost(false);
+      setIsUserStreaming(false);
+      setconnectingpanel(false);
+
+      // Update streamer list with host streamers only
+      console.log("👥 Updating streamer list with host streamers only:", hostStreamers);
+      setStrimerList(hostStreamers || []);
+
+      // Clear guest/co-host streams
+      console.log("🧹 Clearing guest/co-host streams");
+      setStreamGuest([]);
+
+      // Clean up any peer connections that shouldn't exist
+      Object.keys(peersRef.current).forEach(peerSocketId => {
+        const isHostPeer = hostStreamers?.some(host => host.ID === peerSocketId);
+        if (!isHostPeer && peerSocketId !== socket.id) {
+          console.log(`🧹 Cleaning up non-host peer: ${peerSocketId}`);
+          if (peersRef.current[peerSocketId]) {
+            peersRef.current[peerSocketId].close();
+            delete peersRef.current[peerSocketId];
+          }
+        }
+      });
+    }
   };
 
 
@@ -867,7 +942,12 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
   const leaveRoom = () => {
     try {
       // Stop local stream if exists
+if (!socket.id ){
+  console.log ('Socket ID not found, cannot emit LeaveRoom');
+  return;
+}
       console.log ('emiting leaveroom for the server for the socket:', socket.id);
+
       socket.emit('leaveRoom', socket.id)
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
@@ -896,6 +976,43 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
       SendErrorTotheServer(error, 'leaveRoom');
     }
   }
+
+
+  const HandleTimeout = () => {
+    console.log('⏰ Reconnection timeout reached, leaving room');
+    
+    // First, check if we reconnected but auto-rejoin failed
+    if (socket.connected && streamInfo) {
+      console.log('🔄 Socket connected but auto-rejoin failed, attempting manual rejoin');
+      
+      const roomID = streamInfo?.roomID.toString();
+      if (roomID && userData?.userid) {
+        // One final attempt to rejoin
+        socket.emit('reconnectUser', 
+          userData.userid, 
+          userData.screenName, 
+          roomID, 
+          isHost, 
+          userData.avatar, 
+          userData.gender
+        );
+        
+        // Give it 2 more seconds
+        setTimeout(() => {
+          if (connectingpanel) { // If still disconnected after 2s
+            console.log('❌ Final reconnection attempt failed, leaving room');
+            leaveRoom();
+          }
+        }, 2000);
+        return;
+      }
+    }
+    // If no connection or no streamInfo, leave immediately
+    leaveRoom();
+  };
+
+
+
   const toggleMute = () => {
     try {
       if (localStreamRef.current) {
@@ -986,7 +1103,7 @@ const HandleUserStreamStoped = async (payloadOrSocketId) => {
           backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
         />
         <View style={[styles.container]}>
-          {connectingpanel && joined && (<DisconnectedPanel time={30} leaveRoom={leaveRoom} />)}
+          {connectingpanel && joined && (<DisconnectedPanel time={25} leaveRoom={leaveRoom} />)}
           {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
           {!joined ? (
             <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
