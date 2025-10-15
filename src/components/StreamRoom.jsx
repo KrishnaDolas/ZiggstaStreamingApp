@@ -699,12 +699,15 @@ const StreamRoom = ({
                 toUserID: streamInfo?.hostID,
                 roomId: streamInfo?.roomID,
             };
+            console.log('params gift by room', params);
             const response = await Apiclient.post('/topgifters/getGiftsByRoom', params);
             console.log('gift by room response', response.data);
             if (response.data.success && Array.isArray(response.data.data)) {
-                let sortedData = response.data?.data[0]?.totalGiftValue;
-                console.log('gift by room sortedData', sortedData);
-                setTotalGiftByRoom(sortedData || 0);
+                const totalGiftValueSum = response.data.data.reduce((acc, item) => {
+                    return acc + Number(item.totalGiftValue || 0);
+                }, 0);
+                console.log('gift by room sortedData', totalGiftValueSum);
+                setTotalGiftByRoom(totalGiftValueSum || 0);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'getTotalGiftByRoom');
