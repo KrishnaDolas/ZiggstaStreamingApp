@@ -247,7 +247,7 @@ export const Signup = ({
                 onChangeText={setReferrerCode}
                 style={[styles.input, themeStyles[theme].input]}
                 placeholderTextColor={themeStyles[theme].placeholder.color}
-                placeholder="Referrer Code"
+                placeholder="Referrer Code (optional)"
                 maxLength={6}
               />
             </View>

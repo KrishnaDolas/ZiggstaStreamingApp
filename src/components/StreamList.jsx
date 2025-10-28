@@ -490,9 +490,16 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             onPress={() => setOpenStreamInputModal(true)}>
                             <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                         </TouchableOpacity>
-                        {!subscriptionStatus?.success && (
+
+                        
+                        {
+                        // Temperory disable ads for all users
+                        
+                        /* {!subscriptionStatus?.success && (  
                             <GoogleBannerAd />
-                        )}
+                        )} */
+                        
+                        }
                         {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
                 </TouchableOpacity> */}

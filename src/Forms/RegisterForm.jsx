@@ -687,7 +687,7 @@ export const RegisterForm = ({
             </Text>
           ) : null} */}
           <Text style={{ color: formData.interests.length === 0 ? '#000' : '#0035ff', marginTop: 5 }}>
-            choose 3 Interests to help you attract the right audience.
+            Choose 3 Interests to help you attract the right audience.
           </Text>
         </View>
       );
@@ -695,7 +695,7 @@ export const RegisterForm = ({
 
     // dob input
     if (question.field === 'dob') {
-      const years = Array.from({ length: 50 }, (_, i) => {
+      const years = Array.from({ length: 100 }, (_, i) => {
         const year = new Date().getFullYear() - i;
         return { label: `${year}`, value: `${year}` };
       });
@@ -1190,8 +1190,8 @@ export const RegisterForm = ({
       const userName = formData.userName;
 
       // Screen name validation
-      if (!screenname || screenname.length < 5) {
-        error.screenname = 'Screen name must be at least 5 characters';
+      if (!screenname || screenname.length < 3) {
+        error.screenname = 'Screen name must be at least 3 characters';
         isValid = false;
       } else if (screenname.length > 12) {
         error.screenname = 'Screen name cannot be more than 12 characters';

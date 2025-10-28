@@ -50,12 +50,12 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
     };
 
     const handleConnect = useCallback((item) => {
-        setMessage(`this feature is not implemented yet.`)
+        setMessage(`This feature is not implemented yet.`)
         setVisibleModal('message-modal');
     }, []);
 
     const handleEvents = useCallback((item) => {
-        setMessage(`this feature is not implemented yet.`)
+        setMessage(`This feature is not implemented yet.`)
         setVisibleModal('message-modal');
     }, []);
 

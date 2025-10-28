@@ -77,7 +77,7 @@ const SearchModal = ({ visible, onClose,
                 setHeaderMainTab('foryou');
                 onClose(); // ✅ Only close if successful
             } else {
-                setIsError('No rooms found for this username.');
+                setIsError('User not found. Please check again.');
                 setHeaderMainTab('foryou');
             }
         } catch (error) {
