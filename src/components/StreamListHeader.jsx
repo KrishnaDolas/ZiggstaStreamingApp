@@ -12,7 +12,7 @@ import {
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import SearchModal from '../modals/SearchModal';
 import { useAppContext } from '../context/AppContext';
 import { ThemeContext } from '../context/ThemeContext';
@@ -24,6 +24,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
     setIsFavourite, searchFilteredData,
     setSearchFilteredData }) => {
     const { theme } = useContext(ThemeContext);
+    const navigation = useNavigation();
     const { profileData,
         headerMainTab,
         setHeaderMainTab,
@@ -74,17 +75,28 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
             <View style={[styles.streamListHeader, themeStyles[theme].streamListHeader]} >
                 {/* header top */}
                 <View style={styles.streamListHeaderTop}>
-                    <Image
-                        source={require('../../assets/images/logo_ziggsta_hor.png')}
-                        style={styles.streamHeaderLeftImg}
-                        resizeMode="contain"
-                    />
+                    <TouchableOpacity
+                        onPress={() => {
+                            if (route.name === 'Main') {
+                                setIsNearBy(!isNearBy);
+                                setHeaderMainTab('foryou');
+                            } else {
+                                navigation.navigate('Main');
+                            }
+                        }}
+                    >
+                        <Image
+                            source={require('../../assets/images/logo_ziggsta_hor.png')}
+                            style={styles.streamHeaderLeftImg}
+                            resizeMode="contain"
+                        />
+                    </TouchableOpacity>
                     <View style={styles.streamHeaderRightBox}>
                         {/* <View style={styles.streamHeaderCountBox}>
                         <Ionicons name='eye-outline' solid size={16} color="#fff" />
                         <Text style={styles.streamHeaderCountTitle}>245</Text>
                     </View> */}
-                        <View style={styles.streamHeaderCountBox}>
+                        <TouchableOpacity onPress={() => navigation.navigate('WalletDashboard')} style={styles.streamHeaderCountBox}>
                             {/* <FontAwesome name='dollar' solid size={14} color="#fff" /> */}
                             <Image
                                 source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
@@ -92,7 +104,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                                 resizeMode="contain"
                             />
                             <Text style={styles.streamHeaderCountTitle}>{Number(profileData?.CreditBalance).toFixed(0)}</Text>
-                        </View>
+                        </TouchableOpacity>
                         <TouchableOpacity style={{ marginRight: 12 }}>
                             <Ionicons name='notifications' solid size={18} color={theme === 'light' ? '#000' : '#fff'} />
                         </TouchableOpacity>
@@ -303,7 +315,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                     )
                 }
 
-            </View>
+            </View >
         </>
 
     );

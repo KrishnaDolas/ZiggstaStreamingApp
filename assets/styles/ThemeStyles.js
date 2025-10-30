@@ -2156,7 +2156,7 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     // color: '#333',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   psmProfileId: {
     fontSize: 14,

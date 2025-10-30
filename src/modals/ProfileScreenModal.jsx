@@ -464,7 +464,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
 
                                                         {/* Name and ID */}
                                                         <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDetails?.screenName}</Text>
-                                                        <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text>
+                                                        {/* <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text> */}
 
                                                         {/* Stats Section */}
                                                         <View style={styles.psmStatsContainer}>
