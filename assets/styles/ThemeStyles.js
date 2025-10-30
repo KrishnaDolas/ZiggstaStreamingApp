@@ -1653,6 +1653,32 @@ export const styles = StyleSheet.create({
     alignItems: 'baseline',
     gap: 20,
   },
+
+  // Add to your styles
+  redDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF0000',
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+
+  activeGameDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#00FF00',
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+
   strRoomFooterSocialActionsBtn: {
     marginBottom: 0,
     alignSelf:'flex-end',

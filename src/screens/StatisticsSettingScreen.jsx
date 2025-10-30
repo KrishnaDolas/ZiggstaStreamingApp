@@ -271,7 +271,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                         resizeMode="contain"
                                     />
                                     <Text style={[styles.profileValueText, themeStyles[theme].profileValueText]}>
-                                        {profileData?.CreditBalance}
+                                        {Number(profileData?.CreditBalance).toFixed(0)}
                                     </Text>
                                 </View>
 

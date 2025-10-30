@@ -540,7 +540,7 @@ export const WalletDashboardScreen = () => {
                                                 style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
                                                 resizeMode="contain"
                                             />
-                                            <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{profileData?.CreditBalance}</Text>
+                                            <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{Number(profileData?.CreditBalance).toFixed(0)}</Text>
                                         </View>
                                     </TouchableOpacity>
                                     <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>

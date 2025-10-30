@@ -91,7 +91,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                                 style={{ width: 26, height: 26 }}
                                 resizeMode="contain"
                             />
-                            <Text style={styles.streamHeaderCountTitle}>{profileData?.CreditBalance}</Text>
+                            <Text style={styles.streamHeaderCountTitle}>{Number(profileData?.CreditBalance).toFixed(0)}</Text>
                         </View>
                         <TouchableOpacity style={{ marginRight: 12 }}>
                             <Ionicons name='notifications' solid size={18} color={theme === 'light' ? '#000' : '#fff'} />
