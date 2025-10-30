@@ -875,7 +875,8 @@ const StreamRoom = ({
 
     // toggle show ui or not
     const HandleShowUi = () => {
-        setShowUI(!showUI);
+        // setShowUI(!showUI);
+        console.log('showUI',!showUI);
     };
 
     // update stream description
