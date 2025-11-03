@@ -1682,6 +1682,7 @@ export const styles = StyleSheet.create({
   strRoomFooterSocialActionsBtn: {
     marginBottom: 0,
     alignSelf:'flex-end',
+    position: 'relative',
   },
   strRoomBottomBox: {
     position: 'absolute',

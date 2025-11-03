@@ -39,6 +39,7 @@ import AudioSpectrum from './AudioSpectrum';
 import LuckyWheelModal from '../modals/LuckyWheelModal';
 import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
 import SlotGameModal from '../modals/SlotGameModal';
+import GlowingRedDot from './GlowingRedDot';
 
 const StreamRoom = ({
     remoteStreams,
@@ -1835,7 +1836,7 @@ const StreamRoom = ({
                                                     />
                                                     {/* Red dot for new users or when lucky wheel is available */}
                                                     {shouldShowRedDotOnLuckyWheel() && (
-                                                        <View style={styles.redDot} />
+                                                        <GlowingRedDot />
                                                     )}
                                                 </TouchableOpacity>
                                             )}
