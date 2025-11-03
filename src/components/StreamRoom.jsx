@@ -117,6 +117,14 @@ const StreamRoom = ({
     const rotateAnim = useRef(new Animated.Value(0)).current;
     const scrollViewRef = useRef();
 
+    // ✅ NEW: Enhanced Game State Management
+    const [luckyWheelVisible, setLuckyWheelVisible] = useState(false);
+    const [luckyWheelOpenedBy, setLuckyWheelOpenedBy] = useState(null);
+    const [slotGameVisible, setSlotGameVisible] = useState(false);
+    const [slotGameOpenedBy, setSlotGameOpenedBy] = useState(null);
+    const [activeGame, setActiveGame] = useState(null);
+    const [isLuckyWheelActiveInRoom, setIsLuckyWheelActiveInRoom] = useState(false);
+
     // Create interpolated spin value ONCE
     const spin = rotateAnim.interpolate({
         inputRange: [0, 1],
@@ -136,6 +144,71 @@ const StreamRoom = ({
 
         return () => loopAnimation.stop(); // cleanup when unmounted
     }, [rotateAnim]);
+
+
+
+    // ✅ Define handlers with useCallback (outside useEffect)
+    const handleLuckyWheelOpened = useCallback((openerData) => {
+        console.log('🎯 [CLIENT] lucky-wheel-opened received:', openerData);
+
+        // Skip if playing slot game
+        if (activeGame === 'slot-game') {
+            console.log('🚫 Skipping - user playing slot game');
+            return;
+        }
+
+        // Skip if already open for this user
+        if (visibleModal === 'luckyWheel' || luckyWheelVisible) {
+            console.log('🚫 Skipping - lucky wheel already open');
+            return;
+        }
+
+        console.log('✅ Opening lucky wheel modal for existing users');
+        setLuckyWheelVisible(true);
+        setLuckyWheelOpenedBy(openerData);
+        setActiveGame('luckyWheel');
+        setVisibleModal('luckyWheel');
+        setIsLuckyWheelActiveInRoom(true);
+    }, [activeGame, visibleModal, luckyWheelVisible]);
+
+
+
+    const handleLuckyWheelActive = useCallback(() => {
+        console.log('🔴 [CLIENT] Received lucky-wheel-active - setting room active');
+        setIsLuckyWheelActiveInRoom(true);
+    }, []);
+
+    const handleLuckyWheelInactive = useCallback(() => {
+        console.log('⚪ [CLIENT] Lucky wheel is now inactive in room');
+        setIsLuckyWheelActiveInRoom(false);
+        setLuckyWheelOpenedBy(null);
+    }, []);
+
+    // ✅ Updated useEffect (fewer deps, uses memoized handlers)
+    useEffect(() => {
+        console.log('🔌 [CLIENT] Setting up game socket listeners');
+
+        // Register all listeners
+        socket.on('lucky-wheel-opened', handleLuckyWheelOpened);
+        socket.on('lucky-wheel-active', handleLuckyWheelActive);
+        socket.on('lucky-wheel-inactive', handleLuckyWheelInactive);
+
+        // Cleanup
+        return () => {
+            console.log('🧹 [CLIENT] Removing game socket listeners');
+            socket.off('lucky-wheel-opened', handleLuckyWheelOpened);
+            socket.off('lucky-wheel-active', handleLuckyWheelActive);
+            socket.off('lucky-wheel-inactive', handleLuckyWheelInactive);
+        };
+    }, [handleLuckyWheelOpened, handleLuckyWheelActive, handleLuckyWheelInactive]); // Only deps are the memoized handlers
+
+    // ✅ Check if user is new to the stream (for red dot indicator)
+    useEffect(() => {
+        if (streamInfo?.roomID) {
+            console.log('🔍 [CLIENT] Requesting lucky wheel status for room:', streamInfo.roomID);
+            socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
+        }
+    }, [streamInfo?.roomID]);
 
     // if socket is disconnect every time then show connecting panel
     useEffect(() => {
@@ -876,7 +949,7 @@ const StreamRoom = ({
     // toggle show ui or not
     const HandleShowUi = () => {
         // setShowUI(!showUI);
-        console.log('showUI',!showUI);
+        console.log('showUI', !showUI);
     };
 
     // update stream description
@@ -1007,6 +1080,146 @@ const StreamRoom = ({
         cleanupUndefinedStreams();
     }, [streamerList]);
 
+
+
+    // ✅ NEW: Enhanced game open/close handlers
+    const handleLuckyWheelOpen = () => {
+        if (visibleModal === 'luckyWheel' || luckyWheelVisible) {
+            // Already open locally – close for this user only (no emit)
+            console.log('🚪 [CLIENT] Closing lucky wheel locally (per-user)');
+            handleLuckyWheelClose();
+            return;
+        }
+
+        // Close any other game first (local)
+        if (activeGame && activeGame !== 'luckyWheel') {
+            handleGameClose(activeGame);
+        }
+
+        // Emit to server for broadcast (room-wide open)
+        const userOpenData = {
+            userId: userData?.userid,
+            userName: userData?.screenName,
+            timestamp: Date.now(),
+        };
+        console.log('🎯 [CLIENT] Emitting open-lucky-wheel:', streamInfo?.roomID.toString(), userOpenData);
+        socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
+
+        // Local open
+        setVisibleModal('luckyWheel');
+        setLuckyWheelOpenedBy(userOpenData);
+        setActiveGame('luckyWheel');
+        setLuckyWheelVisible(true);
+        setIsLuckyWheelActiveInRoom(true);
+    };
+
+    const handleSlotGameOpen = () => {
+        if (visibleModal === 'slot-game' || slotGameVisible) {
+            // Close locally (no emit)
+            console.log('🚪 [CLIENT] Closing slot game locally');
+            setVisibleModal(null);
+            setActiveGame(null);
+            setSlotGameOpenedBy(null);
+            setSlotGameVisible(false);
+            return;
+        }
+
+        // Close any other game first (local)
+        if (activeGame && activeGame !== 'slot-game') {
+            handleGameClose(activeGame);
+        }
+
+        // Local open only (no emit/broadcast)
+        const userOpenData = {
+            userId: userData?.userid,
+            userName: userData?.screenName,
+            timestamp: Date.now()
+        };
+        console.log('🎰 [CLIENT] Opening slot game locally (individual)');
+        setVisibleModal('slot-game');
+        setSlotGameOpenedBy(userOpenData);
+        setActiveGame('slot-game');
+        setSlotGameVisible(true);
+    };
+
+    const handleGameClose = (gameType) => {
+        console.log(`🚪 [CLIENT] Closing ${gameType} locally`);
+        if (gameType === 'luckyWheel') {
+            setLuckyWheelVisible(false);
+            setLuckyWheelOpenedBy(null);
+        } else if (gameType === 'slot-game') {
+            setSlotGameVisible(false);
+            setSlotGameOpenedBy(null);
+        }
+        if (activeGame === gameType) {
+            setActiveGame(null);
+        }
+        setVisibleModal(null);
+    };
+
+
+    const handleLuckyWheelClose = () => {
+        console.log('🚪 [CLIENT] Closing lucky wheel locally for user:', userData?.userid);
+
+        // Emit to server that this user is closing the wheel
+        socket.emit('user-closed-lucky-wheel', streamInfo?.roomID.toString(), userData?.userid);
+
+        // Local close
+        handleGameClose('luckyWheel');
+    };
+
+    // Add cleanup effect
+    useEffect(() => {
+        return () => {
+            // Clean up Lucky Wheel state when component unmounts
+            if (luckyWheelVisible && streamInfo?.roomID && userData?.userid) {
+                socket.emit('user-closed-lucky-wheel', streamInfo.roomID.toString(), userData.userid);
+            }
+        };
+    }, [luckyWheelVisible, streamInfo?.roomID, userData?.userid]);
+
+
+    const handleSlotGameClose = () => {
+        handleGameClose('slot-game');
+    };
+
+    // ✅ UPDATED: Check if should show red dot on lucky wheel button
+    const shouldShowRedDotOnLuckyWheel = () => {
+        const show = isLuckyWheelActiveInRoom &&
+            !luckyWheelVisible &&
+            visibleModal !== 'luckyWheel' &&
+            activeGame !== 'slot-game'; // Don't show red dot if playing slot game
+
+        // Debug logging
+        if (isLuckyWheelActiveInRoom) {
+            console.log('🔴 [Red Dot Debug] Conditions:', {
+                isLuckyWheelActiveInRoom,
+                luckyWheelVisible,
+                visibleModal,
+                activeGame,
+                shouldShow: show,
+            });
+        }
+
+        if (show) {
+            console.log('🔴 [Red Dot] Showing (room active, not seen, not playing)');
+        }
+        return show;
+    };
+
+    // ✅ Handle user joining room - request current lucky wheel status
+    useEffect(() => {
+        if (streamInfo?.roomID && userData?.userid) {
+            console.log('🔍 [CLIENT] Requesting current lucky wheel status for room:', streamInfo.roomID);
+            socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
+        }
+    }, [streamInfo?.roomID, userData?.userid]);
+
+
+
+    useEffect(() => {
+        console.log('isLuckyWheelActiveInRoom', isLuckyWheelActiveInRoom);
+    }, [isLuckyWheelActiveInRoom]);
 
     // const onShare = async () => {
     //     try {
@@ -1592,7 +1805,7 @@ const StreamRoom = ({
                                             {!isHost && (
                                                 <TouchableOpacity
                                                     style={styles.strRoomFooterSocialActionsBtn}
-                                                    onPress={() => setVisibleModal('slot-game')}
+                                                    onPress={handleSlotGameOpen}
                                                 >
                                                     <Image
                                                         style={{
@@ -1608,7 +1821,7 @@ const StreamRoom = ({
                                             {!isHost && (
                                                 <TouchableOpacity
                                                     style={styles.strRoomFooterSocialActionsBtn}
-                                                    onPress={() => setVisibleModal('luckyWheel')}
+                                                    onPress={handleLuckyWheelOpen}
                                                 >
                                                     <Animated.Image
                                                         style={{
@@ -1620,6 +1833,10 @@ const StreamRoom = ({
                                                         resizeMode="contain"
 
                                                     />
+                                                    {/* Red dot for new users or when lucky wheel is available */}
+                                                    {shouldShowRedDotOnLuckyWheel() && (
+                                                        <View style={styles.redDot} />
+                                                    )}
                                                 </TouchableOpacity>
                                             )}
                                             {/* send friend request to host  */}
@@ -2095,32 +2312,31 @@ const StreamRoom = ({
             }
 
             {/* Lucky Wheel Modal */}
-            {
-                visibleModal === 'luckyWheel' && (
-                    <LuckyWheelModal
-                        visible={visibleModal === 'luckyWheel'}
-                        onClose={() => {
-                            setVisibleModal(null);
-                        }}
-                        userData={userData}
-                        hostDetails={userDetails}
-                        RoomID={streamInfo?.roomID}
-                    />
-                )
+            {(visibleModal === 'luckyWheel' || luckyWheelVisible) && (
+                <LuckyWheelModal
+                    visible={visibleModal === 'luckyWheel' || luckyWheelVisible}
+                    onClose={handleLuckyWheelClose}
+                    userData={userData}
+                    hostDetails={userDetails}
+                    RoomID={streamInfo?.roomID}
+                    openedBy={luckyWheelOpenedBy}
+                    isSelfOpened={visibleModal === 'luckyWheel'}
+                    setIsLuckyWheelActiveInRoom={setIsLuckyWheelActiveInRoom}
+                />
+            )
             }
-            {/* Lucky Wheel Modal */}
-            {
-                visibleModal === 'slot-game' && (
-                    <SlotGameModal
-                        visible={visibleModal === 'slot-game'}
-                        onClose={() => {
-                            setVisibleModal(null);
-                        }}
-                        userData={userData}
-                        hostDetails={userDetails}
-                        roomId={streamInfo?.roomID}
-                    />
-                )
+            {/* Slot Game Modal */}
+            {(visibleModal === 'slot-game' || slotGameVisible) && (
+                <SlotGameModal
+                    visible={visibleModal === 'slot-game' || slotGameVisible}
+                    onClose={handleSlotGameClose}
+                    userData={userData}
+                    hostDetails={userDetails}
+                    roomId={streamInfo?.roomID}
+                    openedBy={slotGameOpenedBy}
+                    isSelfOpened={visibleModal === 'slot-game'}
+                />
+            )
             }
         </>
     );
