@@ -11,7 +11,7 @@ import {
   LogBox,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,30 +20,62 @@ import Geolocation from 'react-native-geolocation-service';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
+
+// context and styles
+import { ThemeContext } from './src/context/ThemeContext';
+import { themeStyles } from './assets/styles/ThemeStyles';
+
+// api client and constants
+import Apiclient from './src/utils/Apiclient';
+import { SendErrorTotheServer, socket } from './src/utils/constant';
+
+// screens
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
-// import { ProfileScreen } from './src/screens/ProfileScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
 import { useAppContext } from './src/context/AppContext';
-// import { debounceStorage } from './src/utils/debounceStorage';
-import Apiclient from './src/utils/Apiclient';
 import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
 import ProfileScreenModal from './src/modals/ProfileScreenModal';
-import { ThemeContext } from './src/context/ThemeContext';
-import { themeStyles } from './assets/styles/ThemeStyles';
 import { ChatScreen } from './src/screens/ChatScreen';
-import { SendErrorTotheServer, socket } from './src/utils/constant';
+import SettingsProfile from './src/screens/SettingsProfile';
+
+// components and modals
 import NetworkCheck from './src/components/NetworkCheck';
 import AvatarPrevModal from './src/modals/AvatarPrevModal';
 import ReportUserModal from './src/modals/ReportUserModal';
 import CameraActionSheet from './src/components/CameraActionSheet';
+import { ProfileDescription } from './src/modals/ProfileDescription';
+
 
 const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();;
+const Tab = createBottomTabNavigator();
+
+const ProfileModalWithNavigation = ({
+  visible,
+  onClose,
+  profileData,
+  isMainProfile,
+  isProfileAvatarUpdate,
+}) => {
+  const navigation = useNavigation();
+
+  console.log('Navigation available:', !!navigation);
+
+  return (
+    <ProfileScreenModal
+      visible={visible}
+      onClose={onClose}
+      profileData={profileData}
+      isMainProfile={isMainProfile}
+      isProfileAvatarUpdate={isProfileAvatarUpdate}
+      navigation={navigation} // Pass navigation as prop
+    />
+  );
+};
 
 // Custom Tab Bar Component to handle Profile Modal
 const CustomTabBar = ({ state, descriptors, navigation }) => {
@@ -58,6 +90,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
     setModalStage,
     setShowAvatarPreview,
     setAvatarToPreview,
+    setProfileUserData,
+    profileUserData,
   } = useAppContext();
   const isDark = theme === 'dark';
 
@@ -184,21 +218,36 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         })}
       </View>
 
-      {/* Profile Modal */}
-      {modalVisibleStage === 'profile-screen-modal' && modalStage === 'first' && (
-        <ProfileScreenModal
-          visible={modalVisibleStage === 'profile-screen-modal'}
-          onClose={() => {
-            setModalVisibleStage(null);
-            setShowAvatarPreview(false);
-            setAvatarToPreview(null);
-            setModalStage('first');
-          }}
-          profileData={userData}
-          isMainProfile={true}
-          isProfileAvatarUpdate={true}
-        />
-      )}
+      <>
+        {/* Profile Modal */}
+        {modalVisibleStage === 'profile-screen-modal' && modalStage === 'first' && (
+          <ProfileModalWithNavigation
+            visible={modalVisibleStage === 'profile-screen-modal'}
+            onClose={() => {
+              setModalVisibleStage(null);
+              setShowAvatarPreview(false);
+              setAvatarToPreview(null);
+              setModalStage('first');
+            }}
+            profileData={userData}
+            isMainProfile={true}
+            isProfileAvatarUpdate={true}
+          />
+        )}
+
+        {/* friend profile modal */}
+        {modalVisibleStage === 'friend-profile-modal' && modalStage === 'second' && (
+          <ProfileModalWithNavigation
+            visible={modalVisibleStage === 'friend-profile-modal'}
+            onClose={() => {
+              setModalVisibleStage(null);
+              setModalStage('first');
+              setProfileUserData({});
+            }}
+            profileData={profileUserData}
+          />
+        )}
+      </>
     </>
   );
 };
@@ -287,6 +336,7 @@ const App = () => {
     setProfileUserId,
     profileUserData,
     setProfileUserData,
+    setProfileDescription,
   } = useAppContext();
 
   const hasFetchedAddress = useRef(false); // Prevent multiple fetches
@@ -606,6 +656,23 @@ const App = () => {
                     />
                   )}
                 </Stack.Screen>
+                <Stack.Screen name="SettingsProfile">
+                  {(props) => (
+                    <SettingsProfile
+                      {...props}
+                      onLogout={handleLogout}
+                      userData={userData}
+                    />
+                  )}
+                </Stack.Screen>
+                {/* <Stack.Screen name="Messages">
+                  {(props) => (
+                    <MessageListScreen
+                      {...props}
+                      userData={userData}
+                    />
+                  )}
+                </Stack.Screen> */}
                 <Stack.Screen name="ChatScreen"
                   options={{
                     windowSoftInputMode: "adjustResize",
@@ -649,6 +716,19 @@ const App = () => {
         />
       )}
 
+      {/* profile avatar update modal */}
+      {modalVisibleStage === 'profile-description' && modalStage === 'second' && (
+        <ProfileDescription
+          visible={modalVisibleStage === 'profile-description'}
+          onClose={() => {
+            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+            setModalStage('first');
+            setProfileUserData({});
+            setProfileUserId(null);
+          }}
+        />
+      )}
+
       {/* user report modal */}
       {modalVisibleStage === 'report-user' && modalStage === 'second' && (
         <ReportUserModal
@@ -676,19 +756,6 @@ const App = () => {
           title="Update Profile Picture"
           options={['Take Photo', 'Choose from Gallery', 'Cancel']}
           theme={theme}
-        />
-      )}
-
-      {/* friend profile modal */}
-      {modalVisibleStage === 'friend-profile-modal' && modalStage === 'second' && (
-        <ProfileScreenModal
-          visible={modalVisibleStage === 'friend-profile-modal'}
-          onClose={() => {
-            setModalVisibleStage(null);
-            setModalStage('first');
-            setProfileUserData({});
-          }}
-          profileData={profileUserData}
         />
       )}
     </ErrorBoundary>

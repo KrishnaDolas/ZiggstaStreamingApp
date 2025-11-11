@@ -151,7 +151,7 @@ const SearchModal = ({ visible, onClose,
                                 contentContainerStyle={{ paddingBottom: 100 }}
                             >
                                 <View style={styles.strHedSearchTabBox}>
-                                    {['user', 'category'].map((type) => (
+                                    {['user'].map((type) => (
                                         <TouchableOpacity
                                             key={type}
                                             onPress={() => {
@@ -199,18 +199,32 @@ const SearchModal = ({ visible, onClose,
                                             <Ionicons name="close-circle" size={20} color="#888" />
                                         </TouchableOpacity>
                                     )} */}
-                                    <View style={[styles.strHedSearchModalFormBtnBox]}>
-                                        <TouchableOpacity onPress={handleSearchByUser}>
+                                     <TouchableOpacity style={{
+                                            borderRadius: 30,
+                                            marginHorizontal: 7,
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden',
+                                            minWidth: 80,
+                                            height: 45,
+                                        }} onPress={handleSearchByUser}>
                                             <LinearGradient
                                                 colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
                                                 start={{ x: 0.15, y: 1 }}
                                                 end={{ x: 1, y: 0 }}
-                                                style={styles.strHedSearchModalSearchBtn}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    right: 0,
+                                                    bottom: 0,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                }}
                                             >
                                                 <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Search</Text>
                                             </LinearGradient>
                                         </TouchableOpacity>
-                                    </View>
                                 </View>
 
                                 {/* category data */}
@@ -223,9 +237,9 @@ const SearchModal = ({ visible, onClose,
                                                     !selectedCategory.includes(item.categoryID) && selectedCategory.length >= 3
                                                 }
                                                 style={[
-                                                    styles.modalCategoryButton,
-                                                    selectedCategory.includes(item.categoryID) && styles.modalCategoryButtonActive,
-                                                    { margin: 7, opacity: !selectedCategory.includes(item.categoryID) && selectedCategory.length >= 3 ? 0.5 : 1 }
+                                                    styles.categoryBtn,
+                                                    selectedCategory.includes(item.categoryID) && styles.categoryBtnActive,
+                                                    { margin: 5, opacity: !selectedCategory.includes(item.categoryID) && selectedCategory.length >= 3 ? 0.5 : 1 }
                                                 ]}
                                                 onPress={() => toggleSelectCategory(item)}
                                             >

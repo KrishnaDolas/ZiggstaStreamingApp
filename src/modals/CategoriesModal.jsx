@@ -7,6 +7,7 @@ import { Dimensions, ScrollView } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Colors from '../../assets/styles/Colors';
+import LinearGradient from 'react-native-linear-gradient';
 const screenHeight = Dimensions.get('window').height;
 
 const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, setGetselectcategory }) => {
@@ -37,11 +38,6 @@ const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, se
         onClose(); // Close modal
     };
 
-
-    useEffect(() => {
-        console.log('getselectcategory', getselectcategory);
-    }, [getselectcategory]);
-
     return (
         <>
             <Modal
@@ -69,16 +65,27 @@ const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, se
                     shadowOpacity: 0.15,
                     shadowRadius: 6,
                     elevation: 8,
+                    paddingBottom: 5,
                 }}>
                     {/* close modal */}
                     <TouchableOpacity onPress={onClose} style={[styles.profileModalClose, { marginBottom: 5 }]}>
                         <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
-                    <View style={[styles.mySettingSubModalTitleBox]}>
+                    <View style={[styles.mySettingSubModalTitleBox, { paddingTop: 0 }]}>
                         <Text style={{ fontSize: 20, marginLeft: 10, fontWeight: '500', color: theme === 'light' ? '#000' : '#fff' }}>Categories</Text>
                     </View>
-                    <View style={[styles.profileSettingModalBody, { height: screenHeight * 0.6 - 40, marginTop: 10 }]}>
-                        <ScrollView contentContainerStyle={{ alignItems: 'center', justifyContent: 'center', paddingBottom: 30 }}>
+                    <View style={[
+                        styles.profileSettingModalBody,
+                        {
+                            height: screenHeight * 0.6 - 40,
+                        }]}>
+                        <ScrollView
+                            contentContainerStyle={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                paddingBottom: 20,
+                            }}
+                            showsVerticalScrollIndicator={false}>
                             <View style={styles.modalCategoryContainer}>
                                 {categoryData.map((item, index) => {
                                     return (
@@ -86,8 +93,8 @@ const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, se
                                             key={item.categoryID}
                                             onPress={() => selectedcategory(item)}
                                             style={[
-                                                styles.modalCategoryButton,
-                                                selectedinterest.includes(item.categoryID) && styles.modalCategoryButtonActive, // Apply selected style
+                                                styles.categoryBtn,
+                                                selectedinterest.includes(item.categoryID) && styles.categoryBtnActive, // Apply selected style
                                             ]}
                                         >
                                             <Text style={styles.modalCategoryText}>{item.categoryName}</Text>
@@ -95,27 +102,47 @@ const CategoriesModal = ({ visible, onClose, categoryData, getselectcategory, se
                                     );
                                 })}
                             </View>
-                            {/* Confirm Button */}
+                        </ScrollView>
+                        {/* Confirm Button */}
+                        <View
+                            style={{
+                                paddingVertical: 10,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
                             <TouchableOpacity
                                 onPress={handleSend}
                                 style={{
-                                    backgroundColor: '#d93a63',
-                                    paddingVertical: 12,
-                                    paddingHorizontal: 30,
-                                    borderRadius: 25,
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.2,
-                                    shadowRadius: 4,
-                                    elevation: 5,
-                                    marginTop: 25,
+                                    borderRadius: 30,
+                                    marginHorizontal: 7,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                    width: 80,
+                                    height: 40,
                                 }}
                             // onPress={handleUpdateInterests}
                             >
-                                <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Ok</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
+                                <LinearGradient
+                                    colors={['rgba(184, 58, 243, 1)', 'rgba(105, 80, 251, 1)']}
+                                    start={{ x: 0.15, y: 1 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '600' }}>Ok</Text>
+                                </LinearGradient>
 
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </Modal>

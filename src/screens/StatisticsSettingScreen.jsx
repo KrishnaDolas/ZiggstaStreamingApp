@@ -1,39 +1,23 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Dimensions, AppState } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StatusBar, Dimensions, AppState } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import { ActivityIndicator } from 'react-native';
-import ProfileSocialsModal from '../components/ProfileSocialsModal';
-import ProfileSettingModal from '../components/ProfileSettingModal';
-import ShopManagerDetailsModal from '../components/ShopManagerDetailsModal';
 import Apiclient from '../utils/Apiclient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BankDetailsModal from '../modals/BankDetailsModal';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppContext } from '../context/AppContext';
 import { useFocusEffect } from '@react-navigation/native';
-import { getGenderFallbackImage } from '../utils/constant';
+import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
 import LinearGradient from 'react-native-linear-gradient';
 import themeColors from '../../assets/styles/Colors';
-import MySettingSubModal from '../modals/MySettingSubModal';
-import ChangeEmailModal from '../modals/ChangeEmailModal';
-import ChangePasswordModal from '../modals/ChangePasswordModal';
-import EmailConfirmModal from '../modals/EmailConfirmModal';
-import UserInterestUpdateModal from '../modals/UserInterestUpdateModal';
-import BankAddModal from '../modals/BankAddModal';
-
+const screenWidth = Dimensions.get('window').width;
+const cardWidth = screenWidth / 2 - 25; // 3 columns with margin
 
 const screenHeight = Dimensions.get('window').height;
 export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const { theme } = useContext(ThemeContext);
-    const { profileData,
-        modalStage,
-        setModalStage,
-        modalLabelName,
-        setModalLabelName,
-        modalVisibleStage,
-        setModalVisibleStage,
-    } = useAppContext();
+    const { profileData } = useAppContext();
     const insets = useSafeAreaInsets();
     const [visibleModal, setVisibleModal] = useState(null);
     const [averageIncomeData, setAverageIncomeData] = useState({});
@@ -44,6 +28,12 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     const [isTotalTimeLoading, setIsTotalTimeLoading] = useState(false);
     const [liveOnlineTime, setLiveOnlineTime] = useState('');
     const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [avgStreamRevenue, setAvgStreamRevenue] = useState(0);
+    const [averageStreamViews, setAverageStreamViews] = useState(0);
+    const [averageStreamTime, setAverageStreamTime] = useState('0:00:00');
+    const [averageViewerTime, setAverageViewerTime] = useState('0');
+    const [averageMultiView, setAverageMultiView] = useState(0);
+    const [avgFavouritesCount, setAvgFavouritesCount] = useState('0');
 
     const timerRef = useRef(null);
     const startTimeRef = useRef(0);
@@ -187,10 +177,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         }
     }, [userData.userid]);
 
-    // useEffect(() => {
-    //     getTopGifters();
-    // }, [getTopGifters]);
-
     useFocusEffect(
         useCallback(() => {
             getTopGifters();
@@ -212,6 +198,141 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
     );
 
 
+    // avg stream revenue
+
+    const getAvgStreamRevenue = useCallback(async () => {
+        const formData = {
+            userid: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/avgStreamRevenue', formData);
+            if (response.data.success) {
+                setAvgStreamRevenue(response.data.avgRevenue);
+            } else {
+                setAvgStreamRevenue(0);
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAvgStreamRevenue');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAvgStreamRevenue();
+    }, [getAvgStreamRevenue]);
+
+    // avg stream views
+
+    const getAverageStreamViews = useCallback(async () => {
+        const formData = {
+            user_id: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/averageStreamViews', formData);
+            if (response.data.success) {
+                setAverageStreamViews(response.data.averageViews);
+            } else {
+                setAverageStreamViews(0);
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAverageStreamViews');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAverageStreamViews();
+    }, [getAverageStreamViews]);
+
+
+    // avg stream time
+
+    const getAverageStreamTime = useCallback(async () => {
+        const formData = {
+            hostID: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/averageStreamTime', formData);
+            if (response.data.success) {
+                setAverageStreamTime(response.data.averageStreamTime);
+            } else {
+                setAverageStreamTime('0:00:00');
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAverageStreamTime');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAverageStreamTime();
+    }, [getAverageStreamTime]);
+
+
+    // avg viewer time
+
+    const getAverageViewerTime = useCallback(async () => {
+        const formData = {
+            hostID: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/averageViewerTime', formData);
+            if (response.data.success) {
+                setAverageViewerTime(response.data.averageViewerTime);
+            } else {
+                setAverageViewerTime('0:00:00');
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAverageViewerTime');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAverageViewerTime();
+    }, [getAverageViewerTime]);
+
+
+    // avg multi view
+
+    const getAverageMultiView = useCallback(async () => {
+        const formData = {
+            hostID: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/avgmultiViews', formData);
+            if (response.data.success) {
+                setAverageMultiView(response.data.count);
+            } else {
+                setAverageMultiView(0);
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAverageMultiView');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAverageMultiView();
+    }, [getAverageMultiView]);
+
+
+    // avg Favourites Gained
+
+    const getAverageFavouritesGained = useCallback(async () => {
+        const formData = {
+            hostID: userData.userid,
+        };
+        try {
+            const response = await Apiclient.post('/profile/avgFavouritesGained', formData);
+            if (response.data.success) {
+                setAvgFavouritesCount(response.data.avgFavouritesCount);
+            } else {
+                setAvgFavouritesCount('0.0');
+            }
+        } catch (err) {
+            SendErrorTotheServer(err, 'getAverageMultiView');
+        }
+    }, [userData.userid]);
+
+    useEffect(() => {
+        getAverageFavouritesGained();
+    }, [getAverageFavouritesGained]);
 
     return (
         <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
@@ -226,14 +347,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                     translucent={false}
                 />
                 <>
-                    {/* Error Message */}
-                    {/* {isUserError ? (
-                    <View style={[styles.profileErrorBoxMain, themeStyles[theme].profileErrorBoxMain]}>
-                        <Text style={styles.profileErrorText}>
-                            {isUserError}
-                        </Text>
-                    </View>
-                ) : null} */}
                     {/* Fixed Header */}
                     <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                         <View style={[styles.profileBlockLeftBox]}>
@@ -281,7 +394,12 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
                     </View>
                     {/* Scrollable Content */}
-                    <ScrollView showsVerticalScrollIndicator={false} style={[styles.profileScrollContainer, themeStyles[theme].profileScrollContainer]}>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        style={[
+                            styles.profileScrollContainer,
+                            themeStyles[theme].profileScrollContainer,
+                        ]}>
                         {/* Stat Cards */}
                         <View style={styles.profileStatCards}>
                             <View style={[styles.profileStatCard, themeStyles[theme].profileStatCard]}>
@@ -337,7 +455,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                             </ScrollView>
                         </View>
                         {/* Action Buttons */}
-                        <View style={styles.profileButtonGrid}>
+                        {/* <View style={styles.profileButtonGrid}>
                             <TouchableOpacity
                                 onPress={() => {
                                     setModalVisibleStage('bank-details');
@@ -374,98 +492,144 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
                                 <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
                             </TouchableOpacity>
+                        </View> */}
+
+                        {/* Streaming stats */}
+                        <Text
+                            style={[
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                                { fontWeight: '400', paddingHorizontal: 0, }
+                            ]}
+                        >
+                            Streaming Stats
+                        </Text>
+                        <View style={styles.wDReferralStatsContainer}>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* avg stream revenue */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Stream Revenue</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image
+                                            source={require('../../assets/images/icons/icon_z.png')}
+                                            style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
+                                            resizeMode="contain"
+                                        />
+                                        <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{Number(avgStreamRevenue).toFixed(2)}</Text>
+                                    </View>
+                                </View>
+                                {/* avg stream views */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Stream Views</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Ionicons name="eye" size={18} color={theme === 'light' ? '#333' : '#fff'} />
+                                        <Text style={[styles.wdRefStateValue, { marginTop: 0, marginLeft: 5 }, themeStyles[theme].wdRefStateValue]}>{Number(averageStreamViews).toFixed(0)}</Text>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* avg stream time */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Stream Time</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>{averageStreamTime}</Text>
+                                </View>
+                                {/* avg viewer time */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Viewer Time</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>{averageViewerTime}</Text>
+                                </View>
+                            </View>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* avg favs gained */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Favs Gained</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>{Number(avgFavouritesCount).toFixed(2)}</Text>
+                                </View>
+                                {/* avg multi views */}
+                                <TouchableOpacity style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Avg Multi Views</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>{averageMultiView}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Referral stats */}
+                        <Text
+                            style={[
+                                styles.streamListMainTitle,
+                                themeStyles[theme].streamListMainTitle,
+                                { fontWeight: '400', paddingHorizontal: 0, paddingTop: 0 }
+                            ]}
+                        >
+                            Referral Stats
+                        </Text>
+                        <View style={[styles.wDReferralStatsContainer, { paddingBottom: 100 }]}>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* today's signup */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Today's Signup's</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>20</Text>
+                                </View>
+                                {/* Today Earning's */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Today Earning's</Text>
+                                    {/* <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>$ 180</Text> */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        {/* <Image
+                                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                            style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
+                                            resizeMode="contain"
+                                        /> */}
+                                        <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]} >
+                                            AU$ {Number(profileData?.CreditBalance).toFixed(0)}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* monthly signup */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Monthly Signup's</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>180</Text>
+                                </View>
+                                {/* monthly Earning's */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Monthly Earning's</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        {/* <Image
+                                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                            style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
+                                            resizeMode="contain"
+                                        /> */}
+                                        <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>
+                                            AU$ {Number(profileData?.CreditBalance).toFixed(0)}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={styles.wDReferralStatsRow}>
+                                {/* total signup */}
+                                <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Total Signup</Text>
+                                    <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>400</Text>
+                                </View>
+                                {/* total earnings */}
+                                <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                    <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Total Earnings</Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        {/* <Image
+                                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                            style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
+                                            resizeMode="contain"
+                                        /> */}
+                                        <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>
+                                            AU$ {Number(profileData?.CreditBalance).toFixed(0)}
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </ScrollView>
-                    {/* Modals */}
-                    {modalVisibleStage === 'setting' && modalStage === 'first' && (
-                        <ProfileSettingModal
-                            visible={modalVisibleStage === 'setting'}
-                            onClose={() => setModalVisibleStage(null)}
-                            onLogout={onLogout}
-                        />
-                    )}
-                    {modalVisibleStage === 'sub-setting' && modalStage === 'second' && (
-                        <MySettingSubModal
-                            visible={modalVisibleStage === 'sub-setting'}
-                            modalLabelName={modalLabelName}
-                            onClose={() => {
-                                setModalVisibleStage('setting');
-                                setModalStage('first');
-                                setModalLabelName(null);
-                            }}
-                        />
-                    )}
-                    {modalVisibleStage === 'change-email' && modalStage === 'third' && (
-                        <ChangeEmailModal
-                            visible={modalVisibleStage === 'change-email'}
-                            onClose={() => {
-                                setModalVisibleStage('sub-setting');
-                                setModalStage('second');
-                                setModalLabelName('My Account');
-                            }}
-                            userData={userData}
-                        />
-                    )
-                    }
-                    {modalVisibleStage === 'confirm-email' && modalStage === 'third' && (
-                        <EmailConfirmModal
-                            visible={modalVisibleStage === 'confirm-email'}
-                            onClose={() => {
-                                setModalVisibleStage('sub-setting');
-                                setModalStage('second');
-                                setModalLabelName('My Account');
-                            }}
-                        />
-                    )
-                    }
-                    {modalVisibleStage === 'change-password' && modalStage === 'third' && (
-                        <ChangePasswordModal
-                            visible={modalVisibleStage === 'change-password'}
-                            onClose={() => {
-                                setModalVisibleStage('sub-setting');
-                                setModalStage('second');
-                                setModalLabelName('My Account');
-                            }}
-                            userData={userData}
-                        />
-                    )
-                    }
-                    {modalVisibleStage === 'update-interest' && modalStage === 'third' && (
-                        <UserInterestUpdateModal
-                            visible={modalVisibleStage === 'update-interest'}
-                            onClose={() => {
-                                setModalVisibleStage('sub-setting');
-                                setModalStage('second');
-                                setModalLabelName('Search Settings');
-                            }}
-                        />
-                    )
-                    }
-                    {/* full screen modal */}
-                    {modalVisibleStage === 'bank-details' && (
-                        <BankDetailsModal
-                            visible={modalVisibleStage === 'bank-details'}
-                            onClose={() => setModalVisibleStage(null)}
-                            userData={userData}
-                        />
-                    )}
-                    {modalVisibleStage === 'add-bank' && modalStage === 'second' && (
-                        <BankAddModal
-                            visible={modalVisibleStage === 'add-bank'}
-                            onClose={() => {
-                                setModalVisibleStage('bank-details');
-                                setModalStage('first');
-                                setModalLabelName(null);
-                            }}
-                            userData={userData}
-                        />
-                    )}
-                    {visibleModal === 'shop-manager' && (
-                        <ShopManagerDetailsModal visible="true" onClose={() => setVisibleModal(null)} />
-                    )}
-                    {visibleModal === 'social' && (
-                        <ProfileSocialsModal visible="true" onClose={() => setVisibleModal(null)} userData={userData} />
-                    )}
                 </>
             </LinearGradient>
         </View>

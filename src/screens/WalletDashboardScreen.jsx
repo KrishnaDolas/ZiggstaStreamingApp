@@ -521,7 +521,7 @@ export const WalletDashboardScreen = () => {
                             </View>
 
                             {/* Referral stats */}
-                            <Text
+                            {/* <Text
                                 style={[
                                     styles.streamListMainTitle,
                                     themeStyles[theme].streamListMainTitle,
@@ -536,7 +536,7 @@ export const WalletDashboardScreen = () => {
                                         <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Balance</Text>
                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                             <Image
-                                                source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
+                                                source={require('../../assets/images/icons/icon_z.png')}
                                                 style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
                                                 resizeMode="contain"
                                             />
@@ -566,7 +566,7 @@ export const WalletDashboardScreen = () => {
                                         <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>?</Text>
                                     </View>
                                 </View>
-                            </View>
+                            </View> */}
                         </ScrollView>
                     </KeyboardAvoidingView>
 

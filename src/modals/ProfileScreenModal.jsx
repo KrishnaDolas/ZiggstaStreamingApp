@@ -8,6 +8,7 @@ import { PanResponder } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Feather from 'react-native-vector-icons/Feather';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
@@ -15,9 +16,14 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import Colors from '../../assets/styles/Colors';
 
-
-
-const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isProfileAvatarUpdate }) => {
+const ProfileScreenModal = ({
+    visible,
+    onClose,
+    profileData,
+    isMainProfile,
+    isProfileAvatarUpdate,
+    navigation,
+}) => {
     const { theme } = useContext(ThemeContext);
     const {
         setModalStage,
@@ -32,6 +38,7 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
         setProfileUserId,
         setProfileUserData,
         userData,
+        setProfileDescription,
     } = useAppContext();
     const screenHeight = Dimensions.get('window').height;
     const [layoutReady, setLayoutReady] = useState(false);
@@ -44,12 +51,23 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     // const [profileUserData, setProfileUserData] = useState({});
 
+    console.log('Navigation prop received:', !!navigation);
+
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
 
     useEffect(() => {
         setIsMainProfileOpened(isMainProfile ? true : false);
     }, [isMainProfile]);
+
+    // Store profile description when modal opens
+    useEffect(() => {
+        if (visible && userProfileDetails?.description) {
+            setProfileDescription(userProfileDetails.description);
+        }
+    }, [visible, userProfileDetails.description, setProfileDescription]);
+
+
 
     // Handle status bar and navigation bar visibility
     useEffect(() => {
@@ -324,6 +342,12 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
     }, []);
 
 
+    const handleProfileDescriptionOpen = () => {
+        setProfileUserId(profileUserId);
+        setModalVisibleStage('profile-description');
+        setModalStage('second');
+    };
+
     return (
         <>
             <Modal
@@ -348,16 +372,28 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                     ]}
                     {...panResponder.panHandlers}
                 >
-                    <View style={{ flexDirection: 'row', justifyContent: profileUserId === userData?.userid ? 'flex-end' : 'space-between', alignItems: 'center' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         {/* Header with Report button */}
-                        {profileUserId === userData?.userid ? null : (
-                            <TouchableOpacity
-                                onPress={handleReport}
-                                style={[styles.psmReportButton, themeStyles[theme].psmReportButton]}
-                            >
-                                <Text style={[styles.psmReportButtonText, themeStyles[theme].psmReportButtonText]}>Report</Text>
-                            </TouchableOpacity>
-                        )}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            {profileUserId === userData?.userid ? null : (
+                                <TouchableOpacity
+                                    onPress={handleReport}
+                                    style={[styles.psmReportButton, themeStyles[theme].psmReportButton]}
+                                >
+                                    <Text style={[styles.psmReportButtonText, themeStyles[theme].psmReportButtonText]}>Report</Text>
+                                </TouchableOpacity>
+                            )}
+                            {profileUserId === userData?.userid && (
+                                <TouchableOpacity
+                                    style={{ marginLeft: 5 }}
+                                    onPress={() => {
+                                        navigation.navigate('SettingsProfile');
+                                        onClose();
+                                    }}>
+                                    <Ionicons name="settings" size={25} color={theme === 'light' ? '#d93a63' : '#fff'} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                         {/* close modal */}
                         <TouchableOpacity onPress={onClose}>
                             <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
@@ -465,9 +501,27 @@ const ProfileScreenModal = ({ visible, onClose, profileData, isMainProfile, isPr
                                                         {/* Name and ID */}
                                                         <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDetails?.screenName}</Text>
                                                         {/* <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text> */}
-
+                                                        {userProfileDetails?.description !== null && userProfileDetails?.description !== '' && (
+                                                            <View style={[styles.psmProfileDesContainer, themeStyles[theme].psmProfileDesContainer]}>
+                                                                <Text style={[styles.psmProfileDes, themeStyles[theme].psmProfileDes]}>
+                                                                    {userProfileDetails?.description}
+                                                                </Text>
+                                                                {isProfileAvatarUpdate &&
+                                                                    <TouchableOpacity
+                                                                        style={[styles.profileDescIconContainer, themeStyles[theme].profileDescIconContainer]}
+                                                                        onPress={handleProfileDescriptionOpen}
+                                                                        activeOpacity={0.7}
+                                                                    >
+                                                                        <Feather name="edit" size={18} color={theme === 'light' ? 'rgba(105, 80, 251, 1)' : '#fff'} />
+                                                                    </TouchableOpacity>
+                                                                }
+                                                            </View>
+                                                        )}
                                                         {/* Stats Section */}
-                                                        <View style={styles.psmStatsContainer}>
+                                                        <View style={[
+                                                            styles.psmStatsContainer, {
+                                                                marginTop: userProfileDetails?.description !== null && userProfileDetails?.description !== '' ? 0 : 10,
+                                                            }]}>
                                                             <View style={styles.psmStatItem}>
                                                                 <Text style={styles.psmStatLabel}>STREAMS</Text>
                                                                 <Text style={styles.psmStatValue}>{userStreamRoomCount?.roomCount}</Text>

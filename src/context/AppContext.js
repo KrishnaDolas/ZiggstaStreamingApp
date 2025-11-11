@@ -27,7 +27,7 @@ export const AppProvider = ({ children }) => {
     const [isImagePickerOpen, setIsImagePickerOpen] = useState(false);
     const [profileUserId, setProfileUserId] = useState(null);
     const [profileUserData, setProfileUserData] = useState({});
-
+    const [profileDescription, setProfileDescription] = useState('');
 
     useEffect(() => {
         console.log('modalStage changed to ', modalStage);
@@ -36,8 +36,8 @@ export const AppProvider = ({ children }) => {
         console.log('is-main-profile ', isMainProfileOpened);
         console.log('profile-user-id', profileUserId);
         console.log('profile-user-data', profileUserData);
-
-    }, [modalStage, modalLabelName, modalVisibleStage, isMainProfileOpened, profileUserId, profileUserData]);
+        console.log('profileDescription', profileDescription);
+    }, [modalStage, modalLabelName, modalVisibleStage, isMainProfileOpened, profileUserId, profileUserData, profileDescription]);
 
     // Define fetchProfileDetails within AppProvider
     const fetchProfileDetails = useCallback(async () => {
@@ -249,7 +249,8 @@ export const AppProvider = ({ children }) => {
             setProfileUserId,
             profileUserData,
             setProfileUserData,
-
+            profileDescription,
+            setProfileDescription,
             // functions
             fetchProfileDetails,
             onSelectImage,

@@ -113,10 +113,12 @@ const MySettingSubModal = ({ visible, onClose }) => {
                 return [
                     // { label: 'Location tracking:', icon: 'map-marker-alt', type: 'toggle', rightArrowVisible: false },
                     {
-                        label: 'Blocked users:', icon: 'user-alt-slash', type: 'slider',
+                        label: 'Blocked users:', icon: 'user-alt-slash',
                         onPress: () => {
                             setFriendListType('blocked');
-                            navigation.navigate('Messages');
+                            setModalVisibleStage(null);
+                            setModalStage('');
+                            navigation.navigate('MainTabs', { screen: 'Messages' });
                         },
                         rightArrowVisible: true,
                     },

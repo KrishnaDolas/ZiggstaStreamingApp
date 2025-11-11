@@ -109,6 +109,12 @@ export const styles = StyleSheet.create({
     marginVertical: 10,
     fontSize: 16,
   },
+  bioDesCharCount: {
+    position: 'absolute',
+    right: 5,
+    bottom: -25,
+    fontSize: 12,
+  },
   button: {
     borderRadius: 30,
     marginHorizontal: 7,
@@ -706,6 +712,32 @@ export const styles = StyleSheet.create({
     paddingRight: 15,
   },
 
+
+  settingProfileContainer: {
+    flex: 1,
+  },
+  settingProfileLayoutContainer: {
+    paddingHorizontal: 20,
+  },
+  settingProfileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    // borderBottomColor: '#E0E0E0',
+    marginBottom: 20,
+  },
+  settingProfileBackButton: {
+    padding: 8,
+    marginRight: 15,
+  },
+  settingProfileHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    // color: '#333',
+  },
+
   profileButtonGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -834,7 +866,7 @@ export const styles = StyleSheet.create({
   },
 
   profileSettingModalBody: {
-    marginHorizontal: 15,
+    marginHorizontal: 5,
   },
 
   profileSettingMDarkLightSetting: {
@@ -1175,6 +1207,7 @@ export const styles = StyleSheet.create({
   strHedSearchModalTopForm: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent:'space-between',
     paddingVertical: 20,
   },
 
@@ -1347,6 +1380,15 @@ export const styles = StyleSheet.create({
   modalCategoryButtonActive: {
     backgroundColor: '#6a0dad',
   },
+  categoryBtn: {
+    backgroundColor: '#be0069',
+    borderRadius: 24,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  categoryBtnActive: {
+    backgroundColor: '#d93a63',
+  },
   modalCategoryText: {
     color: '#fff',
     fontSize: 14,
@@ -1492,13 +1534,13 @@ export const styles = StyleSheet.create({
   },
   strRoomHeaderLeft: {
     flexDirection: 'row',
-    alignItems:'center',
+    alignItems: 'center',
     backgroundColor: 'rgba(36, 32, 32, 0.75)',
     padding: 4,
     borderRadius: 30,
     borderColor: '#242020',
     borderWidth: 1,
-    paddingRight:15,
+    paddingRight: 15,
     // minWidth: 130
   },
 
@@ -1520,7 +1562,7 @@ export const styles = StyleSheet.create({
   strRoomHeaderLeftProfileSubInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap:5,
+    gap: 5,
   },
   strRoomHeaderLeftProfileSubText: {
     color: '#fff',
@@ -1681,7 +1723,7 @@ export const styles = StyleSheet.create({
 
   strRoomFooterSocialActionsBtn: {
     marginBottom: 0,
-    alignSelf:'flex-end',
+    alignSelf: 'flex-end',
     position: 'relative',
   },
   strRoomBottomBox: {
@@ -1963,13 +2005,13 @@ export const styles = StyleSheet.create({
   },
   wDReferralStatsContainer: {
     flex: 1,
-    paddingHorizontal: 18,
+    paddingHorizontal: 0,
     paddingVertical: 10,
   },
   wDReferralStatsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 14,
   },
   wdRefStateCard: {
     borderRadius: 8,
@@ -1985,7 +2027,7 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
   wdRefStateValue: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     marginTop: 5,
     // color: '#222',
@@ -2157,12 +2199,34 @@ export const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     // color: '#333',
-    marginBottom: 10,
+    marginBottom: 2,
   },
   psmProfileId: {
     fontSize: 14,
     color: '#999',
     marginBottom: 30,
+  },
+  psmProfileDesContainer: {
+    marginBottom: 5,
+    padding: 16,
+    borderRadius: 4,
+    // backgroundColor: '#f7f7f78c',
+    position: 'relative',
+    width: '96%',
+  },
+  psmProfileDes: {
+    fontSize: 15,
+    fontWeight: '500',
+    marginRight: 6,
+    textAlign: 'center',
+  },
+  profileDescIconContainer: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    padding: 6,
+    borderRadius: 3,
+    borderWidth: 0,
   },
   psmStatsContainer: {
     flexDirection: 'row',
@@ -2719,6 +2783,9 @@ export const themeStyles = {
     formContainer: { backgroundColor: '#fff' },
     text: { color: '#333' },
     input: { borderColor: '#eaeaeb', backgroundColor: '#f7f7f7', color: 'rgb(65, 65, 65)' },
+    bioDesCharCount: {
+      color: '#999',
+    },
     button: { color: 'white' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -2780,6 +2847,16 @@ export const themeStyles = {
     },
     psmProfileName: {
       color: '#333',
+    },
+    psmProfileDes: {
+      color: '#464646ff',
+    },
+    psmProfileDesContainer: {
+      backgroundColor: '#f7f7f78c',
+    },
+    profileDescIconContainer: {
+      backgroundColor: '#eaf6fb',
+      borderColor: '#fff',
     },
     psmOtherGifterCard: {
       backgroundColor: '#fff',
@@ -2865,6 +2942,15 @@ export const themeStyles = {
     },
     profileActionButtonText: {
       color: '#000',
+    },
+    settingProfileContainer: {
+      backgroundColor: '#fff',
+    },
+    settingProfileHeader: {
+      borderBottomColor: '#E0E0E0',
+    },
+    settingProfileHeaderTitle: {
+      color: '#333',
     },
     profileActionBtnBox: {
       backgroundColor: '#fff',
@@ -3103,6 +3189,9 @@ export const themeStyles = {
     formContainer: { backgroundColor: Colors.blackCardColor, borderWidth: 2, borderColor: Colors.blackCardBorderColor },
     text: { color: '#fff' },
     input: { borderColor: Colors.blackInputBorderColor, backgroundColor: Colors.blackInputBgColor, color: 'white' },
+    bioDesCharCount: {
+      color: '#fafafa',
+    },
     button: { color: 'black' },
     startButton: { backgroundColor: '#34a853' },
     stopButton: { backgroundColor: '#ea4335' },
@@ -3151,6 +3240,16 @@ export const themeStyles = {
     },
     psmProfileName: {
       color: '#fff',
+    },
+    psmProfileDesContainer: {
+      backgroundColor: '#1f1f1fff',
+    },
+    psmProfileDes: {
+      color: '#fff',
+    },
+    profileDescIconContainer: {
+      backgroundColor: '#202020ff',
+      borderColor: '#353535ff',
     },
     psmOtherGifterName: {
       color: '#fff',
@@ -3230,6 +3329,15 @@ export const themeStyles = {
       borderBottomColor: Colors.blackCardBorderColor,
     },
     profileActionButtonText: {
+      color: '#fff',
+    },
+    settingProfileContainer: {
+      backgroundColor: Colors.blackBgColor,
+    },
+    settingProfileHeader: {
+      borderBottomColor: Colors.blackDividers,
+    },
+    settingProfileHeaderTitle: {
       color: '#fff',
     },
     profileActionBtnBox: {

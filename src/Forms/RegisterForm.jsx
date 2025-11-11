@@ -31,10 +31,11 @@ const initialWidth = Dimensions.get('window').width; // Fallback width
 const questions = [
   {
     label: 'Enter Your Screen Name and Username',
-    fields: ['screenname', 'userName'], // Combined fields
+    fields: ['screenname', 'userName', 'description'], // Combined fields
     placeholders: {
       screenname: 'Enter your screen name',
       userName: 'Enter your username',
+      description: 'Enter your bio/description',
     },
   },
   {
@@ -102,6 +103,7 @@ export const RegisterForm = ({
   const [formData, setFormData] = useState({
     screenname: '',
     userName: '',
+    description: '',
     location: '',
     dob: getDefaultDOB(), // ✅ default 18 years ago
     gender: '',
@@ -332,7 +334,8 @@ export const RegisterForm = ({
         setUsernameStatus('available');
         setUsernameCheckMessage(''); // Clear message for available username
         setErrors(prev => ({ ...prev, userName: '' })); // Clear userName error
-        setIsValidStep(true); // Enable Next button
+        // setIsValidStep(true); // Enable Next button
+        validateStep();
       } else {
         setUsernameStatus('taken');
         setUsernameCheckMessage(res.data.message || 'Username is already taken.');
@@ -340,7 +343,8 @@ export const RegisterForm = ({
           ...prev,
           userName: res.data.message || 'Username is already taken.',
         })); // Set error
-        setIsValidStep(false); // Disable Next button
+        // setIsValidStep(false); // Disable Next button
+        validateStep();
       }
     } catch (err) {
       console.log('user name taken catch err', err);
@@ -444,7 +448,7 @@ export const RegisterForm = ({
   useEffect(() => {
     // Validate current step whenever formData changes
     validateStep();
-  }, [formData, step]);
+  }, [formData, step, usernameStatus]);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -594,7 +598,7 @@ export const RegisterForm = ({
           <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginTop: 10, marginBottom: 5 }}>
             Username
           </Text>
-          <View style={{ position: 'relative' }}>
+          <View style={{ position: 'relative', marginBottom: 15 }}>
             <TextInput
               style={[
                 styles.input,
@@ -629,6 +633,35 @@ export const RegisterForm = ({
               </Text>
             )}
           </View>
+          {/* description */}
+          <Text style={{ fontSize: 16, color: theme === 'dark' ? '#fff' : '#333', marginBottom: 5 }}>
+            Bio/description
+          </Text>
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              style={[styles.input, themeStyles[theme].input, { marginVertical: 0 }]}
+              placeholder={question.placeholders.description}
+              placeholderTextColor="#9d9d9d"
+              multiline
+              value={formData.description}
+              onChangeText={text => handleChange('description', text)}
+              maxLength={60}
+            />
+            <Text
+              style={[
+                styles.bioDesCharCount,
+                themeStyles[theme].bioDesCharCount,
+                formData.description.length >= 60 && { color: 'red' }
+              ]}>
+              {formData.description.length}/60
+            </Text>
+          </View>
+          {errors.description && (
+            <Text style={{ color: '#0035ff', marginTop: 5, marginBottom: 10 }}>
+              {errors.description}
+            </Text>
+          )}
+
         </View>
       );
     }
@@ -1043,6 +1076,7 @@ export const RegisterForm = ({
         country: formData.country || userAddress?.country || '',
         zipcode: userAddress?.postcode || formData.postcode || '',
         interests: interestIds.join(','),
+        description: formData.description,
       };
 
       console.log('✅ Final Payload to POST:', finalData);
@@ -1188,6 +1222,7 @@ export const RegisterForm = ({
       // Validate both screenname and userName
       const screenname = formData.screenname.trim();
       const userName = formData.userName;
+      const description = formData.description.trim();
 
       // Screen name validation
       if (!screenname || screenname.length < 3) {
@@ -1213,6 +1248,19 @@ export const RegisterForm = ({
       } else {
         error.userName = ''; // Explicitly clear error when valid
       }
+
+      // ✅ FIXED: Description validation - make sure to set isValid = false
+      if (!description) {
+        error.description = 'Bio/description is required';
+        isValid = false; // This was missing!
+      } else if (description.length > 60) {
+        error.description = 'Bio cannot exceed 60 characters';
+        isValid = false; // This was missing!
+      } else {
+        error.description = '';
+      }
+
+
     } else {
       const value = formData[currentQuestion.field];
       switch (currentQuestion.field) {
@@ -1258,6 +1306,7 @@ export const RegisterForm = ({
       ...prev,
       screenname: error.screenname !== undefined ? error.screenname : prev.screenname,
       userName: error.userName !== undefined ? error.userName : prev.userName,
+      description: error.description !== undefined ? error.description : prev.description,
       location: error.location !== undefined ? error.location : prev.location,
       dob: error.dob !== undefined ? error.dob : prev.dob,
       gender: error.gender !== undefined ? error.gender : prev.gender,
