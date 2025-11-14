@@ -18,6 +18,7 @@ import { useAppContext } from '../context/AppContext';
 import { ThemeContext } from '../context/ThemeContext';
 import CategoriesModal from '../modals/CategoriesModal';
 import MessageModal from '../modals/MessageModal';
+import LocationChangeModal from '../modals/LocationChangeModal';
 
 export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isInterestLoading, categoryData, isNearBy,
     setIsNearBy, isFavourite,
@@ -105,9 +106,9 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                             />
                             <Text style={styles.streamHeaderCountTitle}>{Number(profileData?.CreditBalance).toFixed(0)}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={{ marginRight: 12 }}>
+                        {/* <TouchableOpacity style={{ marginRight: 12 }}>
                             <Ionicons name='notifications' solid size={18} color={theme === 'light' ? '#000' : '#fff'} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
                 {route.name === 'Main' && (
@@ -194,8 +195,11 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                             </TouchableOpacity>
                         </ScrollView>}
                         {/* Right Fixed Icon */}
-                        <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setVisibleModal('search')}>
+                        {/* <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setVisibleModal('search')}>
                             <Ionicons name="search" size={20} color="#d93a63" />
+                        </TouchableOpacity> */}
+                        <TouchableOpacity style={styles.strHeaderFixedIcon} onPress={() => setVisibleModal('location-change')}>
+                            <Ionicons name="location" size={21} color="#d93a63" />
                         </TouchableOpacity>
                     </View>
                 )
@@ -295,6 +299,14 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                     )
                 }
                 {
+                    visibleModal === 'location-change' && (
+                        <LocationChangeModal
+                            visible="true"
+                            onClose={() => setVisibleModal(null)}
+                        />
+                    )
+                }
+                {
                     visibleModal === 'category' && (
                         <CategoriesModal
                             visible="true"
@@ -314,8 +326,7 @@ export const StreamListHeader = ({ setGetselectcategory, getselectcategory, isIn
                         />
                     )
                 }
-
-            </View >
+            </View>
         </>
 
     );

@@ -784,7 +784,7 @@ const LuckyWheelModal = (
                                 style={{ width: 16, height: 16, marginTop: 2, }}
                                 resizeMode="contain"
                             />
-                            <Text style={[mainStyle.chips]}>{displayCredit}</Text>
+                            <Text style={[mainStyle.chips]}>{Number(displayCredit).toFixed(0)}</Text>
                         </Animated.View>
                         <TouchableOpacity onPress={closeModal}>
                             <Ionicons name="close" size={28} color="#fff" />

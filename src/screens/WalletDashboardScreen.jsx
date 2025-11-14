@@ -508,7 +508,7 @@ export const WalletDashboardScreen = () => {
                                             <ActivityIndicator size="small" color="#fff" />
                                         ) : (
 
-                                            <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Place Withdraw request' : 'Transfer'} </Text>
+                                            <Text style={styles.wdFormSubmitText}>{activeTab === 'Deposit' ? 'Deposit' : activeTab === 'Withdraw' ? 'Withdraw' : 'Transfer'} </Text>
                                         )}
                                     </LinearGradient>
                                 </TouchableOpacity>

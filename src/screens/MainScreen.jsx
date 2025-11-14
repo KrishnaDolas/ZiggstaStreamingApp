@@ -162,22 +162,29 @@ const handleAppStateChange = (nextAppState) => {
     setconnectingpanel(false);
     setIsSocketConnected(true);
 
+    if (streamInfo?.roomID) {
+      // Small delay to ensure room is fully rejoined
+      setTimeout(() => {
+        socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
+      }, 500);
+    }
+
     if (!IsIdentify.current && userData && socket.connected && streamInfo) {
       const roomID = streamInfo?.roomID.toString();
-      
+
       // Add validation before reconnecting
       if (roomID && userData?.userid) {
         console.log(`🔄 [Client-Reconnect] Attempting reconnection to room ${roomID}`);
-        
-        socket.emit('reconnectUser', 
-          userData.userid, 
-          userData.screenName, 
-          roomID, 
-          isHost, 
-          userData.avatar, 
+
+        socket.emit('reconnectUser',
+          userData.userid,
+          userData.screenName,
+          roomID,
+          isHost,
+          userData.avatar,
           userData.gender
         );
-        
+
         if (isuserstreaming) {
           setTimeout(() => {
             requestStreamPermission();
@@ -188,7 +195,7 @@ const handleAppStateChange = (nextAppState) => {
       }
     }
   };
-  
+
   const HandleClearOldInstance = () => {
     localStreamRef.current = null;
     setLocalStream(null);

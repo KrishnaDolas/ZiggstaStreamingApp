@@ -18,6 +18,7 @@ import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket
 import { LeaderBoards } from './LeaderBoards';
 import LuckyWheelModal from '../modals/LuckyWheelModal';
 import SlotGameModal from '../modals/SlotGameModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
@@ -127,22 +128,81 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
 
     // Function to fetch rooms by location from the API
+    // const getRoomsByLocation = async () => {
+    //     try {
+    //         setIsInitialLoading(true);
+    //         const savedLocation = await AsyncStorage.getItem('userLocation');
+    //         if (savedLocation) {
+    //             const { lat, lon, formatted } = JSON.parse(savedLocation);
+    //             console.log('Saved user location:', lat, lon, formatted);
+    //             let queryParams = `geoLocation=${savedLocation ? lat : userAddress.latitude},${savedLocation ? lon : userAddress.longitude}`;
+
+    //             console.log('queryParams', queryParams);
+
+
+    //             const response = await Apiclient.get(`/rooms/getroomsbylocation?${queryParams}`);
+    //             if (response) {
+    //                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
+    //                 setApiRooms(livestreamlist || []);
+    //                 setNearByRoomData(livestreamlist || []);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching rooms:', error);
+    //     } finally {
+    //         setIsInitialLoading(false);
+    //     }
+    // };
+
+
     const getRoomsByLocation = async () => {
         try {
             setIsInitialLoading(true);
-            const response = await Apiclient.get(`/rooms/getroomsbylocation?geoLocation=${userAddress.latitude},${userAddress.longitude}`);
-            if (response) {
+
+            // Try to read stored location
+            const savedLocationStr = await AsyncStorage.getItem('userLocation');
+            let lat, lon, formatted;
+
+            if (savedLocationStr) {
+                const savedLocation = JSON.parse(savedLocationStr);
+                lat = savedLocation.lat;
+                lon = savedLocation.lon;
+                formatted = savedLocation.formatted;
+                console.log('✅ Saved user location:', lat, lon, formatted);
+            } else if (userAddress?.latitude && userAddress?.longitude) {
+                // Fallback if no saved location
+                lat = userAddress.latitude;
+                lon = userAddress.longitude;
+                console.log('📍 Using current location:', lat, lon);
+            } else {
+                console.warn('⚠️ No location available');
+                setIsInitialLoading(false);
+                return;
+            }
+
+            // Build query
+            const queryParams = `geoLocation=${lat},${lon}`;
+            console.log('queryParams =>', queryParams);
+
+            // API call
+            const response = await Apiclient.get(`/rooms/getroomsbylocation?${queryParams}`);
+
+            if (response?.data?.data) {
                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
                 setApiRooms(livestreamlist || []);
                 setNearByRoomData(livestreamlist || []);
+                console.log('🎥 Rooms fetched:', livestreamlist.length);
+            } else {
+                console.warn('⚠️ No rooms found for this location.');
+                setApiRooms([]);
+                setNearByRoomData([]);
             }
         } catch (error) {
-            console.error('Error fetching rooms:', error);
+            console.error('❌ Error fetching rooms:', error);
         } finally {
             setIsInitialLoading(false);
         }
     };
-
 
     // filter rooms based on selected categories
 
@@ -212,27 +272,57 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
     const callapiforcreateroom = async () => {
         try {
-            //7 character room ID
+            // Sort categories before sending
             const sortcategories = selectedCategoryIndices.sort((a, b) => a - b);
+
+            // Try to get userLocation from AsyncStorage
+            const savedLocationStr = await AsyncStorage.getItem('userLocation');
+            let lat, lon, formattedLocation;
+
+            if (savedLocationStr) {
+                const savedLocation = JSON.parse(savedLocationStr);
+                lat = savedLocation.lat;
+                lon = savedLocation.lon;
+                formattedLocation = savedLocation.formatted;
+                console.log('📍 Using saved location:', formattedLocation);
+            } else if (userAddress?.latitude && userAddress?.longitude) {
+                lat = userAddress.latitude;
+                lon = userAddress.longitude;
+                formattedLocation = userAddress.city;
+                console.log('📍 Using current GPS location');
+            } else {
+                console.warn('⚠️ No location found, defaulting to 0,0');
+                lat = 0;
+                lon = 0;
+                formattedLocation = 'Unknown';
+            }
+
             const roomData = {
-                RoomName: roomIdInput || " ",
+                RoomName: roomIdInput || ' ',
                 hostID: userData.userid,
                 startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
                 endDate: format(new Date(Date.now() + 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm:ss"), // 1 hour later
                 participants: '',
                 thumbNail: 'dummyimg.jpg',
-                physicalLocation: 'pune',
+                physicalLocation: formattedLocation,
                 Categories: sortcategories.join(','),
-                geoLocation: `${userAddress.latitude},${userAddress.longitude}`,
+                geoLocation: `${lat},${lon}`,
             };
 
+            console.log('🛰️ Room data payload:', roomData);
+
+
+            // API call
             const response = await Apiclient.post('/rooms', roomData);
+
             if (response.data.roomID) {
                 // setIsDisable(false); // Enable button after room creation
                 const roominfo = { ...roomData, roomID: response.data.roomID };
                 createRoom(roominfo);
                 setOpenStreamInputModal(false);
                 setRoomIdInput('');
+            } else {
+                console.warn('⚠️ Room creation failed:', response?.data);
             }
         } catch (error) {
             console.log(error);
@@ -241,6 +331,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             disableBtnRef.current = false;
         }
     };
+
+
     const viewerjoinedroom = (item) => {
         setCurrentStreamData(item);
         const roomId = item.roomID.toString();
@@ -491,14 +583,14 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                             <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                         </TouchableOpacity>
 
-                        
+
                         {
-                        // Temperory disable ads for all users
-                        
-                        /* {!subscriptionStatus?.success && (  
-                            <GoogleBannerAd />
-                        )} */
-                        
+                            // Temperory disable ads for all users
+
+                            /* {!subscriptionStatus?.success && (  
+                                <GoogleBannerAd />
+                            )} */
+
                         }
                         {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
                     <FontAwesome6 name="filter" size={24} color="#262628" />
