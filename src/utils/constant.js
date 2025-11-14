@@ -7,29 +7,27 @@ const userOtherFallbackImage = require('../../assets/images/default-avatar-trans
 
 //http://192.168.0.18:5000
 //https://streamalong.live
-export const socket = io('https://streamalong.live', {
-  transports: ['polling'], // Include both for fallback testing
-  reconnection: true,
-  reconnectionAttempts: Infinity,
-  reconnectionDelay: 1000,
-});
-
-
 // export const socket = io('https://streamalong.live', {
-//   path: '/socket.io/',
-//   transports: ['polling', 'websocket'], // Try polling first for React Native
+//   transports: ['polling'], // Include both for fallback testing
 //   reconnection: true,
 //   reconnectionAttempts: Infinity,
 //   reconnectionDelay: 1000,
-//   reconnectionDelayMax: 5000,
-//   timeout: 20000,
-//   // Important for cross-origin in React Native
-//   withCredentials: false,
-//   forceNew: true,
-//   // Additional options for better stability
-//   autoConnect: true,
-//   upgrade: true,
 // });
+
+
+
+export const socket = io('https://streamalong.live', {
+  path: '/socket.io/',
+  transports: ['websocket'],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000,
+  autoConnect: true,
+});
+
+
 
 
 
