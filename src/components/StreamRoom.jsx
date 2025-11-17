@@ -69,7 +69,10 @@ const StreamRoom = ({
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
-    const { userData, setIsInStreamRoom } = useAppContext()
+    const {
+        userData,
+        setIsInStreamRoom,
+    } = useAppContext();
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
     const [userChatInput, setUserChatInput] = useState('');
@@ -789,11 +792,12 @@ const StreamRoom = ({
     // send chat
     const HadleSendChat = () => {
         if (!userChatInput.trim()) {
-            Alert.alert('Chat Error', 'Please enter a message before sending.', [{ text: 'OK' }]);
+            // Alert.alert('Message', 'Please enter a message before sending.', [{ text: 'OK' }]);
             return;
         }
         HandleChatmessages(userChatInput);
         setUserChatInput('');
+        Keyboard.dismiss();
     };
 
     // get user details
@@ -948,28 +952,28 @@ const StreamRoom = ({
 
 
     // get total gifts received coins of host
-    const getTotalGiftsReceivedCoins = async () => {
-        try {
-            const params = {
-                toUserId: streamInfo?.hostID,
-                gifterCount: 10000,
-            };
-            const response = await Apiclient.post('/topgifters', params);
-            // console.log('total gifts coins res', response);
-            if (response.status === 200) {
-                const data = response?.data;
-                const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
-                console.log('total gift Amount of host', totalAmount);
-                setTotalGiftCoinReceived(totalAmount);
-            }
-        } catch (error) {
-            SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
-        }
-    };
+    // const getTotalGiftsReceivedCoins = async () => {
+    //     try {
+    //         const params = {
+    //             toUserId: streamInfo?.hostID,
+    //             gifterCount: 10000,
+    //         };
+    //         const response = await Apiclient.post('/topgifters', params);
+    //         // console.log('total gifts coins res', response);
+    //         if (response.status === 200) {
+    //             const data = response?.data;
+    //             const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
+    //             console.log('total gift Amount of host', totalAmount);
+    //             setTotalGiftCoinReceived(totalAmount);
+    //         }
+    //     } catch (error) {
+    //         SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
+    //     }
+    // };
 
-    useEffect(() => {
-        getTotalGiftsReceivedCoins();
-    }, []);
+    // useEffect(() => {
+    //     getTotalGiftsReceivedCoins();
+    // }, []);
 
     // get total gift by room
     const getTotalGiftByRoom = async () => {
@@ -1007,7 +1011,8 @@ const StreamRoom = ({
                 senderName: senderName,
                 ReceiverName: receiverName,
             });
-            await getTotalGiftsReceivedCoins();
+            // await getTotalGiftsReceivedCoins();
+            await GetUserDetails(streamInfo?.hostID);
             await getTotalGiftByRoom();
             setShowReceiveAnimation(true);
         } catch (error) {
@@ -1082,7 +1087,8 @@ const StreamRoom = ({
                     // Close modal
                     setGiftModalVisible(false);
                     // ✅ Call API again to update coins
-                    await getTotalGiftsReceivedCoins();
+                    // await getTotalGiftsReceivedCoins();
+                    await GetUserDetails(streamInfo?.hostID);
                     await getTotalGiftByRoom();
                 } else if (Responce.data.message) {
                     setMessage(Responce.data.message);
@@ -1156,6 +1162,8 @@ const StreamRoom = ({
     const HandleShowUi = () => {
         // setShowUI(!showUI);
         console.log('showUI', !showUI);
+        Keyboard.dismiss();
+        setIsTyping(false);
     };
 
     // update stream description
@@ -1723,13 +1731,22 @@ const StreamRoom = ({
                                                 <Text style={{ color: 'white', fontSize: 12, fontWeight: 600 }}>{formatCount(likeAndViewerCount.likeCount)}</Text>
                                             </View>
                                             {/* total coins */}
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                            {/* <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                                                 <Image
                                                     source={require('../../assets/images/icons/icon_z.png')}
                                                     style={{ width: 14, height: 14 }}
                                                     resizeMode="contain"
                                                 />
                                                 <Text style={{ color: '#ffea23', fontSize: 12, fontWeight: 600 }}>{totalGiftCoinReceived}</Text>
+                                            </View> */}
+                                            {/* total balance */}
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                                                <Image
+                                                    source={require('../../assets/images/icons/icon_z.png')}
+                                                    style={{ width: 14, height: 14 }}
+                                                    resizeMode="contain"
+                                                />
+                                                <Text style={{ color: '#ffea23', fontSize: 12, fontWeight: 600 }}>{Number(userDetails?.CreditBalance).toFixed(0)}</Text>
                                             </View>
                                         </View>
                                     </View>

@@ -159,29 +159,29 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
 
     // to get top gifters
 
-    const getTopGifters = useCallback(async () => {
-        const formData = {
-            toUserId: userData.userid,
-            gifterCount: 10,
-        };
-        setIsUserError('');
-        try {
-            const response = await Apiclient.post('/topgifters', formData);
-            if (response) {
-                setTopGiftersData(response.data || []);
-            } else {
-                setIsUserError('Failed to fetch top gifters data');
-            }
-        } catch (err) {
-            setIsUserError('Error fetching top gifters data: ' + err.message);
-        }
-    }, [userData.userid]);
+    // const getTopGifters = useCallback(async () => {
+    //     const formData = {
+    //         toUserId: userData.userid,
+    //         gifterCount: 10,
+    //     };
+    //     setIsUserError('');
+    //     try {
+    //         const response = await Apiclient.post('/topgifters', formData);
+    //         if (response) {
+    //             setTopGiftersData(response.data || []);
+    //         } else {
+    //             setIsUserError('Failed to fetch top gifters data');
+    //         }
+    //     } catch (err) {
+    //         setIsUserError('Error fetching top gifters data: ' + err.message);
+    //     }
+    // }, [userData.userid]);
 
-    useFocusEffect(
-        useCallback(() => {
-            getTopGifters();
-        }, [getTopGifters])
-    );
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         getTopGifters();
+    //     }, [getTopGifters])
+    // );
 
     useFocusEffect(
         useCallback(() => {
@@ -428,7 +428,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                             </View>
                         </View>
                         {/* History Table */}
-                        <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
+                        {/* <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
                             <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
                                 <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
                                 <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
@@ -453,7 +453,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                     );
                                 })}
                             </ScrollView>
-                        </View>
+                        </View> */}
                         {/* Action Buttons */}
                         {/* <View style={styles.profileButtonGrid}>
                             <TouchableOpacity

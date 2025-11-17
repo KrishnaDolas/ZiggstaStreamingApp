@@ -135,11 +135,11 @@ const BankAddModal = ({ visible, onClose, userData }) => {
             tempErrors.bankName = 'Invalid bank name';
         }
 
-        if (!formData.bankAddress.trim()) {
-            tempErrors.bankAddress = 'Bank address is required';
-        } else if (!regex.address.test(formData.bankAddress)) {
-            tempErrors.bankAddress = 'Invalid bank address';
-        }
+        // if (!formData.bankAddress.trim()) {
+        //     tempErrors.bankAddress = 'Bank address is required';
+        // } else if (!regex.address.test(formData.bankAddress)) {
+        //     tempErrors.bankAddress = 'Invalid bank address';
+        // }
 
         // Get formatted data for validation (with uppercase)
         const formattedData = getFormattedFormData();
@@ -639,7 +639,7 @@ const BankAddModal = ({ visible, onClose, userData }) => {
                                     minLength={2}  // Minimum for a valid bank name
                                 />
                                 <ErrorText field="bankName" />
-                                <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Address:</Text>
+                                {/* <Text style={[styles.bdLabel, themeStyles[theme].bdLabel]}>Bank Address:</Text>
                                 <TextInput
                                     style={[styles.bdInput, themeStyles[theme].bdInput]}
                                     value={formData.bankAddress}
@@ -650,7 +650,7 @@ const BankAddModal = ({ visible, onClose, userData }) => {
                                     maxLength={100} // Reasonable limit for addresses
                                     minLength={5}   // Minimum for a valid address
                                 />
-                                <ErrorText field="bankAddress" />
+                                <ErrorText field="bankAddress" /> */}
 
                                 {renderRegionFields()}
                                 <View style={{ marginVertical: 10 }}>

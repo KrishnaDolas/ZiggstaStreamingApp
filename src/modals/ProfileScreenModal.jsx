@@ -51,7 +51,6 @@ const ProfileScreenModal = ({
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     // const [profileUserData, setProfileUserData] = useState({});
 
-    console.log('Navigation prop received:', !!navigation);
 
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
@@ -240,7 +239,7 @@ const ProfileScreenModal = ({
         const getTopGifters = async () => {
             const formData = {
                 toUserId: profileUserId,
-                gifterCount: 3,
+                gifterCount: 10,
             };
             try {
                 const response = await Apiclient.post('/topgifters', formData);
@@ -385,12 +384,12 @@ const ProfileScreenModal = ({
                             )}
                             {profileUserId === userData?.userid && (
                                 <TouchableOpacity
-                                    style={{ marginLeft: 5 }}
+                                    style={{ marginLeft: 8 }}
                                     onPress={() => {
                                         navigation.navigate('SettingsProfile');
                                         onClose();
                                     }}>
-                                    <Ionicons name="settings" size={25} color={theme === 'light' ? '#d93a63' : '#fff'} />
+                                    <Ionicons name="settings" size={30} color={theme === 'light' ? '#d93a63' : '#fff'} />
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -645,7 +644,7 @@ const ProfileScreenModal = ({
                                                                     </View>
                                                                 </LinearGradient>
                                                                 <View style={styles.psmOtherGiftersContainer}>
-                                                                    {topGiftersData?.slice(1).map((gifter, index) => (
+                                                                    {topGiftersData?.slice(1, 3).map((gifter, index) => (
                                                                         <TouchableOpacity
                                                                             key={index}
                                                                             onPress={() => handleProfileOpen(gifter)}
@@ -686,6 +685,34 @@ const ProfileScreenModal = ({
                                                                     ))}
                                                                 </View>
                                                             </>)}
+                                                    </View>
+
+                                                    {/* History Table */}
+                                                    <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
+                                                        <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
+                                                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
+                                                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
+                                                            <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
+                                                        </View>
+                                                        <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
+                                                            {topGiftersData.length === 0 ? <>
+                                                                <>
+                                                                    <View style={{ height: screenHeight * 0.2, justifyContent: 'center', alignItems: 'center' }}>
+                                                                        <Text style={{ color: theme === 'light' ? '#777' : '#ccc', fontSize: 16, fontWeight: '500' }}>
+                                                                            No data found
+                                                                        </Text>
+                                                                    </View>
+                                                                </>
+                                                            </> : topGiftersData.map((item, index) => {
+                                                                return (
+                                                                    <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
+                                                                        <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
+                                                                        <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
+                                                                        <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
+                                                                    </View>
+                                                                );
+                                                            })}
+                                                        </ScrollView>
                                                     </View>
                                                 </View>
                                             </>

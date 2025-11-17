@@ -74,8 +74,19 @@ const LocationChangeModal = ({ visible, onClose }) => {
     };
 
     const handleSelectLocation = async item => {
-        setSelectedLocation(item);
-        setSearchText(item.formatted || '');
+
+        const city =
+            item.city || item.town || item.village || '';
+        const country = item.country || '';
+
+        const updatedItem = {
+            ...item,
+            city,
+            country,
+            formatted: item.formatted || `${city}, ${country}`,
+        };
+        setSelectedLocation(updatedItem);
+        setSearchText(updatedItem.formatted || '');
         setSearchResults([]);
     };
 
@@ -105,15 +116,14 @@ const LocationChangeModal = ({ visible, onClose }) => {
             alert('Please select a location first.');
             return;
         }
-
-        const { lat, lon, formatted } = selectedLocation;
+        const { lat, lon, formatted, city, country } = selectedLocation;
 
         try {
             await AsyncStorage.setItem(
                 'userLocation',
-                JSON.stringify({ lat, lon, formatted })
+                JSON.stringify({ lat, lon, formatted, city, country })
             );
-            console.log('✅ Location saved:', { lat, lon, formatted });
+            console.log('✅ Location saved:', { lat, lon, formatted, city, country });
             setHeaderMainTab('foryou');
             alert('Location saved successfully!');
             onClose();

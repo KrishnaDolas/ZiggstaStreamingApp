@@ -896,19 +896,69 @@ const handleAppStateChange = (nextAppState) => {
   }, []);
   
 
-  const joinRoom = (roomID, RoomInfo) => {
+  const joinRoom = async (roomID, RoomInfo) => {
     try {
-      HandleClearOldInstance()
-      if (!userData) return
+      HandleClearOldInstance();
+      if (!userData) return;
+
       if (RoomInfo?.isLive === 0) {
-        Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
+        Alert.alert(
+          'Stream Not Available',
+          'The host is not streaming at the moment. Please try again later.',
           [{ text: 'OK' }]
         );
         return;
       }
+
       setStreamInfo(RoomInfo);
-      const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', false, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar, userData?.gender);
+
+      // -----------------------------
+      // ✅ Step 1: Check Stored Location
+      // -----------------------------
+      let Address = { country: 'India', city: 'Pune' }; // default
+
+      try {
+        const savedLocStr = await AsyncStorage.getItem('userLocation');
+
+        if (savedLocStr) {
+          const savedLoc = JSON.parse(savedLocStr);
+
+          if (savedLoc?.city && savedLoc?.country) {
+            Address = {
+              city: savedLoc.city,
+              country: savedLoc.country
+            };
+          }
+        } else if (userAddress?.city || userAddress?.country) {
+          // -----------------------------
+          // ✅ Step 2: Fallback to userAddress
+          // -----------------------------
+          Address = {
+            city: userAddress?.city || 'Pune',
+            country: userAddress?.country || 'India',
+          };
+        }
+
+      } catch (e) {
+        console.log('Error reading userLocation', e);
+      }
+
+      // -----------------------------
+      // 🔥 Emit join room with final Address
+      // -----------------------------
+      socket.emit(
+        'joinRoom',
+        false,
+        roomID,
+        userData?.userid,
+        userData?.screenName,
+        Address,
+        userData?.avatar,
+        userData?.gender
+      );
+
+      console.log(`🚪 Joining room ${roomID} with address:`, Address);
+
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
     }
@@ -916,15 +966,66 @@ const handleAppStateChange = (nextAppState) => {
 
   const CreateRoom = async (RoomInfo) => {
     try {
-      HandleClearOldInstance()
-      const roomID = RoomInfo?.roomID.toString()
+      HandleClearOldInstance();
+
+      const roomID = RoomInfo?.roomID?.toString();
       setStreamInfo(RoomInfo);
-      const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city } : { country: 'India', city: 'Pune' }
-      socket.emit('joinRoom', true, roomID, userData?.userid, userData?.screenName, Address, userData?.avatar, userData?.gender);
+
+      // -------------------------------------
+      // ✅ Step 1: Prepare address (default)
+      // -------------------------------------
+      let Address = { country: 'India', city: 'Pune' };
+
+      try {
+        const savedLocStr = await AsyncStorage.getItem('userLocation');
+
+        if (savedLocStr) {
+          const savedLoc = JSON.parse(savedLocStr);
+
+          // -------------------------------------
+          // ✅ Step 2: Check saved userLocation
+          // -------------------------------------
+          if (savedLoc?.city && savedLoc?.country) {
+            Address = {
+              city: savedLoc.city,
+              country: savedLoc.country,
+            };
+          }
+
+        } else if (userAddress?.city || userAddress?.country) {
+          // -------------------------------------
+          // ✅ Step 3: Fallback to userAddress
+          // -------------------------------------
+          Address = {
+            city: userAddress?.city || 'Pune',
+            country: userAddress?.country || 'India'
+          };
+        }
+
+        console.log(`🚪 Joining room ${roomID} with address:`, Address);
+
+
+      } catch (e) {
+        console.log('Error reading saved userLocation', e);
+      }
+
+      // -------------------------------------
+      // 🔥 Emit joinRoom for HOST
+      // -------------------------------------
+      socket.emit(
+        'joinRoom',
+        true,                    // Host creating room
+        roomID,
+        userData?.userid,
+        userData?.screenName,
+        Address,
+        userData?.avatar,
+        userData?.gender
+      );
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }
-  }
+  };
 
 
   const startLocalStream = async () => {
