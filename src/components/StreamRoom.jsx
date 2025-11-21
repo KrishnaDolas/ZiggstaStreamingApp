@@ -1224,18 +1224,27 @@ const StreamRoom = ({
         const handleUserLeft = (leftUserId, userinfo) => {
             console.log('[StreamRoom] User left, cleaning stream:', leftUserId, userinfo);
 
-            // Remove from streamLayout based on socket ID
             setStreamLayout(prev => {
+                console.log('[StreamRoom] PREV layout before userLeft:', prev);
+
                 const updated = prev.filter(stream => {
-                    // For remote streams, check if the stream user ID matches the left user's socket ID
                     if (stream.type === 'remote') {
-                        const streamerInfo = streamerList.find(s => s.ID === leftUserId);
-                        // Remove if socket ID matches OR if streamer info is no longer available
-                        const shouldRemove = stream.userId === (streamerInfo?.UserID) || !streamerInfo;
+                        // --- FIX: Only remove tile of the user who actually left ---
+                        const shouldRemove = stream.socketId === leftUserId;
+
+                        console.log('[StreamRoom] CHECK stream tile:', {
+                            tileSocketId: stream.socketId,
+                            leftUserId,
+                            shouldRemove,
+                        });
 
                         if (shouldRemove && stream.stream) {
-                            // Clean up the stream
                             stream.stream.getTracks().forEach(track => {
+                                console.log('[StreamRoom] Stopping track for tile due to userLeft:', {
+                                    kind: track.kind,
+                                    id: track.id,
+                                    readyState: track.readyState,
+                                });
                                 track.stop();
                                 track.enabled = false;
                             });
@@ -1244,22 +1253,17 @@ const StreamRoom = ({
                         return !shouldRemove;
                     }
 
-                    // Keep local streams
-                    return true;
+                    return true; // keep local stream
                 });
 
-                console.log('[StreamRoom] Updated streamLayout after user left:', updated.length);
+                console.log('[StreamRoom] Updated streamLayout after user left:', updated.length, updated);
                 return updated;
             });
         };
 
-        // Listen for user leave events
         socket.on('userLeft', handleUserLeft);
-
-        return () => {
-            socket.off('userLeft', handleUserLeft);
-        };
-    }, [streamerList]); // Add streamerList as dependency
+        return () => socket.off('userLeft', handleUserLeft);
+    }, [streamerList]);
 
     useEffect(() => {
         // Clean up any streams with undefined names or missing streamer info
@@ -1300,6 +1304,100 @@ const StreamRoom = ({
     }, [streamerList]);
 
 
+    useEffect(() => {
+        console.log('🎛 [StreamLayout] REBUILD START', {
+            remoteStreamsCount: remoteStreams.length,
+            streamerListCount: streamerList.length,
+            isStreaming,
+            hasLocalStream: !!localStream,
+        });
+
+        const streams = [];
+
+        remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
+
+            console.log('🎛 [StreamLayout] PROCESS REMOTE', {
+                socketId: id,
+                hasStreamerInfo: !!StreamerInfo,
+                streamerInfo: StreamerInfo,
+                streamId: stream?.id,
+                videoTracks: stream?.getVideoTracks().map(t => ({
+                    id: t.id,
+                    readyState: t.readyState,
+                    enabled: t.enabled,
+                })),
+            });
+
+            if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
+                const hostInfo = streamerList.find((item) => item.IsHost === true);
+                let Alevel = audioLevel || 0.04;
+
+                if (stream && typeof stream.toURL === 'function') {
+                    const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+                    const streamData = {
+                        type: 'remote',
+                        stream,
+                        isFriend: isFriend,
+                        userId: StreamerInfo?.UserID,
+                        socketId: id,
+                        isMuted: StreamerInfo?.isMuted,
+                        Name: StreamerInfo?.Name,
+                        isSpeaking: isSpeaking,
+                        audioLevel: Alevel,
+                    };
+
+                    if (hostInfo?.ID === id) {
+                        console.log('🎛 [StreamLayout] PUSH REMOTE as HOST on top', { socketId: id });
+                        streams.unshift(streamData);
+                    } else {
+                        console.log('🎛 [StreamLayout] PUSH REMOTE normal', { socketId: id });
+                        streams.push(streamData);
+                    }
+                } else {
+                    console.log('⚠️ [StreamLayout] remote stream has no toURL or no stream', { socketId: id });
+                }
+            }
+        });
+
+        if (localStream && isStreaming) {
+            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
+            console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
+                socketId: socket.id,
+                Name: userData?.screenName,
+                videoTracks: localStream.getVideoTracks().map(t => ({
+                    id: t.id,
+                    readyState: t.readyState,
+                    enabled: t.enabled,
+                })),
+            });
+
+            const streamData = {
+                type: 'local',
+                stream: localStream,
+                isMuted: StreamerInfo?.isMuted,
+                Name: `${userData?.screenName}`,
+                socketId: socket.id,
+            };
+
+            if (isHost) {
+                streams.unshift(streamData);
+            } else {
+                streams.push(streamData);
+            }
+        }
+
+        console.log('🎛 [StreamLayout] FINAL LAYOUT', streams.map(s => ({
+            type: s.type,
+            socketId: s.socketId,
+            name: s.Name,
+            streamId: s.stream?.id,
+            hasVideoTracks: s.stream?.getVideoTracks().length,
+        })));
+
+        setStreamLayout(streams);
+    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
+
 
     // const onShare = async () => {
     //     try {
@@ -1329,12 +1427,29 @@ const StreamRoom = ({
                 {streamLayout.length === 1 ? (
                     <Pressable onPress={HandleShowUi}>
                         <View style={styles.videoContainer}>
-                            <RTCView
-                                streamURL={streamLayout[0]?.stream.toURL()}
-                                style={styles.fullScreenVideo}
-                                objectFit="cover"
-                                mirror={streamLayout[0]?.type === 'local' && isFrontCamera}
-                            />
+                            {(() => {
+                                const s = streamLayout[0];
+                                const track = s?.stream?.getVideoTracks?.()[0];
+                                console.log('🎥 [RTCView] RENDER SINGLE', {
+                                    type: s?.type,
+                                    socketId: s?.socketId,
+                                    name: s?.Name,
+                                    streamId: s?.stream?.id,
+                                    trackId: track?.id,
+                                    readyState: track?.readyState,
+                                    enabled: track?.enabled,
+                                });
+                                return (
+                                    <RTCView
+                                        streamURL={s?.stream.toURL()}
+                                        style={styles.fullScreenVideo}
+                                        objectFit="cover"
+                                        mirror={s?.type === 'local' && isFrontCamera}
+                                    />
+                                );
+                            })()}
+                            {/* rest unchanged */}
+
                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                 <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
                             </View>
@@ -1360,12 +1475,28 @@ const StreamRoom = ({
                             {streamLayout.length === 3 ? (
                                 <View style={styles.threeUserRow}>
                                     <View style={styles.threeUserColumnLeft}>
-                                        <RTCView
-                                            streamURL={streamLayout[0].stream.toURL()}
-                                            style={styles.streamVideoFull}
-                                            objectFit="cover"
-                                            mirror={streamLayout[0].type === 'local' && isFrontCamera}
-                                        />
+                                        {(() => {
+                                            const s0 = streamLayout[0];
+                                            const t0 = s0?.stream?.getVideoTracks?.()[0];
+                                            console.log('🎥 [RTCView] RENDER GRID[0]', {
+                                                type: s0?.type,
+                                                socketId: s0?.socketId,
+                                                name: s0?.Name,
+                                                streamId: s0?.stream?.id,
+                                                trackId: t0?.id,
+                                                readyState: t0?.readyState,
+                                                enabled: t0?.enabled,
+                                            });
+                                            return (
+                                                <RTCView
+                                                    streamURL={s0.stream.toURL()}
+                                                    style={styles.streamVideoFull}
+                                                    objectFit="cover"
+                                                    mirror={s0.type === 'local' && isFrontCamera}
+                                                />
+                                            );
+                                        })()}
+
                                         <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
                                             <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
                                         </View>

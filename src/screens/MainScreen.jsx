@@ -62,73 +62,73 @@ export const MainScreen = () => {
   }, [joined, isSocketConnected]);
 
   useEffect(() => {
- // inside StreamRoom.jsx
- // the functinality which disabled for backgroud stream pause or activate when app minimise  
+    // inside StreamRoom.jsx
+    // the functinality which disabled for backgroud stream pause or activate when app minimise  
 
-// const handleAppStateChange = async (nextAppState) => {
-//   console.log("📱 AppState changed:", nextAppState);
-//   try {
-//     if (nextAppState === 'background' && isStreaming && IsValid) {
-//       // 🔹 Pause local media instead of stopping
-//       if (localStreamRef.current) {
-//         localStreamRef.current.getTracks().forEach(track => {
-//           track.enabled = false; // just mute/disable
-//         });
-//       }
+    // const handleAppStateChange = async (nextAppState) => {
+    //   console.log("📱 AppState changed:", nextAppState);
+    //   try {
+    //     if (nextAppState === 'background' && isStreaming && IsValid) {
+    //       // 🔹 Pause local media instead of stopping
+    //       if (localStreamRef.current) {
+    //         localStreamRef.current.getTracks().forEach(track => {
+    //           track.enabled = false; // just mute/disable
+    //         });
+    //       }
 
-//       InCallManager.stop(); // stop audio routing
-//       // ❌ Do NOT clear peersRef or remoteStreams
-//       console.log("⏸️ Local tracks disabled (background)");
-//     }
-//     if (nextAppState === 'active' && isStreaming ) {
-//       // 🔹 Re-enable tracks
-//       // Some iOS devices actually kill tracks when backgrounded
-//       // Fallback: if no tracks exist, create fresh stream and replace tracks on existing peers
-//       if (localStreamRef.current && localStreamRef.current.getTracks().length === 0) {
-//         console.log("⚠️ No local tracks found, recreating stream...");
-//         const newStream = await mediaDevices.getUserMedia({
-//           audio: true,
-//           video: true,
-//         });
-//         localStreamRef.current = newStream;
+    //       InCallManager.stop(); // stop audio routing
+    //       // ❌ Do NOT clear peersRef or remoteStreams
+    //       console.log("⏸️ Local tracks disabled (background)");
+    //     }
+    //     if (nextAppState === 'active' && isStreaming ) {
+    //       // 🔹 Re-enable tracks
+    //       // Some iOS devices actually kill tracks when backgrounded
+    //       // Fallback: if no tracks exist, create fresh stream and replace tracks on existing peers
+    //       if (localStreamRef.current && localStreamRef.current.getTracks().length === 0) {
+    //         console.log("⚠️ No local tracks found, recreating stream...");
+    //         const newStream = await mediaDevices.getUserMedia({
+    //           audio: true,
+    //           video: true,
+    //         });
+    //         localStreamRef.current = newStream;
 
-//         // Replace tracks in all peers
-//         Object.values(peersRef.current).forEach(peer => {
-//           newStream.getTracks().forEach(track => {
-//             const sender = peer.getSenders().find(s => s.track && s.track.kind === track.kind);
-//             if (sender) {
-//               sender.replaceTrack(track);
-//             } else {
-//               peer.addTrack(track, newStream);
-//             }
-//           });
-//         });
-//       }
+    //         // Replace tracks in all peers
+    //         Object.values(peersRef.current).forEach(peer => {
+    //           newStream.getTracks().forEach(track => {
+    //             const sender = peer.getSenders().find(s => s.track && s.track.kind === track.kind);
+    //             if (sender) {
+    //               sender.replaceTrack(track);
+    //             } else {
+    //               peer.addTrack(track, newStream);
+    //             }
+    //           });
+    //         });
+    //       }
 
-//       // ❌ Do not emit 'stream-negotiate' as new user
-//       // Instead just tell server you resumed
-//       socket.emit('stream-Resume', {
-//         roomId: RoomID,
-//         userId: userDetails?.id,
-//       });
+    //       // ❌ Do not emit 'stream-negotiate' as new user
+    //       // Instead just tell server you resumed
+    //       socket.emit('stream-Resume', {
+    //         roomId: RoomID,
+    //         userId: userDetails?.id,
+    //       });
 
-//       setIsUserStreaming(true);
-//     }
-//   } catch (err) {
-//     SendErrorTotheServer(err, "handleAppStateChange");
-//   }
-// };
+    //       setIsUserStreaming(true);
+    //     }
+    //   } catch (err) {
+    //     SendErrorTotheServer(err, "handleAppStateChange");
+    //   }
+    // };
 
-const handleAppStateChange = (nextAppState) => {
-  try {
-    // Intentionally do nothing on background/active to keep mic/camera intact.
-    // This prevents any renegotiation or stopping of tracks when the user minimizes the app.
-    console.log('[handleAppStateChange] app state =>', nextAppState, '- no-op (tracks preserved)');
-  } catch (err) {
-    // Use your existing error logger
-    SendErrorTotheServer(err, 'handleAppStateChange');
-  }
-};
+    const handleAppStateChange = (nextAppState) => {
+      try {
+        // Intentionally do nothing on background/active to keep mic/camera intact.
+        // This prevents any renegotiation or stopping of tracks when the user minimizes the app.
+        console.log('[handleAppStateChange] app state =>', nextAppState, '- no-op (tracks preserved)');
+      } catch (err) {
+        // Use your existing error logger
+        SendErrorTotheServer(err, 'handleAppStateChange');
+      }
+    };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
 
@@ -253,55 +253,151 @@ const handleAppStateChange = (nextAppState) => {
       [{ text: 'OK' }]
     );
   }
+
   const HandleNewUser = async (userId) => {
     try {
       if (!peersRef.current[userId]) {
         const peer = createPeer(userId);
         peersRef.current[userId] = peer;
-        //viewer count increment
+
+        console.log('🧪 [HandleNewUser] BEFORE OFFER for', userId, {
+          senders: peer.getSenders().map(s => ({
+            kind: s.track?.kind,
+            id: s.track?.id,
+            readyState: s.track?.readyState,
+          })),
+          transceivers: peer.getTransceivers().map(t => ({
+            mid: t.mid,
+            direction: t.direction,
+            currentDirection: t.currentDirection,
+            recvKind: t.receiver?.track?.kind,
+          })),
+        });
+
         const offer = await peer.createOffer();
+        console.log('🧪 [HandleNewUser] createOffer DONE for', userId, {
+          sdpSnippet: offer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        });
+
         await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+        console.log('🧪 [HandleNewUser] setLocalDescription DONE for', userId, {
+          localDescType: peer.localDescription?.type,
+        });
+
         socket.emit('signal', { to: userId, data: peer.localDescription });
+
+        console.log('📡 [HandleNewUser] OFFER SENT to', userId);
+      } else {
+        console.log('ℹ️ [HandleNewUser] Peer already exists for', userId, '- skipping.');
       }
     } catch (error) {
+      console.log('❌ [HandleNewUser] ERROR for', userId, String(error));
       SendErrorTotheServer(error, 'HandleNewUser');
     }
-  }
+  };
+
   const HandleSignal = async ({ from, data }) => {
     try {
+      console.log('📨 [HandleSignal] CALLED from', from, {
+        dataType: data?.type,
+        hasCandidate: !!data?.candidate,
+      });
+
       let peer = peersRef.current[from];
       if (!peer) {
+        console.log('🛠 [HandleSignal] No existing peer for', from, '→ creating new one');
         peer = createPeer(from);
         peersRef.current[from] = peer;
       }
 
-      if (data.type === 'offer') {
-        await peer.setRemoteDescription(new RTCSessionDescription(data));
-        const answer = await peer.createAnswer();
-        await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
-        socket.emit('signal', { to: from, data: peer.localDescription });
+      console.log('🔍 [HandleSignal] Peer state BEFORE handling', from, {
+        signalingState: peer.signalingState,
+        connectionState: peer.connectionState,
+        iceConnectionState: peer.iceConnectionState,
+        senders: peer.getSenders().map(s => ({
+          kind: s.track?.kind,
+          id: s.track?.id,
+          readyState: s.track?.readyState,
+        })),
+        transceivers: peer.getTransceivers().map(t => ({
+          mid: t.mid,
+          direction: t.direction,
+          currentDirection: t.currentDirection,
+          recvKind: t.receiver?.track?.kind,
+        })),
+      });
 
-        (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+      if (data.type === 'offer') {
+        console.log('📡 [HandleSignal] Handling OFFER from', from, {
+          sdpSnippet: data.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        });
+
+        await peer.setRemoteDescription(new RTCSessionDescription(data));
+        console.log('📡 [HandleSignal] setRemoteDescription(OFFER) DONE for', from);
+
+        const answer = await peer.createAnswer();
+        console.log('📡 [HandleSignal] createAnswer DONE for', from, {
+          sdpSnippet: answer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        });
+
+        await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
+        console.log('📡 [HandleSignal] setLocalDescription(ANSWER) DONE for', from, {
+          localDescType: peer.localDescription?.type,
+        });
+
+        socket.emit('signal', { to: from, data: peer.localDescription });
+        console.log('📡 [HandleSignal] ANSWER SENT to', from);
+
+        (pendingCandidates.current[from] || []).forEach(c => {
+          console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
+          peer.addIceCandidate(c);
+        });
         pendingCandidates.current[from] = [];
       } else if (data.type === 'answer') {
+        console.log('📡 [HandleSignal] Handling ANSWER from', from, {
+          hasRemoteDescription: !!peer.remoteDescription,
+        });
+
         if (!peer.remoteDescription) {
           await peer.setRemoteDescription(new RTCSessionDescription(data));
-          (pendingCandidates.current[from] || []).forEach(c => peer.addIceCandidate(c));
+          console.log('📡 [HandleSignal] setRemoteDescription(ANSWER) DONE for', from);
+
+          (pendingCandidates.current[from] || []).forEach(c => {
+            console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
+            peer.addIceCandidate(c);
+          });
           pendingCandidates.current[from] = [];
+        } else {
+          console.log('ℹ️ [HandleSignal] ANSWER ignored for', from, '- remoteDescription already set.');
         }
       } else if (data.candidate) {
         const candidate = new RTCIceCandidate(data.candidate);
+        console.log('🧊 [HandleSignal] ICE candidate from', from, {
+          candidate: data.candidate.candidate,
+          hasRemoteDescription: !!peer.remoteDescription,
+        });
+
         if (peer.remoteDescription?.type) {
           await peer.addIceCandidate(candidate);
+          console.log('🧊 [HandleSignal] addIceCandidate DONE for', from);
         } else {
+          console.log('🧊 [HandleSignal] No remoteDescription yet, queuing candidate for', from);
           (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
         }
       }
+
+      console.log('🔍 [HandleSignal] Peer state AFTER handling', from, {
+        signalingState: peer.signalingState,
+        connectionState: peer.connectionState,
+        iceConnectionState: peer.iceConnectionState,
+      });
     } catch (error) {
-      socket.emit('Clientlogs', error)
+      console.log('❌ [HandleSignal] ERROR for', String(error));
+      socket.emit('Clientlogs', error);
       SendErrorTotheServer(error, 'HandleSignal');
     }
-  }
+  };
+
   const HandleNewMessage = ({ userName, message, id, userProfile, Gender }) => {
     try {
       let own = userName
@@ -351,35 +447,39 @@ const handleAppStateChange = (nextAppState) => {
   const HandlereconnectWithNewPeer = async ({ socketId, userId, isHost }) => {
     try {
       console.log(`🔄 [Peer-Reconnect] Handling peer for socket: ${socketId}, user: ${userId}`);
-  
+
       // Only proceed if it's not our own socket and we have local stream
       if (socket.id !== socketId && localStreamRef.current) {
-        
+
         // Clean up existing peer if any
         if (peersRef.current[socketId]) {
           peersRef.current[socketId].close();
           delete peersRef.current[socketId];
           console.log(`   ↪ Cleaned up existing peer for ${socketId}`);
         }
-  
+
         const peer = createPeer(socketId);
         peersRef.current[socketId] = peer;
-  
+
         // Add tracks if we're streaming
         if (isuserstreaming) {
-          localStreamRef.current.getTracks().forEach(track => {
-            try {
-              peer.addTrack(track, localStreamRef.current);
-            } catch (trackError) {
-              console.warn(`⚠️ Failed to add track:`, trackError);
-            }
+          console.log("➕ addTrack ->", track.kind, {
+            id: track.id,
+            readyState: track.readyState,
+            enabled: track.enabled
           });
+
+          try {
+            peer.addTrack(track, localStreamRef.current);
+          } catch (trackError) {
+            console.warn(`⚠️ Failed to add track:`, trackError);
+          }
         }
-  
+
         const offer = await peer.createOffer();
         await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
         socket.emit('signal', { to: socketId, data: peer.localDescription });
-        
+
         console.log(`✅ [Peer-Reconnect] Offer sent to ${socketId}`);
       }
     } catch (error) {
@@ -392,12 +492,9 @@ const handleAppStateChange = (nextAppState) => {
     setStreamGuest(streamers);
   }
 
-
-
   const HandleUserLeft = (socketId, userinfo) => {
-    console.log('user left', userinfo, 'socket:', socketId);
+    console.log('🚪 [HandleUserLeft] user left', userinfo, 'socket:', socketId);
     try {
-      // Handle cases where userinfo might be missing or incomplete
       const checkUserInfo = userinfo || {
         ID: socketId,
         Name: 'Unknown User',
@@ -406,42 +503,75 @@ const handleAppStateChange = (nextAppState) => {
         Gender: null,
       };
 
+      console.log('🔍 [HandleUserLeft] checkUserInfo:', checkUserInfo);
+
       if (checkUserInfo.Name && checkUserInfo.Name !== 'Unknown User') {
         HandleUserLeftStream(checkUserInfo);
       }
 
+      console.log('🔍 [HandleUserLeft] BEFORE PEER CLOSE for', socketId, {
+        localTracks: localStreamRef.current?.getTracks().map(t => ({
+          kind: t.kind,
+          id: t.id,
+          readyState: t.readyState,
+          enabled: t.enabled,
+        })),
+        peerExists: !!peersRef.current[socketId],
+        peerSenders: peersRef.current[socketId]?.getSenders().map(s => ({
+          kind: s.track?.kind,
+          id: s.track?.id,
+          readyState: s.track?.readyState,
+        })),
+        peerReceivers: peersRef.current[socketId]?.getReceivers().map(r => ({
+          kind: r.track?.kind,
+          id: r.track?.id,
+          readyState: r.track?.readyState,
+        })),
+        remoteStreamsBefore: remoteStreams.map(s => ({
+          id: s.id,
+          streamId: s.stream?.id,
+          hasVideoTracks: s.stream?.getVideoTracks().length,
+        })),
+        allPeers: Object.keys(peersRef.current || {}),
+      });
+
       // Clear from audio levels ref
       delete audioLevelsRef.current[socketId];
 
-      // Clean up peer connection
       if (peersRef.current[socketId]) {
         peersRef.current[socketId].close();
         delete peersRef.current[socketId];
       }
 
-      // Immediately remove from remote streams
-      setRemoteStreams(prev => prev.filter(s => s.id !== socketId));
+      setRemoteStreams(prev => {
+        const next = prev.filter(s => s.id !== socketId);
+        console.log('🌐 [HandleUserLeft] setRemoteStreams AFTER for', socketId, {
+          before: prev.map(s => ({ id: s.id, streamId: s.stream?.id })),
+          after: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
+        });
+        return next;
+      });
 
-      // Also remove from streamerList and streamGuest
       setStrimerList(prev => prev.filter(s => s.ID !== socketId));
       setStreamGuest(prev => prev.filter(s => s.ID !== socketId));
 
-      // If the left user was host and we're a co-host/guest, ensure we're in viewer mode
       if (isuserstreaming && !isHost) {
         const wasHost = streamerList.find(s => s.ID === socketId && s.IsHost);
         if (wasHost) {
-          console.log("🏠 Host left, ensuring viewer mode");
+          console.log('🏠 [HandleUserLeft] Host left, enforcing viewer mode for self');
           setIsUserStreaming(false);
           setStreamGuest([]);
         }
       }
 
+      console.log('✅ [HandleUserLeft] DONE for', socketId, {
+        remainingPeers: Object.keys(peersRef.current || {}),
+      });
     } catch (error) {
+      console.log('❌ [HandleUserLeft] ERROR:', String(error));
       SendErrorTotheServer(error, 'HandleUserLeft');
     }
-  }
-  
-
+  };
 
   const HandleHostLeft = () => {
     try {
@@ -461,7 +591,7 @@ const handleAppStateChange = (nextAppState) => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
-      console.log ("inside HostLeft Clearing streamerList");
+      console.log("inside HostLeft Clearing streamerList");
       setStrimerList([]);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setJoined(false);
@@ -628,12 +758,12 @@ const handleAppStateChange = (nextAppState) => {
 
   const HandleFallbackToViewer = (data) => {
     console.log("📩 [fallback-to-viewer] event received:", data);
-  
+
     if (!data) {
       console.warn("⚠️ No data received in fallback-to-viewer event");
       return;
     }
-  
+
     const { hostStreamers } = data;
     console.log("✅ Parsed hostStreamers:", hostStreamers);
 
@@ -689,7 +819,7 @@ const handleAppStateChange = (nextAppState) => {
       console.log('💡 Rejoining as viewer due to host removal:', roomID);
       joinRoom(roomID, RoomInfo); // call your existing joinRoom function
     });
-  
+
     return () => {
       socket.off('rejoin-as-viewer');
     };
@@ -755,8 +885,8 @@ const handleAppStateChange = (nextAppState) => {
         socket.off('newuser-joined', HandlenewUserJoined)
         socket.off('Total-GiftValue', HandleTotalGiftValue)
         // socket.off('Force-Stop-Stream', HandleforceStopStream);
-      socket.off('fallback-to-viewer', HandleFallbackToViewer)
-        
+        socket.off('fallback-to-viewer', HandleFallbackToViewer)
+
       }
     }
   }, [isHost, isSocketConnected]);
@@ -769,55 +899,185 @@ const handleAppStateChange = (nextAppState) => {
 
   }, [isSocketConnected]);
 
- const createPeer = (socketId) => {
+  const createPeer = (socketId) => {
     try {
+      console.log('🛠 [createPeer] CALLED for:', socketId, {
+        hasLocalStream: !!localStreamRef.current,
+        localVideoTracks: localStreamRef.current?.getVideoTracks().map(t => ({
+          id: t.id,
+          kind: t.kind,
+          readyState: t.readyState,
+          enabled: t.enabled,
+        })) || [],
+        localAudioTracks: localStreamRef.current?.getAudioTracks().map(t => ({
+          id: t.id,
+          kind: t.kind,
+          readyState: t.readyState,
+          enabled: t.enabled,
+        })) || [],
+        existingPeers: Object.keys(peersRef.current || {}),
+      });
+
       const peer = new RTCPeerConnection(iceServers);
+
+      console.log('🛠 [createPeer] NEW RTCPeerConnection for:', socketId, {
+        iceServers,
+      });
 
       // Add local tracks if present
       if (localStreamRef.current) {
-        localStreamRef.current.getTracks().forEach(track =>
-          peer.addTrack(track, localStreamRef.current)
-        );
-      }
-
-      // ontrack sets remote stream in state exactly as before
-      peer.ontrack = (event) => {
-        const stream = event.streams[0];
-        if (!stream || !stream.getVideoTracks().length) return;
-        setRemoteStreams(prev => {
-          const existingStream = prev.find(s => s.id === socketId);
-          // If stream already exists and is the same, don't update
-          if (existingStream && existingStream.stream === stream) {
-            return prev;
-          }
-
-          // If stream exists but changed, update it
-          if (existingStream) {
-            return prev.map(s => s.id === socketId ? { ...s, stream } : s);
-          }
-
-          // Add new stream
-          return [...prev, { id: socketId, stream, isSpeaking: false, audioLevel: 0 }];
+        const tracks = localStreamRef.current.getTracks();
+        console.log('➕ [createPeer] ADDING LOCAL TRACKS to', socketId, {
+          trackCount: tracks.length,
         });
 
-        // Ensure audio routes to speaker
+        tracks.forEach(track => {
+          console.log('➕ [createPeer] addTrack()', socketId, {
+            kind: track.kind,
+            id: track.id,
+            readyState: track.readyState,
+            enabled: track.enabled,
+          });
+          try {
+            peer.addTrack(track, localStreamRef.current);
+          } catch (e) {
+            console.log('⚠️ [createPeer] addTrack FAILED for', socketId, {
+              error: String(e),
+            });
+          }
+        });
+      } else {
+        console.log('ℹ️ [createPeer] NO localStreamRef.current for', socketId);
+      }
+
+      // Immediately log senders/transceivers
+      try {
+        console.log('🛰 [createPeer] AFTER addTrack for', socketId, {
+          senders: peer.getSenders().map(s => ({
+            kind: s.track?.kind,
+            id: s.track?.id,
+            readyState: s.track?.readyState,
+          })),
+          receivers: peer.getReceivers().map(r => ({
+            kind: r.track?.kind,
+            id: r.track?.id,
+            readyState: r.track?.readyState,
+          })),
+          transceivers: peer.getTransceivers().map(t => ({
+            mid: t.mid,
+            direction: t.direction,
+            currentDirection: t.currentDirection,
+            recvTrackKind: t.receiver?.track?.kind,
+            recvTrackId: t.receiver?.track?.id,
+            recvReadyState: t.receiver?.track?.readyState,
+          })),
+        });
+      } catch (e) {
+        console.log('⚠️ [createPeer] Error inspecting transceivers/senders:', String(e));
+      }
+
+      // ontrack sets remote stream in state
+      peer.ontrack = (event) => {
         try {
-          InCallManager.start({ media: 'video', auto: true });
-          InCallManager.setForceSpeakerphoneOn(true);
+          const stream = event.streams && event.streams[0];
+
+          console.log('📥 [ontrack] RAW EVENT from:', socketId, {
+            hasStreams: !!event.streams,
+            streamCount: event.streams?.length || 0,
+            streamId: stream?.id,
+            allTracks: stream ? stream.getTracks().map(t => ({
+              kind: t.kind,
+              id: t.id,
+              readyState: t.readyState,
+              enabled: t.enabled,
+            })) : [],
+            videoTracks: stream ? stream.getVideoTracks().map(t => ({
+              kind: t.kind,
+              id: t.id,
+              readyState: t.readyState,
+              enabled: t.enabled,
+            })) : [],
+          });
+
+          if (!stream || !stream.getVideoTracks().length) {
+            console.log('⚠️ [ontrack] No valid VIDEO tracks for', socketId, {
+              streamId: stream?.id,
+            });
+            return;
+          }
+
+          console.log('✅ [ontrack] VALID VIDEO TRACK for', socketId, {
+            streamId: stream.id,
+            videoTracks: stream.getVideoTracks().map(t => ({
+              id: t.id,
+              readyState: t.readyState,
+              enabled: t.enabled,
+            })),
+          });
+
+          setRemoteStreams(prev => {
+            const existing = prev.find(s => s.id === socketId);
+
+            console.log('🌐 [setRemoteStreams] BEFORE update for', socketId, {
+              prevCount: prev.length,
+              hasExisting: !!existing,
+              existingStreamId: existing?.stream?.id,
+            });
+
+            let next;
+            if (existing && existing.stream === stream) {
+              next = prev;
+            } else if (existing) {
+              next = prev.map(s => s.id === socketId ? { ...s, stream } : s);
+            } else {
+              next = [...prev, { id: socketId, stream, isSpeaking: false, audioLevel: 0 }];
+            }
+
+            console.log('🌐 [setRemoteStreams] AFTER update for', socketId, {
+              nextCount: next.length,
+              ids: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
+            });
+
+            return next;
+          });
+
+          try {
+            InCallManager.start({ media: 'video', auto: true });
+            InCallManager.setForceSpeakerphoneOn(true);
+          } catch (e) {
+            console.log('⚠️ [ontrack] InCallManager error:', String(e));
+          }
         } catch (e) {
-          // ignore if InCallManager is unavailable on platform
+          console.log('❌ [ontrack] ERROR handling track for', socketId, String(e));
         }
       };
 
       // ICE candidate forwarding
       peer.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log('🧊 [onicecandidate] candidate for', socketId, {
+            candidate: event.candidate.candidate,
+            sdpMid: event.candidate.sdpMid,
+            sdpMLineIndex: event.candidate.sdpMLineIndex,
+          });
           socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+        } else {
+          console.log('✅ [onicecandidate] ICE gathering complete for', socketId);
         }
       };
 
-      // ---- AUDIO LEVEL DETECTION ----
-      // store interval id so we can clear it when peer is closed
+      peer.onconnectionstatechange = () => {
+        console.log('📶 [RTCPeerConnection] connectionState for', socketId, '=', peer.connectionState);
+      };
+
+      peer.oniceconnectionstatechange = () => {
+        console.log('🌐 [RTCPeerConnection] iceConnectionState for', socketId, '=', peer.iceConnectionState);
+      };
+
+      peer.onsignalingstatechange = () => {
+        console.log('📡 [RTCPeerConnection] signalingState for', socketId, '=', peer.signalingState);
+      };
+
       const audioIntervalId = setInterval(async () => {
         try {
           const receivers = peer.getReceivers();
@@ -832,37 +1092,57 @@ const handleAppStateChange = (nextAppState) => {
                 }
                 audioLevel = audioLevel || 0;
                 const isSpeaking = audioLevel > 0.05;
-
-                // Store in ref instead of immediate state update
                 audioLevelsRef.current[socketId] = { audioLevel, isSpeaking };
               }
             });
           }
         } catch (err) {
-          // swallow per-interval errors but report them
           SendErrorTotheServer(err, 'audio-level-interval');
         }
       }, 200);
 
-      // attach interval id so we can clear it later
       peer._audioIntervalId = audioIntervalId;
 
-      // Wrap the original close so we can clear interval and then close peer
       const origClose = peer.close.bind(peer);
       peer.close = () => {
+        console.log('🧹 [peer.close] CALLED for', socketId, {
+          senders: peer.getSenders().map(s => ({
+            kind: s.track?.kind,
+            id: s.track?.id,
+            readyState: s.track?.readyState,
+          })),
+          receivers: peer.getReceivers().map(r => ({
+            kind: r.track?.kind,
+            id: r.track?.id,
+            readyState: r.track?.readyState,
+          })),
+          transceivers: peer.getTransceivers().map(t => ({
+            mid: t.mid,
+            direction: t.direction,
+            currentDirection: t.currentDirection,
+            recvKind: t.receiver?.track?.kind,
+            recvId: t.receiver?.track?.id,
+            recvReadyState: t.receiver?.track?.readyState,
+          })),
+        });
+
         try {
           if (peer._audioIntervalId) {
             clearInterval(peer._audioIntervalId);
             peer._audioIntervalId = null;
           }
-        } catch (e) {
-          // ignore clearing errors
-        }
-        try { origClose(); } catch (e) { /* ignore */ }
+        } catch (e) { }
+
+        try { origClose(); } catch (e) { }
+
+        console.log('🧹 [peer.close] FINISHED for', socketId);
       };
+
+      console.log('✅ [createPeer] Peer CREATED for', socketId);
 
       return peer;
     } catch (error) {
+      console.log('❌ [createPeer] ERROR for', socketId, String(error));
       SendErrorTotheServer(error, 'createPeer');
     }
   };
@@ -894,7 +1174,7 @@ const handleAppStateChange = (nextAppState) => {
 
     return () => clearInterval(interval);
   }, []);
-  
+
 
   const joinRoom = async (roomID, RoomInfo) => {
     try {
@@ -1050,11 +1330,11 @@ const handleAppStateChange = (nextAppState) => {
   const leaveRoom = () => {
     try {
       // Stop local stream if exists
-if (!socket.id ){
-  console.log ('Socket ID not found, cannot emit LeaveRoom');
-  return;
-}
-      console.log ('emiting leaveroom for the server for the socket:', socket.id);
+      if (!socket.id) {
+        console.log('Socket ID not found, cannot emit LeaveRoom');
+        return;
+      }
+      console.log('emiting leaveroom for the server for the socket:', socket.id);
 
       socket.emit('leaveRoom', socket.id)
       if (localStreamRef.current) {
@@ -1088,23 +1368,23 @@ if (!socket.id ){
 
   const HandleTimeout = () => {
     console.log('⏰ Reconnection timeout reached, leaving room');
-    
+
     // First, check if we reconnected but auto-rejoin failed
     if (socket.connected && streamInfo) {
       console.log('🔄 Socket connected but auto-rejoin failed, attempting manual rejoin');
-      
+
       const roomID = streamInfo?.roomID.toString();
       if (roomID && userData?.userid) {
         // One final attempt to rejoin
-        socket.emit('reconnectUser', 
-          userData.userid, 
-          userData.screenName, 
-          roomID, 
-          isHost, 
-          userData.avatar, 
+        socket.emit('reconnectUser',
+          userData.userid,
+          userData.screenName,
+          roomID,
+          isHost,
+          userData.avatar,
           userData.gender
         );
-        
+
         // Give it 2 more seconds
         setTimeout(() => {
           if (connectingpanel) { // If still disconnected after 2s
