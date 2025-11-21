@@ -120,6 +120,7 @@ const StreamRoom = ({
     const opacityAnim = useRef(new Animated.Value(1)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
     const scrollViewRef = useRef();
+    const inputRef = useRef(null);
 
     // ✅ NEW: Enhanced Game State Management
     const [luckyWheelVisible, setLuckyWheelVisible] = useState(false);
@@ -365,13 +366,13 @@ const StreamRoom = ({
             visibleModal !== 'luckyWheel' &&
             activeGame !== 'slot-game';
 
-        console.log('🔴 [Red Dot Debug]', {
-            isLuckyWheelActiveInRoom,
-            luckyWheelVisible,
-            visibleModal,
-            activeGame,
-            shouldShow: show,
-        });
+        // console.log('🔴 [Red Dot Debug]', {
+        //     isLuckyWheelActiveInRoom,
+        //     luckyWheelVisible,
+        //     visibleModal,
+        //     activeGame,
+        //     shouldShow: show,
+        // });
 
         return show;
     };
@@ -541,11 +542,13 @@ const StreamRoom = ({
     // Scroll to the bottom when roomchat updates
     useEffect(() => {
         if (scrollViewRef.current) {
-            scrollViewRef.current.scrollToEnd({ animated: true });
+            setTimeout(() => {
+                scrollViewRef.current.scrollToEnd({ animated: true });
+            }, 100);
         }
-        if (!showUI) {
-            setShowUI(true)
-        }
+        // if (!showUI) {
+        //     setShowUI(true);
+        // }
     }, [roomchat]);
 
     // get gifts category wise
@@ -662,15 +665,15 @@ const StreamRoom = ({
 
 
 
-    useEffect(() => {
-        console.log('🔍 StreamLayout debug:', {
-            streamLayoutCount: streamLayout.length,
-            remoteStreamsCount: remoteStreams.length,
-            streamerListCount: streamerList.length,
-            streamerList: streamerList.map(s => ({ ID: s.ID, Name: s.Name, UserID: s.UserID })),
-            streamLayout: streamLayout.map(s => ({ type: s.type, name: s.Name, socketId: s.socketId }))
-        });
-    }, [streamLayout, remoteStreams, streamerList]);
+    // useEffect(() => {
+    //     console.log('🔍 StreamLayout debug:', {
+    //         streamLayoutCount: streamLayout.length,
+    //         remoteStreamsCount: remoteStreams.length,
+    //         streamerListCount: streamerList.length,
+    //         streamerList: streamerList.map(s => ({ ID: s.ID, Name: s.Name, UserID: s.UserID })),
+    //         streamLayout: streamLayout.map(s => ({ type: s.type, name: s.Name, socketId: s.socketId }))
+    //     });
+    // }, [streamLayout, remoteStreams, streamerList]);
 
 
 
@@ -797,6 +800,8 @@ const StreamRoom = ({
         }
         HandleChatmessages(userChatInput);
         setUserChatInput('');
+        inputRef.current?.blur();
+        setIsTyping(false);
         Keyboard.dismiss();
     };
 
@@ -1162,8 +1167,8 @@ const StreamRoom = ({
     const HandleShowUi = () => {
         // setShowUI(!showUI);
         console.log('showUI', !showUI);
-        Keyboard.dismiss();
-        setIsTyping(false);
+        // Keyboard.dismiss();
+        // setIsTyping(false);
     };
 
     // update stream description
@@ -1829,7 +1834,7 @@ const StreamRoom = ({
                             {/* chat message container */}
                             {!openMoreSettingList && (
                                 <View style={[styles.strRoomFooterChatOrActionsBox, {
-                                    bottom: insets.bottom + 60,
+                                    bottom: (keyboardOffset > 0 ? keyboardOffset : insets.bottom) + 60,  // ← CHANGED: Lift with keyboard + input height
                                 }]}>
                                     {/* chat message box */}
                                     <View style={[styles.streamChatContainer]}>
@@ -1957,6 +1962,7 @@ const StreamRoom = ({
                                 { bottom: keyboardOffset > 0 ? keyboardOffset : insets.bottom },
                             ]}>
                                 <TextInput
+                                    ref={inputRef}
                                     placeholder=""
                                     placeholderTextColor="#414141"
                                     value={userChatInput}
@@ -1965,6 +1971,8 @@ const StreamRoom = ({
                                     onBlur={() => setIsTyping(false)}
                                     onSubmitEditing={HadleSendChat}
                                     style={styles.strRoomBottomBoxInput}
+                                    blurOnSubmit={true}
+                                    returnKeyType="send"
                                 />
                                 {keyboardOffset && isTyping ? (
                                     <TouchableOpacity onPress={() => HadleSendChat()} style={styles.strRoomBottomBoxIconBox}>

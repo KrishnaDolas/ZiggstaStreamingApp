@@ -36,8 +36,9 @@ export default function InfoSlotGameModal({ visible, onClose }) {
                 animationOut="zoomOut"
                 animationInTiming={300}
                 animationOutTiming={200}
-                useNativeDriver={true}
-                backdropOpacity={0.8}
+                useNativeDriver
+                avoidKeyboard
+                statusBarTranslucent
                 style={styles.infoModalStyle}
                 onRequestClose={onClose}
             >

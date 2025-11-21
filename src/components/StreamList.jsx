@@ -256,7 +256,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         }
         const IsAccepted = await requestPermissions();
         if (selectedCategoryIndices.length === 0) {
-            Alert.alert('Error', 'Please select at least one category before creating a stream.');
+            Alert.alert('Message', 'Please select at least one category before creating a stream.');
             return;
         } else if (!IsAccepted && socket?.connected) {
             showPermissionAlert()
@@ -634,17 +634,18 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                                     onChangeText={setRoomIdInput}
                                     style={[styles.strHedSearchModalInput, themeStyles[theme].strHedSearchModalInput, { flex: 1, paddingHorizontal: 12 }]}
                                 />
-                                <TouchableOpacity onPress={submitroomnameandcreateroom} disabled={disableBtnRef.current === true}>
-                                    <LinearGradient
-                                        colors={['#de0037', '#de0037']}
-                                        start={{ x: 0.15, y: 1 }}
-                                        end={{ x: 1, y: 0 }}
-                                        style={[styles.strHedSearchModalSearchBtn, { height: 50 }]}>
-                                        <Text
-                                            style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
-                                            {isDisable ? 'Processing...' : 'Start Stream'}
-                                        </Text>
-                                    </LinearGradient>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.strHedSearchModalSearchBtn,
+                                        { height: 50, minWidth: 115, backgroundColor: isDisable ? '#888' : '#de0037' }
+                                    ]}
+                                    onPress={submitroomnameandcreateroom}
+                                    disabled={disableBtnRef.current === true}
+                                >
+                                    <Text
+                                        style={{ color: '#fff', fontSize: 16, fontWeight: '400' }}>
+                                        {isDisable ? 'Processing...' : 'Start Stream'}
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                             <Text style={[styles.modalSmallTitle, themeStyles[theme].modalSmallTitle, { marginBottom: 10 }]}>Interests</Text>

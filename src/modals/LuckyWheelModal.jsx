@@ -64,44 +64,7 @@ const LuckyWheelModal = (
     const spinValue = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
-    const [userBets, setUserBets] = useState([
-        // {
-        //     "socketId": "RRaF3e1Bty8BcbMWAAAX",
-        //     "userName": "Y0 01",
-        //     "userid": 178,
-        //     "HostId": 178,
-        //     "multiplier": "Double",
-        //     "betAmount": 500,
-        //     "isWinner": 2
-        // },
-        // {
-        //     "socketId": "RRaF3e1Bty8BcbMWAAAX",
-        //     "userName": "Y0 01",
-        //     "userid": 179,
-        //     "HostId": 178,
-        //     "multiplier": "Triple",
-        //     "betAmount": 300,
-        //     "isWinner": 2
-        // },
-        // {
-        //     "socketId": "RRaF3e1Bty8BcbMWAAAX",
-        //     "userName": "Y0 01",
-        //     "userid": 180,
-        //     "HostId": 178,
-        //     "multiplier": "5x",
-        //     "betAmount": 200,
-        //     "isWinner": 2
-        // },
-        // {
-        //     "socketId": "RRaF3e1Bty8BcbMWAAAX",
-        //     "userName": "Y0 01",
-        //     "userid": 181,
-        //     "HostId": 178,
-        //     "multiplier": "25x",
-        //     "betAmount": 100,
-        //     "isWinner": 2
-        // },
-    ]);
+    const [userBets, setUserBets] = useState([]);
     const [betButtonsDisabled, setBetButtonsDisabled] = useState(false);
     const [closePlaceBetDialog, setClosePlaceBetDialog] = useState(false);
     const [hideBetButtons, setHideBetButtons] = useState(false);
@@ -742,9 +705,11 @@ const LuckyWheelModal = (
                 animationOutTiming={200}
                 useNativeDriver={true}
                 avoidKeyboard={false}
-                backdropOpacity={0}
+                backdropOpacity={0.4}
                 animationType="slide"
                 style={[styles.profileModalMain]}
+                propagateSwipe={true}
+                swipeDirection={null}
             >
                 <LinearGradient
                     colors={['rgba(0, 0, 0, 0.34)', 'rgba(0, 0, 0, 0.34)', '#000000']}
@@ -1099,19 +1064,19 @@ const LuckyWheelModal = (
 
 
                 </LinearGradient>
-
+                {closePlaceBetDialog && (
+                    <CustomConfirmDialog
+                        visible={closePlaceBetDialog}
+                        title="Place Bet"
+                        message="Are you sure you want to place 500 chips to play?"
+                        onCancel={() => setClosePlaceBetDialog(false)}
+                        onConfirm={() => placeBet(500)}
+                        cancelText="Cancel"
+                        confirmText="Place Bet"
+                    />
+                )}
             </Modal>
-            {closePlaceBetDialog && (
-                <CustomConfirmDialog
-                    visible={closePlaceBetDialog}
-                    title="Place Bet"
-                    message="Are you sure you want to place 500 chips to play?"
-                    onCancel={() => setClosePlaceBetDialog(false)}
-                    onConfirm={() => placeBet(500)}
-                    cancelText="Cancel"
-                    confirmText="Place Bet"
-                />
-            )}
+
         </>
     );
 };

@@ -1,7 +1,8 @@
 
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
+import Modal from 'react-native-modal';
 import {
-    Modal,
+    // Modal,
     View,
     Text,
     TouchableOpacity,
@@ -27,94 +28,92 @@ const CustomConfirmDialog = ({
     const { theme } = useContext(ThemeContext);
     const scaleValue = React.useRef(new Animated.Value(0)).current;
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (visible) {
             Animated.spring(scaleValue, {
                 toValue: 1,
-                duration: 300,
+                friction: 6,
+                tension: 50,
                 useNativeDriver: true,
             }).start();
         } else {
-            Animated.timing(scaleValue, {
-                toValue: 0,
-                duration: 200,
-                useNativeDriver: true,
-            }).start();
+            scaleValue.setValue(0);
         }
     }, [visible]);
 
 
     return (
         <Modal
-            transparent
-            visible={visible}
-            animationType="fade"
+            isVisible={visible}
+            backdropOpacity={0.7}
+            animationIn="zoomIn"
+            animationOut="zoomOut"
+            useNativeDriver
+            onBackdropPress={onCancel}
+            avoidKeyboard
             statusBarTranslucent
-            onRequestClose={() => onCancel()}
         >
-         <TouchableWithoutFeedback onPress={onCancel}>
-            <View style={styles.overlay}>
-                {/* Backdrop blur effect - you can remove this if @react-native-community/blur is not available */}
-                <View style={styles.backdrop} />
+            {/* <TouchableWithoutFeedback onPress={onCancel}>
+                <View style={styles.overlay}> */}
+            {/* Backdrop blur effect - you can remove this if @react-native-community/blur is not available */}
+            {/* <View style={styles.backdrop} /> */}
 
-                <Animated.View
-                    style={[
-                        styles.dialogContainer,
-                        theme === 'dark' && styles.dialogContainerDark,
-                        {
-                            transform: [{ scale: scaleValue }],
-                        },
-                    ]}
-                >
-                    {/* Dialog Header */}
-                    <View style={[styles.header, theme === 'dark' && styles.headerDark]}>
-                        <Text style={[styles.title, theme === 'dark' && styles.titleDark]}>{title}</Text>
-                    </View>
+            <Animated.View
+                style={[
+                    styles.dialogContainer,
+                    theme === 'dark' && styles.dialogContainerDark,
+                    { transform: [{ scale: scaleValue }] },
+                ]}
+            >
+                {/* Dialog Header */}
+                <View style={[styles.header, theme === 'dark' && styles.headerDark]}>
+                    <Text style={[styles.title, theme === 'dark' && styles.titleDark]}>{title}</Text>
+                </View>
 
-                    {/* Dialog Body */}
-                    <View style={[styles.body, theme === 'dark' && styles.bodyDark]}>
-                        <Text style={[styles.message, theme === 'dark' && styles.messageDark]}>{message}</Text>
-                    </View>
+                {/* Dialog Body */}
+                <View style={[styles.body, theme === 'dark' && styles.bodyDark]}>
+                    <Text style={[styles.message, theme === 'dark' && styles.messageDark]}>{message}</Text>
+                </View>
 
-                    {/* Dialog Footer */}
-                    <View style={[styles.footer, theme === 'dark' && styles.footerDark]}>
-                        <TouchableOpacity
-                            style={[
-                                styles.button,
-                                styles.cancelButton,
-                                theme === 'dark' && styles.cancelButtonDark
-                            ]}
-                            onPress={onCancel}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[
-                                styles.cancelButtonText,
-                                theme === 'dark' && styles.cancelButtonTextDark
-                            ]}>
-                                {cancelText}
-                            </Text>
-                        </TouchableOpacity>
+                {/* Dialog Footer */}
+                <View style={[styles.footer, theme === 'dark' && styles.footerDark]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            styles.cancelButton,
+                            theme === 'dark' && styles.cancelButtonDark
+                        ]}
+                        onPress={onCancel}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={[
+                            styles.cancelButtonText,
+                            theme === 'dark' && styles.cancelButtonTextDark
+                        ]}>
+                            {cancelText}
+                        </Text>
+                    </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[
-                                styles.button,
-                                styles.confirmButton,
-                                theme === 'dark' && styles.confirmButtonDark
-                            ]}
-                            onPress={onConfirm}
-                            activeOpacity={0.8}
-                        >
-                            <Text style={[
-                                styles.confirmButtonText,
-                                theme === 'dark' && styles.confirmButtonTextDark
-                            ]}>
-                                {confirmText}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                </Animated.View>
-            </View>
-         </TouchableWithoutFeedback>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            styles.confirmButton,
+                            theme === 'dark' && styles.confirmButtonDark
+                        ]}
+                        onPress={onConfirm}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={[
+                            styles.confirmButtonText,
+                            theme === 'dark' && styles.confirmButtonTextDark
+                        ]}>
+                            {confirmText}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </Animated.View>
+            {/* </View>
+            </TouchableWithoutFeedback> */}
         </Modal>
     );
 };
@@ -141,21 +140,15 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         width: width * 0.85,
         maxWidth: 400,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 10,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 10,
         overflow: 'hidden',
+        alignSelf: 'center',
+        paddingBottom: 10,
     },
     header: {
-        paddingTop: 30,
-        paddingHorizontal: 25,
+        paddingTop: 25,
         paddingBottom: 10,
         backgroundColor: '#fff',
+        alignItems: 'center',
     },
     title: {
         fontSize: 24,

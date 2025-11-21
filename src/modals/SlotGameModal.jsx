@@ -330,7 +330,9 @@ export default function SlotGameModal({ visible, onClose, userData,
                 backdropOpacity={0}
                 animationType="slide"
                 style={[styles.profileModalMain]}
-            // onRequestClose={onClose}
+                // onRequestClose={onClose}
+                propagateSwipe={true}
+                swipeDirection={null}
             >
                 <ImageBackground
                     source={require('../../assets/images/solt-game/slotgame_bg.png')}
@@ -472,21 +474,22 @@ export default function SlotGameModal({ visible, onClose, userData,
                         )}
                     </View>
                 </ImageBackground>
+
+                {showInfoModal && (<InfoSlotGameModal visible={showInfoModal} onClose={() => setShowInfoModal(false)} />)}
+
+                {confirmDialog.show && (
+                    <CustomConfirmDialog
+                        visible={confirmDialog.show}
+                        title="Buy Spins"
+                        message={`Are you sure you want to buy 10 spins for $${(confirmDialog.price * 10).toFixed(2)} ?`}
+                        onCancel={() => setConfirmDialog({ show: false, price: null, buttonIndex: null })}
+                        onConfirm={() => confirmBuy(confirmDialog.price, confirmDialog.buttonIndex)}
+                        cancelText="Cancel"
+                        confirmText="Buy"
+                    />
+                )}
+
             </Modal>
-
-            {showInfoModal && (<InfoSlotGameModal visible={showInfoModal} onClose={() => setShowInfoModal(false)} />)}
-
-            {confirmDialog.show && (
-                <CustomConfirmDialog
-                    visible={confirmDialog.show}
-                    title="Buy Spins"
-                    message={`Are you sure you want to buy 10 spins for $${(confirmDialog.price * 10).toFixed(2)} ?`}
-                    onCancel={() => setConfirmDialog({ show: false, price: null, buttonIndex: null })}
-                    onConfirm={() => confirmBuy(confirmDialog.price, confirmDialog.buttonIndex)}
-                    cancelText="Cancel"
-                    confirmText="Buy"
-                />
-            )}
         </>
     );
 }
