@@ -1207,7 +1207,7 @@ export const styles = StyleSheet.create({
   strHedSearchModalTopForm: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent:'space-between',
+    justifyContent: 'space-between',
     paddingVertical: 20,
   },
 
@@ -1816,8 +1816,8 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
   },
   giftModalCategoryItemsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    // flexDirection: 'row',
+    // flexWrap: 'wrap',
     // justifyContent: 'space-between',
     paddingVertical: 20,
     paddingHorizontal: 20,
@@ -2253,11 +2253,54 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#d93a63',
   },
+  pLikeContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pLikeStatsBox: {
+    // backgroundColor: 'white',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    marginHorizontal: 20,
+    marginTop: 10, // Adjust this to position it correctly on your screen
+    shadowColor: '#00000080',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: '50%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pLikeStatItem: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 14,
+  },
+  pLikeStatCount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    // color: '#333',
+  },
+  pLikeStatLabel: {
+    fontSize: 11,
+    // color: '#888',
+  },
+  pLikeIconButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   psmSocialContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
-    marginTop: 40,
+    marginTop: 10,
   },
   psmSocialButton: {
     padding: 5,
@@ -2858,6 +2901,15 @@ export const themeStyles = {
       backgroundColor: '#eaf6fb',
       borderColor: '#fff',
     },
+    pLikeStatsBox: {
+      backgroundColor: '#fff',
+    },
+    pLikeStatCount: {
+      color: '#333',
+    },
+    pLikeStatLabel: {
+      color: '#888',
+    },
     psmOtherGifterCard: {
       backgroundColor: '#fff',
       borderBottomColor: '#f0f0f0',
@@ -3250,6 +3302,15 @@ export const themeStyles = {
     profileDescIconContainer: {
       backgroundColor: '#202020ff',
       borderColor: '#353535ff',
+    },
+    pLikeStatsBox: {
+      backgroundColor: Colors.blackBtnBg,
+    },
+    pLikeStatCount: {
+      color: '#fff',
+    },
+    pLikeStatLabel: {
+      color: '#acacacff',
     },
     psmOtherGifterName: {
       color: '#fff',

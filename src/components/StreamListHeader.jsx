@@ -73,11 +73,6 @@ export const StreamListHeader = ({
         }
     };
 
-    useEffect(() => {
-        console.log('route.name', route.name);
-    }, [route.name]);
-
-
     return (
         <View style={[styles.streamListHeader, themeStyles[theme].streamListHeader]} >
             {/* header top */}

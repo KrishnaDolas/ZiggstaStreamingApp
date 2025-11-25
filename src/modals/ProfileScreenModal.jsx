@@ -9,6 +9,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import Apiclient from '../utils/Apiclient';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant';
@@ -49,6 +50,7 @@ const ProfileScreenModal = ({
     const [topGiftersData, setTopGiftersData] = useState([]);
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
+    const [profileLikeStatusData, setProfileLikeStatusData] = useState({});
     // const [profileUserData, setProfileUserData] = useState({});
 
 
@@ -164,35 +166,36 @@ const ProfileScreenModal = ({
 
     // get profile details from API
 
+    const fetchUserProfileDetails = async () => {
+        setIsUserLoading(true);
+        setIsUserError('');
+        try {
+            const formData = {
+                userid: profileUserId,
+            };
+            const response = await Apiclient.post('/getUserDetails', formData);
+            // console.log('response user profile data', response.data.user);
+
+            if (response.status === 200) {
+                setUserProfileDetails(response.data.user || {});
+            } else {
+                setIsUserError('Failed to fetch user profile details');
+            }
+        } catch (err) {
+            if (err.response?.status === 429) {
+                setIsUserError('Rate limit exceeded. Retrying...');
+                setTimeout(() => fetchUserProfileDetails(), 3000); // retry after 3s
+            } else {
+                setIsUserError('Error fetching user profile details: ' + err.message);
+            }
+            SendErrorTotheServer(err, 'fetchUserProfileDetails');
+        } finally {
+            setIsUserLoading(false);
+        }
+    };
+
     useEffect(() => {
         if (!profileUserId) return; // ✅ skip if no userId
-        const fetchUserProfileDetails = async () => {
-            setIsUserLoading(true);
-            setIsUserError('');
-            try {
-                const formData = {
-                    userid: profileUserId,
-                };
-                const response = await Apiclient.post('/getUserDetails', formData);
-                // console.log('response user profile data', response.data.user);
-
-                if (response.status === 200) {
-                    setUserProfileDetails(response.data.user || {});
-                } else {
-                    setIsUserError('Failed to fetch user profile details');
-                }
-            } catch (err) {
-                if (err.response?.status === 429) {
-                    setIsUserError('Rate limit exceeded. Retrying...');
-                    setTimeout(() => fetchUserProfileDetails(), 3000); // retry after 3s
-                } else {
-                    setIsUserError('Error fetching user profile details: ' + err.message);
-                }
-                SendErrorTotheServer(err, 'fetchUserProfileDetails');
-            } finally {
-                setIsUserLoading(false);
-            }
-        };
         fetchUserProfileDetails();
     }, [profileUserId]);
 
@@ -298,6 +301,70 @@ const ProfileScreenModal = ({
         };
         getStreamRoomCount();
     }, [profileUserId]);
+
+
+    // check like status
+    const checkLikeStatus = useCallback(async () => {
+        try {
+            const payload = {
+                likerID: userData?.userid,
+                targetUserID: profileUserId,
+            };
+            const response = await Apiclient.post('/profile/LikeStatus', payload);
+            if (response.status === 200) {
+                // console.log('response of like status', response.data);
+                setProfileLikeStatusData(response.data);
+            } else {
+                setProfileLikeStatusData({});
+            }
+        } catch (error) {
+            if (error.response?.status === 404) {
+                setProfileLikeStatusData({});
+            } else {
+                console.error('Error fetching like status:', error.message);
+                SendErrorTotheServer(error, 'getLikeStatus');
+
+            }
+        }
+    }, [profileUserId, userData?.userid]);
+
+    useEffect(() => {
+        checkLikeStatus();
+    }, [checkLikeStatus]);
+
+
+    // toggle like status
+
+    const toggleLikeStatus = async () => {
+        try {
+            const actionType = profileLikeStatusData?.liked ? 'unlike' : 'like';
+
+            const payload = {
+                action: actionType,
+                likerID: userData?.userid,
+                targetUserID: profileUserId,
+            };
+            // console.log('profile like status payload', payload);
+
+            const response = await Apiclient.post('/profile/profileLikes', payload);
+            // console.log('profile like status response', response.data);
+
+            if (response.status === 200) {
+                await checkLikeStatus();
+                // await fetchUserProfileDetails();
+                setUserProfileDetails(prev => ({
+                    ...prev,
+                    likesCount: actionType === 'like'
+                        ? prev.likesCount + 1
+                        : Math.max(prev.likesCount - 1, 0),
+                }));
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            SendErrorTotheServer(error, 'toggleLikeStatus');
+        }
+    };
+
 
     // handle social media press
     const handleSocialPress = (platform) => {
@@ -535,6 +602,39 @@ const ProfileScreenModal = ({
                                                             </View>
                                                         </View>
                                                     </View>
+                                                    {/* Likes and Dislikes Section */}
+                                                    <View style={styles.pLikeContainer}>
+                                                        <View style={[styles.pLikeStatsBox, themeStyles[theme].pLikeStatsBox]}>
+                                                            <View style={styles.pLikeStatItem}>
+                                                                {!isMainProfile && (
+                                                                    <TouchableOpacity onPress={toggleLikeStatus} style={styles.pLikeIconButton}>
+                                                                        {profileLikeStatusData.liked ?
+                                                                            <Icon name="heart" size={30} color="#FF6347" /> :
+                                                                            <Icon name="heart-o" size={30} color={theme === 'dark' ? '#fff' : '#808080'} />
+                                                                        }
+                                                                    </TouchableOpacity>
+                                                                )}
+                                                                <View style={{ alignItems: 'center' }}>
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.pLikeStatCount,
+                                                                            themeStyles[theme].pLikeStatCount]}
+                                                                    >
+                                                                        {userProfileDetails?.likesCount || 0}
+                                                                    </Text>
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.pLikeStatLabel,
+                                                                            themeStyles[theme].pLikeStatLabel,
+                                                                        ]}
+                                                                    >
+                                                                        LIKES
+                                                                    </Text>
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    </View>
+
                                                     {/* Social Media Icons */}
                                                     <View style={styles.psmSocialContainer}>
                                                         <TouchableOpacity

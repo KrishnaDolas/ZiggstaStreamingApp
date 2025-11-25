@@ -6,6 +6,7 @@ import {
     Pressable, BackHandler,
     ImageBackground, Share,
     LayoutAnimation,
+    FlatList,
 } from 'react-native';
 import KeepAwake from 'react-native-keep-awake';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
@@ -2010,7 +2011,7 @@ const StreamRoom = ({
                                         </ScrollView>
                                     </View>
                                     {/* chat message icon box right side */}
-                                    {showUI && (
+                                    {showUI && keyboardOffset === 0 && (
                                         <View style={styles.strRoomFooterSocialActions}>
                                             {/* gift icon for user */}
                                             {!isHost && (
@@ -2379,33 +2380,45 @@ const StreamRoom = ({
                             </View>
                             <View style={[styles.giftModalItemsMainLayout, themeStyles[theme].giftModalItemsMainLayout]}>
                                 {giftsData.length > 0 ? (
-                                    <ScrollView
-                                        showsVerticalScrollIndicator={true}
-                                        indicatorStyle="#d9d9d9"
-                                    >
-                                        <View style={styles.giftModalCategoryItemsContainer}>
-                                            {giftDataLoading ? (
-                                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150, width: '100%' }}>
-                                                    <ActivityIndicator size="large" />
-                                                </View>
-                                            ) : giftsData.map((item, index) => {
+                                    <>
+                                        <FlatList
+                                            data={giftsData}
+                                            numColumns={4}
+                                            keyExtractor={(item, index) => item.giftIcon + index}
+                                            showsVerticalScrollIndicator={true}
+                                            indicatorStyle="white" // or "black", not hex
+                                            initialNumToRender={12}
+                                            windowSize={5}
+                                            maxToRenderPerBatch={10}
+                                            removeClippedSubviews={true}
+                                            contentContainerStyle={styles.giftModalCategoryItemsContainer}
+                                            ListEmptyComponent={
+                                                giftDataLoading ? (
+                                                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 150 }}>
+                                                        <ActivityIndicator size="large" />
+                                                    </View>
+                                                ) : null
+                                            }
+                                            renderItem={({ item }) => {
                                                 const localImage = giftImages[item.giftIcon];
                                                 if (!localImage) return null;
+
                                                 return (
-                                                    <TouchableOpacity key={index}
+                                                    <TouchableOpacity
                                                         style={styles.giftModalCatItem}
                                                         onPress={() => SendGift(item)}
                                                     >
                                                         <FastImage
-                                                            style={[styles.giftModalCatItemImage]}
+                                                            style={styles.giftModalCatItemImage}
                                                             source={localImage}
                                                             resizeMode={FastImage.resizeMode.contain}
                                                         />
                                                     </TouchableOpacity>
                                                 );
-                                            })}
-                                        </View>
-                                    </ScrollView>
+                                            }}
+                                        />
+
+                                    </>
                                 ) : (
                                     <View style={styles.noGiftsTextContainer}>
                                         <Text style={styles.noGiftsTextContent}>No gifts available for this category</Text>

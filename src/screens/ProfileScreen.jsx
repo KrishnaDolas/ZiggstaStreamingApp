@@ -91,10 +91,6 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
                                 style={styles.profileHeaderLogo}
                                 resizeMode="contain"
                             />
-                            <Image
-                                source={require('../../assets/images/LS-3.jpg')}
-                                style={styles.profileAvatar}
-                            />
                         </View>
                         <View style={styles.profileBlockRightBox}>
                             <View style={styles.profileBlock}>

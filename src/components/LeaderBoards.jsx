@@ -266,7 +266,7 @@ export const LeaderBoards = () => {
                     </View>
                 </View>
                 {/* Star Button */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                     style={[
                         styles.lbStarButton,
                         themeStyles[theme].lbStarButton,
@@ -277,7 +277,7 @@ export const LeaderBoards = () => {
                     }}
                 >
                     <FontAwesome5 name="star" size={12} solid color={theme === 'light' ? 'gray' : '#fafafa'} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </TouchableOpacity>
         );
     }, [theme]);

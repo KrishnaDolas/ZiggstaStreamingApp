@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import { ThemeContext } from '../context/ThemeContext';
 import {
@@ -31,11 +31,6 @@ const GoogleBannerAd = () => {
                     requestNonPersonalizedAdsOnly: true,
                 }}
             />
-            {/* <Image
-                source={require('../../assets/images/google-ad.png')} // adjust path
-                style={styles.googleAdBanner}
-                resizeMode="contain"
-            /> */}
         </View>
     );
 };

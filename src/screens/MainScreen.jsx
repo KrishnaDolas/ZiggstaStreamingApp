@@ -14,7 +14,6 @@ import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { iceServers, preferVP8, requestPermissions, SendErrorTotheServer, showPermissionAlert, socket } from '../utils/constant';
-import chatimage from '../../assets/images/LS-2.jpg';
 
 import Apiclient from '../utils/Apiclient';
 import Loader from '../Loader/Loader';
