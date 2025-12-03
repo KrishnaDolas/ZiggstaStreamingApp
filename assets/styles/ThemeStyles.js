@@ -1,5 +1,6 @@
 import { StyleSheet, Platform } from 'react-native';
 import { Dimensions } from 'react-native';
+import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import Colors from './Colors';
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -636,13 +637,14 @@ export const styles = StyleSheet.create({
   },
 
   profileMainText: {
-    fontSize: 20,
+    // fontSize: RFPercentage(2.2),
+    fontSize: RFValue(15),
     fontWeight: '600',
     marginBottom: 5,
   },
 
   profileValueText: {
-    fontSize: 16,
+    fontSize: RFValue(14),
     fontWeight: '500',
   },
 
@@ -661,12 +663,12 @@ export const styles = StyleSheet.create({
   },
 
   profileStatLabel: {
-    fontSize: 14,
+    fontSize: RFValue(12),
     marginBottom: 10,
   },
 
   profileStatValue: {
-    fontSize: 18,
+    fontSize: RFValue(15),
     fontWeight: 'bold',
   },
 
@@ -2025,13 +2027,15 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   wdRefStateTitle: {
-    fontSize: 14,
+    // fontSize: 14,
+    fontSize: RFValue(13),
     // color: '#555',
     fontWeight: '500',
     textAlign: 'center',
   },
   wdRefStateValue: {
-    fontSize: 18,
+    // fontSize: 18,
+    fontSize: RFValue(15),
     fontWeight: 'bold',
     marginTop: 5,
     // color: '#222',
