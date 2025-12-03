@@ -28,19 +28,31 @@ export const socket = io('https://streamalong.live', {
 });
 
 
-
-
-
 // WebRTC ICE configuration with STUN and TURN servers
-export const iceServers = {
-  iceServers: [{
-    urls: ['turn:coturn.streamalong.live:3478'],
-    username: 'webrtcuser',
-    credential: 'Test@1234'
-  }],
-  iceTransportPolicy: 'all',
-  sdpSemantics: 'unified-plan'
+// utils/constant.js
+export const iceServers = [
+  { urls: ["stun:38.242.235.250:3478"] },
+  {
+    urls: ["turn:38.242.235.250:3478"],
+    username: "webrtc",
+    credential: "Test@1234",
+  },
+  {
+    urls: ["turns:38.242.235.250:5349"],  // TLS
+    username: "webrtc",
+    credential: "Test@1234",
+  }
+];
+
+// You can also export a ready-to-use RTC config:
+export const rtcConfig = {
+  iceServers,
+  // normal mode:
+  iceTransportPolicy: "all",
+  // for debugging TURN only, you can temporarily use:
+  // iceTransportPolicy: "relay",
 };
+
 export const preferVP8 = (sdp) => {
   const sdpLines = sdp.split('\r\n');
   const mLineIndex = sdpLines.findIndex(line => line.startsWith('m=video'));
