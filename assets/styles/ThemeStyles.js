@@ -2022,7 +2022,7 @@ export const styles = StyleSheet.create({
   wdRefStateCard: {
     borderRadius: 8,
     paddingVertical: 5,
-    height: 70,
+    height:RFValue(70),
     alignItems: 'center',
     justifyContent: 'space-between',
   },
