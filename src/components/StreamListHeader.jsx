@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
     View,
     Text,
@@ -38,7 +38,6 @@ export const StreamListHeader = ({
     const [visibleModal, setVisibleModal] = useState(null);
     const [message, setMessage] = useState(null);
 
-
     // ✅ Memoize heart toggle
     const handleToggleLiked = () => {
         setIsFavourite((prev) => !prev);
@@ -49,6 +48,7 @@ export const StreamListHeader = ({
         setGetselectcategory([]);
         setIsFavourite(false);
         setIsNearBy(false);
+        setHeaderMainTab('foryou');
     };
 
     const handleConnect = (item) => {
@@ -70,11 +70,26 @@ export const StreamListHeader = ({
             setHeaderMainTab('foryou');
         } else {
             navigation.navigate('Main');
+            setHeaderMainTab('foryou');
         }
     };
 
     return (
-        <View style={[styles.streamListHeader, themeStyles[theme].streamListHeader]} >
+        <View
+            onLayout={(event) => {
+                const { x, y, width, height } = event.nativeEvent.layout;
+                console.log("📍 HEADER POSITION:");
+                console.log(`Top(Y): ${y}`);
+                console.log(`Left(X): ${x}`);
+                console.log(`Width: ${width}`);
+                console.log(`Height: ${height}`);
+
+            }}
+            style={[
+                styles.streamListHeader,
+                themeStyles[theme].streamListHeader,
+            ]}
+        >
             {/* header top */}
             <View style={styles.streamListHeaderTop}>
                 <TouchableOpacity onPress={handleLogoPress}>
@@ -257,10 +272,6 @@ export const StreamListHeader = ({
                 </View>
             )
             }
-            <LinearGradient
-                colors={theme === 'light' ? ['rgba(0, 0, 0, 0.05)', 'transparent'] : ['rgba(27, 27, 27, 0.69)', 'transparent']}
-                style={styles.bottomShadow}
-            />
             {/* ----------------------- MODALS ----------------------- */}
             <View pointerEvents="box-none" style={{ position: 'absolute', zIndex: 9999 }}>
 

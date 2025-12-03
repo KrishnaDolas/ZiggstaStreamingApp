@@ -14,15 +14,12 @@ import themeColors from '../../assets/styles/Colors';
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth / 2 - 25; // 3 columns with margin
 
-const screenHeight = Dimensions.get('window').height;
-export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
+export const StatisticsSettingScreen = ({ userData }) => {
     const { theme } = useContext(ThemeContext);
     const { profileData } = useAppContext();
     const insets = useSafeAreaInsets();
-    const [visibleModal, setVisibleModal] = useState(null);
     const [averageIncomeData, setAverageIncomeData] = useState({});
     const [isUserError, setIsUserError] = useState(null);
-    const [topGiftersData, setTopGiftersData] = useState([]);
     const [totalDailyTime, setTotalDailyTime] = useState({});
     const [isAvgLoading, setIsAvgLoading] = useState(false);
     const [isTotalTimeLoading, setIsTotalTimeLoading] = useState(false);
@@ -60,7 +57,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         return `${days}d, ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
 
-    const startLiveTimer = (initialSeconds) => {
+    const startLiveTimer = useCallback((initialSeconds) => {
         if (timerRef.current) clearInterval(timerRef.current);
         startTimeRef.current = initialSeconds;
         startTimestampRef.current = Date.now();
@@ -71,7 +68,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
             setLiveOnlineTime(formatSecondsToTime(updatedTime));
             lastTimerSecondsRef.current = updatedTime; // Update the last timer value
         }, 1000);
-    };
+    }, []);
 
     // Handle app state changes (foreground/background)
     useEffect(() => {
@@ -125,7 +122,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
             setIsTotalTimeLoading(false);
             setIsInitialLoad(false); // Mark initial load as complete
         }
-    }, [userData?.userid, isInitialLoad]);
+    }, [userData?.userid, isInitialLoad, startLiveTimer]);
 
     useEffect(() => {
         getUserOnlineTime();
@@ -157,32 +154,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
         }, [getAverageDaily])
     );
 
-    // to get top gifters
-
-    // const getTopGifters = useCallback(async () => {
-    //     const formData = {
-    //         toUserId: userData.userid,
-    //         gifterCount: 10,
-    //     };
-    //     setIsUserError('');
-    //     try {
-    //         const response = await Apiclient.post('/topgifters', formData);
-    //         if (response) {
-    //             setTopGiftersData(response.data || []);
-    //         } else {
-    //             setIsUserError('Failed to fetch top gifters data');
-    //         }
-    //     } catch (err) {
-    //         setIsUserError('Error fetching top gifters data: ' + err.message);
-    //     }
-    // }, [userData.userid]);
-
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         getTopGifters();
-    //     }, [getTopGifters])
-    // );
-
     useFocusEffect(
         useCallback(() => {
             // Only fetch API data if initial load or no valid timer
@@ -194,7 +165,7 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
             }
             // Do not stop the timer on unfocus
             return () => { };
-        }, [getUserOnlineTime, isInitialLoad])
+        }, [getUserOnlineTime, isInitialLoad, startLiveTimer])
     );
 
 
@@ -427,73 +398,6 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                 )}
                             </View>
                         </View>
-                        {/* History Table */}
-                        {/* <View style={[styles.profileTable, themeStyles[theme].profileTable]}>
-                            <View style={[styles.profileTableHeader, themeStyles[theme].profileTableHeader]}>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellIndex, themeStyles[theme].profileTableHeaderText]}>#</Text>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
-                                <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
-                            </View>
-                            <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
-                                {topGiftersData.length === 0 ? <>
-                                    <>
-                                        <View style={{ height: screenHeight * 0.2, justifyContent: 'center', alignItems: 'center' }}>
-                                            <Text style={{ color: theme === 'light' ? '#777' : '#ccc', fontSize: 16, fontWeight: '500' }}>
-                                                No data found
-                                            </Text>
-                                        </View>
-                                    </>
-                                </> : topGiftersData.map((item, index) => {
-                                    return (
-                                        <View key={index} style={[styles.profileTableRow, themeStyles[theme].profileTableRow]}>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellIndex, themeStyles[theme].profileTableCell]}>{index + 1}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellUsername, themeStyles[theme].profileTableCell]}>{item.screenName}</Text>
-                                            <Text style={[styles.profileTableCell, styles.profileTableCellAmount, themeStyles[theme].profileTableCell]}>{item.Amount}</Text>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
-                        </View> */}
-                        {/* Action Buttons */}
-                        {/* <View style={styles.profileButtonGrid}>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setModalVisibleStage('bank-details');
-                                    setModalStage('first');
-                                    setModalLabelName(null);
-                                }}
-                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                            >
-                                <Icon name="card-outline" size={26} color="#4CAF50" style={styles.actionButtonIcon} />
-                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Banking Details</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setVisibleModal('shop-manager')}
-                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                            >
-                                <Icon name="storefront-outline" size={24} color="#FF9800" style={styles.actionButtonIcon} />
-                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Shop Manager</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setVisibleModal('social')}
-                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                            >
-                                <Icon name="people-outline" size={28} color="#2196F3" style={styles.actionButtonIcon} />
-                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Socials</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => {
-                                    setModalVisibleStage('setting');
-                                    setModalStage('first');
-                                    setModalLabelName(null);
-                                }}
-                                style={[styles.profileActionBtnBox, themeStyles[theme].profileActionBtnBox]}
-                            >
-                                <Icon name="settings-outline" size={27} color="#9C27B0" style={styles.actionButtonIcon} />
-                                <Text style={[styles.profileActionButtonText, themeStyles[theme].profileActionButtonText]}>Settings</Text>
-                            </TouchableOpacity>
-                        </View> */}
-
                         {/* Streaming stats */}
                         <Text
                             style={[
@@ -614,14 +518,9 @@ export const StatisticsSettingScreen = ({ userData, onLogout, address }) => {
                                     <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>400</Text>
                                 </View>
                                 {/* total earnings */}
-                                <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
+                                <TouchableOpacity style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
                                     <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Total Earnings</Text>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        {/* <Image
-                                            source={require('../../assets/images/icons/icon_z.png')} // Adjust the path as needed
-                                            style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
-                                            resizeMode="contain"
-                                        /> */}
                                         <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>
                                             AU$ {Number(profileData?.CreditBalance).toFixed(0)}
                                         </Text>

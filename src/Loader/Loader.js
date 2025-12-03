@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width,
     height,
-    zIndex: 999,
+    zIndex: 9999,
   },
   backgroundImage: {
     position: 'absolute',

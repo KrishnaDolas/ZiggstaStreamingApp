@@ -6,7 +6,7 @@ import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
 import { StreamListHeader } from '../components/StreamListHeader';
 import LinearGradient from 'react-native-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import FriendActionsModal from '../modals/FriendActionsModal';
 import { useAppContext } from '../context/AppContext';
@@ -73,8 +73,9 @@ export const MessageListScreen = () => {
 
     // Function to fetch friends data blocked/unblocked user from the API
     const getFriendsData = useCallback(async () => {
-        if (!userData.userid) return
-        setLoading(true);
+        if (!userData.userid) return;
+
+        if (!refreshing) setLoading(true);
         try {
 
             const postData = {
@@ -100,16 +101,21 @@ export const MessageListScreen = () => {
 
     useFocusEffect(
         useCallback(() => {
-            setFriendListType('friends');
-            getFriendsData();
-        }, [])
+            setLoading(true);
+            setRefreshing(false); // reset pull refresh state when screen comes back
+
+            if (friendListType === 'requests') {
+                getFriendRequestData();
+            } else {
+                getFriendsData();
+            }
+
+            return () => {
+                setLoading(false); // cleanup when leaving screen
+            };
+        }, [friendListType])
     );
 
-    useEffect(() => {
-        if (friendListType !== 'requests') {
-            getFriendsData();
-        }
-    }, [friendListType, getFriendsData]);
 
 
     // Function to fetch friends request user from the API
@@ -389,146 +395,146 @@ export const MessageListScreen = () => {
     }, [friendListType]);
 
     return (
-        <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-            <LinearGradient
-                style={[styles.messageListGradientBox]}
-                colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-                start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}>
-                <StatusBar
-                    barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-                    backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-                    translucent={false}
-                />
-                <StreamListHeader userData={userData} />
+        <SafeAreaView style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView]}>
+            <StatusBar
+                barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+                backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+                translucent={false}
+            />
+            <StreamListHeader />
+            <View
+                style={[
+                    styles.messageListMainCardLayout,
+                    themeStyles[theme].messageListMainCardLayout,
+                ]}>
+                {/* filter */}
                 <View
-                    style={[
-                        styles.messageListMainCardLayout,
-                        themeStyles[theme].messageListMainCardLayout,
-                    ]}>
-                    {/* filter */}
-                    <View
-                        style={styles.messListFilterTab}
-                    >
-                        {['friends', 'blocked', 'requests'].map((type, index) => (
-                            <TouchableOpacity
-                                key={type}
-                                onPress={() => {
-                                    setFriendListType(type);
-                                    setMenuVisible(false);
-                                }}
-                                style={[styles.messListFilterTabBTn, {
-                                    backgroundColor:
-                                        friendListType === type
-                                            ? '#d93a63'
-                                            : theme === 'dark'
-                                                ? '#323232'
-                                                : '#f3f3f3',
-                                    marginRight: index === 2 ? 0 : 8,
-                                }]}
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 14,
-                                        fontWeight: '500',
-                                        color: friendListType === type ? '#fff' : theme === 'dark'
-                                            ? '#FFFFFF'
-                                            : '#333333',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    {type === 'friends'
-                                        ? 'Friends'
-                                        : type === 'blocked'
-                                            ? 'Blocked'
-                                            : 'Requests'}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 12 }}>
-                        <Text
-                            style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}
+                    style={styles.messListFilterTab}
+                >
+                    {['friends', 'blocked', 'requests'].map((type, index) => (
+                        <TouchableOpacity
+                            key={type}
+                            onPress={() => {
+                                setFriendListType(type);
+                                setMenuVisible(false);
+                            }}
+                            style={[styles.messListFilterTabBTn, {
+                                backgroundColor:
+                                    friendListType === type
+                                        ? '#d93a63'
+                                        : theme === 'dark'
+                                            ? '#323232'
+                                            : '#f3f3f3',
+                                marginRight: index === 2 ? 0 : 8,
+                            }]}
                         >
-                            {getTitle()}
-                        </Text>
-                    </View>
-                    {loading ? (
-                        <View style={{ flex: 1, justifyContent: 'start', alignItems: 'center', paddingVertical: 40 }}>
-                            <ActivityIndicator size="large" color="#d93a63" />
-                        </View>
-                    ) : (
-                        <>
-                            {(friendListType === 'requests' ? friendRequestsData.length === 0 : friendsData.length === 0) ? (
-                                <ScrollView
-                                    contentContainerStyle={{ alignItems: 'center', paddingTop: 50 }}
-                                    refreshControl={
-                                        <RefreshControl
-                                            refreshing={refreshing}
-                                            onRefresh={handleRefresh}
-                                            colors={['#d93a63']}
-                                            tintColor="#d93a63"
-                                        />
-                                    }
-                                >
-                                    <Image
-                                        source={require('../../assets/images/friends-no-data-found.png')}
-                                        style={{ width: 200, height: 200, resizeMode: 'contain' }}
-                                    />
-                                    <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>
-                                        {friendListType === 'friends' && 'No friends found'}
-                                        {friendListType === 'blocked' && 'No blocked users'}
-                                        {friendListType === 'requests' && 'No friend requests'}
-                                    </Text>
-                                </ScrollView>
-                            ) : (
-                                <FlatList
-                                    data={friendListType === 'requests' ? friendRequestsData : friendsData}
-                                    keyExtractor={(item, index) => index.toString()}
-                                    renderItem={renderItem}
-                                    contentContainerStyle={styles.messageListLayout}
-                                    initialNumToRender={10}
-                                    refreshing={refreshing} // <-- Add this
-                                    onRefresh={handleRefresh} // <-- And this
-                                    extraData={refreshUI}
-                                />
-                            )}
-                        </>
-                    )}
+                            <Text
+                                style={{
+                                    fontSize: 14,
+                                    fontWeight: '500',
+                                    color: friendListType === type ? '#fff' : theme === 'dark'
+                                        ? '#FFFFFF'
+                                        : '#333333',
+                                    textAlign: 'center',
+                                }}
+                            >
+                                {type === 'friends'
+                                    ? 'Friends'
+                                    : type === 'blocked'
+                                        ? 'Blocked'
+                                        : 'Requests'}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
-                {/* <Footer /> */}
-                {modalVisibleStage === 'friend-action' && modalStage === 'first' && (
-                    <FriendActionsModal
-                        visible={modalVisibleStage === 'friend-action'}
-                        onClose={() => {
-                            setModalVisibleStage(null);
-                        }}
-                        userData={userData}
-                        friendInfo={friendInfo}
-                        getFriendsData={getFriendsData}
-                    />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 12 }}>
+                    <Text
+                        style={[styles.streamListMainTitle, themeStyles[theme].streamListMainTitle]}
+                    >
+                        {getTitle()}
+                    </Text>
+                </View>
+                {loading && !refreshing ? (
+                    <View style={{ flex: 1, justifyContent: 'start', alignItems: 'center', paddingVertical: 40 }}>
+                        <ActivityIndicator size="large" color="#d93a63" />
+                    </View>
+                ) : (
+                    <>
+                        {(friendListType === 'requests' ? friendRequestsData.length === 0 : friendsData.length === 0) ? (
+                            <ScrollView
+                                contentContainerStyle={{ alignItems: 'center', paddingTop: 50 }}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={handleRefresh}
+                                        colors={['#d93a63']}
+                                        tintColor="#d93a63"
+                                    />
+                                }
+                            >
+                                <Image
+                                    source={require('../../assets/images/friends-no-data-found.png')}
+                                    style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                                />
+                                <Text style={{ color: theme === 'dark' ? '#fff' : '#000', fontSize: 16 }}>
+                                    {friendListType === 'friends' && 'No friends found'}
+                                    {friendListType === 'blocked' && 'No blocked users'}
+                                    {friendListType === 'requests' && 'No friend requests'}
+                                </Text>
+                            </ScrollView>
+                        ) : (
+                            <FlatList
+                                data={friendListType === 'requests' ? friendRequestsData : friendsData}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={renderItem}
+                                contentContainerStyle={styles.messageListLayout}
+                                initialNumToRender={10}
+                                extraData={refreshUI}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={handleRefresh}
+                                        tintColor="#d93a63"
+                                        colors={['#d93a63']}
+                                    />
+                                }
+                            />
+                        )}
+                    </>
                 )}
-                {modalVisibleStage === 'profile-modal' && modalStage === 'first' && (
-                    <ProfileScreenModal
-                        visible={modalVisibleStage === 'profile-modal'}
-                        onClose={() => {
-                            setModalVisibleStage(null);
-                            setShowAvatarPreview(false);
-                            setAvatarToPreview(null);
-                            setProfileUserData({});
-                        }}
-                        profileData={profileUserData}
-                    />
-                )}
-                {visibleModal === 'message-modal' && (
-                    <MessageModal
-                        visible={visibleModal === 'message-modal'}
-                        message={message}
-                        onClose={() => setVisibleModal(null)}
-                    />
-                )}
-            </LinearGradient>
-        </View>
+            </View>
+            {/* <Footer /> */}
+            {modalVisibleStage === 'friend-action' && modalStage === 'first' && (
+                <FriendActionsModal
+                    visible={modalVisibleStage === 'friend-action'}
+                    onClose={() => {
+                        setModalVisibleStage(null);
+                    }}
+                    userData={userData}
+                    friendInfo={friendInfo}
+                    getFriendsData={getFriendsData}
+                />
+            )}
+            {modalVisibleStage === 'profile-modal' && modalStage === 'first' && (
+                <ProfileScreenModal
+                    visible={modalVisibleStage === 'profile-modal'}
+                    onClose={() => {
+                        setModalVisibleStage(null);
+                        setShowAvatarPreview(false);
+                        setAvatarToPreview(null);
+                        setProfileUserData({});
+                    }}
+                    profileData={profileUserData}
+                />
+            )}
+            {visibleModal === 'message-modal' && (
+                <MessageModal
+                    visible={visibleModal === 'message-modal'}
+                    message={message}
+                    onClose={() => setVisibleModal(null)}
+                />
+            )}
+        </SafeAreaView>
 
     );
 };

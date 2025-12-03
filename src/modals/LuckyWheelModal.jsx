@@ -12,6 +12,7 @@ import {
     Dimensions,
     ScrollView,
     Alert,
+    Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
@@ -718,7 +719,15 @@ const LuckyWheelModal = (
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                 >
-                    <View style={mainStyle.header}>
+                    <View
+                        style={[
+                            mainStyle.header,
+                            {
+                                paddingLeft: 10,
+                                paddingRight: Platform.OS === 'ios' ? 20 : 5,// 🔥 this prevents cutting on iOS
+                            }
+                        ]}
+                    >
                         <Animated.View
                             ref={chipsBoxRef}
                             onLayout={(event) => {
@@ -751,8 +760,8 @@ const LuckyWheelModal = (
                             />
                             <Text style={[mainStyle.chips]}>{Number(displayCredit).toFixed(0)}</Text>
                         </Animated.View>
-                        <TouchableOpacity onPress={closeModal}>
-                            <Ionicons name="close" size={28} color="#fff" />
+                        <TouchableOpacity onPress={closeModal} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                            <Ionicons name="close" size={30} color="#fff" />
                         </TouchableOpacity>
                     </View>
                     {/* Flying chips overlay */}

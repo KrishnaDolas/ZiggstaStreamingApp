@@ -12,7 +12,7 @@ import themeColors from '../../assets/styles/Colors';
 import LinearGradient from 'react-native-linear-gradient';
 import StreamList from '../components/StreamList';
 import StreamRoom from '../components/StreamRoom';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { iceServers, preferVP8, requestPermissions, SendErrorTotheServer, showPermissionAlert, socket } from '../utils/constant';
 
 import Apiclient from '../utils/Apiclient';
@@ -20,7 +20,7 @@ import Loader from '../Loader/Loader';
 import { useAppContext } from '../context/AppContext';
 import DisconnectedPanel from '../modals/DisconnectedPanel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-global.socket = socket; // make socket global for debugging
+
 export const MainScreen = () => {
   const { userData, userAddress, setIsInStreamRoom, isInStreamRoom, fetchProfileDetails } = useAppContext();
   const [remoteStreams, setRemoteStreams] = useState([]);
@@ -54,6 +54,7 @@ export const MainScreen = () => {
   const IsIdentify = useRef(false)
   const IsVerified = useRef(false)
   const audioLevelsRef = useRef({});
+  const pendingReofferTimeoutsRef = useRef({});
 
   useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
@@ -61,63 +62,6 @@ export const MainScreen = () => {
   }, [joined, isSocketConnected]);
 
   useEffect(() => {
-    // inside StreamRoom.jsx
-    // the functinality which disabled for backgroud stream pause or activate when app minimise  
-
-    // const handleAppStateChange = async (nextAppState) => {
-    //   console.log("📱 AppState changed:", nextAppState);
-    //   try {
-    //     if (nextAppState === 'background' && isStreaming && IsValid) {
-    //       // 🔹 Pause local media instead of stopping
-    //       if (localStreamRef.current) {
-    //         localStreamRef.current.getTracks().forEach(track => {
-    //           track.enabled = false; // just mute/disable
-    //         });
-    //       }
-
-    //       InCallManager.stop(); // stop audio routing
-    //       // ❌ Do NOT clear peersRef or remoteStreams
-    //       console.log("⏸️ Local tracks disabled (background)");
-    //     }
-    //     if (nextAppState === 'active' && isStreaming ) {
-    //       // 🔹 Re-enable tracks
-    //       // Some iOS devices actually kill tracks when backgrounded
-    //       // Fallback: if no tracks exist, create fresh stream and replace tracks on existing peers
-    //       if (localStreamRef.current && localStreamRef.current.getTracks().length === 0) {
-    //         console.log("⚠️ No local tracks found, recreating stream...");
-    //         const newStream = await mediaDevices.getUserMedia({
-    //           audio: true,
-    //           video: true,
-    //         });
-    //         localStreamRef.current = newStream;
-
-    //         // Replace tracks in all peers
-    //         Object.values(peersRef.current).forEach(peer => {
-    //           newStream.getTracks().forEach(track => {
-    //             const sender = peer.getSenders().find(s => s.track && s.track.kind === track.kind);
-    //             if (sender) {
-    //               sender.replaceTrack(track);
-    //             } else {
-    //               peer.addTrack(track, newStream);
-    //             }
-    //           });
-    //         });
-    //       }
-
-    //       // ❌ Do not emit 'stream-negotiate' as new user
-    //       // Instead just tell server you resumed
-    //       socket.emit('stream-Resume', {
-    //         roomId: RoomID,
-    //         userId: userDetails?.id,
-    //       });
-
-    //       setIsUserStreaming(true);
-    //     }
-    //   } catch (err) {
-    //     SendErrorTotheServer(err, "handleAppStateChange");
-    //   }
-    // };
-
     const handleAppStateChange = (nextAppState) => {
       try {
         // Intentionally do nothing on background/active to keep mic/camera intact.
@@ -140,6 +84,7 @@ export const MainScreen = () => {
     socket.connect();
     setIsSocketConnected(true); // Update connection status
   };
+
   const requestStreamPermission = async () => {
     try {
       if (!hasRequestedStream) {
@@ -148,7 +93,17 @@ export const MainScreen = () => {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ? { country: userAddress?.country, city: userAddress?.city, avatar: userData?.avatar, Gender: userData?.gender } : { country: 'India', city: 'Pune' }
+        const Address = userAddress ?
+          {
+            country: userAddress?.country,
+            city: userAddress?.city,
+            avatar: userData?.avatar,
+            Gender: userData?.gender,
+          } :
+          {
+            country: 'India',
+            city: 'Pune',
+          };
         socket.emit('requestStream', Address);
         setHasRequestedStream(true);
       }
@@ -156,6 +111,7 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'requestStreamPermission');
     }
   };
+
   const HandleConnect = () => {
     console.log('✅ Connected to Socket.IO server');
     setconnectingpanel(false);
@@ -208,9 +164,9 @@ export const MainScreen = () => {
     setIsUserStreaming(false)
     setStreamGuest([])
     setStreamMsg(null)
-  }
-  //Handle socket functions
+  };
 
+  //Handle socket functions
   const HandleJoined = async ({ users, IsHost, ChatMessages, IsReconnect }) => {
     try {
       // If no one else, you're host
@@ -246,12 +202,13 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleJoined');
     }
-  }
+  };
+
   const HandleStreamNotAvailable = () => {
     Alert.alert('Stream Not Available', 'The host is not streaming at the moment. Please try again later.',
       [{ text: 'OK' }]
     );
-  }
+  };
 
   const HandleNewUser = async (userId) => {
     try {
@@ -295,6 +252,7 @@ export const MainScreen = () => {
     }
   };
 
+
   const HandleSignal = async ({ from, data }) => {
     try {
       console.log('📨 [HandleSignal] CALLED from', from, {
@@ -307,6 +265,11 @@ export const MainScreen = () => {
         console.log('🛠 [HandleSignal] No existing peer for', from, '→ creating new one');
         peer = createPeer(from);
         peersRef.current[from] = peer;
+      }
+      if (pendingReofferTimeoutsRef.current[from]) {
+        clearTimeout(pendingReofferTimeoutsRef.current[from]);
+        delete pendingReofferTimeoutsRef.current[from];
+        console.log(`⏳ [HandleSignal] Cleared pending re-offer timeout for ${from}`);
       }
 
       console.log('🔍 [HandleSignal] Peer state BEFORE handling', from, {
@@ -397,6 +360,7 @@ export const MainScreen = () => {
     }
   };
 
+
   const HandleNewMessage = ({ userName, message, id, userProfile, Gender }) => {
     try {
       let own = userName
@@ -408,14 +372,15 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleNewMessage');
     }
-  }
+  };
+
   const HandleStreamRequest = (streamrequsts) => {
     try {
       setStreamRequestList(streamrequsts);
     } catch (error) {
       SendErrorTotheServer(error, 'HandleStreamRequest');
     }
-  }
+  };
 
   const HandleApprovedStream = async () => {
     try {
@@ -436,12 +401,12 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleApprovedStream');
     }
-  }
+  };
+
   const HandleStreamReject = (Name) => {
     setHasRequestedStream(false);
     setStreamMsg(`${Name} has rejected your stream request.`);
   };
-
 
   const HandlereconnectWithNewPeer = async ({ socketId, userId, isHost }) => {
     try {
@@ -489,7 +454,7 @@ export const MainScreen = () => {
 
   const HandleGetListStreamers = (streamers) => {
     setStreamGuest(streamers);
-  }
+  };
 
   const HandleUserLeft = (socketId, userinfo) => {
     console.log('🚪 [HandleUserLeft] user left', userinfo, 'socket:', socketId);
@@ -599,19 +564,24 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'HandleHostLeft');
     }
-  }
+  };
+
   const HandleRoomInfo = (info) => {
     setStreamupdated({ viewerCount: info?.viewerCount, LikeCount: info?.LikeCount, TotalViewerCount: info?.TotalViewerCount })
-  }
+  };
+
   const HandleNewStream = () => {
     setRefreshLobby(!refreshlobby); // Toggle refresh state
-  }
+  };
+
   const HandleLeaveStream = () => {
     setLeaveRoomRefresh(!leaveroomrefresh); // Toggle leave room refresh state
-  }
+  };
+
   const HandleRoomFull = (msg) => {
     Alert.alert('Room Full', msg, [{ text: 'OK' }]);
-  }
+  };
+
   const stopLocalStream = () => {
     try {
       if (localStreamRef.current) {
@@ -634,7 +604,8 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'stopLocalStream');
     }
-  }
+  };
+
   const HandleHostAction = ({ action }) => {
     try {
       if (!localStreamRef.current) return;
@@ -654,7 +625,6 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'HandleHostAction');
     }
   };
-
 
   const HandleUserStreamStoped = async (payloadOrSocketId) => {
     try {
@@ -716,20 +686,23 @@ export const MainScreen = () => {
 
   const HandleStreamList = (list) => {
     setStrimerList(list)
-  }
+  };
+
   const HandlenewUserJoined = (userinfo) => {
     const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, Gender: userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} joined`, message: '', TYPE: "USERJOINED" }
     setRoomchat(prev => [...prev, data]);
-  }
+  };
+
   const HandleUserLeftStream = (userinfo) => {
     if (userinfo) {
       const data = { id: userinfo?.customid || 1, userProfile: userinfo?.avatar, Gender: userinfo?.Gender, userID: userinfo?.customid, userName: `${userinfo?.Name} left`, message: '', TYPE: "USERLEFT" }
       setRoomchat(prev => [...prev, data]);
     }
-  }
+  };
+
   const HandleTotalGiftValue = (totalValue) => {
-    setTotalGiftValue(totalValue)
-  }
+    setTotalGiftValue(totalValue);
+  };
 
   const HandleDisconnected = () => {
     IsVerified.current = false;
@@ -751,9 +724,81 @@ export const MainScreen = () => {
       // clear pending candidates
       pendingCandidates.current = {};
     }
+  };
+
+
+  const HandleSoftRtcReload = ({ promotedSocket }) => {
+    try {
+      console.log('➡️ [softRtcReload] received promotedSocket:', promotedSocket);
+
+      // Only viewers should perform this (do not run if I'm the host)
+      if (isHost) {
+        console.log('➡️ [softRtcReload] I am host — ignoring');
+        return;
+      }
+
+      // 1) Close & remove local peer for that promoted socket (if exists)
+      if (peersRef.current[promotedSocket]) {
+        try { peersRef.current[promotedSocket].close(); } catch (e) { /* ignore */ }
+        delete peersRef.current[promotedSocket];
+        console.log('🧹 [softRtcReload] closed local peer for', promotedSocket);
+      }
+
+      // 2) Remove remoteStreams tile immediately so UI won't show stale/blank tile
+      setRemoteStreams(prev => {
+        const next = prev.filter(s => s.id !== promotedSocket);
+        console.log('🧹 [softRtcReload] removed remoteStreams entry for', promotedSocket, { before: prev.length, after: next.length });
+        return next;
+      });
+
+      // 3) Ask server to ask promoted streamer to create a fresh offer to this viewer
+      socket.emit('requestReoffer', { to: promotedSocket });
+      console.log('📨 [softRtcReload] emitted requestReoffer to server for promotedSocket:', promotedSocket);
+
+      // 4) Start a timeout; if no offer arrives within X ms, fallback to single rejoin
+      const TIMEOUT_MS = 7000;
+      if (pendingReofferTimeoutsRef.current[promotedSocket]) {
+        clearTimeout(pendingReofferTimeoutsRef.current[promotedSocket]);
+      }
+      pendingReofferTimeoutsRef.current[promotedSocket] = setTimeout(() => {
+        console.warn('[softRtcReload] reoffer timeout for', promotedSocket, '-> trigger forceSingleRejoin');
+        socket.emit('forceSingleRejoin', { socketId: socket.id });
+        delete pendingReofferTimeoutsRef.current[promotedSocket];
+      }, TIMEOUT_MS);
+
+    } catch (err) {
+      console.error('❌ [softRtcReload] handler error', err);
+      SendErrorTotheServer(err, 'softRtcReload');
+    }
   }
 
+  const HandlePleaseCreateOffer = async ({ toSocket }) => {
+    try {
+      console.log('📣 [pleaseCreateOffer] asked to create fresh offer for', toSocket);
 
+      // Clean up any existing peer for that viewer on this client
+      if (peersRef.current[toSocket]) {
+        try { peersRef.current[toSocket].close(); } catch (e) { }
+        delete peersRef.current[toSocket];
+        console.log('🧹 [pleaseCreateOffer] closed existing peer for', toSocket);
+      }
+
+      // Create a new peer using your createPeer helper
+      const peer = createPeer(toSocket);
+      peersRef.current[toSocket] = peer;
+
+      // createOffer -> setLocalDescription -> send via existing signal path
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
+
+      socket.emit('signal', { to: toSocket, data: peer.localDescription });
+      console.log('📡 [pleaseCreateOffer] OFFER SENT to', toSocket);
+
+    } catch (err) {
+      console.error('❌ [pleaseCreateOffer] error', err);
+      SendErrorTotheServer(err, 'pleaseCreateOffer');
+    }
+  }
 
   const HandleFallbackToViewer = (data) => {
     console.log("📩 [fallback-to-viewer] event received:", data);
@@ -797,8 +842,8 @@ export const MainScreen = () => {
 
 
   useEffect(() => {
-    HandleConnect()
-  }, [])
+    HandleConnect();
+  }, []);
 
   useEffect(() => {
     if (!IsVerified.current) {
@@ -854,6 +899,9 @@ export const MainScreen = () => {
       socket.on('user-leftStream', HandleUserLeftStream)
       socket.on('Total-GiftValue', HandleTotalGiftValue)
       socket.on('fallback-to-viewer', HandleFallbackToViewer)
+      socket.on('softRtcReload', HandleSoftRtcReload)
+      socket.on('pleaseCreateOffer', HandlePleaseCreateOffer)
+
     }
 
     return () => {
@@ -885,7 +933,8 @@ export const MainScreen = () => {
         socket.off('Total-GiftValue', HandleTotalGiftValue)
         // socket.off('Force-Stop-Stream', HandleforceStopStream);
         socket.off('fallback-to-viewer', HandleFallbackToViewer)
-
+        socket.off('softRtcReload', HandleSoftRtcReload)
+        socket.off('pleaseCreateOffer', HandlePleaseCreateOffer)
       }
     }
   }, [isHost, isSocketConnected]);
@@ -897,6 +946,7 @@ export const MainScreen = () => {
     }
 
   }, [isSocketConnected]);
+
 
   const createPeer = (socketId) => {
     try {
@@ -917,7 +967,15 @@ export const MainScreen = () => {
         existingPeers: Object.keys(peersRef.current || {}),
       });
 
-      const peer = new RTCPeerConnection(iceServers);
+      const peer = new RTCPeerConnection({ iceServers });
+
+      /* ⭐⭐⭐ INSERT THIS BLOCK HERE ⭐⭐⭐ */
+      if (pendingReofferTimeoutsRef.current[socketId]) {
+        clearTimeout(pendingReofferTimeoutsRef.current[socketId]);
+        delete pendingReofferTimeoutsRef.current[socketId];
+        console.log(`⏳ [createPeer] Cleared pending re-offer timeout for ${socketId}`);
+      }
+      /* ⭐⭐⭐ END INSERT ⭐⭐⭐ */
 
       console.log('🛠 [createPeer] NEW RTCPeerConnection for:', socketId, {
         iceServers,
@@ -1054,16 +1112,53 @@ export const MainScreen = () => {
       // ICE candidate forwarding
       peer.onicecandidate = (event) => {
         if (event.candidate) {
-          console.log('🧊 [onicecandidate] candidate for', socketId, {
-            candidate: event.candidate.candidate,
-            sdpMid: event.candidate.sdpMid,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
+          const cand = event.candidate.candidate || "";
+
+          // classify candidate type
+          let candidateType = "unknown";
+          if (cand.includes("typ relay")) candidateType = "relay";
+          else if (cand.includes("typ srflx")) candidateType = "srflx";
+          else if (cand.includes("typ host")) candidateType = "host";
+
+          // transport
+          const transport = cand.includes("udp")
+            ? "udp"
+            : cand.includes("tcp")
+              ? "tcp"
+              : "unknown";
+
+          // extract IP + port (IPv4 only in this regex)
+          const ipPortMatch = cand.match(/(\d{1,3}\.){3}\d{1,3}\s(\d+)/);
+          const ip = ipPortMatch ? ipPortMatch[0].split(" ")[0] : "unknown";
+          const port = ipPortMatch ? ipPortMatch[0].split(" ")[1] : "unknown";
+
+          console.log("🔍 ICE CANDIDATE FOUND", {
+            socketId,
+            candidateType,
+            transport,
+            ip,
+            port,
+            raw: cand,
           });
-          socket.emit('signal', { to: socketId, data: { candidate: event.candidate } });
+
+          if (candidateType === "relay") {
+            console.log("🚀 RELAY CANDIDATE ✔ (TURN WORKING)", {
+              relayIP: ip,
+              relayPort: port,
+              transport,
+            });
+          }
+
+          // 🔁 IMPORTANT: keep signaling behavior identical
+          socket.emit("signal", {
+            to: socketId,
+            data: { candidate: event.candidate },
+          });
         } else {
-          console.log('✅ [onicecandidate] ICE gathering complete for', socketId);
+          console.log("✅ [onicecandidate] ICE gathering complete for", socketId);
         }
       };
+
 
       peer.onconnectionstatechange = () => {
         console.log('📶 [RTCPeerConnection] connectionState for', socketId, '=', peer.connectionState);
@@ -1145,6 +1240,7 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'createPeer');
     }
   };
+
 
   // Add a separate effect to batch audio level updates
   useEffect(() => {
@@ -1362,7 +1458,7 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');
     }
-  }
+  };
 
 
   const HandleTimeout = () => {
@@ -1398,8 +1494,6 @@ export const MainScreen = () => {
     leaveRoom();
   };
 
-
-
   const toggleMute = () => {
     try {
       if (localStreamRef.current) {
@@ -1415,7 +1509,8 @@ export const MainScreen = () => {
     } catch (error) {
       SendErrorTotheServer(error, 'toggleMute');
     }
-  }
+  };
+
   const switchCamera = () => {
     try {
       if (localStreamRef.current) {
@@ -1428,6 +1523,7 @@ export const MainScreen = () => {
       SendErrorTotheServer(error, 'switchCamera');
     }
   };
+
   const HandleChatmessages = (msg) => {
     try {
       const maxLength = 40;
@@ -1480,48 +1576,42 @@ export const MainScreen = () => {
 
   return (
     <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top }]}>
-      <LinearGradient
-        style={[styles.messageListGradientBox]}
-        colors={theme === 'dark' ? [themeColors.blackBgColor, themeColors.blackBgColor] : [themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}>
-        <StatusBar
-          barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-          backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
-        />
-        <View style={[styles.container]}>
-          {connectingpanel && joined && (<DisconnectedPanel time={25} leaveRoom={leaveRoom} />)}
-          {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
-          {!joined ? (
-            <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
-          ) : (<StreamRoom
-            remoteStreams={remoteStreams}
-            localStream={localStream}
-            isStreaming={isStreaming}
-            requestStreamPermission={requestStreamPermission}
-            isFrontCamera={isFrontCamera}
-            Streamupdated={Streamupdated}
-            setStreamupdated={setStreamupdated}
-            toggleMute={toggleMute}
-            switchCamera={switchCamera}
-            leaveRoom={leaveRoom}
-            isMuted={isMuted}
-            isHost={isHost}
-            HandleChatmessages={HandleChatmessages}
-            roomchat={roomchat}
-            streamInfo={streamInfo}
-            streamrequestlist={streamrequestlist}
-            streamGuest={streamGuest}
-            hasRequestedStream={hasRequestedStream}
-            streamerList={streamerList}
-            isuserstreaming={isuserstreaming}
-            streammsg={streammsg}
-            isInStreamRoom={isInStreamRoom}
-            totalGiftValue={totalGiftValue}
-            connectingpanel={connectingpanel}
-          />)}
-        </View>
-      </LinearGradient>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme === 'dark' ? '#121212' : '#ffffff'}
+      />
+      <View style={[styles.container]}>
+        {connectingpanel && joined && (<DisconnectedPanel time={25} leaveRoom={leaveRoom} />)}
+        {isloading ? (<Loader currentStreamData={currentStreamData} />) : null}
+        {!joined ? (
+          <StreamList theme={theme} joinRoom={joinRoom} createRoom={CreateRoom} refreshlobby={refreshlobby} leaveroomrefresh={leaveroomrefresh} setCurrentStreamData={setCurrentStreamData} />
+        ) : (<StreamRoom
+          remoteStreams={remoteStreams}
+          localStream={localStream}
+          isStreaming={isStreaming}
+          requestStreamPermission={requestStreamPermission}
+          isFrontCamera={isFrontCamera}
+          Streamupdated={Streamupdated}
+          setStreamupdated={setStreamupdated}
+          toggleMute={toggleMute}
+          switchCamera={switchCamera}
+          leaveRoom={leaveRoom}
+          isMuted={isMuted}
+          isHost={isHost}
+          HandleChatmessages={HandleChatmessages}
+          roomchat={roomchat}
+          streamInfo={streamInfo}
+          streamrequestlist={streamrequestlist}
+          streamGuest={streamGuest}
+          hasRequestedStream={hasRequestedStream}
+          streamerList={streamerList}
+          isuserstreaming={isuserstreaming}
+          streammsg={streammsg}
+          isInStreamRoom={isInStreamRoom}
+          totalGiftValue={totalGiftValue}
+          connectingpanel={connectingpanel}
+        />)}
+      </View>
     </View>
   );
 };

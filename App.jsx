@@ -697,67 +697,70 @@ const App = () => {
             )}
           </Stack.Navigator>
         </NavigationContainer>
+
+        {/* modals  */}
+
+        {/* profile avatar update modal */}
+        {modalVisibleStage === 'profile-avatar-prv' && modalStage === 'second' && (
+          <AvatarPrevModal
+            visible={modalVisibleStage === 'profile-avatar-prv'}
+            onClose={() => {
+              setShowAvatarPreview(false);
+              setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+              setModalStage('first');
+              setAvatarToPreview(null);
+              setProfileUserData({});
+            }}
+          />
+        )}
+
+        {/* profile avatar update modal */}
+        {modalVisibleStage === 'profile-description' && modalStage === 'second' && (
+          <ProfileDescription
+            visible={modalVisibleStage === 'profile-description'}
+            onClose={() => {
+              setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+              setModalStage('first');
+              setProfileUserData({});
+              setProfileUserId(null);
+            }}
+          />
+        )}
+
+        {/* user report modal */}
+        {modalVisibleStage === 'report-user' && modalStage === 'second' && (
+          <ReportUserModal
+            visible={modalVisibleStage === 'report-user'}
+            onClose={() => {
+              // setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
+              setModalVisibleStage(null);
+              setModalStage('first');
+              setProfileUserData({});
+            }}
+            reportData={userProfileDetails}
+            reportType="User"
+          />
+        )}
+
+        {/* camera action modal */}
+        {modalVisibleStage === 'camera-action-sheet' && modalStage === 'second' && (
+          <CameraActionSheet
+            visible={modalVisibleStage === 'camera-action-sheet'}
+            onClose={() => {
+              setModalVisibleStage('profile-screen-modal');
+              setModalStage('first');
+              setProfileUserId(null);
+            }}
+            title="Update Profile Picture"
+            options={['Take Photo', 'Choose from Gallery', 'Cancel']}
+            theme={theme}
+          />
+        )}
+
       </SafeAreaProvider>
 
 
-      {/* modals  */}
 
-      {/* profile avatar update modal */}
-      {modalVisibleStage === 'profile-avatar-prv' && modalStage === 'second' && (
-        <AvatarPrevModal
-          visible={modalVisibleStage === 'profile-avatar-prv'}
-          onClose={() => {
-            setShowAvatarPreview(false);
-            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
-            setModalStage('first');
-            setAvatarToPreview(null);
-            setProfileUserData({});
-          }}
-        />
-      )}
-
-      {/* profile avatar update modal */}
-      {modalVisibleStage === 'profile-description' && modalStage === 'second' && (
-        <ProfileDescription
-          visible={modalVisibleStage === 'profile-description'}
-          onClose={() => {
-            setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
-            setModalStage('first');
-            setProfileUserData({});
-            setProfileUserId(null);
-          }}
-        />
-      )}
-
-      {/* user report modal */}
-      {modalVisibleStage === 'report-user' && modalStage === 'second' && (
-        <ReportUserModal
-          visible={modalVisibleStage === 'report-user'}
-          onClose={() => {
-            // setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
-            setModalVisibleStage(null);
-            setModalStage('first');
-            setProfileUserData({});
-          }}
-          reportData={userProfileDetails}
-          reportType="User"
-        />
-      )}
-
-      {/* camera action modal */}
-      {modalVisibleStage === 'camera-action-sheet' && modalStage === 'second' && (
-        <CameraActionSheet
-          visible={modalVisibleStage === 'camera-action-sheet'}
-          onClose={() => {
-            setModalVisibleStage('profile-screen-modal');
-            setModalStage('first');
-            setProfileUserId(null);
-          }}
-          title="Update Profile Picture"
-          options={['Take Photo', 'Choose from Gallery', 'Cancel']}
-          theme={theme}
-        />
-      )}
     </ErrorBoundary>
   );
 };

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { Text, TouchableOpacity, TextInput, Image, FlatList, View, Alert, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import Modal from 'react-native-modal';
 import { format } from 'date-fns';
@@ -10,23 +10,18 @@ import LinearGradient from 'react-native-linear-gradient';
 import Apiclient from '../utils/Apiclient';
 import StreamListSkeleton from './StreamListSkeleton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import themeColors from '../../assets/styles/Colors';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useAppContext } from '../context/AppContext';
 import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
-import LuckyWheelModal from '../modals/LuckyWheelModal';
-import SlotGameModal from '../modals/SlotGameModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
     const insets = useSafeAreaInsets();
-    const navigation = useNavigation();
     const { userData,
         userAddress,
-        subscriptionStatus,
         headerMainTab } = useAppContext();
 
     const screenHeight = Dimensions.get('window').height;
@@ -41,44 +36,30 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const [isInterestLoading, setIsInterestLoading] = useState(false);
     const [isNearBy, setIsNearBy] = useState(false);
     const [nearByRoomData, setNearByRoomData] = useState([]);
-    const [userDetails, setUserDetails] = useState([]);
     const [isFavourite, setIsFavourite] = useState(false);
     const [searchFilteredData, setSearchFilteredData] = useState([]);
     const [isDisable, setIsDisable] = useState(false); // for disabling the button when creating room
     const [refreshing, setRefreshing] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
 
     const disableBtnRef = useRef(null);
 
-    // Function to fetch user details from the API
-    const getUserDetails = async () => {
-        try {
-            const formData = {
-                userid: userData?.userid,
-            };
-            const response = await Apiclient.post('/getUserDetails', formData);
-            if (response) {
-                const user = response.data.user;
-                setUserDetails(user || []);
-            }
-        } catch (error) {
-            console.error('Error fetching userDetails:', error);
-        }
-    };
-
     useEffect(() => {
-        if (userData?.userid) {
-            getUserDetails();
+        if (searchFilteredData?.length > 0) {
+            // Update apiRooms with search results
+            setApiRooms(searchFilteredData);
+        } else {
+            // Clear apiRooms when searchFilteredData is empty
+            setApiRooms([]);
         }
-    }, [userData?.userid]);
+    }, [searchFilteredData]);
 
     useEffect(() => {
         if (
             isFavourite &&
-            userDetails?.Interests &&
-            categoryData.length > 0
+            userData?.Interests &&
+            categoryData?.length > 0
         ) {
-            const interestArray = userDetails.Interests
+            const interestArray = userData?.Interests
                 .split(',')
                 .map(id => parseInt(id))
                 .filter(id =>
@@ -90,7 +71,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             setSelectedCategoryIndices([]);
             setFilteredRooms([]);
         }
-    }, [isFavourite, userDetails, categoryData]);
+    }, [isFavourite, userData, categoryData]);
 
     // Function to toggle category selection
     const toggleCategory = (categoryID) => {
@@ -125,35 +106,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             setIsInitialLoading(false);
         }
     };
-
-
-    // Function to fetch rooms by location from the API
-    // const getRoomsByLocation = async () => {
-    //     try {
-    //         setIsInitialLoading(true);
-    //         const savedLocation = await AsyncStorage.getItem('userLocation');
-    //         if (savedLocation) {
-    //             const { lat, lon, formatted } = JSON.parse(savedLocation);
-    //             console.log('Saved user location:', lat, lon, formatted);
-    //             let queryParams = `geoLocation=${savedLocation ? lat : userAddress.latitude},${savedLocation ? lon : userAddress.longitude}`;
-
-    //             console.log('queryParams', queryParams);
-
-
-    //             const response = await Apiclient.get(`/rooms/getroomsbylocation?${queryParams}`);
-    //             if (response) {
-    //                 const livestreamlist = response.data.data.filter(item => item.isLive === 1);
-    //                 setApiRooms(livestreamlist || []);
-    //                 setNearByRoomData(livestreamlist || []);
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching rooms:', error);
-    //     } finally {
-    //         setIsInitialLoading(false);
-    //     }
-    // };
-
 
     const getRoomsByLocation = async () => {
         try {
@@ -230,8 +182,6 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             setIsFiltering(false);
         }
     };
-
-
 
     useEffect(() => {
         if (filteredRooms.length > 0) {
@@ -341,13 +291,69 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         } else {
             joinRoom(roomId, item);
         }
-    }
+    };
+
+
+
+
+    // Function to fetch user interest from the API
+    const getInterestData = async () => {
+        try {
+            setIsInterestLoading(true);
+
+            const payload = {
+                isEnabled: 1,
+            };
+
+            const response = await Apiclient.post('/getcategories', payload);
+            if (response?.data?.categories) {
+                setCategoryData(response.data.categories);
+            }
+        } catch (error) {
+            console.error('Error fetching get categories:', error);
+        } finally {
+            setIsInterestLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (route?.name === 'Main') {
+            getInterestData();
+        }
+    }, [route?.name]);
+
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        try {
+            if (filteredRooms.length > 0) {
+                const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
+                await filterroomdata(sorteddata);
+            } else if (isNearBy && userAddress) {
+                await getRoomsByLocation();
+            } else {
+                await getRooms();
+            }
+        } catch (error) {
+            console.error('Error on pull-to-refresh:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
+
 
     const renderItem = ({ item, index }) => {
 
+        const isLeftItem = index % 2 === 0;
+
         return (
             <TouchableOpacity
-                style={styles.streamListCard}
+                style={[
+                    styles.streamListCard,
+                    {
+                        marginRight: isLeftItem ? 10 : 0  // space between columns
+                    }
+                ]}
                 onPress={() => viewerjoinedroom(item)
                 }
             >
@@ -384,69 +390,11 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         );
     };
 
-
-    // Function to fetch user interest from the API
-    const getInterestData = async () => {
-        try {
-            setIsInterestLoading(true);
-
-            const payload = {
-                isEnabled: 1,
-            };
-
-            const response = await Apiclient.post('/getcategories', payload);
-            if (response?.data?.categories) {
-                setCategoryData(response.data.categories);
-            }
-        } catch (error) {
-            console.error('Error fetching get categories:', error);
-        } finally {
-            setIsInterestLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (route?.name === 'Main') {
-            getInterestData();
-        }
-    }, [route?.name]);
-
-    useEffect(() => {
-        if (searchFilteredData?.length > 0) {
-            // Update apiRooms with search results
-            setApiRooms(searchFilteredData);
-        } else {
-            // Clear apiRooms when searchFilteredData is empty
-            setApiRooms([]);
-        }
-    }, [searchFilteredData]);
-
-
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        try {
-            if (filteredRooms.length > 0) {
-                const sorteddata = filteredRooms.sort((a, b) => a - b).join(',');
-                await filterroomdata(sorteddata);
-            } else if (isNearBy && userAddress) {
-                await getRoomsByLocation();
-            } else {
-                await getRooms();
-            }
-        } catch (error) {
-            console.error('Error on pull-to-refresh:', error);
-        } finally {
-            setRefreshing(false);
-        }
-    };
+    const listColumns = isInitialLoading ? 1 : 2;
 
 
     return (
-        <LinearGradient
-            style={{ flex: 1, position: 'relative' }}
-            colors={[themeColors.headerGradientTop, themeColors.headerGradientBottom]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}>
+        <View style={{ flex: 1, }}>
             <StreamListHeader
                 setGetselectcategory={setFilteredRooms}
                 getselectcategory={filteredRooms}
@@ -464,137 +412,54 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
             />
             {headerMainTab === 'foryou' ? (
                 <>
-                    <View
-                        style={[
-                            styles.streamListMainCardLayout,
-                            themeStyles[theme].streamListMainCardLayout,
-                        ]}>
-                        {/* <Text
-                            style={[
-                                styles.streamListMainTitle,
-                                themeStyles[theme].streamListMainTitle,
-                            ]}>
-                            For You
-                        </Text> */}
-                        {isFiltering && (
-                            <View style={styles.isFilteringOverlay}>
-                                <View style={[styles.isFilteringBlurBackground, themeStyles[theme].isFilteringBlurBackground]} />
-                                <ActivityIndicator size="large" color={theme === 'light' ? '#a000df' : '#fff'} />
-                            </View>
-                        )}
-
-
-                        {isInitialLoading ? (
-                            <StreamListSkeleton count={6} columns={2} />
-                        ) : apiRooms.length === 0 && searchFilteredData.length > 0 ? (
-                            <ScrollView
-                                contentContainerStyle={{
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: screenHeight * 0.5,
-                                    paddingHorizontal: 20,
-                                }}
-                                refreshControl={
-                                    <RefreshControl
-                                        refreshing={refreshing}
-                                        onRefresh={handleRefresh}
-                                        colors={['#d93a63']}
-                                        tintColor="#d93a63"
-                                    />
-                                }
-                            >
-                                <Image
-                                    source={require('../../assets/images/default-streamer.jpg')}
-                                    style={[
-                                        styles.streamListImage,
-                                        { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
-                                    ]}
-                                />
-                                <Text style={{
-                                    marginTop: 16,
-                                    fontSize: 16,
-                                    color: '#666',
-                                    textAlign: 'center'
-                                }}>
-                                    No rooms found for this search.
-                                </Text>
-                            </ScrollView>
-                        ) : apiRooms.length === 0 ? (
-                            <ScrollView
-                                contentContainerStyle={{
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    height: screenHeight * 0.5,
-                                    paddingHorizontal: 20,
-                                }}
-                                refreshControl={
-                                    <RefreshControl
-                                        refreshing={refreshing}
-                                        onRefresh={handleRefresh}
-                                        colors={['#d93a63']}
-                                        tintColor="#d93a63"
-                                    />
-                                }
-                            >
-                                <Image
-                                    source={require('../../assets/images/NoStreamAvailable.png')}
-                                    style={[
-                                        styles.streamListImage,
-                                        { height: screenHeight * 0.3 - 40, resizeMode: 'contain' }
-                                    ]}
-                                />
-                            </ScrollView>
-                        ) : (
-                            <FlatList
-                                data={apiRooms}
-                                keyExtractor={item => item.roomID.toString()}
-                                showsVerticalScrollIndicator={false}
-                                contentContainerStyle={styles.streamListScrollContainer}
-                                initialNumToRender={8}
-                                numColumns={2}
-                                columnWrapperStyle={styles.streamListGrid}
-                                renderItem={renderItem}
-                                refreshing={refreshing}
-                                onRefresh={handleRefresh}
-                            />)}
-                    </View>
-                    {/* <TouchableOpacity
-                        style={[
-                            styles.streamListLuckyWheelBtn,
-                            insets.bottom > 0 && { paddingBottom: insets.bottom },
+                    <FlatList
+                        key={`cols-${listColumns}`}   // 👈 this forces a re-render safely
+                        data={isInitialLoading ? [] : apiRooms}
+                        numColumns={listColumns}
+                        keyExtractor={(item, index) => item?.roomID?.toString() || index.toString()}
+                        renderItem={!isInitialLoading ? renderItem : null}
+                        showsVerticalScrollIndicator={false}
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        scrollEnabled={!isInitialLoading}
+                        contentContainerStyle={[
+                            styles.streamListScrollContainer,
+                            apiRooms.length === 0 && !isInitialLoading && {
+                                flex: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            },
                         ]}
-                        onPress={() => setModalVisible('slot-game-modal')}
-                    >
-                        <Image
-                            style={{ width: 60, height: 60 }}
-                            source={require('../../assets/images/lucky-wheel/lw-home.png')}
-                            resizeMode="contain"
-                        />
-                    </TouchableOpacity> */}
+                        ListHeaderComponent={
+                            isInitialLoading ? (
+                                <StreamListSkeleton count={6} columns={2} />
+                            ) : null
+                        }
+                        ListEmptyComponent={
+                            !isInitialLoading && (
+                                <View style={{ alignItems: 'center' }}>
+                                    <Image
+                                        source={require('../../assets/images/NoStreamAvailable.png')}
+                                        style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                                    />
+                                </View>
+                            )
+                        }
+                    />
+
+
                     <View style={[
-                        styles.streamListFiltersBtnGroup, { bottom: insets.bottom + 68 },
+                        styles.streamListFiltersBtnGroup,
+                        { bottom: insets.bottom + 74 },
                     ]}>
-                        {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
-                    <FontAwesome6 name="wrench" size={24} color="#262628" />
-                </TouchableOpacity> */}
                         <TouchableOpacity
                             style={styles.streamListFiltersColorBtn}
                             onPress={() => setOpenStreamInputModal(true)}>
                             <Text style={styles.streamListFiltersColorBtnText}>Start Stream</Text>
                         </TouchableOpacity>
-
-
-                        {
-                            // Temperory disable ads for all users
-
-                            /* {!subscriptionStatus?.success && (  
-                                <GoogleBannerAd />
-                            )} */
-
-                        }
-                        {/* <TouchableOpacity style={styles.streamListFiltersWhiteBtn}>
-                    <FontAwesome6 name="filter" size={24} color="#262628" />
-                </TouchableOpacity> */}
+                        {/* {!subscriptionStatus?.success && (
+                            <GoogleBannerAd />
+                        )} */}
                     </View>
                 </>
             ) : headerMainTab === 'leaderboards' ? (
@@ -679,11 +544,8 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     </Modal>
                 )
             }
-            {modalVisible === 'slot-game-modal' && (
-                <SlotGameModal visible={modalVisible} onClose={() => setModalVisible(false)} userData={userData} />
-            )}
             {/* <Footer /> */}
-        </LinearGradient>
+        </View>
     );
 };
 

@@ -934,15 +934,16 @@ export const styles = StyleSheet.create({
     paddingBottom: 2,
     zIndex: 10,
     width: '100%',
-    position: 'relative',
+    // position: 'relative',
   },
   bottomShadow: {
-    height: 6,
-    width: '100%',
     position: 'absolute',
-    bottom: -6,
     left: 0,
-    zIndex: 9,
+    right: 0,
+    bottom: -15,            // or a small positive value
+    height: 16,            // small gradient height
+    pointerEvents: 'none', // never block touches
+    zIndex: 0,
   },
 
   streamListHeaderTop: {
@@ -1029,6 +1030,7 @@ export const styles = StyleSheet.create({
   streamListMainCardLayout: {
     flex: 1,
     paddingBottom: 10,
+    position: 'relative',
   },
 
   streamListMainTitle: {
@@ -1041,7 +1043,7 @@ export const styles = StyleSheet.create({
   },
 
   streamListScrollContainer: {
-    paddingTop: 15,
+    // paddingTop: 15,
     paddingBottom: 80,
     paddingHorizontal: 10,
     // borderTopColor: '#1e1e1e',
@@ -1110,12 +1112,14 @@ export const styles = StyleSheet.create({
   },
   streamListFiltersBtnGroup: {
     position: 'absolute',
-    flexDirection: 'column', // ✅ align horizontally
-    justifyContent: 'center',
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    width: '100%',
+    justifyContent: 'center',
     alignSelf: 'center', // ✅ centers the whole group
-    paddingHorizontal: 0,
+    zIndex: 999,     // <-- IMPORTANT for iOS
+    pointerEvents: 'box-none',
+    elevation: 10,        // <-- helps on Android, harmless on iOS
   },
 
   streamListLuckyWheelBtn: {
@@ -1149,8 +1153,8 @@ export const styles = StyleSheet.create({
   streamListFiltersColorBtn: {
     backgroundColor: '#de0037',
     borderRadius: 30,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
+    width: 135,
+    height: 50,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1165,7 +1169,7 @@ export const styles = StyleSheet.create({
 
     // Shadow for Android
     elevation: 4,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
 
   streamListFiltersColorBtnText: {

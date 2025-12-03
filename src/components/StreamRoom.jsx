@@ -239,18 +239,26 @@ const StreamRoom = ({
         console.log('🚪 [CLIENT] Closing lucky wheel locally only');
         setLuckyWheelVisible(false);
         setLuckyWheelOpenedBy(null);
-        if (activeGame === 'luckyWheel') {
-            setActiveGame(null);
-        }
-        if (visibleModal === 'luckyWheel') {
-            setVisibleModal(null);
-        }
+        setActiveGame(null); // Always clear active game
+        setVisibleModal(null); // Always clear visible modal
     };
+
+
+    useEffect(() => {
+        console.log('luckyWheelVisible', luckyWheelVisible);
+        console.log('visibleModal', visibleModal);
+        console.log('giftModalVisible', giftModalVisible);
+    }, [luckyWheelVisible, visibleModal, giftModalVisible]);
 
 
 
     // ✅ Fixed: Enhanced game open/close handlers
     const handleLuckyWheelOpen = () => {
+        // ✅ FIX: First, ensure any modal state is cleared before opening
+        if (visibleModal && visibleModal !== 'luckyWheel') {
+            setVisibleModal(null);
+        }
+
         // If already open, close it locally (per-user close)
         if (luckyWheelVisible || visibleModal === 'luckyWheel') {
             console.log('🚪 [CLIENT] Closing lucky wheel locally (per-user)');
@@ -542,9 +550,9 @@ const StreamRoom = ({
 
     // Scroll to the bottom when roomchat updates
     useEffect(() => {
-        if (scrollViewRef.current) {
+        if (scrollViewRef?.current) {
             setTimeout(() => {
-                scrollViewRef.current.scrollToEnd({ animated: true });
+                scrollViewRef?.current.scrollToEnd({ animated: true });
             }, 100);
         }
         // if (!showUI) {
@@ -608,61 +616,61 @@ const StreamRoom = ({
 
     // Manage stream layout based on viewer count and streams
 
-    useEffect(() => {
-        const streams = [];
+    // useEffect(() => {
+    //     const streams = [];
 
-        // Process remote streams only if they have valid streamer info
-        remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
+    //     // Process remote streams only if they have valid streamer info
+    //     remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
+    //         const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
 
-            // Only add if we have valid streamer info
-            if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
-                const hostInfo = streamerList.find((item) => item.IsHost === true);
-                let Alevel = audioLevel || 0.04;
+    //         // Only add if we have valid streamer info
+    //         if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
+    //             const hostInfo = streamerList.find((item) => item.IsHost === true);
+    //             let Alevel = audioLevel || 0.04;
 
-                if (stream && typeof stream.toURL === 'function') {
-                    const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-                    const streamData = {
-                        type: 'remote',
-                        stream,
-                        isFriend: isFriend,
-                        userId: StreamerInfo?.UserID,
-                        socketId: id, // Add socketId for easier cleanup
-                        isMuted: StreamerInfo?.isMuted,
-                        Name: StreamerInfo?.Name,
-                        isSpeaking: isSpeaking,
-                        audioLevel: Alevel,
-                    };
+    //             if (stream && typeof stream.toURL === 'function') {
+    //                 const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+    //                 const streamData = {
+    //                     type: 'remote',
+    //                     stream,
+    //                     isFriend: isFriend,
+    //                     userId: StreamerInfo?.UserID,
+    //                     socketId: id, // Add socketId for easier cleanup
+    //                     isMuted: StreamerInfo?.isMuted,
+    //                     Name: StreamerInfo?.Name,
+    //                     isSpeaking: isSpeaking,
+    //                     audioLevel: Alevel,
+    //                 };
 
-                    if (hostInfo?.ID === id) {
-                        streams.unshift(streamData);
-                    } else {
-                        streams.push(streamData);
-                    }
-                }
-            }
-        });
+    //                 if (hostInfo?.ID === id) {
+    //                     streams.unshift(streamData);
+    //                 } else {
+    //                     streams.push(streamData);
+    //                 }
+    //             }
+    //         }
+    //     });
 
-        // Add local stream if available and user is streaming
-        if (localStream && isStreaming) {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
-            const streamData = {
-                type: 'local',
-                stream: localStream,
-                isMuted: StreamerInfo?.isMuted,
-                Name: `${userData?.screenName}`,
-                socketId: socket.id,
-            };
+    //     // Add local stream if available and user is streaming
+    //     if (localStream && isStreaming) {
+    //         const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
+    //         const streamData = {
+    //             type: 'local',
+    //             stream: localStream,
+    //             isMuted: StreamerInfo?.isMuted,
+    //             Name: `${userData?.screenName}`,
+    //             socketId: socket.id,
+    //         };
 
-            if (isHost) {
-                streams.unshift(streamData);
-            } else {
-                streams.push(streamData);
-            }
-        }
+    //         if (isHost) {
+    //             streams.unshift(streamData);
+    //         } else {
+    //             streams.push(streamData);
+    //         }
+    //     }
 
-        setStreamLayout(streams);
-    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
+    //     setStreamLayout(streams);
+    // }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
 
 
 
@@ -1305,100 +1313,168 @@ const StreamRoom = ({
     }, [streamerList]);
 
 
+
     useEffect(() => {
-        console.log('🎛 [StreamLayout] REBUILD START', {
+        console.log('🎛 [StreamLayout] REBUILD (socketId-based)', {
             remoteStreamsCount: remoteStreams.length,
             streamerListCount: streamerList.length,
             isStreaming,
             hasLocalStream: !!localStream,
         });
 
-        const streams = [];
+        // PLACE LOG HERE
+        console.log("STREAMER LIST", streamerList.map(s => ({
+            ID: s.ID,
+            Name: s.Name,
+            UserID: s.UserID
+        })));
 
+
+        console.log("REMOTE STREAMS", remoteStreams.map(r => ({
+            socketId: r.id,
+            streamId: r.stream?.id,
+            videoTracks: r.stream?.getVideoTracks?.().map(t => t.id)
+        })));
+
+
+        // Build a map keyed by socketId so identity is stable
+        const mapBySocketId = {};
+
+        // 1) Remote streams
         remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
+            const StreamerInfo = streamerList.find((s) => s.ID === id);
 
             console.log('🎛 [StreamLayout] PROCESS REMOTE', {
                 socketId: id,
                 hasStreamerInfo: !!StreamerInfo,
                 streamerInfo: StreamerInfo,
-                streamId: stream?.id,
-                videoTracks: stream?.getVideoTracks().map(t => ({
+                hasStream: !!stream,
+                videoTracks: stream?.getVideoTracks?.().map(t => ({
                     id: t.id,
                     readyState: t.readyState,
                     enabled: t.enabled,
                 })),
             });
 
-            if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
-                const hostInfo = streamerList.find((item) => item.IsHost === true);
-                let Alevel = audioLevel || 0.04;
-
-                if (stream && typeof stream.toURL === 'function') {
-                    const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-                    const streamData = {
-                        type: 'remote',
-                        stream,
-                        isFriend: isFriend,
-                        userId: StreamerInfo?.UserID,
-                        socketId: id,
-                        isMuted: StreamerInfo?.isMuted,
-                        Name: StreamerInfo?.Name,
-                        isSpeaking: isSpeaking,
-                        audioLevel: Alevel,
-                    };
-
-                    if (hostInfo?.ID === id) {
-                        console.log('🎛 [StreamLayout] PUSH REMOTE as HOST on top', { socketId: id });
-                        streams.unshift(streamData);
-                    } else {
-                        console.log('🎛 [StreamLayout] PUSH REMOTE normal', { socketId: id });
-                        streams.push(streamData);
-                    }
-                } else {
-                    console.log('⚠️ [StreamLayout] remote stream has no toURL or no stream', { socketId: id });
-                }
+            // If we don't yet have info for this socket, skip for now (will be included on next tick)
+            if (!StreamerInfo) {
+                return;
             }
+
+            // Ensure we have a valid stream
+            if (!stream || typeof stream.toURL !== 'function') {
+                console.log('⚠️ [StreamLayout] remote stream missing or no toURL()', { socketId: id });
+                return;
+            }
+
+            const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+            const Alevel = audioLevel ?? 0.04;
+
+            mapBySocketId[id] = {
+                type: 'remote',
+                stream,
+                isFriend,
+                userId: StreamerInfo?.UserID,
+                socketId: id,
+                isMuted: StreamerInfo?.isMuted,
+                Name: StreamerInfo?.Name,
+                isSpeaking: !!isSpeaking,
+                audioLevel: Alevel,
+            };
         });
 
+        // 2) Local stream (current user)
         if (localStream && isStreaming) {
-            const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
+            const SelfInfo = streamerList.find((s) => s.ID === socket.id);
+
             console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
                 socketId: socket.id,
                 Name: userData?.screenName,
-                videoTracks: localStream.getVideoTracks().map(t => ({
+                hasSelfInfo: !!SelfInfo,
+                videoTracks: localStream.getVideoTracks?.().map(t => ({
                     id: t.id,
                     readyState: t.readyState,
                     enabled: t.enabled,
                 })),
             });
 
-            const streamData = {
+            mapBySocketId[socket.id] = {
                 type: 'local',
                 stream: localStream,
-                isMuted: StreamerInfo?.isMuted,
-                Name: `${userData?.screenName}`,
+                isFriend: false,
+                userId: userData?.userid,
                 socketId: socket.id,
+                isMuted: SelfInfo?.isMuted ?? isMuted,
+                Name: `${userData?.screenName}`,
+                isSpeaking: false,
+                audioLevel: 0,
             };
-
-            if (isHost) {
-                streams.unshift(streamData);
-            } else {
-                streams.push(streamData);
-            }
         }
 
-        console.log('🎛 [StreamLayout] FINAL LAYOUT', streams.map(s => ({
+        // 3) Sort deterministically:
+        //    - host first
+        //    - then local (if not host)
+        //    - then others by name
+        const hostInfo = streamerList.find((s) => s.IsHost === true);
+        const hostSocketId = hostInfo?.ID;
+
+        let ordered = Object.values(mapBySocketId);
+
+        ordered.sort((a, b) => {
+            // host always first
+            if (a.socketId === hostSocketId && b.socketId !== hostSocketId) return -1;
+            if (b.socketId === hostSocketId && a.socketId !== hostSocketId) return 1;
+
+            // then local stream (for non-host)
+            if (a.type === 'local' && b.type !== 'local') return isHost ? -1 : 1;
+            if (b.type === 'local' && a.type !== 'local') return isHost ? 1 : -1;
+
+            // stable by name to avoid random shuffling
+            const nameA = a.Name || '';
+            const nameB = b.Name || '';
+            return nameA.localeCompare(nameB);
+        });
+
+        console.log('🎛 [StreamLayout] FINAL LAYOUT ORDER', ordered.map(s => ({
             type: s.type,
             socketId: s.socketId,
             name: s.Name,
             streamId: s.stream?.id,
-            hasVideoTracks: s.stream?.getVideoTracks().length,
+            hasVideoTracks: s.stream?.getVideoTracks?.().length,
         })));
 
-        setStreamLayout(streams);
-    }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
+        setStreamLayout(ordered);
+    }, [
+        remoteStreams,
+        localStream,
+        streamerList,
+        isStreaming,
+        myFriendList,
+        userData,
+        isHost,
+        isMuted,
+    ]);
 
+
+
+    const handleGiftModalOpen = () => {
+        // Close any other modals first
+        if (visibleModal === 'luckyWheel') {
+            handleLuckyWheelClose();
+        }
+
+        if (slotGameVisible) {
+            handleSlotGameClose();
+        }
+
+        // Clear visibleModal state
+        setVisibleModal(null);
+        setIsLuckyWheelActiveInRoom(false);
+        // Small delay for Android
+        setTimeout(() => {
+            setGiftModalVisible(true);
+        }, 100);
+    };
 
     // const onShare = async () => {
     //     try {
@@ -1554,8 +1630,8 @@ const StreamRoom = ({
                                         )} */}
                                     </View>
                                     <View style={styles.threeUserColumnRight}>
-                                        {streamLayout.slice(1, 3).map((streamData, index) => (
-                                            <View key={index} style={{ flex: 1, position: 'relative' }}>
+                                        {streamLayout.slice(1, 3).map((streamData) => (
+                                            <View key={streamData.socketId} style={{ flex: 1, position: 'relative' }}>
                                                 <RTCView
                                                     streamURL={streamData.stream.toURL()}
                                                     style={styles.streamVideoHalf}
@@ -1623,8 +1699,8 @@ const StreamRoom = ({
                             ) : streamLayout.length === 5 ? (
                                 <View style={styles.fiveUserWrapper}>
                                     <View style={styles.fiveUserRow}>
-                                        {streamLayout.slice(0, 2).map((streamData, index) => (
-                                            <View key={index} style={styles.fiveUserCol50}>
+                                        {streamLayout.slice(0, 2).map((streamData) => (
+                                            <View key={streamData.socketId} style={styles.fiveUserCol50}>
                                                 <View style={styles.videoContainer}>
                                                     <RTCView
                                                         streamURL={streamData.stream.toURL()}
@@ -1691,8 +1767,8 @@ const StreamRoom = ({
                                         ))}
                                     </View>
                                     <View style={styles.fiveUserRow}>
-                                        {streamLayout.slice(2, 5).map((streamData, index) => (
-                                            <View key={index} style={styles.fiveUserCol33}>
+                                        {streamLayout.slice(2, 5).map((streamData) => (
+                                            <View key={streamData.socketId} style={styles.fiveUserCol33}>
                                                 <View style={styles.videoContainer}>
                                                     <RTCView
                                                         streamURL={streamData.stream.toURL()}
@@ -1763,7 +1839,7 @@ const StreamRoom = ({
                                 <View style={[styles.streamVideosInnerGrid]}>
                                     {streamLayout.map((streamData, index) => {
                                         return (
-                                            <Fragment key={index}>
+                                            <Fragment key={streamData.socketId}>
                                                 <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
                                                     <RTCView
                                                         key={streamData.type === 'local' ? 'local' : streamData.userId}
@@ -2016,7 +2092,7 @@ const StreamRoom = ({
                                             {/* gift icon for user */}
                                             {!isHost && (
                                                 <TouchableOpacity
-                                                    onPress={() => setGiftModalVisible(true)}
+                                                    onPress={handleGiftModalOpen}
                                                     style={styles.strRoomFooterSocialActionsBtn}
                                                 >
                                                     <Ionicons name="gift" size={35} color="#FF00FF" />
@@ -2041,8 +2117,9 @@ const StreamRoom = ({
                                             {/* lucky wheel */}
                                             {!isHost && (
                                                 <TouchableOpacity
-                                                    style={styles.strRoomFooterSocialActionsBtn}
+                                                    style={[styles.strRoomFooterSocialActionsBtn, { position: 'relative' }]}
                                                     onPress={handleLuckyWheelOpen}
+                                                    activeOpacity={0.7}
                                                 >
                                                     <Animated.Image
                                                         style={{

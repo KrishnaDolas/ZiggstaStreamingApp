@@ -150,7 +150,7 @@ const MySettingSubModal = ({ visible, onClose }) => {
                         onPress: () => {
                             navigation.navigate('TermsOfUse', {
                                 title: 'About Us',
-                                url: 'https://test.streamalong.live/content/about.html',
+                                url: 'https://streamalong.live/about-us.html',
                             });
                         },
                         rightArrowVisible: true,
@@ -161,7 +161,7 @@ const MySettingSubModal = ({ visible, onClose }) => {
                         onPress: () => {
                             navigation.navigate('TermsOfUse', {
                                 title: 'Privacy Policy',
-                                url: 'https://test.streamalong.live/content/privacy_policy.html',
+                                url: 'https://streamalong.live/privacy-policy.html',
                             });
                         },
                         rightArrowVisible: true,
@@ -172,7 +172,7 @@ const MySettingSubModal = ({ visible, onClose }) => {
                         onPress: () => {
                             navigation.navigate('TermsOfUse', {
                                 title: 'Terms & Conditions',
-                                url: 'https://test.streamalong.live/content/terms_conditions.html',
+                                url: 'https://streamalong.live/terms-conditions.html',
                             });
                         },
                         rightArrowVisible: true,
