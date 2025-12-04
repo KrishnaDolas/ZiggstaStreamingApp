@@ -1131,7 +1131,7 @@ const StreamRoom = ({
             const params = {
                 requesterID: userData?.userid,
                 receiverID: userid,
-            }
+            };
             const responce = await Apiclient.post('/friends/request', params);
             if (responce.data?.success) {
                 setMessage(`Request Sent To ${username}`);

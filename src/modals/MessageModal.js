@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { Text, StyleSheet, Animated, Dimensions, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 
@@ -9,6 +9,9 @@ const screenWidth = Dimensions.get('window').width;
 const MessageModal = ({ visible, message, onClose }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+
+  console.log('message', message);
+
 
   useEffect(() => {
     if (visible) {
@@ -82,24 +85,19 @@ const MessageModal = ({ visible, message, onClose }) => {
       </Animated.View>
 
       <Animated.View
-        style={[
-          styles.messageContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
+        style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }],
+        }}
       >
-        <LinearGradient
-          colors={['rgb(0, 0, 0)', 'rgb(77, 77, 77)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.messageBox}
-        >
-          <Text style={styles.messageText}>
-            {message}
-          </Text>
-        </LinearGradient>
+        <View style={styles.shadowWrapper}>
+          <LinearGradient
+            colors={['#1a1a1a', '#444']}
+            style={styles.messageBox}
+          >
+            <Text style={styles.messageText}>{message}</Text>
+          </LinearGradient>
+        </View>
       </Animated.View>
     </Modal>
   );
@@ -128,17 +126,24 @@ const styles = StyleSheet.create({
     maxWidth: '85%',
     alignItems: 'center',
   },
-  messageBox: {
-    paddingVertical: 20,
-    paddingHorizontal: 24,
+  shadowWrapper: {
+    width: '100%',
     borderRadius: 40,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 16,
     elevation: 12,
-    minWidth: '100%',
   },
+
+  messageBox: {
+    width: '100%',
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    borderRadius: 40,
+    // IMPORTANT: DO NOT ADD overflow: 'hidden' ON IOS
+  },
+
   messageText: {
     color: '#fff',
     fontSize: 15,
