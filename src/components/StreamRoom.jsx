@@ -614,78 +614,6 @@ const StreamRoom = ({
         }
     }, [giftsData]);
 
-    // Manage stream layout based on viewer count and streams
-
-    // useEffect(() => {
-    //     const streams = [];
-
-    //     // Process remote streams only if they have valid streamer info
-    //     remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-    //         const StreamerInfo = streamerList.find((streamer) => streamer.ID === id);
-
-    //         // Only add if we have valid streamer info
-    //         if (StreamerInfo && StreamerInfo.Name && StreamerInfo.Name !== 'undefined') {
-    //             const hostInfo = streamerList.find((item) => item.IsHost === true);
-    //             let Alevel = audioLevel || 0.04;
-
-    //             if (stream && typeof stream.toURL === 'function') {
-    //                 const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-    //                 const streamData = {
-    //                     type: 'remote',
-    //                     stream,
-    //                     isFriend: isFriend,
-    //                     userId: StreamerInfo?.UserID,
-    //                     socketId: id, // Add socketId for easier cleanup
-    //                     isMuted: StreamerInfo?.isMuted,
-    //                     Name: StreamerInfo?.Name,
-    //                     isSpeaking: isSpeaking,
-    //                     audioLevel: Alevel,
-    //                 };
-
-    //                 if (hostInfo?.ID === id) {
-    //                     streams.unshift(streamData);
-    //                 } else {
-    //                     streams.push(streamData);
-    //                 }
-    //             }
-    //         }
-    //     });
-
-    //     // Add local stream if available and user is streaming
-    //     if (localStream && isStreaming) {
-    //         const StreamerInfo = streamerList.find((streamer) => streamer.ID === socket.id);
-    //         const streamData = {
-    //             type: 'local',
-    //             stream: localStream,
-    //             isMuted: StreamerInfo?.isMuted,
-    //             Name: `${userData?.screenName}`,
-    //             socketId: socket.id,
-    //         };
-
-    //         if (isHost) {
-    //             streams.unshift(streamData);
-    //         } else {
-    //             streams.push(streamData);
-    //         }
-    //     }
-
-    //     setStreamLayout(streams);
-    // }, [localStream, remoteStreams, streamerList, isStreaming, myFriendList, userData, isHost]);
-
-
-
-    // useEffect(() => {
-    //     console.log('🔍 StreamLayout debug:', {
-    //         streamLayoutCount: streamLayout.length,
-    //         remoteStreamsCount: remoteStreams.length,
-    //         streamerListCount: streamerList.length,
-    //         streamerList: streamerList.map(s => ({ ID: s.ID, Name: s.Name, UserID: s.UserID })),
-    //         streamLayout: streamLayout.map(s => ({ type: s.type, name: s.Name, socketId: s.socketId }))
-    //     });
-    // }, [streamLayout, remoteStreams, streamerList]);
-
-
-
 
     // stream layout style according layout length
     const getVideoTileStyle = (count) => {
@@ -1321,129 +1249,109 @@ const StreamRoom = ({
             isStreaming,
             hasLocalStream: !!localStream,
         });
-
-        // PLACE LOG HERE
+    
         console.log("STREAMER LIST", streamerList.map(s => ({
             ID: s.ID,
             Name: s.Name,
             UserID: s.UserID
         })));
-
-
+    
         console.log("REMOTE STREAMS", remoteStreams.map(r => ({
             socketId: r.id,
             streamId: r.stream?.id,
             videoTracks: r.stream?.getVideoTracks?.().map(t => t.id)
         })));
-
-
-        // Build a map keyed by socketId so identity is stable
-        const mapBySocketId = {};
-
-        // 1) Remote streams
-        remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
-            const StreamerInfo = streamerList.find((s) => s.ID === id);
-
-            console.log('🎛 [StreamLayout] PROCESS REMOTE', {
-                socketId: id,
-                hasStreamerInfo: !!StreamerInfo,
-                streamerInfo: StreamerInfo,
-                hasStream: !!stream,
-                videoTracks: stream?.getVideoTracks?.().map(t => ({
-                    id: t.id,
-                    readyState: t.readyState,
-                    enabled: t.enabled,
-                })),
+    
+        // ⭐ NEW: Stabilization delay (150ms)
+        const delayId = setTimeout(() => {
+    
+            const mapBySocketId = {};
+    
+            // 1) Remote Streams
+            remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
+                const StreamerInfo = streamerList.find((s) => s.ID === id);
+    
+                console.log('🎛 [StreamLayout] PROCESS REMOTE', {
+                    socketId: id,
+                    hasStreamerInfo: !!StreamerInfo,
+                    hasStream: !!stream,
+                });
+    
+                if (!StreamerInfo) return;
+                if (!stream || typeof stream.toURL !== 'function') {
+                    console.log('⚠️ [StreamLayout] remote stream missing or no toURL()', { socketId: id });
+                    return;
+                }
+    
+                const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
+                const Alevel = audioLevel ?? 0.04;
+    
+                mapBySocketId[id] = {
+                    type: 'remote',
+                    stream,
+                    isFriend,
+                    userId: StreamerInfo?.UserID,
+                    socketId: id,
+                    isMuted: StreamerInfo?.isMuted,
+                    Name: StreamerInfo?.Name,
+                    isSpeaking: !!isSpeaking,
+                    audioLevel: Alevel,
+                };
             });
-
-            // If we don't yet have info for this socket, skip for now (will be included on next tick)
-            if (!StreamerInfo) {
-                return;
+    
+            // 2) Local Stream
+            if (localStream && isStreaming) {
+                const SelfInfo = streamerList.find((s) => s.ID === socket.id);
+    
+                console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
+                    socketId: socket.id,
+                    hasSelfInfo: !!SelfInfo,
+                });
+    
+                mapBySocketId[socket.id] = {
+                    type: 'local',
+                    stream: localStream,
+                    isFriend: false,
+                    userId: userData?.userid,
+                    socketId: socket.id,
+                    isMuted: SelfInfo?.isMuted ?? isMuted,
+                    Name: `${userData?.screenName}`,
+                    isSpeaking: false,
+                    audioLevel: 0,
+                };
             }
-
-            // Ensure we have a valid stream
-            if (!stream || typeof stream.toURL !== 'function') {
-                console.log('⚠️ [StreamLayout] remote stream missing or no toURL()', { socketId: id });
-                return;
-            }
-
-            const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
-            const Alevel = audioLevel ?? 0.04;
-
-            mapBySocketId[id] = {
-                type: 'remote',
-                stream,
-                isFriend,
-                userId: StreamerInfo?.UserID,
-                socketId: id,
-                isMuted: StreamerInfo?.isMuted,
-                Name: StreamerInfo?.Name,
-                isSpeaking: !!isSpeaking,
-                audioLevel: Alevel,
-            };
-        });
-
-        // 2) Local stream (current user)
-        if (localStream && isStreaming) {
-            const SelfInfo = streamerList.find((s) => s.ID === socket.id);
-
-            console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
-                socketId: socket.id,
-                Name: userData?.screenName,
-                hasSelfInfo: !!SelfInfo,
-                videoTracks: localStream.getVideoTracks?.().map(t => ({
-                    id: t.id,
-                    readyState: t.readyState,
-                    enabled: t.enabled,
-                })),
+    
+            // 3) Sorting
+            const hostInfo = streamerList.find((s) => s.IsHost === true);
+            const hostSocketId = hostInfo?.ID;
+    
+            let ordered = Object.values(mapBySocketId);
+    
+            ordered.sort((a, b) => {
+                if (a.socketId === hostSocketId && b.socketId !== hostSocketId) return -1;
+                if (b.socketId === hostSocketId && a.socketId !== hostSocketId) return 1;
+    
+                if (a.type === 'local' && b.type !== 'local') return isHost ? -1 : 1;
+                if (b.type === 'local' && a.type !== 'local') return isHost ? 1 : -1;
+    
+                const nameA = a.Name || '';
+                const nameB = b.Name || '';
+                return nameA.localeCompare(nameB);
             });
-
-            mapBySocketId[socket.id] = {
-                type: 'local',
-                stream: localStream,
-                isFriend: false,
-                userId: userData?.userid,
-                socketId: socket.id,
-                isMuted: SelfInfo?.isMuted ?? isMuted,
-                Name: `${userData?.screenName}`,
-                isSpeaking: false,
-                audioLevel: 0,
-            };
-        }
-
-        // 3) Sort deterministically:
-        //    - host first
-        //    - then local (if not host)
-        //    - then others by name
-        const hostInfo = streamerList.find((s) => s.IsHost === true);
-        const hostSocketId = hostInfo?.ID;
-
-        let ordered = Object.values(mapBySocketId);
-
-        ordered.sort((a, b) => {
-            // host always first
-            if (a.socketId === hostSocketId && b.socketId !== hostSocketId) return -1;
-            if (b.socketId === hostSocketId && a.socketId !== hostSocketId) return 1;
-
-            // then local stream (for non-host)
-            if (a.type === 'local' && b.type !== 'local') return isHost ? -1 : 1;
-            if (b.type === 'local' && a.type !== 'local') return isHost ? 1 : -1;
-
-            // stable by name to avoid random shuffling
-            const nameA = a.Name || '';
-            const nameB = b.Name || '';
-            return nameA.localeCompare(nameB);
-        });
-
-        console.log('🎛 [StreamLayout] FINAL LAYOUT ORDER', ordered.map(s => ({
-            type: s.type,
-            socketId: s.socketId,
-            name: s.Name,
-            streamId: s.stream?.id,
-            hasVideoTracks: s.stream?.getVideoTracks?.().length,
-        })));
-
-        setStreamLayout(ordered);
+    
+            console.log('🎛 [StreamLayout] FINAL LAYOUT ORDER', ordered.map(s => ({
+                type: s.type,
+                socketId: s.socketId,
+                name: s.Name,
+                streamId: s.stream?.id,
+            })));
+    
+            setStreamLayout(ordered);
+    
+        }, 500); // ⭐ BEST DELAY: 120–180 ms
+    
+        return () => clearTimeout(delayId);
+    
     }, [
         remoteStreams,
         localStream,
@@ -1454,6 +1362,7 @@ const StreamRoom = ({
         isHost,
         isMuted,
     ]);
+    
 
 
 
