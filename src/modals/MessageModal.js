@@ -3,15 +3,11 @@ import { Text, StyleSheet, Animated, Dimensions, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Modal from 'react-native-modal';
 
-const screenHeight = Dimensions.get('window').height;
-const screenWidth = Dimensions.get('window').width;
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 const MessageModal = ({ visible, message, onClose }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-
-  console.log('message', message);
-
 
   useEffect(() => {
     if (visible) {
@@ -59,44 +55,43 @@ const MessageModal = ({ visible, message, onClose }) => {
   if (!visible) return null;
 
   return (
-    <Modal
+  <Modal
       isVisible={visible}
       backdropOpacity={0}
       animationIn="fadeIn"
       animationOut="fadeOut"
       useNativeDriver
       style={styles.modalContainer}
-      key={`message-modal-${message}`}
     >
       <Animated.View
         style={[
-          styles.backdrop,
+          styles.mainAnimated,
           {
             opacity: fadeAnim,
-          }
+            transform: [{ translateY: slideAnim }],
+          },
         ]}
       >
-        <LinearGradient
-          colors={['rgba(0, 0, 0, 0.2)', 'rgba(0, 0, 0, 0)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientBackdrop}
-        />
-      </Animated.View>
-
-      <Animated.View
-        style={{
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }],
-        }}
-      >
+        {/* SHADOW WRAPPER */}
         <View style={styles.shadowWrapper}>
-          <LinearGradient
-            colors={['#1a1a1a', '#444']}
-            style={styles.messageBox}
-          >
-            <Text style={styles.messageText}>{message}</Text>
-          </LinearGradient>
+          
+          {/* GRADIENT + TEXT WRAPPER */}
+          <View style={styles.gradientWrapper}>
+            
+            {/* Gradient as background only */}
+            <LinearGradient
+              colors={['#111', '#444']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.gradientBg}
+            />
+
+            {/* Text ABOVE gradient */}
+            <Text style={styles.messageText}>
+              {message}
+            </Text>
+
+          </View>
         </View>
       </Animated.View>
     </Modal>
@@ -109,48 +104,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  gradientBackdrop: {
-    flex: 1,
-    width: screenWidth,
-    height: screenHeight,
-  },
-  messageContainer: {
-    minWidth: 200,
-    maxWidth: '85%',
+
+  mainAnimated: {
+    width: '85%',
     alignItems: 'center',
   },
+
   shadowWrapper: {
     width: '100%',
     borderRadius: 40,
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 20,
+    elevation: 10, // Android
   },
 
-  messageBox: {
+  gradientWrapper: {
     width: '100%',
+    borderRadius: 40,
+    overflow: 'hidden', // safe here
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingVertical: 20,
     paddingHorizontal: 24,
-    borderRadius: 40,
-    // IMPORTANT: DO NOT ADD overflow: 'hidden' ON IOS
+  },
+
+  gradientBg: {
+    ...StyleSheet.absoluteFillObject,
   },
 
   messageText: {
     color: '#fff',
     fontSize: 15,
-    textAlign: 'center',
     fontWeight: '600',
-    letterSpacing: 0.5,
+    textAlign: 'center',
     lineHeight: 22,
+    letterSpacing: 0.5,
   },
 });
 
