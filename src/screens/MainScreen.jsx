@@ -1038,6 +1038,36 @@ export const MainScreen = () => {
         try {
           const stream = event.streams && event.streams[0];
 
+    // ⭐⭐⭐ VIDEO TRACK FIX — ADDED ⭐⭐⭐
+    const videoTrack = stream?.getVideoTracks()[0];
+
+    if (videoTrack) {
+      console.log("🎥 Remote video track received:", {
+        enabled: videoTrack.enabled,
+        state: videoTrack.readyState,
+      });
+
+      // ★ Force video ON (fix blank video)
+      videoTrack.enabled = true;
+
+      //autorecover id video track are muted 
+      videoTrack.onmute = () => {
+        console.log("❌ Remote video track muted → re-enabling for", socketId);
+        videoTrack.enabled = true;
+      };
+
+      videoTrack.onunmute = () => {
+        console.log("✅ Remote video active again for", socketId);
+      };
+
+
+      if (videoTrack.readyState === "ended") {
+        console.log("⚠️ Remote video track ended → requesting restart", socketId);
+        socket.emit("requestVideoRestart", socketId);
+      }
+    }
+
+    
           console.log('📥 [ontrack] RAW EVENT from:', socketId, {
             hasStreams: !!event.streams,
             streamCount: event.streams?.length || 0,
