@@ -349,12 +349,11 @@ export default function SlotGameModal({ visible, onClose, userData,
                             </TouchableOpacity>
                         )} */}
                         {spinsRemaining === 0 && (
-                            <TouchableOpacity onPress={onClose}>
-                                <Ionicons name="close" size={28} color="#fff" />
+                            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                                <Ionicons name="close" size={20} color="#fff" />
                             </TouchableOpacity>
                         )}
                     </View>
-
                     <View style={styles.slots}>
                         {reels.map((anim, col) => (
                             <View key={col} style={styles.reel}>
@@ -513,7 +512,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         resizeMode: 'cover',
-        backgroundColor: '#000',
+        backgroundColor: 'transparent',
     },
     header: {
         flexDirection: 'row',
@@ -523,6 +522,11 @@ const styles = StyleSheet.create({
     },
     infoButton: {
         padding: 0,
+    },
+    closeButton: {
+        backgroundColor: 'rgba(214, 4, 4, 0.86)',
+        borderRadius: 20,
+        padding: 5,
     },
     chipsBoxBgImg: {
         width: 140,

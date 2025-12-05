@@ -1437,7 +1437,7 @@ const StreamRoom = ({
                             {/* rest unchanged */}
 
                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={100} color="#fff" />}</Text>
+                                <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={70} color="#fff" />}</Text>
                             </View>
                             {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
                                 <View style={{
@@ -1484,7 +1484,7 @@ const StreamRoom = ({
                                         })()}
 
                                         <View style={{ position: 'absolute', left: '40%', top: '50%' }}>
-                                            <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                            <Text>{streamLayout[0]?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                         </View>
                                         {streamLayout[0]?.type !== 'local' && streamLayout[0]?.audioLevel > 0 && (
                                             <View style={{
@@ -1548,7 +1548,7 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                    <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                                 </View>
                                                 {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                     <View style={{
@@ -1618,7 +1618,7 @@ const StreamRoom = ({
                                                         mirror={streamData.type === 'local' && isFrontCamera}
                                                     />
                                                     <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                                     </View>
                                                     {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                         <View style={{
@@ -1686,7 +1686,7 @@ const StreamRoom = ({
                                                         mirror={streamData.type === 'local' && isFrontCamera}
                                                     />
                                                     <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={40} color="#fff" />}</Text>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                                     </View>
                                                     {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                         <View style={{
@@ -1758,7 +1758,7 @@ const StreamRoom = ({
                                                         mirror={streamData.type === 'local' && isFrontCamera}
                                                     />
                                                     <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 40 : 80} color="#fff" />}</Text>
+                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 30 : 40} color="#fff" />}</Text>
                                                     </View>
                                                     {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
                                                         <View style={{
