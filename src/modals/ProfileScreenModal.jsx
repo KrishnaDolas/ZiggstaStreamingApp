@@ -68,8 +68,6 @@ const ProfileScreenModal = ({
         }
     }, [visible, userProfileDetails.description, setProfileDescription]);
 
-
-
     // Handle status bar and navigation bar visibility
     useEffect(() => {
         if (isImagePickerOpen) {

@@ -429,8 +429,8 @@ export default function SlotGameModal({ visible, onClose, userData,
 
                         {!spinPurchased && (
                             <View style={styles.buyBtnContainer}>
-                                <TouchableOpacity style={styles.buyButton} disabled={hasPurchased} onPress={() => buySpins(0.2, 0)}>
-                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_2_dis.png') : require('../../assets/images/solt-game/bet_2.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
+                                <TouchableOpacity style={styles.buyButton} disabled={hasPurchased} onPress={() => buySpins(20, 0)}>
+                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_200_dis.png') : require('../../assets/images/solt-game/bet_200.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
                                         <Animated.View style={{ transform: [{ scale: buyButtonBounceAnims[0] }] }}>
                                             <Image style={[styles.buyBtnGiftImg, { opacity: (!hasPurchased || activeButtonIndex === 0) ? 1 : 0.5 }]} resizeMode="contain"
                                                 source={activeButtonIndex === 0 ? require('../../assets/images/solt-game/icon_gift_glow.png') : require('../../assets/images/solt-game/icon_gift.png')} />
@@ -438,8 +438,8 @@ export default function SlotGameModal({ visible, onClose, userData,
                                     </ImageBackground>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.buyButton} onPress={() => buySpins(0.5, 1)} disabled={hasPurchased}>
-                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_5_dis.png') : require('../../assets/images/solt-game/bet_5.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
+                                <TouchableOpacity style={styles.buyButton} onPress={() => buySpins(50, 1)} disabled={hasPurchased}>
+                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_500_dis.png') : require('../../assets/images/solt-game/bet_500.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
                                         <Animated.View style={{ transform: [{ scale: buyButtonBounceAnims[1] }] }}>
                                             <Image style={[styles.buyBtnGiftImg, { opacity: (!hasPurchased || activeButtonIndex === 1) ? 1 : 0.5 }]} resizeMode="contain"
                                                 source={activeButtonIndex === 1 ? require('../../assets/images/solt-game/icon_gift_glow.png') : require('../../assets/images/solt-game/icon_gift.png')} />
@@ -447,8 +447,8 @@ export default function SlotGameModal({ visible, onClose, userData,
                                     </ImageBackground>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.buyButton} onPress={() => buySpins(1.0, 2)} disabled={hasPurchased}>
-                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_10_dis.png') : require('../../assets/images/solt-game/bet_10.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
+                                <TouchableOpacity style={styles.buyButton} onPress={() => buySpins(100, 2)} disabled={hasPurchased}>
+                                    <ImageBackground source={hasPurchased ? require('../../assets/images/solt-game/bet_1000_dis.png') : require('../../assets/images/solt-game/bet_1000.png')} style={[styles.buyBtnBgImg]} resizeMode="cover">
                                         <Animated.View style={{ transform: [{ scale: buyButtonBounceAnims[2] }] }}>
                                             <Image style={[styles.buyBtnGiftImg, { opacity: (!hasPurchased || activeButtonIndex === 2) ? 1 : 0.5 }]} resizeMode="contain"
                                                 source={activeButtonIndex === 2 ? require('../../assets/images/solt-game/icon_gift_glow.png') : require('../../assets/images/solt-game/icon_gift.png')} />
@@ -611,9 +611,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 18,
     },
     buyBtnGiftImg: {
-        height: 35,
-        width: 35,
-        marginBottom: 5,
+        height: 30,
+        width: 30,
+        marginBottom: 2,
+        left: -3,
     },
     spinPurchasedText: {
         color: '#ffc263',

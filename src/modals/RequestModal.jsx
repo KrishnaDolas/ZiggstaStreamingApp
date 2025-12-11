@@ -38,11 +38,7 @@ const RequestModal = ({
 
         console.log(`Action: ${action}, Requester ID: ${requesterId}`);
 
-        const Address = userAddress ?
-            { country: userAddress?.country, city: userAddress?.city }
-            : { country: 'India', city: 'Pune' };
-
-        console.log(Address);
+        const Address = { country: item?.country, city: item?.city };
 
         if (action === 'approve') {
             socket.emit('approveStream', requesterId, Address, name, CustomID, item?.avatar, item?.Gender, () => {
@@ -102,7 +98,6 @@ const RequestModal = ({
             prev.filter((id) => StreamRequestList.some((item) => item.ID === id))
         );
     }, [StreamRequestList]);
-
 
     return (
         <Modal

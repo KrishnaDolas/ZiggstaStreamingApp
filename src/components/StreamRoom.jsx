@@ -73,6 +73,7 @@ const StreamRoom = ({
     const {
         userData,
         setIsInStreamRoom,
+        fetchProfileDetails,
     } = useAppContext();
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
@@ -157,34 +158,18 @@ const StreamRoom = ({
     const handleLuckyWheelOpened = useCallback((openerData) => {
         console.log('🎯 [CLIENT] lucky-wheel-opened received:', openerData);
 
-        // Don't auto-open if user is playing slot game
-        if (activeGame === 'slot-game') {
-            console.log('🚫 Skipping - user playing slot game');
+        // Don't auto-open the wheel, just update state for red dot
+        if (openerData.userId === userData?.userid) {
+            console.log('✅ This is my own open, ignoring for auto-open');
             return;
         }
 
-        // Don't reopen if already open for this user
-        if (luckyWheelVisible || visibleModal === 'luckyWheel') {
-            console.log('🚫 Skipping - lucky wheel already open for this user');
-            return;
-        }
+        // Set room as active (for red dot)
+        setIsLuckyWheelActiveInRoom(true);
 
-        // Emit to server that this user is also opening the wheel (via auto-open)
-        const userOpenData = {
-            userId: userData?.userid,
-            userName: userData?.screenName,
-            timestamp: Date.now(),
-        };
-
-        console.log('🎯 [CLIENT] Emitting user-opened-lucky-wheel (auto-open):', streamInfo?.roomID.toString(), userOpenData);
-        socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
-
-        console.log('✅ Auto-opening lucky wheel for user');
-        setLuckyWheelVisible(true);
-        setLuckyWheelOpenedBy(openerData);
-        setActiveGame('luckyWheel');
-        setVisibleModal('luckyWheel');
-    }, [activeGame, luckyWheelVisible, visibleModal, userData, streamInfo?.roomID]);
+        // Don't auto-open the modal for other users
+        console.log('🚫 NOT auto-opening - only updating red dot state');
+    }, [userData?.userid]);
 
     // ✅ Check if user is new to the stream (for red dot indicator) AND handle reconnections
     useEffect(() => {
@@ -271,14 +256,14 @@ const StreamRoom = ({
             handleGameClose(activeGame);
         }
 
-        // Emit to server for broadcast (room-wide open)
+        // Emit to server to notify others (for red dot)
         const userOpenData = {
             userId: userData?.userid,
             userName: userData?.screenName,
             timestamp: Date.now(),
         };
 
-        console.log('🎯 [CLIENT] Emitting user-opened-lucky-wheel (manual open):', streamInfo?.roomID.toString(), userOpenData);
+        console.log('🎯 [CLIENT] Emitting user-opened-lucky-wheel (for red dot):', streamInfo?.roomID.toString(), userOpenData);
         socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
 
         // Open locally
@@ -286,8 +271,46 @@ const StreamRoom = ({
         setLuckyWheelOpenedBy(userOpenData);
         setActiveGame('luckyWheel');
         setLuckyWheelVisible(true);
-        // Don't set isLuckyWheelActiveInRoom - server will broadcast to all
+
+        // Set as active locally (for other users' red dots)
+        setIsLuckyWheelActiveInRoom(true);
     };
+
+
+    // ✅ UPDATED: Listen for bet placed event to auto-open
+    const handleBetPlacedInRoom = useCallback((betData) => {
+        console.log('💰 [CLIENT] Received bet-placed-in-room event:', betData);
+
+        // Don't auto-open if already in lucky wheel modal
+        if (visibleModal === 'luckyWheel' || luckyWheelVisible) {
+            console.log('🚫 Already in lucky wheel, not auto-opening');
+            return;
+        }
+
+        // Don't auto-open if playing slot game
+        if (activeGame === 'slot-game') {
+            console.log('🚫 Playing slot game, not auto-opening lucky wheel');
+            return;
+        }
+
+        // Auto-open lucky wheel
+        console.log('✅ Auto-opening lucky wheel because bet was placed');
+
+        const userOpenData = {
+            userId: userData?.userid,
+            userName: userData?.screenName,
+            timestamp: Date.now(),
+        };
+
+        // Open locally
+        setLuckyWheelVisible(true);
+        setLuckyWheelOpenedBy(userOpenData);
+        setActiveGame('luckyWheel');
+        setVisibleModal('luckyWheel');
+
+        // Also notify server that this user is now opening
+        socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
+    }, [luckyWheelVisible, visibleModal, activeGame, userData, streamInfo?.roomID]);
 
     const handleSlotGameOpen = () => {
         if (visibleModal === 'slot-game' || slotGameVisible) {
@@ -342,7 +365,7 @@ const StreamRoom = ({
         // Local close first
         handleLuckyWheelCloseLocal();
 
-        // Notify server about user closing (but don't affect other users)
+        // Notify server about user closing
         if (streamInfo?.roomID && userData?.userid) {
             console.log('🎯 [CLIENT] Emitting user-closed-lucky-wheel to server');
             socket.emit('user-closed-lucky-wheel', streamInfo.roomID.toString(), userData.userid);
@@ -370,18 +393,10 @@ const StreamRoom = ({
 
     // ✅ UPDATED: Check if should show red dot on lucky wheel button
     const shouldShowRedDotOnLuckyWheel = () => {
-        const show = isLuckyWheelActiveInRoom &&
-            !luckyWheelVisible &&
-            visibleModal !== 'luckyWheel' &&
-            activeGame !== 'slot-game';
-
-        // console.log('🔴 [Red Dot Debug]', {
-        //     isLuckyWheelActiveInRoom,
-        //     luckyWheelVisible,
-        //     visibleModal,
-        //     activeGame,
-        //     shouldShow: show,
-        // });
+        const show = isLuckyWheelActiveInRoom && // Wheel is open somewhere in room
+            !luckyWheelVisible && // This user doesn't have it open
+            visibleModal !== 'luckyWheel' && // Not currently in wheel modal
+            activeGame !== 'slot-game'; // Not playing slot game
 
         return show;
     };
@@ -410,6 +425,7 @@ const StreamRoom = ({
         socket.on('lucky-wheel-active', handleLuckyWheelActive);
         socket.on('lucky-wheel-inactive', handleLuckyWheelInactive);
         socket.on('lucky-wheel-closed-confirmation', handleLuckyWheelCloseConfirmation);
+        socket.on('bet-placed-in-room', handleBetPlacedInRoom);
 
         // Cleanup
         return () => {
@@ -418,8 +434,17 @@ const StreamRoom = ({
             socket.off('lucky-wheel-active', handleLuckyWheelActive);
             socket.off('lucky-wheel-inactive', handleLuckyWheelInactive);
             socket.off('lucky-wheel-closed-confirmation', handleLuckyWheelCloseConfirmation);
+            socket.off('bet-placed-in-room', handleBetPlacedInRoom);
         };
-    }, [handleLuckyWheelOpened, handleLuckyWheelActive, handleLuckyWheelInactive, handleLuckyWheelCloseConfirmation]); // Only deps are the memoized handlers
+    },
+        [
+            handleLuckyWheelOpened,
+            handleLuckyWheelActive,
+            handleLuckyWheelInactive,
+            handleLuckyWheelCloseConfirmation,
+            handleBetPlacedInRoom,
+        ]
+    ); // Only deps are the memoized handlers
 
     // ✅ Fixed: Request lucky wheel status on room join and reconnect
     useEffect(() => {
@@ -730,12 +755,29 @@ const StreamRoom = ({
     };
 
     // send chat
-    const HadleSendChat = () => {
+    const HadleSendChat = async () => {
         if (!userChatInput.trim()) {
             // Alert.alert('Message', 'Please enter a message before sending.', [{ text: 'OK' }]);
             return;
         }
         HandleChatmessages(userChatInput);
+
+        try {
+            const params = {
+                roomID: streamInfo?.roomID,
+                sender_id: userData?.userid,
+                message: userChatInput,
+                type: 'text',
+            };
+            const response = await Apiclient.post(
+                '/chatlogs/saveRoomChat',
+                params
+            );
+            console.log("saveRoomChat", response.data);
+        } catch (error) {
+            SendErrorTotheServer(error, 'saveRoomChat');
+        }
+
         setUserChatInput('');
         inputRef.current?.blur();
         setIsTyping(false);
@@ -918,30 +960,25 @@ const StreamRoom = ({
     // }, []);
 
     // get total gift by room
-    const getTotalGiftByRoom = async () => {
+    const getTotalGiftByRoom = useCallback(async () => {
         try {
             const params = {
-                toUserID: streamInfo?.hostID,
-                roomId: streamInfo?.roomID,
+                hostID: streamInfo?.hostID,
+                roomid: streamInfo?.roomID,
             };
-            console.log('params gift by room', params);
-            const response = await Apiclient.post('/topgifters/getGiftsByRoom', params);
+            const response = await Apiclient.post('/topGifters/getAllGiftsbyRoom', params);
             console.log('gift by room response', response.data);
-            if (response.data.success && Array.isArray(response.data.data)) {
-                const totalGiftValueSum = response.data.data.reduce((acc, item) => {
-                    return acc + Number(item.totalGiftValue || 0);
-                }, 0);
-                console.log('gift by room sortedData', totalGiftValueSum);
-                setTotalGiftByRoom(totalGiftValueSum || 0);
+            if (response.data.status) {
+                setTotalGiftByRoom(response.data);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'getTotalGiftByRoom');
         }
-    };
+    }, [streamInfo?.hostID, streamInfo?.roomID]);
 
     useEffect(() => {
         getTotalGiftByRoom();
-    }, []);
+    }, [getTotalGiftByRoom]);
 
     // handle gift received
     const HandleGiftReceived = async (senderName, receiverName, giftName) => {
@@ -987,16 +1024,31 @@ const StreamRoom = ({
         }
     }, []);
 
+    const handleUpdateTotalGifts = async (roomID) => {
+        console.log('🔄 Received update-total-gifts event for room:', roomID);
+        // Only update if it's our current room
+        if (streamInfo?.roomID?.toString() === roomID?.toString()) {
+            console.log('🔄 Calling getTotalGiftByRoom for current room');
+            await getTotalGiftByRoom();
+            await GetUserDetails(streamInfo?.hostID);
+        }
+    };
+
     // socket event listen
     useEffect(() => {
         getFriendsData();
         socket.on('like-count', HandleLikeCount);
         socket.on('received-Gift', HandleGiftReceived);
         socket.on('receive-request', HandleFriendRequestMessage);
+
+        // ✅ ADD THIS NEW LISTENER
+        socket.on('update-total-gifts', handleUpdateTotalGifts);
+
         return () => {
             socket.off('like-count', HandleLikeCount);
             socket.off('received-Gift', HandleGiftReceived);
             socket.off('receive-request', HandleFriendRequestMessage);
+            socket.off('update-total-gifts', handleUpdateTotalGifts);
         };
     }, []);
 
@@ -1249,43 +1301,43 @@ const StreamRoom = ({
             isStreaming,
             hasLocalStream: !!localStream,
         });
-    
+
         console.log("STREAMER LIST", streamerList.map(s => ({
             ID: s.ID,
             Name: s.Name,
             UserID: s.UserID
         })));
-    
+
         console.log("REMOTE STREAMS", remoteStreams.map(r => ({
             socketId: r.id,
             streamId: r.stream?.id,
             videoTracks: r.stream?.getVideoTracks?.().map(t => t.id)
         })));
-    
+
         // ⭐ NEW: Stabilization delay (150ms)
         const delayId = setTimeout(() => {
-    
+
             const mapBySocketId = {};
-    
+
             // 1) Remote Streams
             remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
                 const StreamerInfo = streamerList.find((s) => s.ID === id);
-    
+
                 console.log('🎛 [StreamLayout] PROCESS REMOTE', {
                     socketId: id,
                     hasStreamerInfo: !!StreamerInfo,
                     hasStream: !!stream,
                 });
-    
+
                 if (!StreamerInfo) return;
                 if (!stream || typeof stream.toURL !== 'function') {
                     console.log('⚠️ [StreamLayout] remote stream missing or no toURL()', { socketId: id });
                     return;
                 }
-    
+
                 const isFriend = myFriendList.some(friend => friend?.userid === StreamerInfo?.UserID);
                 const Alevel = audioLevel ?? 0.04;
-    
+
                 mapBySocketId[id] = {
                     type: 'remote',
                     stream,
@@ -1298,16 +1350,16 @@ const StreamRoom = ({
                     audioLevel: Alevel,
                 };
             });
-    
+
             // 2) Local Stream
             if (localStream && isStreaming) {
                 const SelfInfo = streamerList.find((s) => s.ID === socket.id);
-    
+
                 console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
                     socketId: socket.id,
                     hasSelfInfo: !!SelfInfo,
                 });
-    
+
                 mapBySocketId[socket.id] = {
                     type: 'local',
                     stream: localStream,
@@ -1320,38 +1372,38 @@ const StreamRoom = ({
                     audioLevel: 0,
                 };
             }
-    
+
             // 3) Sorting
             const hostInfo = streamerList.find((s) => s.IsHost === true);
             const hostSocketId = hostInfo?.ID;
-    
+
             let ordered = Object.values(mapBySocketId);
-    
+
             ordered.sort((a, b) => {
                 if (a.socketId === hostSocketId && b.socketId !== hostSocketId) return -1;
                 if (b.socketId === hostSocketId && a.socketId !== hostSocketId) return 1;
-    
+
                 if (a.type === 'local' && b.type !== 'local') return isHost ? -1 : 1;
                 if (b.type === 'local' && a.type !== 'local') return isHost ? 1 : -1;
-    
+
                 const nameA = a.Name || '';
                 const nameB = b.Name || '';
                 return nameA.localeCompare(nameB);
             });
-    
+
             console.log('🎛 [StreamLayout] FINAL LAYOUT ORDER', ordered.map(s => ({
                 type: s.type,
                 socketId: s.socketId,
                 name: s.Name,
                 streamId: s.stream?.id,
             })));
-    
+
             setStreamLayout(ordered);
-    
+
         }, 500); // ⭐ BEST DELAY: 120–180 ms
-    
+
         return () => clearTimeout(delayId);
-    
+
     }, [
         remoteStreams,
         localStream,
@@ -1362,7 +1414,7 @@ const StreamRoom = ({
         isHost,
         isMuted,
     ]);
-    
+
 
 
 
@@ -1924,7 +1976,7 @@ const StreamRoom = ({
                                         <Text
                                             style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}
                                         >
-                                            {totalGiftByRoom}
+                                            {totalGiftByRoom?.grandTotal || 0}
                                         </Text>
                                     </View>
                                 </View>
@@ -2544,6 +2596,7 @@ const StreamRoom = ({
                     openedBy={luckyWheelOpenedBy}
                     isSelfOpened={luckyWheelOpenedBy?.userId === userData?.userid}
                     setIsLuckyWheelActiveInRoom={setIsLuckyWheelActiveInRoom}
+                    getTotalGiftByRoom={getTotalGiftByRoom}
                 />
             )
             }

@@ -76,15 +76,6 @@ export const StreamListHeader = ({
 
     return (
         <View
-            onLayout={(event) => {
-                const { x, y, width, height } = event.nativeEvent.layout;
-                console.log("📍 HEADER POSITION:");
-                console.log(`Top(Y): ${y}`);
-                console.log(`Left(X): ${x}`);
-                console.log(`Width: ${width}`);
-                console.log(`Height: ${height}`);
-
-            }}
             style={[
                 styles.streamListHeader,
                 themeStyles[theme].streamListHeader,

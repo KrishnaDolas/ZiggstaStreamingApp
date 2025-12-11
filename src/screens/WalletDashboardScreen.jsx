@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, SafeAreaView, StatusBar, TouchableOpacity, ScrollView, Dimensions, KeyboardAvoidingView, Platform, ActivityIndicator, Image, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StatusBar, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, RefreshControl, TextInput } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
 import { ThemeContext } from '../context/ThemeContext';
@@ -12,12 +12,10 @@ import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
 import BalanceHistoryModal from '../modals/BalanceHistoryModal';
 import { useFocusEffect } from '@react-navigation/native';
-const screenWidth = Dimensions.get('window').width;
-const cardWidth = screenWidth / 3 - 18; // 3 columns with margin
-
+import { initialize, presentEntirePaymentFlow } from 'airwallex-payment-react-native';
 
 export const WalletDashboardScreen = () => {
-    const { profileData, userData, fetchProfileDetails } = useAppContext();
+    const { userData, fetchProfileDetails } = useAppContext();
     const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
     const scrollRef = useRef(null);
@@ -49,6 +47,11 @@ export const WalletDashboardScreen = () => {
     // useEffect(() => {
     //     getToken();
     // }, []);
+
+    /** 🔥 Initial Airwallex setup */
+    useEffect(() => {
+        initialize();
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -131,7 +134,6 @@ export const WalletDashboardScreen = () => {
         }
     }, [userData.userid]);
 
-
     useEffect(() => {
         getBankListData();
     }, [getBankListData]);
@@ -152,19 +154,75 @@ export const WalletDashboardScreen = () => {
 
         setErrorMessage('');
         setSuccessMessage('');
+        // Deposit flow
         if (activeTab === 'Deposit') {
             if (!paymentMethod) {
                 setErrorMessage('Please select a payment method');
-            } else {
-                setErrorMessage('');
+                return;
             }
-        } else if (activeTab === 'Withdraw') {
+
+            try {
+                setLoadingSubmit(true);
+
+                /** 1️⃣ ask your backend to create Airwallex intent */
+
+                const payload = {
+                    amount: Number(selectedAmount) * 100,
+                    currency: 'AUD',
+                    userId: userData?.userid,
+                    username: userData?.username,
+                };
+
+                console.log('Payload for creating intent:', payload);
+
+                const r = await Apiclient.post('/airwallex/create-intent', payload);
+
+                const { paymentIntentId, clientSecret } = r.data;
+
+                /** 2️⃣ build session */
+                const session = {
+                    type: 'OneOff',
+                    paymentIntentId: paymentIntentId,
+                    clientSecret: clientSecret,
+                    amount: Number(selectedAmount) * 100,
+                    currency: 'AUD',
+                    countryCode: 'AU',
+                    paymentMethods: ['card'],  // add googlepay applepay later
+                };
+
+                /** 3️⃣ open Airwallex UI */
+                const result = await presentEntirePaymentFlow(session);
+
+                if (result.status === 'success') {
+
+                    setSuccessMessage('Deposit successful!');
+
+                    /** refresh wallet balance */
+                    await fetchProfileDetails();
+
+                } else if (result.status === 'cancelled') {
+                    setErrorMessage('Cancelled by user');
+                } else {
+                    setErrorMessage('Payment incomplete');
+                }
+
+            } catch (err) {
+                console.log('airwallex deposit error=>', err);
+                setErrorMessage('Payment failed');
+            } finally {
+                setLoadingSubmit(false);
+            }
+        }
+        // Withdraw flow
+        else if (activeTab === 'Withdraw') {
             if (!selectBankName) {
                 setErrorMessage('Please select bank name');
             } else {
                 setErrorMessage('');
             }
-        } else {
+        }
+        // Transfer flow
+        else {
             try {
                 if (!selectedFriend) {
                     setErrorMessage('Please select a valid user');
@@ -519,54 +577,6 @@ export const WalletDashboardScreen = () => {
                                         'Add funds to your account securely using any supported payment method.' : activeTab === 'Withdraw' ? 'Transfer your balance to your bank or preferred payout option.' : 'Transfer credits to another Ziggster.'}
                                 </Text>
                             </View>
-
-                            {/* Referral stats */}
-                            {/* <Text
-                                style={[
-                                    styles.streamListMainTitle,
-                                    themeStyles[theme].streamListMainTitle,
-                                    { fontWeight: '400' }
-                                ]}
-                            >
-                                Referral Stats
-                            </Text>
-                            <View style={styles.wDReferralStatsContainer}>
-                                <View style={styles.wDReferralStatsRow}>
-                                    <TouchableOpacity onPress={() => setVisibleModal('setting')} style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Balance</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                            <Image
-                                                source={require('../../assets/images/icons/icon_z.png')}
-                                                style={{ width: 15, height: 15, marginRight: 5, marginTop: 3 }}
-                                                resizeMode="contain"
-                                            />
-                                            <Text style={[styles.wdRefStateValue, { marginTop: 0 }, themeStyles[theme].wdRefStateValue]}>{Number(profileData?.CreditBalance).toFixed(0)}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Today's Signups</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>20</Text>
-                                    </View>
-                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Monthly Signup</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>180</Text>
-                                    </View>
-                                </View>
-                                <View style={styles.wDReferralStatsRow}>
-                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Total Signup</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>400</Text>
-                                    </View>
-                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Analytics</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>30</Text>
-                                    </View>
-                                    <View style={[styles.wdRefStateCard, themeStyles[theme].wdRefStateCard, { width: cardWidth }]}>
-                                        <Text style={[styles.wdRefStateTitle, themeStyles[theme].wdRefStateTitle]}>Coming Soon</Text>
-                                        <Text style={[styles.wdRefStateValue, themeStyles[theme].wdRefStateValue]}>?</Text>
-                                    </View>
-                                </View>
-                            </View> */}
                         </ScrollView>
                     </KeyboardAvoidingView>
 
@@ -574,7 +584,6 @@ export const WalletDashboardScreen = () => {
                 {visibleModal === 'setting' && (
                     <BalanceHistoryModal visible="true" onClose={() => setVisibleModal(null)} />
                 )}
-                {/* <Footer /> */}
             </LinearGradient>
         </View>
 

@@ -52,8 +52,14 @@ const svgSize = wheelSize * 0.8 + 25;     // Slightly smaller than outer wheel
 
 
 const LuckyWheelModal = (
-    { visible, onClose, userData,
-        hostDetails, RoomID }
+    {
+        visible,
+        onClose,
+        userData,
+        hostDetails,
+        RoomID,
+        getTotalGiftByRoom,
+    }
 ) => {
     const insets = useSafeAreaInsets();
     const [countdown, setCountdown] = useState(0);
@@ -74,6 +80,10 @@ const LuckyWheelModal = (
     const intervalRef = useRef(null);
     const myCreditRef = useRef(mycredit);
 
+    // ✅ ADD: Cleanup timeout ref
+    const cleanupTimeoutRef = useRef(null);
+    const isMountedRef = useRef(true);
+
 
     // Animation states for chip collection
     const [flyingChips, setFlyingChips] = useState([]);
@@ -90,6 +100,23 @@ const LuckyWheelModal = (
     const winTextAnim = useRef(new Animated.Value(0)).current;
 
 
+    // ✅ ADD: Mount/unmount effect
+    useEffect(() => {
+        isMountedRef.current = true;
+
+        return () => {
+            isMountedRef.current = false;
+            // Clean up any pending timeouts
+            if (cleanupTimeoutRef.current) {
+                clearTimeout(cleanupTimeoutRef.current);
+            }
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, []);
+
+
     const startIdleRotation = () => {
         idleSpin.setValue(0);
         Animated.loop(
@@ -102,6 +129,12 @@ const LuckyWheelModal = (
         ).start();
     };
 
+    // ✅ UPDATE: Safe state updates
+    const safeSetSpinResultMessage = (msg) => {
+        if (isMountedRef.current) {
+            setSpinResultMessage(msg);
+        }
+    };
 
     const stopIdleRotation = () => {
         idleSpin.stopAnimation();
@@ -133,6 +166,7 @@ const LuckyWheelModal = (
     }, [visible]);
 
     const HandleUpdatedCredit = (amount) => {
+        console.log('Updated Credit received:', amount);
         setMyCredit(prev => {
             if (prev !== amount) {
                 setDisplayCredit(amount);
@@ -193,11 +227,11 @@ const LuckyWheelModal = (
             counter -= 1;
             setCountdown(counter);
 
-            if (counter === 5) {
+            if (counter === 3) {
                 setClosePlaceBetDialog(false);
             }
-            if (counter === 5) {
-                const sound = new Sound('no_more_bets', Sound.MAIN_BUNDLE, (error) => {
+            if (counter === 3) {
+                const sound = new Sound('no_more_gifting', Sound.MAIN_BUNDLE, (error) => {
                     sound.play(() => {
                         sound.release();
                     });
@@ -205,7 +239,7 @@ const LuckyWheelModal = (
                 setBetButtonsDisabled(true);
             }
 
-            if (counter <= 5) {
+            if (counter <= 3) {
                 setBigCountdownNumber(counter);
                 fadeAnim.setValue(0);
 
@@ -250,6 +284,7 @@ const LuckyWheelModal = (
 
     // Enhanced chip collection animation
     const startChipCollectionAnimation = (winAmount, resultLabel) => {
+        if (!isMountedRef.current) return;
         // Use myCreditRef.current instead of mycredit
         const currentCredit = isNaN(myCreditRef.current) || myCreditRef.current === null ? 0 : myCreditRef.current;
 
@@ -286,7 +321,10 @@ const LuckyWheelModal = (
             });
         }
 
-        setFlyingChips(newFlyingChips);
+        // Use safe update
+        if (isMountedRef.current) {
+            setFlyingChips(newFlyingChips);
+        }
 
         Animated.sequence([
             Animated.timing(chipsGlowAnim, {
@@ -298,7 +336,7 @@ const LuckyWheelModal = (
                 toValue: 0,
                 duration: 1000,
                 useNativeDriver: false,
-            })
+            }),
         ]).start();
 
         newFlyingChips.forEach((chip, index) => {
@@ -346,6 +384,8 @@ const LuckyWheelModal = (
 
     // Animated credit counting - only for visual effect, doesn't update actual credit
     const animateCredits = (from, to) => {
+        if (!isMountedRef.current) return;
+
         creditCountAnim.setValue(0);
         Animated.timing(creditCountAnim, {
             toValue: 1,
@@ -355,14 +395,20 @@ const LuckyWheelModal = (
         }).start();
 
         const listener = creditCountAnim.addListener(({ value }) => {
-            const currentCredit = Math.floor(from + (to - from) * value);
-            setDisplayCredit(currentCredit);
+            if (isMountedRef.current) {
+                const currentCredit = Math.floor(from + (to - from) * value);
+                setDisplayCredit(currentCredit);
+            }
         });
 
-        setTimeout(() => {
+        const finalizeTimer = setTimeout(() => {
             creditCountAnim.removeListener(listener);
-            setDisplayCredit(to);
+            if (isMountedRef.current) {
+                setDisplayCredit(to);
+            }
         }, 1000);
+
+        cleanupTimeoutRef.current = finalizeTimer;
     };
 
 
@@ -421,7 +467,7 @@ const LuckyWheelModal = (
             ? `✅ You WON ${WinAmount} chips!`
             : `❌ You LOST! because Wheel Landed on ${resultLabel}`;
 
-        setSpinResultMessage(resultMessage);
+        safeSetSpinResultMessage(resultMessage);
 
         if (isWin) {
             // Play winner sound
@@ -442,9 +488,14 @@ const LuckyWheelModal = (
 
         // Start chip collection animation if user won
         if (isWin && WinAmount > 0) {
-            setTimeout(() => {
-                startChipCollectionAnimation(WinAmount, resultLabel);
+            const chipTimer = setTimeout(() => {
+                if (isMountedRef.current) {
+                    startChipCollectionAnimation(WinAmount, resultLabel);
+                }
             }, 3000);
+
+            // Store for cleanup
+            cleanupTimeoutRef.current = chipTimer;
         }
 
     };
@@ -492,7 +543,7 @@ const LuckyWheelModal = (
 
     useEffect(() => {
         if (visible) {
-            const sound = new Sound('launch_wheel', Sound.MAIN_BUNDLE, (error) => {
+            const sound = new Sound('select_your_gift', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
@@ -602,8 +653,8 @@ const LuckyWheelModal = (
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
-            // console.log(`✅ Stopped on: ${resultLabel} at index: ${selected.idx} under arrow at TOP`);
-            setSelectedMultiplier('Double'); // Reset multiplier after spin
+            console.log(`✅ Stopped on: ${resultLabel} at index: ${selected.idx}`);
+            setSelectedMultiplier('Double');
         });
     };
 
@@ -646,7 +697,7 @@ const LuckyWheelModal = (
                         x={textX}
                         y={textY}
                         fill="#fff"
-                        fontSize="16"
+                        fontSize="20"
                         fontWeight="bold"
                         textAnchor="middle"
                         alignmentBaseline="middle"
@@ -662,8 +713,25 @@ const LuckyWheelModal = (
     };
 
     const closeModal = () => {
-        onClose();
+        // Clear any pending timeouts
+        if (cleanupTimeoutRef.current) {
+            clearTimeout(cleanupTimeoutRef.current);
+            cleanupTimeoutRef.current = null;
+        }
+
+        // Clear interval
+        clearCountdown();
+
+        // Stop animations
+        stopIdleRotation();
+
+        // Notify server
         socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid);
+
+        // Call parent onClose
+        if (onClose) {
+            onClose();
+        }
     };
 
 
@@ -706,7 +774,7 @@ const LuckyWheelModal = (
                 animationOutTiming={200}
                 useNativeDriver={true}
                 avoidKeyboard={false}
-                backdropOpacity={0.4}
+                backdropOpacity={0}
                 animationType="slide"
                 style={[styles.profileModalMain]}
                 propagateSwipe={true}
@@ -862,10 +930,18 @@ const LuckyWheelModal = (
                             </View>
                         </View>
                         {/* <Text style={[mainStyle.message]}>{message}</Text> */}
-                        <Text style={[mainStyle.countdownText, {
-                            opacity: countdown <= 5 ? 0 : 1,
-                            marginTop: countdown <= 5 ? 5 : 40,
-                        }]}>⏱ {countdown}s</Text>
+                        <Text
+                            style={[
+                                mainStyle.countdownText,
+                                {
+                                    color: countdown <= 3 ? 'transparent' : '#fff',
+                                    opacity: 1,           // always visible (space taken)
+                                    marginTop: 10,        // keep same height always
+                                },
+                            ]}
+                        >
+                            ⏱ {countdown}s
+                        </Text>
 
                         {/* user bets list */}
                         {userBets.length > 0 && (
@@ -887,7 +963,7 @@ const LuckyWheelModal = (
                                     <Text style={mainStyle.optionCell}>Option</Text>
                                 </View>
                                 <ScrollView
-                                    style={{ maxHeight: screenHeight * 0.2 - 50 }}
+                                    style={{ maxHeight: screenHeight * 0.2 - 60 }}
                                     contentContainerStyle={{ gap: 6, paddingTop: 6 }}
                                     showsVerticalScrollIndicator={true}
                                 >
@@ -981,93 +1057,69 @@ const LuckyWheelModal = (
                         {/* User Bet Buttons */}
                         {!hideBetButtons && (
                             <View style={[mainStyle.placeBetBtnGroup]}>
-                                {/* First button - 70% */}
-                                {userBets.length === 0 ? (
-                                    <TouchableOpacity
-                                        style={[
-                                            mainStyle.placeBetBtn,
-                                            {
-                                                flex: 7,
-                                                marginRight: 5,
-                                                backgroundColor:
-                                                    activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
-                                                opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
-                                                borderRadius: 4,
-                                                shadowColor: '#00FFFF',
-                                                shadowOffset: { width: 0, height: 0 },
-                                                shadowOpacity: 0.9,
-                                                shadowRadius: 10,
-                                                elevation: 8,
-                                            },
-                                        ]}
-                                        onPress={handlePlaceBet}
-                                        // onPress={() => handleSpin('25x')}
-                                        disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
-                                    >
-                                        <Text style={mainStyle.placeBetBtnText}>
-                                            BET 500
-                                        </Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <>
-                                        <TouchableOpacity
-                                            style={[
-                                                mainStyle.placeBetBtn,
-                                                {
-                                                    flex: 7,
-                                                    marginRight: 5,
-                                                    backgroundColor:
-                                                        activeBetAmount === 500 ? '#39FF14' : '#1E90FF', // Active: Cyan Glow, Inactive: Dodger Blue
-                                                    opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
-                                                    borderRadius: 4,
-                                                    shadowColor: '#00FFFF',
-                                                    shadowOffset: { width: 0, height: 0 },
-                                                    shadowOpacity: 0.9,
-                                                    shadowRadius: 10,
-                                                    elevation: 8,
-                                                },
-                                            ]}
-                                            onPress={() => placeBet(500)}
-                                            disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
-                                        >
-                                            <Text style={mainStyle.placeBetBtnText}>
-                                                BET 500
-                                            </Text>
-                                        </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 3,
+                                            marginRight: 5,
+                                            backgroundColor:
+                                                activeBetAmount === 200 ? '#48FF00' : '#2196F3',
+                                            opacity: (activeBetAmount && activeBetAmount !== 200) || betButtonsDisabled ? 0.6 : 1,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(200)}
+                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 200)}
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 200
+                                    </Text>
+                                </TouchableOpacity>
 
-                                        {/* Second button - 30% */}
-                                        <TouchableOpacity
-                                            style={[
-                                                mainStyle.placeBetBtn,
-                                                {
-                                                    flex: 3,
-                                                    marginLeft: 5,
-                                                    backgroundColor:
-                                                        activeBetAmount === 100 ? '#39FF14' : '#FF1493', // Active: Magenta Glow, Inactive: Deep Pink
-                                                    opacity: (activeBetAmount && activeBetAmount !== 100) || betButtonsDisabled ? 0.6 : 1,
-                                                    borderRadius: 4,
-                                                    shadowColor: '#FF00FF',
-                                                    shadowOffset: { width: 0, height: 0 },
-                                                    shadowOpacity: 0.9,
-                                                    shadowRadius: 10,
-                                                    elevation: 8,
-                                                },
-                                            ]}
-                                            onPress={() => placeBet(100)}
-                                            disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 100)}
-                                        >
-                                            <Text style={mainStyle.placeBetBtnText}>
-                                                BET 100
-                                            </Text>
-                                        </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 3,
+                                            marginHorizontal: 5,
+                                            backgroundColor:
+                                                activeBetAmount === 500 ? '#FFEA00' : '#FF5722',
+                                            opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(500)}
+                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 500
+                                    </Text>
+                                </TouchableOpacity>
 
-                                    </>
-                                )}
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 3,
+                                            marginLeft: 5,
+                                            backgroundColor:
+                                                activeBetAmount === 1000 ? '#39FF14' : '#9C27B0',
+                                            opacity: (activeBetAmount && activeBetAmount !== 1000) || betButtonsDisabled ? 0.6 : 1,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(1000)}
+                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 1000)}
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 1000
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
                         )}
 
                         {/* Spin Result Message */}
-                        <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
+                        {spinResultMessage !== '' &&
+                            <Text style={[mainStyle.spinResultMessageText]}>{spinResultMessage}</Text>
+                        }
 
                     </View>
 
@@ -1176,6 +1228,7 @@ const mainStyle = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-end',
+        paddingBottom: 0,
         position: 'relative',
     },
     wheelWrapperContainer: {
@@ -1183,8 +1236,8 @@ const mainStyle = StyleSheet.create({
         alignItems: 'center',
     },
     wheelWrapper: {
-        width: 220,
-        height: 220,
+        width: wheelSize,
+        height: wheelSize,
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
@@ -1340,7 +1393,7 @@ const mainStyle = StyleSheet.create({
     placeBetBtnGroup: {
         flexDirection: 'row',
         marginHorizontal: 10,
-        marginBottom: 10,
+        // marginBottom: 10,
     },
     placeBetBtn: {
         padding: 12,

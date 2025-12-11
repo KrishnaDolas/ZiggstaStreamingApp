@@ -89,22 +89,43 @@ export const MainScreen = () => {
     try {
       if (!hasRequestedStream) {
         const IsAccepted = await requestPermissions();
+
         if (!IsAccepted) {
           showPermissionAlert();
           return;
         }
-        const Address = userAddress ?
-          {
-            country: userAddress?.country,
-            city: userAddress?.city,
-            avatar: userData?.avatar,
-            Gender: userData?.gender,
-          } :
-          {
-            country: 'India',
-            city: 'Pune',
-          };
-        socket.emit('requestStream', Address);
+
+        let Address = { country: 'India', city: 'Pune' };
+
+        try {
+          const savedLocStr = await AsyncStorage.getItem('userLocation');
+          if (savedLocStr) {
+            const savedLoc = JSON.parse(savedLocStr);
+
+            if (savedLoc?.city && savedLoc?.country) {
+              Address = {
+                city: savedLoc.city,
+                country: savedLoc.country,
+              };
+            }
+          } else if (userAddress?.city || userAddress?.country) {
+            Address = {
+              city: userAddress?.city || 'Pune',
+              country: userAddress?.country || 'India',
+            };
+          }
+        } catch (e) {
+          console.log('Error reading saved userLocation', e);
+        }
+
+        console.log("request modal address", Address);
+
+        socket.emit('requestStream', {
+          ...Address,
+          avatar: userData?.avatar,
+          Gender: userData?.gender,
+        });
+
         setHasRequestedStream(true);
       }
     } catch (error) {
@@ -1038,36 +1059,36 @@ export const MainScreen = () => {
         try {
           const stream = event.streams && event.streams[0];
 
-    // ⭐⭐⭐ VIDEO TRACK FIX — ADDED ⭐⭐⭐
-    const videoTrack = stream?.getVideoTracks()[0];
+          // ⭐⭐⭐ VIDEO TRACK FIX — ADDED ⭐⭐⭐
+          const videoTrack = stream?.getVideoTracks()[0];
 
-    if (videoTrack) {
-      console.log("🎥 Remote video track received:", {
-        enabled: videoTrack.enabled,
-        state: videoTrack.readyState,
-      });
+          if (videoTrack) {
+            console.log("🎥 Remote video track received:", {
+              enabled: videoTrack.enabled,
+              state: videoTrack.readyState,
+            });
 
-      // ★ Force video ON (fix blank video)
-      videoTrack.enabled = true;
+            // ★ Force video ON (fix blank video)
+            videoTrack.enabled = true;
 
-      //autorecover id video track are muted 
-      videoTrack.onmute = () => {
-        console.log("❌ Remote video track muted → re-enabling for", socketId);
-        videoTrack.enabled = true;
-      };
+            //autorecover id video track are muted 
+            videoTrack.onmute = () => {
+              console.log("❌ Remote video track muted → re-enabling for", socketId);
+              videoTrack.enabled = true;
+            };
 
-      videoTrack.onunmute = () => {
-        console.log("✅ Remote video active again for", socketId);
-      };
+            videoTrack.onunmute = () => {
+              console.log("✅ Remote video active again for", socketId);
+            };
 
 
-      if (videoTrack.readyState === "ended") {
-        console.log("⚠️ Remote video track ended → requesting restart", socketId);
-        socket.emit("requestVideoRestart", socketId);
-      }
-    }
+            if (videoTrack.readyState === "ended") {
+              console.log("⚠️ Remote video track ended → requesting restart", socketId);
+              socket.emit("requestVideoRestart", socketId);
+            }
+          }
 
-    
+
           console.log('📥 [ontrack] RAW EVENT from:', socketId, {
             hasStreams: !!event.streams,
             streamCount: event.streams?.length || 0,
