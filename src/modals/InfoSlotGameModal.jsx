@@ -69,7 +69,7 @@ export default function InfoSlotGameModal({ visible, onClose }) {
 
                             <View style={styles.infoRule}>
                                 <Text style={styles.infoRuleBullet}>• </Text>
-                                <Text style={styles.infoRuleText}>Purchase 10 spins to play ($0.20, $0.50, or $1.00 per spin).</Text>
+                                <Text style={styles.infoRuleText}>Purchase 10 spins to play (Ƶ20, Ƶ50, or Ƶ100 per spin).</Text>
                             </View>
 
                             <View style={styles.infoRule}>

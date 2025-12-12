@@ -16,7 +16,7 @@ import Modal from 'react-native-modal';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CustomConfirmDialog from './CustomConfirmDialog';
 import InfoSlotGameModal from './InfoSlotGameModal';
-import { SendErrorTotheServer, socket } from '../utils/constant';
+import { socket } from '../utils/constant';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Master list of all possible slot symbols.
@@ -45,8 +45,13 @@ const SYMBOL_HEIGHT = 85;
 const SYMBOL_WIDTH = 85;
 
 
-export default function SlotGameModal({ visible, onClose, userData,
-    hostDetails, roomId }) {
+export default function SlotGameModal({
+    visible,
+    onClose,
+    userData,
+    hostDetails,
+    roomId,
+}) {
     const [balance, setBalance] = useState(0);
     const [grid, setGrid] = useState(Array.from({ length: ROWS }, () => Array(COLS).fill("")));
     const [winningCells, setWinningCells] = useState({});
@@ -55,11 +60,27 @@ export default function SlotGameModal({ visible, onClose, userData,
     const [hasPurchased, setHasPurchased] = useState(false);
     const [spinPurchased, setSpinPurchased] = useState(null);
     const [totalSpinCost, setTotalSpinCost] = useState(null);
-    const [winningAmount, setWinningAmount] = useState(0);
     const [lastSpinWin, setLastSpinWin] = useState(0);
     const [activeButtonIndex, setActiveButtonIndex] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ show: false, price: null, buttonIndex: null });
     const [showInfoModal, setShowInfoModal] = useState(false);
+
+    // Auto-spin state
+    const [firstManualSpinDone, setFirstManualSpinDone] = useState(false);
+    const [autoSpinActive, setAutoSpinActive] = useState(false);
+
+    const firstManualSpinRef = useRef(false);
+    const autoSpinActiveRef = useRef(false);
+
+    const AUTO_SPIN_DELAY = 1200; // Option 3 slow mode
+
+    useEffect(() => {
+        firstManualSpinRef.current = firstManualSpinDone;
+    }, [firstManualSpinDone]);
+
+    useEffect(() => {
+        autoSpinActiveRef.current = autoSpinActive;
+    }, [autoSpinActive]);
 
     // socket ref
     const socketRef = useRef(null);
@@ -134,24 +155,13 @@ export default function SlotGameModal({ visible, onClose, userData,
 
     }, [roomId, userData?.userid, hostDetails]);
 
-
-    // ✅ Retrieving sessionID later
-
-    // const getSessionID = async () => {
-    //     try {
-    //         const id = await AsyncStorage.getItem('slotSessionID');
-    //         if (id !== null) {
-    //             console.log('Retrieved sessionID:', id);
-    //             return id;
-    //         }
-    //     } catch (e) {
-    //         console.error('Failed to fetch sessionID', e);
-    //     }
-    // };
-
-
     useEffect(() => {
         if (spinsRemaining === 0) {
+            setAutoSpinActive(false);
+            autoSpinActiveRef.current = false;
+
+            setFirstManualSpinDone(false);
+            firstManualSpinRef.current = false;
             setHasPurchased(false);
             setSpinPurchased(null);
             setTotalSpinCost(null);
@@ -231,9 +241,70 @@ export default function SlotGameModal({ visible, onClose, userData,
         });
     };
 
+    const handleSpinResult = async (payload) => {
+        const finalIndexes = payload.finalIndexes || [0, 0, 0];
+
+        // Animate reels to server-provided final indexes
+        const animatedResults = await Promise.all(finalIndexes.map((fi, col) => spinReelTo(col, fi)));
+
+        // Build new 3x3 grid like before
+        const len = SYMBOLS.length;
+        const newGrid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
+        for (let c = 0; c < COLS; c++) {
+            const topIndex = animatedResults[c];
+            const centerIndex = (topIndex + 1) % len;
+            const bottomIndex = (topIndex + 2) % len;
+            newGrid[0][c] = SYMBOLS[topIndex];
+            newGrid[1][c] = SYMBOLS[centerIndex];
+            newGrid[2][c] = SYMBOLS[bottomIndex];
+        }
+
+        // Update UI state with server-provided numbers
+        setGrid(newGrid);
+        setBalance(typeof payload.newBalance === 'number' ? payload.newBalance : balance);
+        setSpinsRemaining(typeof payload.spinsRemaining === 'number' ? payload.spinsRemaining : (spinsRemaining - 1));
+        setPurchasedSpins(typeof payload.purchasedSpins === 'number' ? payload.purchasedSpins : Math.max(purchasedSpins - 1, 0));
+        setLastSpinWin(typeof payload.lastSpinWin === 'number' ? payload.lastSpinWin : (payload.winnings || 0));
+
+        // winning cells mapping — server can send `lineResults` or `winCells`:
+        if (payload.winCells) {
+            setWinningCells(payload.winCells);
+        } else if (payload.lineResults) {
+            const win = {};
+            payload.lineResults.forEach((res, lineIdx) => {
+                if (!res || res.type === 0) return;
+                res.matchedCells.forEach((cellIdx) => {
+                    let r, c;
+                    if (lineIdx === 0) { r = 0; c = cellIdx; }
+                    else if (lineIdx === 1) { r = 1; c = cellIdx; }
+                    else if (lineIdx === 2) { r = 2; c = cellIdx; }
+                    else if (lineIdx === 3) { r = cellIdx; c = cellIdx; }
+                    else if (lineIdx === 4) { r = cellIdx; c = 2 - cellIdx; }
+                    win[`${r}-${c}`] = true;
+                });
+            });
+            setWinningCells(win);
+        }
+
+        // optionally show free spins added message
+        if (payload.awardedFreeSpins && payload.awardedFreeSpins > 0) {
+            console.log('Awarded free spins: ', payload.awardedFreeSpins);
+        }
+    };
+
+    useEffect(() => {
+        console.log('firstManualSpinDone', firstManualSpinDone);
+        console.log('autoSpinActive', autoSpinActive);
+    }, [firstManualSpinDone, autoSpinActive]);
+
+
     // spin -> ask server for final indexes, then animate to them
-    const spin = async () => {
+    const spin = async (isAuto = false) => {
         if (spinningRef.current) return;
+
+        // Auto spin only allowed after first manual spin
+        if (isAuto && !firstManualSpinRef.current) return;
+
         if (spinsRemaining <= 0) {
             Alert.alert('No spins', 'Please buy spins to play.');
             return;
@@ -254,59 +325,36 @@ export default function SlotGameModal({ visible, onClose, userData,
         socket.once('spin_result', async (payload) => {
             try {
                 console.log('spin_result payload', payload);
+                await handleSpinResult(payload);
 
-                const finalIndexes = payload.finalIndexes || [0, 0, 0];
+                // ⭐ START AUTO-SPIN IMMEDIATELY AFTER FIRST SPIN
+                if (!firstManualSpinRef.current) {
+                    firstManualSpinRef.current = true;
+                    setFirstManualSpinDone(true);
 
-                // Animate reels to server-provided final indexes
-                const animatedResults = await Promise.all(finalIndexes.map((fi, col) => spinReelTo(col, fi)));
+                    autoSpinActiveRef.current = true;
+                    setAutoSpinActive(true);
 
-                // Build new 3x3 grid like before
-                const len = SYMBOLS.length;
-                const newGrid = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
-                for (let c = 0; c < COLS; c++) {
-                    const topIndex = animatedResults[c];
-                    const centerIndex = (topIndex + 1) % len;
-                    const bottomIndex = (topIndex + 2) % len;
-                    newGrid[0][c] = SYMBOLS[topIndex];
-                    newGrid[1][c] = SYMBOLS[centerIndex];
-                    newGrid[2][c] = SYMBOLS[bottomIndex];
+                    setTimeout(() => spin(true), AUTO_SPIN_DELAY);
+                    return;
                 }
 
-                // Update UI state with server-provided numbers
-                setGrid(newGrid);
-                setBalance(typeof payload.newBalance === 'number' ? payload.newBalance : balance);
-                setSpinsRemaining(typeof payload.spinsRemaining === 'number' ? payload.spinsRemaining : (spinsRemaining - 1));
-                setPurchasedSpins(typeof payload.purchasedSpins === 'number' ? payload.purchasedSpins : Math.max(purchasedSpins - 1, 0));
-                setLastSpinWin(typeof payload.lastSpinWin === 'number' ? payload.lastSpinWin : (payload.winnings || 0));
-
-                // winning cells mapping — server can send `lineResults` or `winCells`:
-                if (payload.winCells) {
-                    setWinningCells(payload.winCells);
-                } else if (payload.lineResults) {
-                    const win = {};
-                    payload.lineResults.forEach((res, lineIdx) => {
-                        if (!res || res.type === 0) return;
-                        res.matchedCells.forEach((cellIdx) => {
-                            let r, c;
-                            if (lineIdx === 0) { r = 0; c = cellIdx; }
-                            else if (lineIdx === 1) { r = 1; c = cellIdx; }
-                            else if (lineIdx === 2) { r = 2; c = cellIdx; }
-                            else if (lineIdx === 3) { r = cellIdx; c = cellIdx; }
-                            else if (lineIdx === 4) { r = cellIdx; c = 2 - cellIdx; }
-                            win[`${r}-${c}`] = true;
-                        });
-                    });
-                    setWinningCells(win);
+                // ⭐ CONTINUE AUTO-SPIN
+                if (autoSpinActiveRef.current && payload.spinsRemaining > 0) {
+                    setTimeout(() => spin(true), AUTO_SPIN_DELAY);
                 }
 
-                // optionally show free spins added message
-                if (payload.awardedFreeSpins && payload.awardedFreeSpins > 0) {
-                    console.log('Awarded free spins: ', payload.awardedFreeSpins);
-                }
             } catch (err) {
                 console.error('Error handling spin_result', err);
             } finally {
                 spinningRef.current = false;
+                // Auto-close
+                if (payload.spinsRemaining === 0) {
+                    autoSpinActiveRef.current = false;
+                    setAutoSpinActive(false);
+
+                    setTimeout(onClose, 2000);
+                }
             }
         });
     };
@@ -343,11 +391,6 @@ export default function SlotGameModal({ visible, onClose, userData,
                         <TouchableOpacity style={styles.infoButton} onPress={() => setShowInfoModal(true)}>
                             <Ionicons name="information-circle" size={28} color="#ffd700" />
                         </TouchableOpacity>
-                        {/* {(
-                            <TouchableOpacity onPress={onClose}>
-                                <Ionicons name="close" size={28} color="#fff" />
-                            </TouchableOpacity>
-                        )} */}
                         {spinsRemaining === 0 && (
                             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                                 <Ionicons name="close" size={20} color="#fff" />
@@ -396,11 +439,13 @@ export default function SlotGameModal({ visible, onClose, userData,
                         <View style={styles.spinContainer}>
                             <TouchableOpacity
                                 style={styles.spinButton}
-                                onPress={spin}
+                                onPress={() => spin(false)}  // manual spin
                                 disabled={spinningRef.current || spinsRemaining === 0}
                             >
                                 <ImageBackground
-                                    source={(spinningRef.current || spinsRemaining === 0) ? require('../../assets/images/solt-game/btn_spin_dis.png') : require('../../assets/images/solt-game/btn_spin.png')}
+                                    source={(spinningRef.current || spinsRemaining === 0)
+                                        ? require('../../assets/images/solt-game/btn_spin_dis.png')
+                                        : require('../../assets/images/solt-game/btn_spin.png')}
                                     style={styles.spinButtonImg}
                                     resizeMode="cover"
                                 />
@@ -422,7 +467,7 @@ export default function SlotGameModal({ visible, onClose, userData,
 
                             <ImageBackground source={require('../../assets/images/solt-game/win_bg.png')} style={styles.winAmountBgImg} resizeMode="cover">
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.winAmountScrollBox}>
-                                    <Text style={[styles.winAmountText, { marginLeft: String(lastSpinWin).length > 4 ? 50 : 30 }]}>{lastSpinWin.toFixed(2)}</Text>
+                                    <Text style={[styles.winAmountText, { marginLeft: String(lastSpinWin).length > 4 ? 50 : 30 }]}>{lastSpinWin.toFixed(0)}</Text>
                                 </ScrollView>
                             </ImageBackground>
                         </View>
@@ -464,7 +509,7 @@ export default function SlotGameModal({ visible, onClose, userData,
                                     <ImageBackground source={require('../../assets/images/solt-game/bet_blank.png')} style={[styles.buyBtnBgImg, { alignItems: 'center' }]} resizeMode="cover">
                                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.winAmountScrollBox}>
                                             <Text style={styles.spinPurchasedText}>
-                                                {balance.toFixed(2)}
+                                                {balance.toFixed(0)}
                                             </Text>
                                         </ScrollView>
                                     </ImageBackground>
@@ -480,7 +525,7 @@ export default function SlotGameModal({ visible, onClose, userData,
                     <CustomConfirmDialog
                         visible={confirmDialog.show}
                         title="Buy Spins"
-                        message={`Are you sure you want to buy 10 spins for $${(confirmDialog.price * 10).toFixed(2)} ?`}
+                        message={`Are you sure you want to buy 10 spins for Ƶ${(confirmDialog.price * 10).toFixed(0)} ?`}
                         onCancel={() => setConfirmDialog({ show: false, price: null, buttonIndex: null })}
                         onConfirm={() => confirmBuy(confirmDialog.price, confirmDialog.buttonIndex)}
                         cancelText="Cancel"
@@ -613,8 +658,8 @@ const styles = StyleSheet.create({
     buyBtnGiftImg: {
         height: 30,
         width: 30,
-        marginBottom: 2,
-        left: -3,
+        marginBottom: 3,
+        left: -4,
     },
     spinPurchasedText: {
         color: '#ffc263',

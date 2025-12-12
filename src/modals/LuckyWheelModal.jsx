@@ -167,15 +167,15 @@ const LuckyWheelModal = (
 
     const HandleUpdatedCredit = (amount) => {
         console.log('Updated Credit received:', amount);
-        console.log("UPDATED CREDIT LISTENER FIRED");
-        setMyCredit(prev => {
-            if (prev !== amount) {
-                setDisplayCredit(amount);
-                return amount;
-            }
-            return prev;
-        });    
-        // setDisplayCredit(amount);
+
+        const previous = myCreditRef.current ?? 0;  // old credit
+        const next = amount;                        // new credit from server
+
+        myCreditRef.current = next;
+        setMyCredit(next);
+
+        // Animate UI credit from old → new
+        animateCredits(previous, next);
     };
 
     const HandleBetUserList = (users) => {
@@ -287,9 +287,9 @@ const LuckyWheelModal = (
     const startChipCollectionAnimation = (winAmount, resultLabel, skipCreditUpdate = false) => {
         if (!isMountedRef.current) return;
         // Use myCreditRef.current instead of mycredit
-        const currentCredit = isNaN(myCreditRef.current) || myCreditRef.current === null ? 0 : myCreditRef.current;
+        const currentCredit = myCreditRef.current ?? 0;
 
-        const targetCredit = currentCredit + winAmount;
+        // const targetCredit = currentCredit + winAmount;
 
         // Start from the middle of the screen
         const startX = screenWidth / 2;
@@ -314,9 +314,7 @@ const LuckyWheelModal = (
         }
 
         // Use safe update
-        if (isMountedRef.current) {
-            setFlyingChips(newFlyingChips);
-        }
+        setFlyingChips(newFlyingChips);
 
         Animated.sequence([
             Animated.timing(chipsGlowAnim, {
@@ -365,11 +363,11 @@ const LuckyWheelModal = (
             }, chip.delay);
         });
 
-        if (!skipCreditUpdate) {
-            setTimeout(() => {
-                animateCredits(currentCredit, targetCredit);
-            }, 400);
-        }
+        // if (!skipCreditUpdate) {
+        //     setTimeout(() => {
+        //         animateCredits(currentCredit);
+        //     }, 400);
+        // }
 
         setTimeout(() => {
             setFlyingChips([]);
@@ -381,28 +379,22 @@ const LuckyWheelModal = (
         if (!isMountedRef.current) return;
 
         creditCountAnim.setValue(0);
+
         Animated.timing(creditCountAnim, {
             toValue: 1,
-            duration: 1000,
+            duration: 800,
             easing: Easing.out(Easing.quad),
             useNativeDriver: false,
         }).start();
 
         const listener = creditCountAnim.addListener(({ value }) => {
-            if (isMountedRef.current) {
-                const currentCredit = Math.floor(from + (to - from) * value);
-                setDisplayCredit(currentCredit);
-            }
+            setDisplayCredit(Math.floor(from + (to - from) * value));
         });
 
-        const finalizeTimer = setTimeout(() => {
+        cleanupTimeoutRef.current = setTimeout(() => {
             creditCountAnim.removeListener(listener);
-            if (isMountedRef.current) {
-                setDisplayCredit(to);
-            }
-        }, 1000);
-
-        cleanupTimeoutRef.current = finalizeTimer;
+            setDisplayCredit(to);
+        }, 800);
     };
 
 
@@ -496,7 +488,7 @@ const LuckyWheelModal = (
 
     const handleHostWin = ({ HostAmount, resultLabel }) => {
         console.log("🔥 Host won chips:", HostAmount);
-    
+
         // Run chip collection animation for host
         if (HostAmount > 0) {
             // Delay must match user animation delay (3000ms)
@@ -507,7 +499,7 @@ const LuckyWheelModal = (
             }, 3000);
         }
     };
-    
+
     const handleBetError = (error) => {
         Alert.alert('Message', error || 'You have not sufficient chips to place a bet!');
     };
@@ -529,7 +521,7 @@ const LuckyWheelModal = (
         socket.on('Spin-result', handleSpinResult);
         socket.on('bet_error', handleBetError);
         socket.on('Bet-Success', handleBetSuccess);
-        socket.on ('Host-win', handleHostWin)
+        socket.on('Host-win', handleHostWin)
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
@@ -538,9 +530,9 @@ const LuckyWheelModal = (
             socket.off('Spin-result', handleSpinResult);
             socket.off('bet_error', handleBetError);
             socket.off('Bet-Success', handleBetSuccess);
-            socket.off ('Host-win', handleHostWin)
+            socket.off('Host-win', handleHostWin)
         };
-    }, []);
+    }, [visible]);
 
 
     // 4️⃣ Cleanup on unmount
