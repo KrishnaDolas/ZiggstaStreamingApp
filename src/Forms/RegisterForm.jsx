@@ -1088,7 +1088,7 @@ export const RegisterForm = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+          'g-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
         },
         body: JSON.stringify(finalData),
       })
@@ -1121,7 +1121,7 @@ export const RegisterForm = ({
       parameter,
       {
         headers: {
-          'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
+          'g-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
         },
       },
     );

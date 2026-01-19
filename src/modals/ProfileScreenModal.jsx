@@ -16,6 +16,7 @@ import { getGenderFallbackImage, SendErrorTotheServer } from '../utils/constant'
 import { ThemeContext } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import Colors from '../../assets/styles/Colors';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 const ProfileScreenModal = ({
     visible,
@@ -51,6 +52,7 @@ const ProfileScreenModal = ({
     const [followersCountData, setFollowersCountData] = useState({});
     const [userStreamRoomCount, setUserStreamRoomCount] = useState({});
     const [profileLikeStatusData, setProfileLikeStatusData] = useState({});
+    const [profileStarRatingData, setProfileStarRatingData] = useState({});
     // const [profileUserData, setProfileUserData] = useState({});
 
 
@@ -392,6 +394,27 @@ const ProfileScreenModal = ({
         });
     };
 
+
+    // profile star rating
+    const getProfileStarRating = useCallback(async () => {
+        try {
+            const response = await Apiclient.get(`/profile/starrating?userID=${profileUserId}`);
+            if (response.status) {
+                console.log('response of profile star rating data', response.data);
+                setProfileStarRatingData(response.data);
+            } else {
+                setProfileStarRatingData({});
+            }
+        } catch (error) {
+            console.error('Error fetching profile start rating:', error.message);
+            SendErrorTotheServer(error, 'getProfileStarRating');
+        }
+    }, [profileUserId]);
+
+    useEffect(() => {
+        getProfileStarRating();
+    }, [getProfileStarRating]);
+
     // report modal open
     const handleReport = () => {
         setModalVisibleStage('report-user');
@@ -565,6 +588,32 @@ const ProfileScreenModal = ({
                                                         {/* Name and ID */}
                                                         <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDetails?.screenName}</Text>
                                                         {/* <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text> */}
+
+                                                        <View style={styles.profileStarRatingContainer}>
+                                                            {/* Stars */}
+                                                            <View style={styles.profileStarRatingStarRow}>
+                                                                {Array.from({ length: 5 }).map((_, index) => {
+                                                                    const isFilled = index < profileStarRatingData?.starLevel;
+                                                                    return (
+                                                                        <Icon
+                                                                            key={index}
+                                                                            name={isFilled ? 'star' : 'star'}
+                                                                            size={RFValue(15)}
+                                                                            color={isFilled ? '#FFD700' : '#B0B0B0'}
+                                                                        />
+                                                                    );
+                                                                })}
+                                                            </View>
+
+                                                            {/* Star Name */}
+                                                            {profileStarRatingData?.starName ? (
+                                                                <Text
+                                                                    style={[styles.profileStarRatingStarName, themeStyles[theme].profileStarRatingStarName]}
+                                                                >
+                                                                    {profileStarRatingData?.starName}
+                                                                </Text>
+                                                            ) : null}
+                                                        </View>
                                                         {userProfileDetails?.description !== null && userProfileDetails?.description !== '' && (
                                                             <View style={[styles.psmProfileDesContainer, themeStyles[theme].psmProfileDesContainer]}>
                                                                 <Text style={[styles.psmProfileDes, themeStyles[theme].psmProfileDes]}>

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Image, Text, TouchableOpacity, StatusBar } from 'react-native';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
-import logo from '../../assets/images/logo.png';
+import logo from '../../assets/images/logo_ziggsta_slogan.png';
 import LinearGradient from 'react-native-linear-gradient';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';

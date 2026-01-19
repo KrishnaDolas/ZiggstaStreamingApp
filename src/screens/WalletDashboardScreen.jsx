@@ -12,9 +12,10 @@ import Apiclient from '../utils/Apiclient';
 import { SendErrorTotheServer } from '../utils/constant';
 import BalanceHistoryModal from '../modals/BalanceHistoryModal';
 import { useFocusEffect } from '@react-navigation/native';
-import { initialize, presentEntirePaymentFlow } from 'airwallex-payment-react-native';
+import { initialize } from 'airwallex-payment-react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export const WalletDashboardScreen = () => {
+export const WalletDashboardScreen = ({ navigation }) => {
     const { userData, fetchProfileDetails } = useAppContext();
     const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
@@ -149,6 +150,52 @@ export const WalletDashboardScreen = () => {
         setSelectedFriend(null);
     };
 
+    const createIntentAndOpenHPP = async () => {
+        try {
+            setLoadingSubmit(true);
+            setErrorMessage('');
+            setSuccessMessage('');
+
+            const payload = {
+                userId: userData.userid,
+                amount: selectedAmount * 100,
+                currency: 'AUD',
+                username: userData.username,
+            };
+
+            console.log('create-intent payload:', payload);
+
+            const response = await fetch('https://api.streamalong.live/airwallex/create-intent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': '6zVk7WAxTQetbxQfZT6XZg',
+                    'x-client-id': 'yjlcVTLSS-W1qS56rMkWxQ',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            console.log('create-intent res data:', data);
+
+            if (!data.success) {
+                setErrorMessage(data.error);
+                return;
+            }
+
+            navigation.navigate('AirwallexHPP', {
+                intentId: data.intentId,
+            });
+
+        } catch (e) {
+            console.log('createIntent fetch error:', e);
+            setErrorMessage('Payment failed. Try again.');
+        } finally {
+            setLoadingSubmit(false);
+        }
+    };
+
+
     const handleSubmit = async () => {
         if (loadingSubmit) return; // prevent duplicate submits
 
@@ -157,61 +204,11 @@ export const WalletDashboardScreen = () => {
         // Deposit flow
         if (activeTab === 'Deposit') {
             if (!paymentMethod) {
-                setErrorMessage('Please select a payment method');
+                setErrorMessage('Please select a payment method.');
                 return;
             }
 
-            try {
-                setLoadingSubmit(true);
-
-                /** 1️⃣ ask your backend to create Airwallex intent */
-
-                const payload = {
-                    amount: Number(selectedAmount) * 100,
-                    currency: 'AUD',
-                    userId: userData?.userid,
-                    username: userData?.username,
-                };
-
-                console.log('Payload for creating intent:', payload);
-
-                const r = await Apiclient.post('/airwallex/create-intent', payload);
-
-                const { paymentIntentId, clientSecret } = r.data;
-
-                /** 2️⃣ build session */
-                const session = {
-                    type: 'OneOff',
-                    paymentIntentId: paymentIntentId,
-                    clientSecret: clientSecret,
-                    amount: Number(selectedAmount) * 100,
-                    currency: 'AUD',
-                    countryCode: 'AU',
-                    paymentMethods: ['card'],  // add googlepay applepay later
-                };
-
-                /** 3️⃣ open Airwallex UI */
-                const result = await presentEntirePaymentFlow(session);
-
-                if (result.status === 'success') {
-
-                    setSuccessMessage('Deposit successful!');
-
-                    /** refresh wallet balance */
-                    await fetchProfileDetails();
-
-                } else if (result.status === 'cancelled') {
-                    setErrorMessage('Cancelled by user');
-                } else {
-                    setErrorMessage('Payment incomplete');
-                }
-
-            } catch (err) {
-                console.log('airwallex deposit error=>', err);
-                setErrorMessage('Payment failed');
-            } finally {
-                setLoadingSubmit(false);
-            }
+            return createIntentAndOpenHPP();
         }
         // Withdraw flow
         else if (activeTab === 'Withdraw') {
@@ -577,11 +574,24 @@ export const WalletDashboardScreen = () => {
                                         'Add funds to your account securely using any supported payment method.' : activeTab === 'Withdraw' ? 'Transfer your balance to your bank or preferred payout option.' : 'Transfer credits to another Ziggster.'}
                                 </Text>
                             </View>
+                            <View style={styles.thButtonContainer}>
+                                <TouchableOpacity
+                                    style={styles.thButton}
+                                    activeOpacity={0.8} // Slight fade effect when pressed
+                                    onPress={() => setVisibleModal('balance-history')}
+                                >
+                                    {/* The Icon */}
+                                    <Icon name="history" size={20} color="#FFFFFF" style={styles.thIcon} />
+
+                                    {/* The Text */}
+                                    <Text style={styles.thButtonText}>Transaction History</Text>
+                                </TouchableOpacity>
+                            </View>
                         </ScrollView>
                     </KeyboardAvoidingView>
 
                 </View>
-                {visibleModal === 'setting' && (
+                {visibleModal === 'balance-history' && (
                     <BalanceHistoryModal visible="true" onClose={() => setVisibleModal(null)} />
                 )}
             </LinearGradient>

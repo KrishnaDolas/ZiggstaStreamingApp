@@ -41,6 +41,7 @@ import LuckyWheelModal from '../modals/LuckyWheelModal';
 import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
 import SlotGameModal from '../modals/SlotGameModal';
 import GlowingRedDot from './GlowingRedDot';
+import JukeBoxModal from '../modals/JukeBoxModal';
 
 const StreamRoom = ({
     remoteStreams,
@@ -131,6 +132,12 @@ const StreamRoom = ({
     const [slotGameOpenedBy, setSlotGameOpenedBy] = useState(null);
     const [activeGame, setActiveGame] = useState(null);
     const [isLuckyWheelActiveInRoom, setIsLuckyWheelActiveInRoom] = useState(false);
+
+    // ✅ Add JukeBox state management
+    const [jukeboxVisible, setJukeboxVisible] = useState(false);
+    const [jukeboxOpenedBy, setJukeboxOpenedBy] = useState(null);
+    const [isJukeboxActiveInRoom, setIsJukeboxActiveInRoom] = useState(false);
+
 
     // Create interpolated spin value ONCE
     const spin = rotateAnim.interpolate({
@@ -312,6 +319,7 @@ const StreamRoom = ({
         socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
     }, [luckyWheelVisible, visibleModal, activeGame, userData, streamInfo?.roomID]);
 
+    // slot game open close handlers
     const handleSlotGameOpen = () => {
         if (visibleModal === 'slot-game' || slotGameVisible) {
             // Close locally (no emit)
@@ -340,6 +348,11 @@ const StreamRoom = ({
         setActiveGame('slot-game');
         setSlotGameVisible(true);
     };
+
+    // juke box open
+    // const handleJukeBoxOpen = () => {
+    //     setVisibleModal('juke-box');
+    // };
 
     const handleGameClose = (gameType) => {
         console.log(`🚪 [CLIENT] Closing ${gameType} locally`);
@@ -522,6 +535,184 @@ const StreamRoom = ({
         return () => backHandler.remove(); // Cleanup on unmount
 
     }, []);
+
+
+    // ✅ JukeBox open handler with logic
+    const handleJukeBoxOpen = () => {
+        console.log('🎵 [CLIENT] Handling JukeBox open/close');
+
+        // If already open, close it (per-user close)
+        if (visibleModal === 'juke-box' || jukeboxVisible) {
+            console.log('🚪 [CLIENT] Closing JukeBox locally');
+            handleJukeBoxClose();
+            return;
+        }
+
+        // Check if other games are already open
+        const hasActiveGame = luckyWheelVisible || slotGameVisible ||
+            visibleModal === 'luckyWheel' || visibleModal === 'slot-game';
+
+        if (hasActiveGame) {
+            // Open locally only (individual mode)
+            console.log('🎵 [CLIENT] Other game active, opening JukeBox locally only');
+            setVisibleModal('juke-box');
+            setJukeboxOpenedBy({
+                userId: userData?.userid,
+                userName: userData?.screenName,
+                timestamp: Date.now()
+            });
+            setJukeboxVisible(true);
+
+            // Don't broadcast to others
+            return;
+        }
+
+        // No other games active - broadcast to room
+        console.log('🎵 [CLIENT] Broadcasting JukeBox open to room');
+        const userOpenData = {
+            userId: userData?.userid,
+            userName: userData?.screenName,
+            timestamp: Date.now(),
+            forceOpen: false // Regular open
+        };
+
+        // Emit to server to notify others
+        socket.emit('user-opened-jukebox', streamInfo?.roomID.toString(), userOpenData);
+
+        // Open locally
+        setVisibleModal('juke-box');
+        setJukeboxOpenedBy(userOpenData);
+        setJukeboxVisible(true);
+        setIsJukeboxActiveInRoom(true);
+        setIsLuckyWheelActiveInRoom(false); // Clear other game states
+    };
+
+    // ✅ JukeBox close handler
+    const handleJukeBoxClose = () => {
+        console.log('🎵 [CLIENT] Closing JukeBox');
+
+        // Local close
+        setJukeboxVisible(false);
+        setJukeboxOpenedBy(null);
+        setVisibleModal(null);
+
+        // Notify server
+        if (streamInfo?.roomID && userData?.userid) {
+            socket.emit('user-closed-jukebox', streamInfo.roomID.toString(), userData.userid);
+        }
+    };
+
+    // ✅ Handle when other users open JukeBox
+    const handleJukeboxOpened = useCallback((openerData) => {
+        console.log('🎵 [CLIENT] jukebox-opened received:', openerData);
+
+        // Don't auto-open for the user who opened it
+        if (openerData.userId === userData?.userid) {
+            console.log('✅ This is my own open, ignoring');
+            return;
+        }
+
+        // Check if we should auto-open
+        const shouldAutoOpen = !luckyWheelVisible &&
+            !slotGameVisible &&
+            !jukeboxVisible &&
+            visibleModal !== 'luckyWheel' &&
+            visibleModal !== 'slot-game' &&
+            visibleModal !== 'juke-box';
+
+        if (shouldAutoOpen && !openerData.forceOpen) {
+            console.log('✅ Auto-opening JukeBox for other user');
+            // Open locally for this user
+            const myOpenData = {
+                userId: userData?.userid,
+                userName: userData?.screenName,
+                timestamp: Date.now()
+            };
+
+            setVisibleModal('juke-box');
+            setJukeboxOpenedBy(myOpenData);
+            setJukeboxVisible(true);
+
+            // Also notify server that I'm opening (for tracking)
+            socket.emit('user-opened-jukebox', streamInfo?.roomID.toString(), {
+                ...myOpenData,
+                forceOpen: true // This is an auto-open, not user-initiated
+            });
+        } else {
+            console.log('🚫 Not auto-opening JukeBox - other modals active or already open');
+            // Just update state for indicator
+            setIsJukeboxActiveInRoom(true);
+        }
+    }, [userData?.userid, luckyWheelVisible, slotGameVisible, jukeboxVisible, visibleModal, streamInfo?.roomID]);
+
+    // ✅ Handle when room becomes inactive for JukeBox
+    const handleJukeboxInactive = useCallback(() => {
+        console.log('🎵 [CLIENT] JukeBox is now inactive in room');
+        setIsJukeboxActiveInRoom(false);
+        setJukeboxOpenedBy(null);
+
+        // Close locally if open
+        if (jukeboxVisible || visibleModal === 'juke-box') {
+            console.log('🔒 Closing JukeBox because room became inactive');
+            handleJukeBoxClose();
+        }
+    }, [jukeboxVisible, visibleModal]);
+
+    // ✅ Handle jukebox active status
+    const handleJukeboxActive = useCallback(() => {
+        console.log('🎵 [CLIENT] JukeBox is active in room');
+        setIsJukeboxActiveInRoom(true);
+    }, []);
+
+    // ✅ Add socket listeners for JukeBox
+    useEffect(() => {
+        console.log('🔌 [CLIENT] Setting up JukeBox socket listeners');
+
+        socket.on('jukebox-opened', handleJukeboxOpened);
+        socket.on('jukebox-active', handleJukeboxActive);
+        socket.on('jukebox-inactive', handleJukeboxInactive);
+        socket.on('jukebox-closed-confirmation', () => {
+            console.log('✅ [CLIENT] Received jukebox close confirmation');
+        });
+
+        return () => {
+            socket.off('jukebox-opened', handleJukeboxOpened);
+            socket.off('jukebox-active', handleJukeboxActive);
+            socket.off('jukebox-inactive', handleJukeboxInactive);
+            socket.off('jukebox-closed-confirmation');
+        };
+    }, [handleJukeboxOpened, handleJukeboxActive, handleJukeboxInactive]);
+
+    // ✅ Request jukebox status on join
+    useEffect(() => {
+        if (streamInfo?.roomID) {
+            console.log('🔍 [CLIENT] Requesting jukebox status for room:', streamInfo.roomID);
+            socket.emit('get-jukebox-status', streamInfo.roomID.toString());
+        }
+    }, [streamInfo?.roomID]);
+
+    // ✅ Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if ((jukeboxVisible || visibleModal === 'juke-box') &&
+                streamInfo?.roomID &&
+                userData?.userid) {
+                console.log('🧹 [CLIENT] Cleaning up JukeBox on unmount');
+                socket.emit('user-closed-jukebox', streamInfo.roomID.toString(), userData.userid);
+            }
+        };
+    }, [jukeboxVisible, visibleModal, streamInfo?.roomID, userData?.userid]);
+
+    // ✅ Check if should show red dot on jukebox button
+    const shouldShowRedDotOnJukebox = () => {
+        const show = isJukeboxActiveInRoom && // Jukebox is open somewhere in room
+            !jukeboxVisible && // This user doesn't have it open
+            visibleModal !== 'juke-box' && // Not currently in jukebox modal
+            !luckyWheelVisible && // Not in lucky wheel
+            !slotGameVisible; // Not in slot game
+
+        return show;
+    };
 
 
     // get gifts from api
@@ -1876,16 +2067,16 @@ const StreamRoom = ({
                     <>
                         {/* Stream Room Header */}
                         {showUI && (<View style={styles.strRoomHeader}>
-                            <Pressable
+                            <View
                                 style={{
                                     flexDirection: 'row',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: 5,
                                 }}
-                                onPress={() => setOpenHostPorfile(!OpenHostPorfile)}
+                            // onPress={() => setOpenHostPorfile(!OpenHostPorfile)}
                             >
-                                <View style={styles.strRoomHeaderLeft}>
+                                <Pressable onPress={() => setOpenHostPorfile(!OpenHostPorfile)} style={styles.strRoomHeaderLeft}>
                                     <Image
                                         style={styles.strRoomHeaderLeftProfileImg}
                                         source={!userDetails?.avatar || userDetails?.avatar === 'default' ?
@@ -1924,7 +2115,7 @@ const StreamRoom = ({
                                             </View>
                                         </View>
                                     </View>
-                                </View>
+                                </Pressable>
                                 {/* viewer count management */}
                                 <View style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 3 }}>
                                     <TouchableOpacity
@@ -1980,7 +2171,7 @@ const StreamRoom = ({
                                         </Text>
                                     </View>
                                 </View>
-                            </Pressable>
+                            </View>
                             {/* close stream button */}
                             <View style={styles.strRoomHeaderRight}>
                                 <TouchableOpacity onPress={confirmleaveRoom} style={styles.strRoomHeaderRIconBox}>
@@ -2050,6 +2241,22 @@ const StreamRoom = ({
                                     {/* chat message icon box right side */}
                                     {showUI && keyboardOffset === 0 && (
                                         <View style={styles.strRoomFooterSocialActions}>
+                                            {/* juke box */}
+                                            {/* {!isHost && (
+                                                <TouchableOpacity
+                                                    style={styles.strRoomFooterSocialActionsBtn}
+                                                    onPress={handleJukeBoxOpen}
+                                                >
+                                                    <Image
+                                                        style={{
+                                                            width: 35,
+                                                            height: 35,
+                                                        }}
+                                                        source={require('../../assets/images/icons/jukebox.png')}
+                                                        resizeMode="contain"
+                                                    />
+                                                </TouchableOpacity>
+                                            )} */}
                                             {/* gift icon for user */}
                                             {!isHost && (
                                                 <TouchableOpacity
@@ -2613,6 +2820,17 @@ const StreamRoom = ({
                 />
             )
             }
+            {/* Jukebox Modal */}
+            {/* {visibleModal === 'juke-box' && (
+                <JukeBoxModal
+                    visible={visibleModal === 'juke-box'}
+                    onClose={() => setVisibleModal(null)}
+                    userData={userData}
+                    hostDetails={userDetails}
+                    roomId={streamInfo?.roomID}
+                />
+            )
+            } */}
         </>
     );
 };

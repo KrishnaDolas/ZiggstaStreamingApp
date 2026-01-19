@@ -1939,6 +1939,7 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: 10,
     position: 'relative',
+    paddingBottom: 18,
   },
   wdPickerWrapper: {
     borderRadius: 5,
@@ -2022,7 +2023,7 @@ export const styles = StyleSheet.create({
   wdRefStateCard: {
     borderRadius: 8,
     paddingVertical: 5,
-    height:RFValue(70),
+    height: RFValue(70),
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -2067,6 +2068,42 @@ export const styles = StyleSheet.create({
   wdFriendItemText: {
     fontSize: 16,
     color: '#333',
+  },
+  thButtonContainer: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thButton: {
+    // Main Layout
+    flexDirection: 'row', // Aligns icon and text horizontally
+    alignItems: 'center', // Centers items vertically within the button
+    justifyContent: 'center',
+    // Size and Shape
+    backgroundColor: '#004080', // A bright blue similar to the image
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30, // Creates the full "pill" shape
+    width: '100%',
+    // --- Drop Shadow ---
+    // iOS Shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4.5,
+    // Android Shadow
+    elevation: 8,
+  },
+  thIcon: {
+    marginRight: 12, // Space between the icon and text
+  },
+  thButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 
   // profile sub setting modal
@@ -2235,6 +2272,21 @@ export const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 3,
     borderWidth: 0,
+  },
+  profileStarRatingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  profileStarRatingStarRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  profileStarRatingStarName: {
+    marginTop: 6,
+    fontSize: 13,
+    fontWeight: '600',
+    // color: '#555',
   },
   psmStatsContainer: {
     flexDirection: 'row',
@@ -2902,6 +2954,9 @@ export const themeStyles = {
     psmProfileDes: {
       color: '#464646ff',
     },
+    profileStarRatingStarName: {
+      color: '#555',
+    },
     psmProfileDesContainer: {
       backgroundColor: '#f7f7f78c',
     },
@@ -3303,6 +3358,9 @@ export const themeStyles = {
     },
     psmProfileDesContainer: {
       backgroundColor: '#1f1f1fff',
+    },
+    profileStarRatingStarName: {
+      color: '#fff',
     },
     psmProfileDes: {
       color: '#fff',

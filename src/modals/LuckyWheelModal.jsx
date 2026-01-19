@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 // LuckyWheelModal.js
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -79,11 +79,13 @@ const LuckyWheelModal = (
     const placeBetButtonRef = useRef(false);
     const intervalRef = useRef(null);
     const myCreditRef = useRef(mycredit);
+    const prevCreditRef = useRef(0);
 
     // ✅ ADD: Cleanup timeout ref
     const cleanupTimeoutRef = useRef(null);
     const isMountedRef = useRef(true);
-
+    const freezeCreditUIRef = useRef(false);
+    const prevCapturedRef = useRef(false);
 
     // Animation states for chip collection
     const [flyingChips, setFlyingChips] = useState([]);
@@ -99,6 +101,8 @@ const LuckyWheelModal = (
     const [winParticles, setWinParticles] = useState([]);
     const winTextAnim = useRef(new Animated.Value(0)).current;
 
+    const rotation = useRef(new Animated.Value(0)).current;
+    const currentRotation = useRef(0);
 
     // ✅ ADD: Mount/unmount effect
     useEffect(() => {
@@ -117,12 +121,19 @@ const LuckyWheelModal = (
     }, []);
 
 
+    useEffect(() => {
+        const id = rotation.addListener(({ value }) => {
+            currentRotation.current = value;
+        });
+        return () => rotation.removeListener(id);
+    }, []);
+
+
     const startIdleRotation = () => {
-        idleSpin.setValue(0);
         Animated.loop(
-            Animated.timing(idleSpin, {
-                toValue: 1,
-                duration: 8000, // 1 full rotation every 8s
+            Animated.timing(rotation, {
+                toValue: currentRotation.current + 360,
+                duration: 8000,
                 easing: Easing.linear,
                 useNativeDriver: true,
             })
@@ -137,14 +148,23 @@ const LuckyWheelModal = (
     };
 
     const stopIdleRotation = () => {
-        idleSpin.stopAnimation();
+        rotation.stopAnimation((value) => {
+            currentRotation.current = value;
+        });
     };
 
     useEffect(() => {
-        if (userData && mycredit > 0) {
-            setDisplayCredit(mycredit);
+        if (visible && !freezeCreditUIRef.current) {
+            prevCreditRef.current = myCreditRef.current;
+            setDisplayCredit(myCreditRef.current);
         }
-    }, [userData, mycredit]);
+    }, [visible]);
+
+    // useEffect(() => {
+    //     if (userData && mycredit > 0) {
+    //         setDisplayCredit(mycredit);
+    //     }
+    // }, [userData, mycredit]);
 
 
     useEffect(() => {
@@ -167,15 +187,23 @@ const LuckyWheelModal = (
 
     const HandleUpdatedCredit = (amount) => {
         console.log('Updated Credit received:', amount);
+        // store previous credit only once
+        if (!freezeCreditUIRef.current && !prevCapturedRef.current) {
+            prevCreditRef.current = myCreditRef.current ?? amount;
+            prevCapturedRef.current = true;
+        }
 
-        const previous = myCreditRef.current ?? 0;  // old credit
-        const next = amount;                        // new credit from server
+        // Update real credit only
+        myCreditRef.current = amount;
+        setMyCredit(amount);
 
-        myCreditRef.current = next;
-        setMyCredit(next);
+        // ⛔ DO NOT update displayCredit while frozen
+        if (!freezeCreditUIRef.current) {
+            setDisplayCredit(amount);
+        }
 
         // Animate UI credit from old → new
-        animateCredits(previous, next);
+        // animateCredits(previous, next);
     };
 
     const HandleBetUserList = (users) => {
@@ -280,6 +308,27 @@ const LuckyWheelModal = (
         setBetButtonsDisabled(false);
         startIdleRotation();
         placeBetButtonRef.current = false;
+    };
+
+    const startCreditAndChipAnimation = (winAmount, resultLabel) => {
+        if (!isMountedRef.current) return;
+
+        const from = prevCreditRef.current;
+        const to = myCreditRef.current;
+
+        // 🟢 Run both together
+        animateCredits(from, to);
+        startChipCollectionAnimation(winAmount, resultLabel);
+
+        // Lock final UI value after animation
+        setTimeout(() => {
+            if (!isMountedRef.current) return;
+
+            setDisplayCredit(to);
+            prevCreditRef.current = to;
+            freezeCreditUIRef.current = false;
+            prevCapturedRef.current = false; // ✅ reset here
+        }, 900);
     };
 
 
@@ -474,14 +523,16 @@ const LuckyWheelModal = (
 
         // Start chip collection animation if user won
         if (isWin && WinAmount > 0) {
-            const chipTimer = setTimeout(() => {
-                if (isMountedRef.current) {
-                    startChipCollectionAnimation(WinAmount, resultLabel);
-                }
+            setTimeout(() => {
+                startCreditAndChipAnimation(WinAmount, resultLabel);
             }, 3000);
+        }
 
-            // Store for cleanup
-            cleanupTimeoutRef.current = chipTimer;
+        if (!isWin) {
+            freezeCreditUIRef.current = false;
+            prevCapturedRef.current = false;
+            prevCreditRef.current = myCreditRef.current;
+            setDisplayCredit(myCreditRef.current);
         }
 
     };
@@ -491,11 +542,8 @@ const LuckyWheelModal = (
 
         // Run chip collection animation for host
         if (HostAmount > 0) {
-            // Delay must match user animation delay (3000ms)
             setTimeout(() => {
-                if (isMountedRef.current) {
-                    startChipCollectionAnimation(HostAmount, resultLabel, true);
-                }
+                startCreditAndChipAnimation(HostAmount, resultLabel);
             }, 3000);
         }
     };
@@ -521,7 +569,7 @@ const LuckyWheelModal = (
         socket.on('Spin-result', handleSpinResult);
         socket.on('bet_error', handleBetError);
         socket.on('Bet-Success', handleBetSuccess);
-        socket.on('Host-win', handleHostWin)
+        socket.on('Host-win', handleHostWin);
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
@@ -530,7 +578,7 @@ const LuckyWheelModal = (
             socket.off('Spin-result', handleSpinResult);
             socket.off('bet_error', handleBetError);
             socket.off('Bet-Success', handleBetSuccess);
-            socket.off('Host-win', handleHostWin)
+            socket.off('Host-win', handleHostWin);
         };
     }, [visible]);
 
@@ -602,66 +650,81 @@ const LuckyWheelModal = (
         setClosePlaceBetDialog(true);
     };
 
-    const handleSpin = (resultLabel) => {
-        stopIdleRotation();
-        idleSpin.setValue(0);
-        spinValue.setValue(0);
-        setHideBetButtons(true); // Hide bet buttons during spin
+    // Normalize angle to [0, 360)
+    const getNormalizedAngle = (angle) => {
+        return ((angle % 360) + 360) % 360;
+    };
 
+    const handleSpin = (resultLabel) => {
+        freezeCreditUIRef.current = true;
+        prevCapturedRef.current = false; // ✅ reset here
+
+        // stop idle rotation
+        stopIdleRotation();
+        // idleSpin.setValue(0);
+        // spinValue.setValue(0);
+
+        // Hide bet buttons during spin
+        setHideBetButtons(true);
+
+        // 🎯 Find target segment
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
 
-        // Find all indices where resultLabel appears
-        const targetIndices = SEGMENTS.map((label, idx) => ({ label, idx }))
+        // 🔑 Find all matching segments
+        const matches = SEGMENTS
+            .map((label, idx) => ({ label, idx }))
             .filter(s => s.label === resultLabel);
 
-        if (targetIndices.length === 0) {
-            console.warn("No matching segment found for:", resultLabel);
-            return;
-        }
+        if (!matches.length) return;
 
-        // Use the last index for "25x" to ensure we target the correct segment
-        const selected = resultLabel === '25x' ? targetIndices[targetIndices.length - 1] : targetIndices[0];
+        // 🎯 Select appropriate segment instance
+        const selected =
+            resultLabel === '25x'
+                ? matches[matches.length - 1]
+                : matches[0];
 
-        // Calculate angles
-        const segmentStartAngle = selected.idx * anglePerSegment;
-        const segmentCenterAngle = segmentStartAngle + anglePerSegment / 2;
+        // 🎯 Segment math
+        const segmentCenter =
+            selected.idx * anglePerSegment + anglePerSegment / 2;
 
-        // Normalize to 0–360°
-        let normalizedCenter = segmentCenterAngle % 360;
-        if (normalizedCenter < 0) normalizedCenter += 360;
+        // 🔑 Normalize current angle
+        const currentAngle = getNormalizedAngle(currentRotation.current);
 
-        // Calculate rotation needed to align segment center with 0° (top)
-        let rotationNeeded = (360 - normalizedCenter) % 360;
+        // 🔑 Required delta to land exactly on segment
+        let delta = (360 - segmentCenter - currentAngle) % 360;
+        if (delta < 0) delta += 360;
 
-        // Add a small offset to fine-tune alignment if needed
-        const alignmentOffset = 0; // Adjust this if the wheel is slightly off (e.g., try 1 or 2 degrees)
+        // 🎰 Natural spin feel
+        const fullRotations = 8 + Math.floor(Math.random() * 4);
 
-        // Add random full rotations for dynamic spin
-        const fullRotations = Math.floor(8 + Math.random() * 4);
-        const baseRotations = fullRotations * 360;
-        const finalRotation = baseRotations + rotationNeeded + alignmentOffset;
+        const finalRotation =
+            currentRotation.current +
+            fullRotations * 360 +
+            delta;
 
-        console.log(
-            `🎯 Target: ${resultLabel} | Index: ${selected.idx} | ` +
-            `Segment Start: ${segmentStartAngle}° | Segment Center: ${segmentCenterAngle}° | ` +
-            `Normalized Center: ${normalizedCenter}° | Rotation Needed: ${rotationNeeded}° | ` +
-            `Final Rotation: ${finalRotation}°`
-        );
-
-        Animated.timing(spinValue, {
+        Animated.timing(rotation, {
             toValue: finalRotation,
-            duration: 4000,
+            duration: 4500,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
         }).start(() => {
-            console.log(`✅ Stopped on: ${resultLabel} at index: ${selected.idx}`);
-            setSelectedMultiplier('Double');
+            // Lock precision after stop
+            currentRotation.current = finalRotation;
+
+            // ✅ DEBUG: check final stop angle
+            console.log(
+                '🎯 Final normalized angle:',
+                getNormalizedAngle(currentRotation.current),
+                'Expected segment:',
+                resultLabel
+            );
+
         });
     };
 
 
-    const renderSegments = () => {
+    const renderSegments = useMemo(() => {
         const radius = 200;
         const angle = 360 / SEGMENTS.length;
         const segments = [];
@@ -712,7 +775,8 @@ const LuckyWheelModal = (
         }
 
         return segments;
-    };
+    }, []);
+
 
     const closeModal = () => {
         // Clear any pending timeouts
@@ -906,26 +970,22 @@ const LuckyWheelModal = (
                                     resizeMode="contain"
                                 />
                                 <Animated.View
-                                    style={[mainStyle.wheelSegmentBox, {
-                                        transform: [
-                                            {
-                                                rotate: spinValue.interpolate({
-                                                    inputRange: [0, 360 * 20],
-                                                    outputRange: ['0deg', `${360 * 20}deg`],
-                                                    extrapolate: 'extend',
-                                                }),
-                                            },
-                                            {
-                                                rotate: idleSpin.interpolate({
-                                                    inputRange: [0, 1],
-                                                    outputRange: ['0deg', '360deg'],
-                                                }),
-                                            },
-                                        ],
-                                    }]}
+                                    style={[
+                                        mainStyle.wheelSegmentBox,
+                                        {
+                                            transform: [
+                                                {
+                                                    rotate: rotation.interpolate({
+                                                        inputRange: [0, 360],
+                                                        outputRange: ['0deg', '360deg'],
+                                                    }),
+                                                },
+                                            ],
+                                        },
+                                    ]}
                                 >
                                     <Svg width={svgSize} height={svgSize} viewBox="0 0 400 400">
-                                        {renderSegments()}
+                                        {renderSegments}
                                         <Circle cx="200" cy="200" r="10" fill="gold" />
                                     </Svg>
                                 </Animated.View>
@@ -1037,9 +1097,11 @@ const LuckyWheelModal = (
                                                     shadowOpacity: isActive ? 0.8 : 0.2,
                                                     shadowRadius: isActive ? 6 : 2,
                                                     elevation: isActive ? 6 : 2,
+                                                    opacity: betButtonsDisabled ? 0.6 : 1,
                                                 },
                                             ]}
                                             onPress={() => setSelectedMultiplier(option)}
+                                            disabled={betButtonsDisabled}
                                         >
                                             <Text style={[
                                                 mainStyle.betButtonText,

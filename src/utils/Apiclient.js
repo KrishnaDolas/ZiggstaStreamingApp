@@ -5,7 +5,7 @@ class ApiClient {
   constructor(baseURL) {
     this.instance = axios.create({
       baseURL,
-      headers: {'x-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d'},
+      headers: {'g-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d'},
     });
 
     this.instance.interceptors.response.use(

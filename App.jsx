@@ -49,6 +49,7 @@ import AvatarPrevModal from './src/modals/AvatarPrevModal';
 import ReportUserModal from './src/modals/ReportUserModal';
 import CameraActionSheet from './src/components/CameraActionSheet';
 import { ProfileDescription } from './src/modals/ProfileDescription';
+import AirwallexHPP from './src/screens/AirwallexHPP';
 
 
 const Stack = createNativeStackNavigator();
@@ -662,6 +663,13 @@ const App = () => {
                       {...props}
                       onLogout={handleLogout}
                       userData={userData}
+                    />
+                  )}
+                </Stack.Screen>
+                <Stack.Screen name="AirwallexHPP">
+                  {(props) => (
+                    <AirwallexHPP
+                      {...props}
                     />
                   )}
                 </Stack.Screen>
