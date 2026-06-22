@@ -1887,7 +1887,7 @@ export default function SlotGameModal({
                     <CustomConfirmDialog
                         visible={confirmDialog.show}
                         title="Buy Spins"
-                        message={`Are you sure you want to buy 5 spins for Ƶ${(confirmDialog.price * 10).toFixed(0)} ?`}
+                        message={`Are you sure you want to buy 5 spins for Ƶ${(confirmDialog.price * 5).toFixed(0)} ?`}
                         onCancel={() => setConfirmDialog({ show: false, price: null, buttonIndex: null })}
                         onConfirm={() => confirmBuy(confirmDialog.price, confirmDialog.buttonIndex)}
                         cancelText="Cancel"

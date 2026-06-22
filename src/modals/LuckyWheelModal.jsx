@@ -994,57 +994,57 @@ const LuckyWheelModal = (
         isSpinningRef.current = true;
 
         debugLog(
-  'LuckyWheel',
-  'WHEEL_SOUND_ATTEMPT',
-  {
-    roomId: RoomID,
-    userId: userData?.userid,
-  }
-);
-
-      const sound = new Sound(
-    'wheelspin3',
-    Sound.MAIN_BUNDLE,
-    (error) => {
-
-        debugLog(
             'LuckyWheel',
-            'WHEEL_SOUND_CALLBACK',
-           {
-        code: error?.code,
-        message: error?.message,
-        soundName: 'wheelspin3',
-      }
+            'WHEEL_SOUND_ATTEMPT',
+            {
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
         );
 
-        if (error) {
+        const sound = new Sound(
+            'wheelspin3',
+            Sound.MAIN_BUNDLE,
+            (error) => {
 
-            debugLog(
-                'LuckyWheel',
-                'WHEEL_SOUND_ERROR',
-                {
-                    error: String(error),
+                debugLog(
+                    'LuckyWheel',
+                    'WHEEL_SOUND_CALLBACK',
+                    {
+                        code: error?.code,
+                        message: error?.message,
+                        soundName: 'wheelspin3',
+                    }
+                );
+
+                if (error) {
+
+                    debugLog(
+                        'LuckyWheel',
+                        'WHEEL_SOUND_ERROR',
+                        {
+                            error: String(error),
+                        }
+                    );
+
+                    return;
                 }
-            );
 
-            return;
-        }
+                debugLog(
+                    'LuckyWheel',
+                    'WHEEL_SOUND_STARTED',
+                    {}
+                );
 
-        debugLog(
-            'LuckyWheel',
-            'WHEEL_SOUND_STARTED',
-            {}
-        );
+                sound.play((success) => {
 
-        sound.play((success) => {
-
-            debugLog(
-                'LuckyWheel',
-                'WHEEL_SOUND_FINISHED',
-                {
-                    success,
-                }
-            );
+                    debugLog(
+                        'LuckyWheel',
+                        'WHEEL_SOUND_FINISHED',
+                        {
+                            success,
+                        }
+                    );
                     sound.stop();
 
                     sound.release();
@@ -1699,21 +1699,55 @@ const LuckyWheelModal = (
                         {/* User Bet Buttons */}
                         {!hideBetButtons && !isHost && (
                             <View style={[mainStyle.placeBetBtnGroup]}>
+
+                                {/* BET 100 */}
                                 <TouchableOpacity
                                     style={[
                                         mainStyle.placeBetBtn,
                                         {
-                                            flex: 3,
-                                            marginRight: 5,
+                                            flex: 1,
+                                            marginRight: 3,
+                                            backgroundColor:
+                                                activeBetAmount === 100 ? '#48FF00' : '#00BCD4',
+                                            opacity:
+                                                (activeBetAmount && activeBetAmount !== 100) ||
+                                                    betButtonsDisabled
+                                                    ? 0.6
+                                                    : 1,
+                                        },
+                                    ]}
+                                    onPress={() => placeBet(100)}
+                                    disabled={
+                                        betButtonsDisabled ||
+                                        !selectedMultiplier ||
+                                        (activeBetAmount && activeBetAmount !== 100)
+                                    }
+                                >
+                                    <Text style={mainStyle.placeBetBtnText}>
+                                        BET 100
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* BET 200 */}
+                                <TouchableOpacity
+                                    style={[
+                                        mainStyle.placeBetBtn,
+                                        {
+                                            flex: 1,
+                                            marginHorizontal: 3,
                                             backgroundColor:
                                                 activeBetAmount === 200 ? '#48FF00' : '#2196F3',
-                                            opacity: (activeBetAmount && activeBetAmount !== 200) || betButtonsDisabled ? 0.6 : 1,
+                                            opacity:
+                                                (activeBetAmount && activeBetAmount !== 200) ||
+                                                    betButtonsDisabled
+                                                    ? 0.6
+                                                    : 1,
                                         },
                                     ]}
                                     onPress={() => placeBet(200)}
                                     disabled={
                                         betButtonsDisabled ||
-                                        !selectedMultiplier || // 👈 IMPORTANT
+                                        !selectedMultiplier ||
                                         (activeBetAmount && activeBetAmount !== 200)
                                     }
                                 >
@@ -1722,15 +1756,20 @@ const LuckyWheelModal = (
                                     </Text>
                                 </TouchableOpacity>
 
+                                {/* BET 500 */}
                                 <TouchableOpacity
                                     style={[
                                         mainStyle.placeBetBtn,
                                         {
-                                            flex: 3,
-                                            marginHorizontal: 5,
+                                            flex: 1,
+                                            marginHorizontal: 3,
                                             backgroundColor:
                                                 activeBetAmount === 500 ? '#FFEA00' : '#FF5722',
-                                            opacity: (activeBetAmount && activeBetAmount !== 500) || betButtonsDisabled ? 0.6 : 1,
+                                            opacity:
+                                                (activeBetAmount && activeBetAmount !== 500) ||
+                                                    betButtonsDisabled
+                                                    ? 0.6
+                                                    : 1,
                                         },
                                     ]}
                                     onPress={() => placeBet(500)}
@@ -1745,15 +1784,20 @@ const LuckyWheelModal = (
                                     </Text>
                                 </TouchableOpacity>
 
+                                {/* BET 1000 */}
                                 <TouchableOpacity
                                     style={[
                                         mainStyle.placeBetBtn,
                                         {
-                                            flex: 3,
-                                            marginLeft: 5,
+                                            flex: 1,
+                                            marginLeft: 3,
                                             backgroundColor:
                                                 activeBetAmount === 1000 ? '#39FF14' : '#9C27B0',
-                                            opacity: (activeBetAmount && activeBetAmount !== 1000) || betButtonsDisabled ? 0.6 : 1,
+                                            opacity:
+                                                (activeBetAmount && activeBetAmount !== 1000) ||
+                                                    betButtonsDisabled
+                                                    ? 0.6
+                                                    : 1,
                                         },
                                     ]}
                                     onPress={() => placeBet(1000)}
@@ -1767,6 +1811,7 @@ const LuckyWheelModal = (
                                         BET 1000
                                     </Text>
                                 </TouchableOpacity>
+
                             </View>
                         )}
 

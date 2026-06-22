@@ -107,7 +107,7 @@ export default function HorseRaceGameModal({
   const [isSubModuleVisible, setIsSubModuleVisible] = useState(false);
   const soundsRef = useRef({});
   Sound.setCategory('Playback', true);
-  const BET_OPTIONS = [200, 500, 1000];
+  const BET_OPTIONS = [100, 200, 500, 1000];
   const [showNoMoreGifting, setShowNoMoreGifting] = useState(false);
 
 
@@ -437,11 +437,11 @@ export default function HorseRaceGameModal({
             // very dominant leader
             const visibleLead =
               currentLogical < 0.25
-                ? 0.32
+                ? 0.42 // 0.32
                 : currentLogical < 0.55
                   ? 0.48
                   : currentLogical < 0.8
-                    ? 0.64
+                    ? 0.65 //? 0.64
                     : 0.80;
 
             logicalTarget = Math.max(logicalTarget, currentLogical + visibleLead);
@@ -456,7 +456,7 @@ export default function HorseRaceGameModal({
                   ? 0.44 + laneSpread
                   : currentLogical < 0.55
                     ? 0.68 + laneSpread
-                    : currentLogical < 0.8
+                    : currentLogical < 0.75
                       ? 0.92 + laneSpread
                       : 1.16 + laneSpread;
 
@@ -491,12 +491,12 @@ export default function HorseRaceGameModal({
 
           if (isWinner) {
             // obvious final burst
-            logicalTarget += baseSpeed * 3.2;
-            logicalTarget += 0.018 + Math.random() * 0.012;
+            logicalTarget += baseSpeed * 6.2;
+            logicalTarget += 0.018 + Math.random() * 0.12;
           } else {
             // others still move, but visibly behind
-            logicalTarget += baseSpeed * 1.4;
-            logicalTarget += Math.random() * 0.003;
+            logicalTarget += baseSpeed * 1.2;
+            logicalTarget += Math.random() * 0.003;  // 0.003
           }
 
           randomDelta = Math.abs(randomDelta) * 0.12;
