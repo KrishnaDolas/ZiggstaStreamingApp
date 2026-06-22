@@ -69,7 +69,7 @@ const SearchModal = ({ visible, onClose,
         // console.log('queryParams', queryParams);
 
         try {
-            const response = await Apiclient.get(`https://api.streamalong.live/rooms/getroomByHostname?${queryParams}`);
+            const response = await Apiclient.get(`http://192.168.0.114:5000/rooms/getroomByHostname?${queryParams}`);
             const data = response?.data?.data;
             if (Array.isArray(data) && data.length > 0) {
                 setSearchFilteredData(data);

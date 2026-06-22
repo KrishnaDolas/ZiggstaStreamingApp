@@ -84,7 +84,7 @@ const Footer = () => {
         >
           {/* <Ionicons name="home-outline" size={25} color={iconColor('Main')} /> */}
           <Image
-            source={require('../../assets/images/logo-icon.png')}
+            source={require('../../assets/images/logo_icon.png')}
             resizeMode="contain"
             style={{
               width: 30,

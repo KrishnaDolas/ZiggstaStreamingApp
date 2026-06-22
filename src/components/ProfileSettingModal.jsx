@@ -1,7 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 // components/ProfileSettingModal.js
 import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { View, TouchableOpacity, Text, Animated, Easing } from 'react-native';
+import { View, TouchableOpacity, Text, Animated, Easing, Alert, } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -72,10 +72,29 @@ const ProfileSettingModal = ({ visible, onClose, onLogout }) => {
             onPress: () => { setModalVisibleStage('sub-setting'); setModalStage('second'); setModalLabelName('Search Settings'); },
         },
         {
-            label: 'Log Out',
-            icon: 'sign-out-alt',
-            onPress: onLogout,
-        },
+    label: 'Log Out',
+    icon: 'sign-out-alt',
+    onPress: () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Logout',
+                    style: 'destructive',
+                    onPress: () => {
+                        onLogout();
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    },
+},
         {
             label: 'Notification',
             icon: 'notifications-outline',

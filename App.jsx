@@ -1,4 +1,12 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+// App entry: sets up providers, navigation, auth/bootstrap logic, global modals.
+
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   View,
   Text,
@@ -11,9 +19,7 @@ import {
   LogBox,
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { NavigationContainer } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import Geolocation from 'react-native-geolocation-service';
@@ -21,40 +27,50 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SystemNavigationBar from 'react-native-system-navigation-bar';
 
-// context and styles
+// contexts and styles
 import { ThemeContext } from './src/context/ThemeContext';
 import { themeStyles } from './assets/styles/ThemeStyles';
+import { useAppContext } from './src/context/AppContext';
 
 // api client and constants
 import Apiclient from './src/utils/Apiclient';
 import { SendErrorTotheServer, socket } from './src/utils/constant';
 
+// shared UI
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+import NetworkCheck from './src/components/NetworkCheck';
+import CameraActionSheet from './src/components/CameraActionSheet';
+
 // screens
 import { MainScreen } from './src/screens/MainScreen';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
-import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { MessageListScreen } from './src/screens/MessageListScreen';
 import { WalletDashboardScreen } from './src/screens/WalletDashboardScreen';
 import { StatisticsSettingScreen } from './src/screens/StatisticsSettingScreen';
-import { useAppContext } from './src/context/AppContext';
 import TermsOfUseScreen from './src/screens/TermsOfUseScreen';
-import ProfileScreenModal from './src/modals/ProfileScreenModal';
 import { ChatScreen } from './src/screens/ChatScreen';
 import SettingsProfile from './src/screens/SettingsProfile';
-
-// components and modals
-import NetworkCheck from './src/components/NetworkCheck';
-import AvatarPrevModal from './src/modals/AvatarPrevModal';
-import ReportUserModal from './src/modals/ReportUserModal';
-import CameraActionSheet from './src/components/CameraActionSheet';
-import { ProfileDescription } from './src/modals/ProfileDescription';
 import AirwallexHPP from './src/screens/AirwallexHPP';
 
+// modals
+import ProfileScreenModal from './src/modals/ProfileScreenModal';
+import AvatarPrevModal from './src/modals/AvatarPrevModal';
+import ReportUserModal from './src/modals/ReportUserModal';
+import { ProfileDescription } from './src/modals/ProfileDescription';
 
-const Stack = createNativeStackNavigator();
-const Tab = createBottomTabNavigator();
+// navigators (moved into routes folder)
+import {
+  AppStackNavigator,
+  BottomTabNavigator,
+} from './src/routes';
 
+// ----------------------
+// Profile modal wrapper
+// ----------------------
+// This wraps ProfileScreenModal so it can access a navigation object from
+// React Navigation hooks, while still being triggered as a modal from context.
+// After – no useNavigation, no navigation prop
 const ProfileModalWithNavigation = ({
   visible,
   onClose,
@@ -62,10 +78,6 @@ const ProfileModalWithNavigation = ({
   isMainProfile,
   isProfileAvatarUpdate,
 }) => {
-  const navigation = useNavigation();
-
-  console.log('Navigation available:', !!navigation);
-
   return (
     <ProfileScreenModal
       visible={visible}
@@ -73,15 +85,28 @@ const ProfileModalWithNavigation = ({
       profileData={profileData}
       isMainProfile={isMainProfile}
       isProfileAvatarUpdate={isProfileAvatarUpdate}
-      navigation={navigation} // Pass navigation as prop
     />
   );
 };
 
-// Custom Tab Bar Component to handle Profile Modal
+
+// ----------------------
+// Custom bottom tab bar
+// ----------------------
+// Replaces the default tab bar. It:
+// - Hides itself when user is in a stream room.
+// - Uses icons & labels from design.
+// - Opens profile as a modal instead of a regular tab screen.
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
-  const { theme } = useContext(ThemeContext);
+  const themeContext = useContext(ThemeContext);
+
+console.log(
+  '[THEME_CONTEXT]',
+  themeContext
+);
+
+const theme = themeContext?.theme || 'dark';
   const {
     isInStreamRoom,
     userData,
@@ -94,34 +119,39 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
     setProfileUserData,
     profileUserData,
   } = useAppContext();
+
   const isDark = theme === 'dark';
 
-  const iconColor = (isFocused) => {
-    return isFocused ? '#d93a63' : (isDark ? '#fff' : 'grey');
-  };
+  const iconColor = (isFocused) =>
+    isFocused ? '#d93a63' : isDark ? '#fff' : 'grey';
 
+  // When in live stream room, hide the entire tab bar area.
   if (isInStreamRoom) {
-    return null; // Hide entire tab bar
+    return null;
   }
 
-
-  // Footer styles to match your original styling
+  // Local styles, kept here because colors depend on theme.
   const footerStyles = {
     footer: {
       position: 'absolute',
       bottom: insets.bottom,
       left: 0,
       right: 0,
-      backgroundColor: isDark ? themeStyles.dark.footer?.backgroundColor || '#000' : 'white',
+      backgroundColor: isDark
+        ? themeStyles.dark.footer?.backgroundColor || '#000'
+        : 'white',
       paddingVertical: 10,
-      // marginBottom: insets.bottom, // Add safe area padding
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
       borderTopWidth: 1,
-      borderTopColor: isDark ? themeStyles.dark.footer?.borderTopColor || '#333' : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
+      borderTopColor: isDark
+        ? themeStyles.dark.footer?.borderTopColor || '#333'
+        : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
       borderBottomWidth: 1,
-      borderBottomColor: isDark ? themeStyles.dark.footer?.borderTopColor || '#333' : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
+      borderBottomColor: isDark
+        ? themeStyles.dark.footer?.borderTopColor || '#333'
+        : themeStyles.light.footer?.borderTopColor || '#e0e0e0',
     },
     footerItem: {
       alignItems: 'center',
@@ -154,7 +184,13 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           />
         );
       case 'Messages':
-        return <Ionicons name="chatbox-ellipses-outline" size={size} color={color} />;
+        return (
+          <Ionicons
+            name="chatbox-ellipses-outline"
+            size={size}
+            color={color}
+          />
+        );
       case 'WalletDashboard':
         return <Ionicons name="wallet-outline" size={size} color={color} />;
       default:
@@ -175,6 +211,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
   return (
     <>
+      {/* Custom bottom footer with icons & labels */}
       <View style={footerStyles.footer}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -182,8 +219,8 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           const isFocused = state.index === index;
 
           const onPress = () => {
+            // Special handling: Profile tab opens the profile modal instead of tab screen
             if (route.name === 'Profile') {
-              // Show modal instead of navigating
               setModalVisibleStage('profile-screen-modal');
               setModalStage('first');
               return;
@@ -211,7 +248,12 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               style={footerStyles.footerItem}
             >
               {getTabIcon(route.name, isFocused)}
-              <Text style={[footerStyles.footerText, { color: iconColor(isFocused) }]}>
+              <Text
+                style={[
+                  footerStyles.footerText,
+                  { color: iconColor(isFocused) },
+                ]}
+              >
                 {label}
               </Text>
             </TouchableOpacity>
@@ -219,103 +261,141 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
         })}
       </View>
 
+      {/* Profile-related modals triggered by tab / context */}
       <>
-        {/* Profile Modal */}
-        {modalVisibleStage === 'profile-screen-modal' && modalStage === 'first' && (
-          <ProfileModalWithNavigation
-            visible={modalVisibleStage === 'profile-screen-modal'}
-            onClose={() => {
-              setModalVisibleStage(null);
-              setShowAvatarPreview(false);
-              setAvatarToPreview(null);
-              setModalStage('first');
-            }}
-            profileData={userData}
-            isMainProfile={true}
-            isProfileAvatarUpdate={true}
-          />
-        )}
+        {/* Main profile modal (current user) */}
+        {modalVisibleStage === 'profile-screen-modal' &&
+          modalStage === 'first' && (
+            <ProfileModalWithNavigation
+              visible={modalVisibleStage === 'profile-screen-modal'}
+              onClose={() => {
+                setModalVisibleStage(null);
+                setShowAvatarPreview(false);
+                setAvatarToPreview(null);
+                setModalStage('first');
+              }}
+              profileData={userData}
+              isMainProfile={true}
+              isProfileAvatarUpdate={true}
+            />
+          )}
 
-        {/* friend profile modal */}
-        {modalVisibleStage === 'friend-profile-modal' && modalStage === 'second' && (
-          <ProfileModalWithNavigation
-            visible={modalVisibleStage === 'friend-profile-modal'}
-            onClose={() => {
-              setModalVisibleStage(null);
-              setModalStage('first');
-              setProfileUserData({});
-            }}
-            profileData={profileUserData}
-          />
-        )}
+        {/* Friend profile modal */}
+        {modalVisibleStage === 'friend-profile-modal' &&
+          modalStage === 'second' && (
+            <ProfileModalWithNavigation
+              visible={modalVisibleStage === 'friend-profile-modal'}
+              onClose={() => {
+                setModalVisibleStage(null);
+                setModalStage('first');
+                setProfileUserData({});
+              }}
+              profileData={profileUserData}
+            />
+          )}
       </>
     </>
   );
 };
 
-// Bottom Tab Navigator
-const BottomTabNavigator = ({ onLogout, userData, userAddress }) => {
-  return (
-    <View style={{ flex: 1 }}>
-      <Tab.Navigator
-        tabBar={(props) => <CustomTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-        }}
-        initialRouteName="Main"
-      >
-        <Tab.Screen
-          name="Profile"
-          component={View} // Dummy component since we handle with modal
-        />
-        <Tab.Screen name="Stats">
-          {(props) => (
-            <StatisticsSettingScreen
-              {...props}
-              onLogout={onLogout}
-              userData={userData}
-              address={userAddress}
-            />
-          )}
-        </Tab.Screen>
-        <Tab.Screen name="Main">
-          {(props) => (
-            <MainScreen
-              {...props}
-              userData={userData}
-              isAuthenticated={true}
-            />
-          )}
-        </Tab.Screen>
-        <Tab.Screen name="Messages">
-          {(props) => (
-            <MessageListScreen
-              {...props}
-              userData={userData}
-            />
-          )}
-        </Tab.Screen>
-        <Tab.Screen name="WalletDashboard">
-          {(props) => (
-            <WalletDashboardScreen
-              {...props}
-              userData={userData}
-            />
-          )}
-        </Tab.Screen>
-      </Tab.Navigator>
-    </View>
-  );
-};
-
+// ----------------------
+// Main App component
+// ----------------------
+// Handles:
+// - Theme + system nav bar color
+// - Auth state + async bootstrap
+// - Location + IP address resolution
+// - Subscription/profile bootstrapping
+// - Global modals & hardware back button
 const App = () => {
-  const { theme } = useContext(ThemeContext) || 'dark';
+  console.log('[APP STARTED]');
+
+useEffect(() => {
+
+  const originalError =
+    console.error;
+
+  console.error = (
+    ...args
+  ) => {
+
+    originalError(...args);
+
+    try {
+
+      socket.emit(
+        'client_promise_error',
+        {
+          args: JSON.stringify(args),
+          timestamp: Date.now(),
+        }
+      );
+
+    } catch (e) {}
+
+  };
+
+  return () => {
+
+    console.error =
+      originalError;
+
+  };
+
+}, []);
+
+useEffect(() => {
+
+  const previousHandler =
+    ErrorUtils.getGlobalHandler();
+
+  ErrorUtils.setGlobalHandler(
+    (
+      error,
+      isFatal
+    ) => {
+
+      try {
+
+        socket.emit(
+          'client_crash',
+          {
+            message:
+              error?.message,
+            stack:
+              error?.stack,
+            isFatal,
+            timestamp:
+              Date.now(),
+          }
+        );
+
+      } catch (e) {}
+
+      previousHandler(
+        error,
+        isFatal
+      );
+
+    }
+  );
+
+}, []);
+  
+  const themeContext = useContext(ThemeContext);
+const theme = themeContext?.theme || 'dark';
+
+  // Auth / startup flags
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Network & navigation
   const [isConnected, setIsConnected] = useState(true);
   const navigationRef = useRef();
   const [currentRouteName, setCurrentRouteName] = useState(null);
   const [isNavigationReady, setIsNavigationReady] = useState(false);
+
+  // Global app context
   const {
     userAddress,
     setUserAddress,
@@ -340,10 +420,12 @@ const App = () => {
     setProfileDescription,
   } = useAppContext();
 
-  const hasFetchedAddress = useRef(false); // Prevent multiple fetches
+  // Used as a guard to avoid refetching location repeatedly
+  const hasFetchedAddress = useRef(false);
 
   const handleLogin = () => setIsAuthenticated(true);
 
+  // Update Android system nav bar color to match theme
   useEffect(() => {
     if (theme === 'dark') {
       SystemNavigationBar.setNavigationColor('#000000', 'light', 'navigation');
@@ -352,10 +434,10 @@ const App = () => {
     }
   }, [theme]);
 
-
+  // Clear auth/session state and close socket
   const handleLogout = async () => {
     try {
-      // Only remove app/session-specific keys, not the theme
+      // Only remove app-specific keys; preserve theme, etc.
       await AsyncStorage.multiRemove([
         'token',
         'UserData',
@@ -363,9 +445,10 @@ const App = () => {
         'onlyProfileVerified',
         'allowNotification',
         'distanceRange',
-        'userAddress', // Clear userAddress on logout
-        'locationPermission', // Clear location permission to prompt again
+        'userAddress',
+        'locationPermission',
       ]);
+
       setModalStage('first');
       setModalLabelName(null);
       setModalVisibleStage(null);
@@ -374,13 +457,14 @@ const App = () => {
       setProfileData(null);
       setIpAddress('');
       setIsAuthenticated(false);
-      hasFetchedAddress.current = false; // Allow re-fetch on next load
-      socket.disconnect(); // Disconnect socket on logout
+      hasFetchedAddress.current = false;
+      socket.disconnect();
     } catch (error) {
       SendErrorTotheServer(error, 'handleLogout');
     }
   };
 
+  // Request OS-level location permission and persist the result
   const requestLocationPermission = async () => {
     try {
       if (Platform.OS === 'android') {
@@ -388,19 +472,26 @@ const App = () => {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
           {
             title: 'Location Permission Required',
-            message: 'This app requires access to your location to provide personalized services.',
+            message:
+              'This app requires access to your location to provide personalized services.',
             buttonNeutral: 'Ask Me Later',
             buttonNegative: 'Cancel',
             buttonPositive: 'OK',
-          }
+          },
         );
         const isGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-        await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
+        await AsyncStorage.setItem(
+          'locationPermission',
+          isGranted ? 'granted' : 'denied',
+        );
         return isGranted;
       } else {
         const auth = await Geolocation.requestAuthorization('whenInUse');
         const isGranted = auth === 'granted';
-        await AsyncStorage.setItem('locationPermission', isGranted ? 'granted' : 'denied');
+        await AsyncStorage.setItem(
+          'locationPermission',
+          isGranted ? 'granted' : 'denied',
+        );
         return isGranted;
       }
     } catch (error) {
@@ -410,12 +501,14 @@ const App = () => {
     }
   };
 
+  // Use device GPS coordinates to fetch a full address and store it
   const fetchAddressFromCoords = async (latitude, longitude) => {
     try {
       const response = await fetch(
-        `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+        `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=25127ca1c55f48909b03f43048040037`,
       );
       const data = await response.json();
+
       if (data.features && data.features.length > 0) {
         const address = data.features[0].properties;
         const newAddress = {
@@ -428,7 +521,7 @@ const App = () => {
           source: 'device',
         };
         setUserAddress(newAddress);
-        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress)); // Persist userAddress
+        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress));
         hasFetchedAddress.current = true;
       }
     } catch (error) {
@@ -436,6 +529,8 @@ const App = () => {
     }
   };
 
+  // Fallback when device location is not available:
+  // derive approximate address from IP + optional reverse geocode for postcode.
   const fetchAddressFromIP = async () => {
     try {
       const ipRes = await fetch('https://api64.ipify.org?format=json');
@@ -444,9 +539,10 @@ const App = () => {
       setIpAddress(ip);
 
       const response = await fetch(
-        `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`
+        `https://api.geoapify.com/v1/ipinfo?apiKey=25127ca1c55f48909b03f43048040037`,
       );
       const json = await response.json();
+
       const address = {
         city: json.city?.name || '',
         state: json.state?.name || '',
@@ -458,9 +554,10 @@ const App = () => {
         source: 'ip',
       };
 
+      // If postcode missing but have coordinates, do reverse geocode for better accuracy
       if (!address.postcode && address.latitude && address.longitude) {
         const reverseResponse = await fetch(
-          `https://api.geoapify.com/v1/geocode/reverse?lat=${address.latitude}&lon=${address.longitude}&apiKey=25127ca1c55f48909b03f43048040037`
+          `https://api.geoapify.com/v1/geocode/reverse?lat=${address.latitude}&lon=${address.longitude}&apiKey=25127ca1c55f48909b03f43048040037`,
         );
         const reverseJson = await reverseResponse.json();
         const reverseAddress = reverseJson.features?.[0]?.properties || {};
@@ -475,78 +572,111 @@ const App = () => {
           source: 'ip',
         };
         setUserAddress(newAddress);
-        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress)); // Persist userAddress
+        await AsyncStorage.setItem('userAddress', JSON.stringify(newAddress));
       } else {
         setUserAddress(address);
-        await AsyncStorage.setItem('userAddress', JSON.stringify(address)); // Persist userAddress
+        await AsyncStorage.setItem('userAddress', JSON.stringify(address));
       }
+
       hasFetchedAddress.current = true;
     } catch (error) {
       SendErrorTotheServer(error, 'fetchAddressFromIP');
     }
   };
 
+  // Initial bootstrap:
+  // - Reads token/userData from AsyncStorage
+  // - Restores address if available, otherwise resolves via location/IP
+  // - Starts splash timer
   const init = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const userDataStored = await AsyncStorage.getItem('UserData');
       const userAddressStored = await AsyncStorage.getItem('userAddress');
-      const locationPermission = await AsyncStorage.getItem('locationPermission');
+      const locationPermission = await AsyncStorage.getItem(
+        'locationPermission',
+      );
 
       if (token) setIsAuthenticated(true);
       if (userDataStored) setUserData(JSON.parse(userDataStored));
+
       if (userAddressStored) {
         setUserAddress(JSON.parse(userAddressStored));
         hasFetchedAddress.current = true;
       }
-      // Only request permission if it hasn't been set
+
+      // If we are online and have no cached address, resolve it.
       if (isConnected && !hasFetchedAddress.current && !locationPermission) {
+        // First time: ask for location permission
         const granted = await requestLocationPermission();
         if (granted) {
           Geolocation.getCurrentPosition(
-            pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
-            err => {
+            (pos) =>
+              fetchAddressFromCoords(
+                pos.coords.latitude,
+                pos.coords.longitude,
+              ),
+            () => {
               fetchAddressFromIP();
             },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+            {
+              enableHighAccuracy: true,
+              timeout: 15000,
+              maximumAge: 10000,
+              forceRequestLocation: true,
+            },
           );
         } else {
           fetchAddressFromIP();
         }
-      } else if (isConnected && !hasFetchedAddress.current && locationPermission === 'granted') {
+      } else if (
+        isConnected &&
+        !hasFetchedAddress.current &&
+        locationPermission === 'granted'
+      ) {
+        // Permission already granted earlier, directly try device location
         Geolocation.getCurrentPosition(
-          pos => fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
-          err => {
+          (pos) =>
+            fetchAddressFromCoords(pos.coords.latitude, pos.coords.longitude),
+          () => {
             fetchAddressFromIP();
           },
-          { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000, forceRequestLocation: true }
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 10000,
+            forceRequestLocation: true,
+          },
         );
       } else if (isConnected && !hasFetchedAddress.current) {
+        // Permission was denied, fallback to IP-based location
         fetchAddressFromIP();
       }
 
+      // Artificial splash timeout
       setTimeout(() => setIsLoading(false), 3000);
     } catch (e) {
       SendErrorTotheServer(e, 'init');
       setIsLoading(false);
     }
-  }, [isConnected, isAuthenticated]);
+  }, [isConnected, setUserAddress, setUserData]);
 
   useEffect(() => {
     init();
   }, [init]);
 
+  // If network comes back and location was not resolved, retry bootstrap
   useEffect(() => {
     if (isConnected && !hasFetchedAddress.current) {
-      init(); // Retry location if previously skipped
+      init(); 
     }
   }, [isConnected, init]);
 
-
-  // Function to check subscription status
+  // Subscription status fetch for logged-in user
   const checkSubscription = useCallback(async () => {
     try {
       if (!userData?.userid) return;
+
       const postData = {
         userID: userData.userid,
         DataType: 'Status',
@@ -558,41 +688,58 @@ const App = () => {
       }
     } catch (error) {
       SendErrorTotheServer(error, 'checkSubscription');
-      setSubscriptionStatus({ success: false, message: 'Subscription check failed' });
+      setSubscriptionStatus({
+        success: false,
+        message: 'Subscription check failed',
+      });
     }
   }, [userData?.userid, setSubscriptionStatus]);
 
+  // When logged in + have userid:
+  // - Fetch profile details
+  // - Check subscription status
+useEffect(() => {
+  console.log('USER DATA:', userData);
+  console.log('USER ID:', userData?.userid);
+console.log('USER DATA FULL:', JSON.stringify(userData, null, 2));
+  if (userData?.userid) {
+    console.log('FETCH PROFILE NOW');
 
+    fetchProfileDetails();
+    checkSubscription();
+  }
+}, [userData?.userid]);
 
+  // Network connectivity listeners
   useEffect(() => {
-    if (isAuthenticated && userData?.userid) {
-      fetchProfileDetails();
-      checkSubscription();
-    }
-  }, [isAuthenticated, userData?.userid, fetchProfileDetails, checkSubscription]);
-
-  useEffect(() => {
-    // 🔹 1. Check current network status on app start
-    NetInfo.fetch().then(state => {
+    // Initial state
+    NetInfo.fetch().then((state) => {
       setIsConnected(state.isConnected);
     });
 
-    // 🔹 2. Listen to network changes
-    const unsubscribe = NetInfo.addEventListener(state => {
+    // Subscribe to changes
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsConnected(state.isConnected);
     });
 
     return () => unsubscribe();
   }, []);
 
-
   useEffect(() => {
     console.log('is app connected', isConnected);
   }, [isConnected]);
 
+  // Android hardware back button behavior:
+  // When on any main tab screen, show "Exit app?" alert instead of going back.
   useEffect(() => {
     const onBackPress = () => {
-      if (currentRouteName === 'Main' || currentRouteName === 'Profile' || currentRouteName === 'Stats' || currentRouteName === 'Messages' || currentRouteName === 'WalletDashboard') {
+      if (
+        currentRouteName === 'Main' ||
+        currentRouteName === 'Profile' ||
+        currentRouteName === 'Stats' ||
+        currentRouteName === 'Messages' ||
+        currentRouteName === 'WalletDashboard'
+      ) {
         Alert.alert(
           'Exit Ziggsta',
           'Do you want to close Ziggsta?',
@@ -600,147 +747,100 @@ const App = () => {
             { text: 'No', onPress: () => null, style: 'cancel' },
             { text: 'Yes', onPress: () => BackHandler.exitApp() },
           ],
-          { cancelable: false }
+          { cancelable: false },
         );
-        return true; // prevent default back action
+        return true;
       }
-      return false; // allow default back behavior
+      return false;
     };
 
-    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
 
     return () => subscription.remove();
   }, [currentRouteName]);
 
+  // Ignore noisy React Native warnings that are already known
   useEffect(() => {
     LogBox.ignoreLogs([
-      'new NativeEventEmitter', // your existing ignore
-      'useInsertionEffect must not schedule updates', // 👈 add this line
+      'new NativeEventEmitter',
+      'useInsertionEffect must not schedule updates',
     ]);
   }, []);
-
-
+  console.log('[APP RENDER]');
 
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <NavigationContainer ref={navigationRef} onReady={() => {
-          setIsNavigationReady(true);
-          setCurrentRouteName(navigationRef.current.getCurrentRoute()?.name);
-        }}
-          onStateChange={async () => {
+        <NavigationContainer
+          ref={navigationRef}
+          onReady={() => {
+            setIsNavigationReady(true);
+            setCurrentRouteName(navigationRef.current.getCurrentRoute()?.name);
+          }}
+          onStateChange={() => {
             if (isNavigationReady && navigationRef.current) {
               const currentRoute = navigationRef.current.getCurrentRoute();
               setCurrentRouteName(currentRoute?.name);
             }
-          }}>
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {!isConnected && <Stack.Screen name="NetworkCheck" component={NetworkCheck} />}
-            {!isAuthenticated && <Stack.Screen name="Splash" component={SplashScreen} />}
-            {isAuthenticated ? (
-              <>
-                <Stack.Screen name="MainTabs">
-                  {(props) => (
-                    <BottomTabNavigator
-                      {...props}
-                      onLogout={handleLogout}
-                      userData={userData}
-                      userAddress={userAddress}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="TermsOfUse">
-                  {(props) => (
-                    <TermsOfUseScreen
-                      {...props}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="SettingsProfile">
-                  {(props) => (
-                    <SettingsProfile
-                      {...props}
-                      onLogout={handleLogout}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen>
-                <Stack.Screen name="AirwallexHPP">
-                  {(props) => (
-                    <AirwallexHPP
-                      {...props}
-                    />
-                  )}
-                </Stack.Screen>
-                {/* <Stack.Screen name="Messages">
-                  {(props) => (
-                    <MessageListScreen
-                      {...props}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen> */}
-                <Stack.Screen name="ChatScreen"
-                  options={{
-                    windowSoftInputMode: "adjustResize",
-                  }}>
-                  {(props) => (
-                    <ChatScreen
-                      {...props}
-                      userData={userData}
-                    />
-                  )}
-                </Stack.Screen>
-              </>
-            ) : (
-              <Stack.Screen name="Auth">
-                {props => (
-                  <AuthScreen
-                    {...props}
-                    onLogin={handleLogin}
-                  />
-                )}
-              </Stack.Screen>
-            )}
-          </Stack.Navigator>
+          }}
+        >
+          {/* Main app stack, split into routes file for clarity */}
+          <AppStackNavigator
+            isConnected={isConnected}
+            isAuthenticated={isAuthenticated}
+            isLoading={isLoading}
+            handleLogin={handleLogin}
+            handleLogout={handleLogout}
+            userData={userData}
+            userAddress={userAddress}
+            CustomTabBar={CustomTabBar}
+            
+          />
         </NavigationContainer>
 
-        {/* modals  */}
+        {/* -------- Global modals that float above navigation -------- */}
 
-        {/* profile avatar update modal */}
-        {modalVisibleStage === 'profile-avatar-prv' && modalStage === 'second' && (
-          <AvatarPrevModal
-            visible={modalVisibleStage === 'profile-avatar-prv'}
-            onClose={() => {
-              setShowAvatarPreview(false);
-              setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
-              setModalStage('first');
-              setAvatarToPreview(null);
-              setProfileUserData({});
-            }}
-          />
-        )}
+        {/* Avatar preview modal (profile picture preview/update) */}
+        {modalVisibleStage === 'profile-avatar-prv' &&
+          modalStage === 'second' && (
+            <AvatarPrevModal
+              visible={modalVisibleStage === 'profile-avatar-prv'}
+              onClose={() => {
+                setShowAvatarPreview(false);
+                setModalVisibleStage(
+                  isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal',
+                );
+                setModalStage('first');
+                setAvatarToPreview(null);
+                setProfileUserData({});
+              }}
+            />
+          )}
 
-        {/* profile avatar update modal */}
-        {modalVisibleStage === 'profile-description' && modalStage === 'second' && (
-          <ProfileDescription
-            visible={modalVisibleStage === 'profile-description'}
-            onClose={() => {
-              setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
-              setModalStage('first');
-              setProfileUserData({});
-              setProfileUserId(null);
-            }}
-          />
-        )}
+        {/* Profile description modal (edit profile bio) */}
+        {modalVisibleStage === 'profile-description' &&
+          modalStage === 'second' && (
+            <ProfileDescription
+              visible={modalVisibleStage === 'profile-description'}
+              onClose={() => {
+                setModalVisibleStage(
+                  isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal',
+                );
+                setModalStage('first');
+                setProfileUserData({});
+                setProfileUserId(null);
+              }}
+            />
+          )}
 
-        {/* user report modal */}
+        {/* User report modal (report a user or content) */}
         {modalVisibleStage === 'report-user' && modalStage === 'second' && (
           <ReportUserModal
             visible={modalVisibleStage === 'report-user'}
             onClose={() => {
-              // setModalVisibleStage(isMainProfileOpened ? 'profile-screen-modal' : 'profile-modal');
               setModalVisibleStage(null);
               setModalStage('first');
               setProfileUserData({});
@@ -750,25 +850,22 @@ const App = () => {
           />
         )}
 
-        {/* camera action modal */}
-        {modalVisibleStage === 'camera-action-sheet' && modalStage === 'second' && (
-          <CameraActionSheet
-            visible={modalVisibleStage === 'camera-action-sheet'}
-            onClose={() => {
-              setModalVisibleStage('profile-screen-modal');
-              setModalStage('first');
-              setProfileUserId(null);
-            }}
-            title="Update Profile Picture"
-            options={['Take Photo', 'Choose from Gallery', 'Cancel']}
-            theme={theme}
-          />
-        )}
-
+        {/* Camera action sheet for profile image update */}
+        {modalVisibleStage === 'camera-action-sheet' &&
+          modalStage === 'second' && (
+            <CameraActionSheet
+              visible={modalVisibleStage === 'camera-action-sheet'}
+              onClose={() => {
+                setModalVisibleStage('profile-screen-modal');
+                setModalStage('first');
+                setProfileUserId(null);
+              }}
+              title="Update Profile Picture"
+              options={['Take Photo', 'Choose from Gallery', 'Cancel']}
+              theme={theme}
+            />
+          )}
       </SafeAreaProvider>
-
-
-
     </ErrorBoundary>
   );
 };

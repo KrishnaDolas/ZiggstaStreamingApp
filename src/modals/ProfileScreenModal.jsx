@@ -17,6 +17,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { useAppContext } from '../context/AppContext';
 import Colors from '../../assets/styles/Colors';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { useNavigation } from '@react-navigation/native';
 
 const ProfileScreenModal = ({
     visible,
@@ -24,7 +25,6 @@ const ProfileScreenModal = ({
     profileData,
     isMainProfile,
     isProfileAvatarUpdate,
-    navigation,
 }) => {
     const { theme } = useContext(ThemeContext);
     const {
@@ -54,8 +54,9 @@ const ProfileScreenModal = ({
     const [profileLikeStatusData, setProfileLikeStatusData] = useState({});
     const [profileStarRatingData, setProfileStarRatingData] = useState({});
     // const [profileUserData, setProfileUserData] = useState({});
+    const navigation = useNavigation();
 
-
+    const [showStarInfoModal, setShowStarInfoModal] = useState(false);
     const panY = useRef(new Animated.Value(0)).current;
     const profileUserId = profileData?.userid ?? profileData?.RequesterID ?? profileData?.userID ?? profileData?.user_id ?? profileData.fromUserID ?? null;
 
@@ -435,6 +436,39 @@ const ProfileScreenModal = ({
         setModalStage('second');
     };
 
+
+    const starLevels = [
+        {
+            level: 'New Star',
+            share: '40%',
+            cashout: '$100 Minimum Cashout',
+            coins: '10,000',
+        },
+        {
+            level: 'Bronze Star',
+            share: '45%',
+            cashout: '$1,000',
+            coins: '100,000',
+        },
+        {
+            level: 'Silver Star',
+            share: '50%',
+            cashout: '$2,500',
+            coins: '250,000',
+        },
+        {
+            level: 'Gold Star',
+            share: '55%',
+            cashout: '$5,000',
+            coins: '500,000',
+        },
+        {
+            level: 'Super Star',
+            share: '60%+',
+            cashout: '$10,000',
+            coins: '1,000,000',
+        },
+    ];
     return (
         <>
             <Modal
@@ -474,8 +508,12 @@ const ProfileScreenModal = ({
                                 <TouchableOpacity
                                     style={{ marginLeft: 8 }}
                                     onPress={() => {
-                                        navigation.navigate('SettingsProfile');
-                                        onClose();
+                                        if (navigation) {
+                                            navigation.navigate('SettingsProfile');
+                                            onClose();
+                                        } else {
+                                            console.log('Navigation not available');
+                                        }
                                     }}>
                                     <Ionicons name="settings" size={30} color={theme === 'light' ? '#d93a63' : '#fff'} />
                                 </TouchableOpacity>
@@ -589,15 +627,21 @@ const ProfileScreenModal = ({
                                                         <Text style={[styles.psmProfileName, themeStyles[theme].psmProfileName]}>{userProfileDetails?.screenName}</Text>
                                                         {/* <Text style={styles.psmProfileId}>ID: {userProfileDetails?.userid}</Text> */}
 
-                                                        <View style={styles.profileStarRatingContainer}>
-                                                            {/* Stars */}
+                                                        <View
+                                                            style={{
+                                                                flexDirection: 'row',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                            }}
+                                                        >
                                                             <View style={styles.profileStarRatingStarRow}>
                                                                 {Array.from({ length: 5 }).map((_, index) => {
                                                                     const isFilled = index < profileStarRatingData?.starLevel;
+
                                                                     return (
                                                                         <Icon
                                                                             key={index}
-                                                                            name={isFilled ? 'star' : 'star'}
+                                                                            name="star"
                                                                             size={RFValue(15)}
                                                                             color={isFilled ? '#FFD700' : '#B0B0B0'}
                                                                         />
@@ -605,14 +649,18 @@ const ProfileScreenModal = ({
                                                                 })}
                                                             </View>
 
-                                                            {/* Star Name */}
-                                                            {profileStarRatingData?.starName ? (
-                                                                <Text
-                                                                    style={[styles.profileStarRatingStarName, themeStyles[theme].profileStarRatingStarName]}
-                                                                >
-                                                                    {profileStarRatingData?.starName}
-                                                                </Text>
-                                                            ) : null}
+                                                            <TouchableOpacity
+                                                                onPress={() => setShowStarInfoModal(true)}
+                                                                style={{
+                                                                    marginLeft: 8,
+                                                                }}
+                                                            >
+                                                                <Ionicons
+                                                                    name="information-circle"
+                                                                    size={30}
+                                                                    color="#4A90E2"
+                                                                />
+                                                            </TouchableOpacity>
                                                         </View>
                                                         {userProfileDetails?.description !== null && userProfileDetails?.description !== '' && (
                                                             <View style={[styles.psmProfileDesContainer, themeStyles[theme].psmProfileDesContainer]}>
@@ -841,7 +889,7 @@ const ProfileScreenModal = ({
                                                             <Text style={[styles.profileTableHeaderText, styles.profileTableCellUsername, themeStyles[theme].profileTableHeaderText]}>Username</Text>
                                                             <Text style={[styles.profileTableHeaderText, styles.profileTableCellAmount, themeStyles[theme].profileTableHeaderText]}>Amount</Text>
                                                         </View>
-                                                        <ScrollView nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
+                                                        <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true} contentContainerStyle={{ paddingBottom: 8 }} style={{ height: screenHeight * 0.2 + 30 }}>
                                                             {topGiftersData.length === 0 ? <>
                                                                 <>
                                                                     <View style={{ height: screenHeight * 0.2, justifyContent: 'center', alignItems: 'center' }}>
@@ -871,6 +919,171 @@ const ProfileScreenModal = ({
                     )}
 
                 </Animated.View>
+            </Modal>
+            <Modal
+                isVisible={showStarInfoModal}
+                onBackdropPress={() => setShowStarInfoModal(false)}
+                style={{ justifyContent: 'center', margin: 20 }}
+            >
+                <View
+                    style={{
+                        backgroundColor: theme === 'light' ? '#fff' : '#1f1f1f',
+                        borderRadius: 16,
+                        padding: 20,
+                        maxHeight: '85%',
+                    }}
+                >
+                    <Text
+                        style={{
+                            fontSize: 20,
+                            fontWeight: '700',
+                            textAlign: 'center',
+                            marginBottom: 15,
+                            color: theme === 'light' ? '#000' : '#fff',
+                        }}
+                    >
+                        How the Star System Works
+                    </Text>
+
+                    <Text
+                        style={{
+                            color: theme === 'light' ? '#444' : '#ddd',
+                            lineHeight: 22,
+                            marginBottom: 20,
+                        }}
+                    >
+                        Ziggcoins earned by hosts from games and gifts contribute 100% to
+                        the Star System. When a host reaches a milestone below, they level
+                        up to the next star tier.
+                    </Text>
+
+                    {/* Table Header */}
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            backgroundColor: '#d93a63',
+                            paddingVertical: 10,
+                            borderTopLeftRadius: 8,
+                            borderTopRightRadius: 8,
+                        }}
+                    >
+                        <Text style={{ flex: 1.3, color: '#fff', fontWeight: '700', textAlign: 'center' }}>
+                            Level
+                        </Text>
+                        <Text style={{ flex: 1, color: '#fff', fontWeight: '700', textAlign: 'center' }}>
+                            Share
+                        </Text>
+                        <Text style={{ flex: 2, color: '#fff', fontWeight: '700', textAlign: 'center' }}>
+                            Requirement
+                        </Text>
+                    </View>
+
+                    {starLevels.map((item, index) => (
+                        <View
+                            key={index}
+                            style={{
+                                flexDirection: 'row',
+                                borderWidth: 1,
+                                borderColor: '#ddd',
+                                paddingVertical: 12,
+                                backgroundColor:
+                                    index % 2 === 0
+                                        ? theme === 'light'
+                                            ? '#fafafa'
+                                            : '#2a2a2a'
+                                        : theme === 'light'
+                                            ? '#fff'
+                                            : '#222',
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    flex: 1.3,
+                                    textAlign: 'center',
+                                    color: theme === 'light' ? '#000' : '#fff',
+                                }}
+                            >
+                                {item.level}
+                            </Text>
+
+                            <Text
+                                style={{
+                                    flex: 1,
+                                    textAlign: 'center',
+                                    color: theme === 'light' ? '#000' : '#fff',
+                                }}
+                            >
+                                {item.share}
+                            </Text>
+
+                            <View
+                                style={{
+                                    flex: 2,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: theme === 'light' ? '#000' : '#fff',
+                                        fontSize: 12,
+                                        fontWeight: '600',
+                                    }}
+                                >
+                                    {item.cashout}
+                                </Text>
+
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        marginTop: 4,
+                                    }}
+                                >
+                                    <Image
+                                        source={require('../../assets/images/icons/icon_z.png')}
+                                        style={{
+                                            width: 16,
+                                            height: 16,
+                                            resizeMode: 'contain',
+                                            marginRight: 4,
+                                        }}
+                                    />
+
+                                    <Text
+                                        style={{
+                                            color: theme === 'light' ? '#000' : '#fff',
+                                            fontWeight: '700',
+                                            fontSize: 12,
+                                        }}
+                                    >
+                                        {item.coins}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                    ))}
+
+                    <TouchableOpacity
+                        onPress={() => setShowStarInfoModal(false)}
+                        style={{
+                            marginTop: 20,
+                            backgroundColor: '#d93a63',
+                            paddingVertical: 12,
+                            borderRadius: 10,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                color: '#fff',
+                                textAlign: 'center',
+                                fontWeight: '700',
+                            }}
+                        >
+                            Close
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </Modal>
         </>
 

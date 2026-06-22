@@ -97,13 +97,27 @@ const JukeBoxModal = ({ visible, onClose, hostDetails, roomId, }) => {
 
 
     const stopSound = () => {
+
+    try {
+
         if (soundRef.current) {
+
             soundRef.current.stop();
-            soundRef.current.release();
+
             soundRef.current = null;
         }
-        setActiveMusicId(null);
-    };
+
+    } catch (e) {
+
+        console.log(
+            '[JUKEBOX_STOP_ERROR]',
+            e
+        );
+
+    }
+
+    setActiveMusicId(null);
+};
 
     const playNextInQueue = () => {
         if (musicQueue.length > 0) {

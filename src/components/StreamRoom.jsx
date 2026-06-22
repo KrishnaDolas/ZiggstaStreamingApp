@@ -4,7 +4,7 @@ import {
     Easing,
     ActivityIndicator,
     Pressable, BackHandler,
-    ImageBackground, Share,
+    ImageBackground,
     LayoutAnimation,
     FlatList,
 } from 'react-native';
@@ -41,7 +41,7 @@ import LuckyWheelModal from '../modals/LuckyWheelModal';
 import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
 import SlotGameModal from '../modals/SlotGameModal';
 import GlowingRedDot from './GlowingRedDot';
-import JukeBoxModal from '../modals/JukeBoxModal';
+import HorseRaceGameModal from '../modals/HorseRaceGameModal';
 
 const StreamRoom = ({
     remoteStreams,
@@ -68,13 +68,14 @@ const StreamRoom = ({
 }) => {
     const insets = useSafeAreaInsets();
     const { theme } = useContext(ThemeContext);
+    const isConnectStream =
+        streamInfo?.streamType === 'connect';
     const screenHeight = Dimensions.get('window').height;
     const [keyboardOffset, setKeyboardOffset] = useState(0);
     const [giftsData, setGiftItems] = useState([]);
     const {
         userData,
         setIsInStreamRoom,
-        fetchProfileDetails,
     } = useAppContext();
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
     const [giftDataLoading, setGiftDataLoading] = useState(false);
@@ -109,7 +110,6 @@ const StreamRoom = ({
     const [showUI, setShowUI] = useState(true);
     const [myFriendList, setMyFriendList] = useState([]);
     const [hostFriendRequestList, setHostFriendRequestList] = useState([]);
-    const [totalGiftCoinReceived, setTotalGiftCoinReceived] = useState(null);
     const [totalGiftByRoom, setTotalGiftByRoom] = useState(0);
     const [notification, setNotification] = useState({
         isVisible: false,
@@ -124,6 +124,8 @@ const StreamRoom = ({
     const rotateAnim = useRef(new Animated.Value(0)).current;
     const scrollViewRef = useRef();
     const inputRef = useRef(null);
+    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    const hasShownWelcomeModalRef = useRef(false);
 
     // ✅ NEW: Enhanced Game State Management
     const [luckyWheelVisible, setLuckyWheelVisible] = useState(false);
@@ -137,6 +139,366 @@ const StreamRoom = ({
     const [jukeboxVisible, setJukeboxVisible] = useState(false);
     const [jukeboxOpenedBy, setJukeboxOpenedBy] = useState(null);
     const [isJukeboxActiveInRoom, setIsJukeboxActiveInRoom] = useState(false);
+
+    // ✅ Horse Race Modal
+    const [isHorseRaceModalVisible, setHorseRaceModalVisible] = useState(false);
+    const [showHorseRace, setShowHorseRace] = useState(false);
+    const [horseRoomId, setHorseRoomId] = useState(null);
+    const [horseGameVisible, setHorseGameVisible] = useState(false);
+    const [racePhase, setRacePhase] = useState(null);
+    const [horseHorses, setHorseHorses] = useState([]);
+    const [raceCountdown, setRaceCountdown] = useState(0);
+    const [horsePositions, setHorsePositions] = useState([]);
+    const [raceResults, setRaceResults] = useState(null);
+    const [showRaceUI, setShowRaceUI] = useState(false);
+
+
+    // ✅ Game Queue
+    const [gameQueue, setGameQueue] = useState([]);
+    const [myGamePosition, setMyGamePosition] = useState(null);
+    const [gameModalVisible, setGameModalVisible] = useState(false);
+
+    //  ✅ Slot Games
+    const [slotVisible, setSlotVisible] = useState(false);
+    const [currentSpinner, setCurrentSpinner] = useState(null);
+    const gameInProgressRef = useRef(false);
+    const luckyWheelActiveRef = useRef(false);
+    const slotGameActiveRef = useRef(false);
+    const horseGameActiveRef = useRef(false);
+    const currentSpinRef = useRef(0);
+    const [hasBought, setHasBought] = useState(false);
+    const isInvoker = userData?.userid === invokerId;
+    const [invokerId, setInvokerId] = useState(null);
+    const [slotClosedLocally, setSlotClosedLocally] = useState(false);
+    const [firstBetTimer, setFirstBetTimer] = useState(null);
+    const luckyWheelClosingRef = useRef(false);
+
+    useEffect(() => {
+
+        if (
+            isConnectStream &&
+            streamLayout.length > 2
+        ) {
+
+            setStreamLayout(
+                prev => prev.slice(0, 2)
+            );
+        }
+
+    }, [
+        streamLayout,
+        isConnectStream
+    ]);
+
+    useEffect(() => {
+
+        const handleRoomFull = (msg) => {
+
+            Alert.alert(
+                'Room Full',
+                msg || 'Connect room is full'
+            );
+
+            leaveRoom();
+        };
+
+        socket.on(
+            'roomFull',
+            handleRoomFull
+        );
+
+        return () => {
+
+            socket.off(
+                'roomFull',
+                handleRoomFull
+            );
+        };
+
+    }, []);
+
+    useEffect(() => {
+        // ✅ only show to joiners/viewers, never host
+        if (
+            !isHost &&
+            !hasShownWelcomeModalRef.current &&
+            (remoteStreams.length > 0 || localStream)
+        ) {
+            hasShownWelcomeModalRef.current = true;
+            setShowWelcomeModal(true);
+        }
+    }, [remoteStreams, localStream, isHost]);
+
+    useEffect(() => {
+        const handleCloseSlotGame = () => {
+            slotGameActiveRef.current = false;
+            setSlotGameVisible(false);
+            setVisibleModal(null);
+            setActiveGame(null);
+        };
+
+        socket.on('close_slot_game', handleCloseSlotGame);
+
+        return () => {
+            socket.off('close_slot_game', handleCloseSlotGame);
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleSlotBroadcast = (data) => {
+            slotGameActiveRef.current = true; // Lock
+            setVisibleModal('slot-game');
+            setActiveGame('slot-game');
+            setSlotGameVisible(true);
+        };
+
+        socket.on('slotGameBroadcast', handleSlotBroadcast);
+
+        return () => {
+            socket.off('slotGameBroadcast', handleSlotBroadcast);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!streamInfo?.roomID || !socket?.id) {
+            return;
+        }
+
+        socket.emit('register_player', {
+            userId: userData?.userid || null,
+            hostId: streamInfo?.hostID,
+            roomId: streamInfo?.roomID,
+        });
+    }, [
+        streamInfo?.roomID,
+        streamInfo?.hostID,
+        userData?.userid,
+    ]);
+
+    useEffect(() => {
+        const id = rotateAnim.addListener(({ value }) => {
+            currentSpinRef.current = value;
+        });
+        return () => {
+            rotateAnim.removeListener(id);
+        };
+    }, [rotateAnim]);
+
+    useEffect(() => {
+
+        socket.on('queuePosition', ({ position }) => {
+            Alert.alert(`Your game is ${position} in queue`);
+        });
+
+        return () => {
+            socket.off('queuePosition');
+        };
+
+    }, []);
+
+    useEffect(() => {
+        const handleCloseSlotGame = (data) => {
+            setSlotGameVisible(false);
+            setActiveGame(null);
+            setVisibleModal(null);
+            slotGameActiveRef.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleConnect = () => {
+            if (!streamInfo?.roomID) {
+                return;
+            }
+
+            socket.emit('register_player', {
+                userId: userData?.userid,
+                hostId: streamInfo?.hostID,
+                roomId: streamInfo?.roomID,
+            });
+        };
+
+        socket.on('connect', handleConnect);
+
+        return () => {
+            socket.off('connect', handleConnect);
+        };
+    }, [streamInfo?.roomID, streamInfo?.hostID, userData?.userid]);
+
+    useEffect(() => {
+        const roomId = streamInfo?.roomID || streamInfo?.room_id;
+
+        if (!roomId) {
+            return;
+        }
+
+        socket.emit('joinSlotRoom', { roomId });
+    }, [streamInfo?.roomID, streamInfo?.room_id]);
+
+    useEffect(() => {
+
+        socket.on('queueUpdate', (queue) => {
+            setGameQueue(queue);
+
+            const myGame = queue.find(
+                g => g.userSocket === socket.id
+            );
+
+            if (myGame) {
+                setMyGamePosition(queue.indexOf(myGame) + 1);
+            } else {
+                setMyGamePosition(null);
+            }
+        });
+
+        return () => {
+            socket.off('queueUpdate');
+        };
+
+    }, []);
+
+    useEffect(() => {
+        const onBroadcast = () => {
+            if (horseGameActiveRef.current) {
+                return;
+            }
+
+            setHorseGameVisible(true);
+            setActiveGame('horse-game');
+            setVisibleModal('horse-game');
+        };
+
+        const onClose = () => {
+            if (slotGameActiveRef.current && activeGame === 'slot-game') {
+                return;
+            }
+
+            // ✅ only close horse race, never force-close lucky wheel
+            if (visibleModal === 'horse-game' || activeGame === 'horse-game') {
+                setHorseGameVisible(false);
+                setActiveGame(null);
+                setVisibleModal(null);
+                setSlotGameVisible(false);
+            } else {
+                setHorseGameVisible(false);
+            }
+
+            horseGameActiveRef.current = false;
+        };
+
+        socket.on('horseRaceBroadcast', onBroadcast);
+        socket.on('horseRaceClose', onClose);
+
+        return () => {
+            socket.off('horseRaceBroadcast', onBroadcast);
+            socket.off('horseRaceClose', onClose);
+        };
+    }, [activeGame]);
+
+    // 🔥 CLOSE HORSE RACE IF NO BETS
+    const handleHorseRaceClose = useCallback(() => {
+        if (horseGameActiveRef.current) {
+            return;
+        }
+        horseGameActiveRef.current = false;
+        setHorseGameVisible(false);
+
+        if (activeGame === 'horse-game') {
+            setActiveGame(null);
+        }
+
+        if (visibleModal === 'horse-game') {
+            setVisibleModal(null);
+            setSlotGameVisible(false);
+        }
+    }, [activeGame, visibleModal]);
+
+    // Open Horse Race Modal
+    const handleHorseGameOpen = () => {
+        const roomIdToSend = streamInfo?.roomID || streamInfo?.room_id;
+
+        if (!roomIdToSend) {
+            return;
+        }
+
+        socket.emit('joinHorseRaceRoom', { roomId: roomIdToSend });
+
+        setHorseGameVisible(true);
+        setActiveGame('horse-game');
+        horseGameActiveRef.current = true;
+        setVisibleModal('horse-game');
+    };
+
+    const handleSlotGameStart = () => {
+        if (slotGameActiveRef.current) {
+            return;
+        }
+
+        slotGameActiveRef.current = true;
+    };
+
+    const handleGameClose = (gameType) => {
+
+        if (gameType === 'luckyWheel') {
+            handleLuckyWheelClose();
+            return;
+        }
+
+        if (gameType === 'slot-game') {
+            if (slotGameActiveRef.current) {
+                return;
+            }
+
+            setSlotGameVisible(false);
+            setActiveGame(null);
+            setVisibleModal(null); setSlotGameVisible(false);
+        }
+
+        if (gameType === 'horse-game') {
+
+            // ✅ ONLY close if horse game is active
+            if (visibleModal === 'horse-game' || activeGame === 'horse-game') {
+
+                setHorseGameVisible(false);
+                setActiveGame(null);
+                if (slotGameActiveRef.current && activeGame === 'slot-game') {
+                    return;
+                }
+                setVisibleModal(null); setSlotGameVisible(false);
+            } else {
+            }
+
+            return;
+        }
+    };
+
+    const handlePhase = useCallback((phase) => {
+        setRacePhase(phase);
+
+        if (phase === 'started') {
+            setShowRaceUI(true);
+        } else if (phase === 'ended') {
+            setShowRaceUI(false);
+        }
+    }, []);
+
+    const handleHorseHorses = useCallback((horses) => {
+        setHorseHorses(horses);
+    }, []);
+
+    const handleHorseRaceCountdown = useCallback((count) => {
+        setRaceCountdown(count);
+    }, []);
+
+    const handleHorseRaceUpdate = useCallback((positions) => {
+        setHorsePositions(positions);
+    }, []);
+
+    const handleHorseRaceResult = useCallback((result) => {
+        setRaceResults(result);
+        setShowRaceUI(false);
+    }, []);
+
 
 
     // Create interpolated spin value ONCE
@@ -163,26 +525,22 @@ const StreamRoom = ({
 
     // ✅ Define handlers with useCallback (outside useEffect)
     const handleLuckyWheelOpened = useCallback((openerData) => {
-        console.log('🎯 [CLIENT] lucky-wheel-opened received:', openerData);
 
         // Don't auto-open the wheel, just update state for red dot
         if (openerData.userId === userData?.userid) {
-            console.log('✅ This is my own open, ignoring for auto-open');
             return;
         }
 
+
+
         // Set room as active (for red dot)
         setIsLuckyWheelActiveInRoom(true);
-
-        // Don't auto-open the modal for other users
-        console.log('🚫 NOT auto-opening - only updating red dot state');
     }, [userData?.userid]);
 
     // ✅ Check if user is new to the stream (for red dot indicator) AND handle reconnections
     useEffect(() => {
         const handleGetLuckyWheelStatus = () => {
             if (streamInfo?.roomID) {
-                console.log('🔍 [CLIENT] Requesting lucky wheel status for room:', streamInfo.roomID);
                 socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
             }
         };
@@ -203,57 +561,54 @@ const StreamRoom = ({
     }, [streamInfo?.roomID]);
 
     const handleLuckyWheelActive = useCallback(() => {
-        console.log('🔴 [CLIENT] Received lucky-wheel-active - setting room active');
         setIsLuckyWheelActiveInRoom(true);
     }, []);
 
     const handleLuckyWheelInactive = useCallback(() => {
-        console.log('⚪ [CLIENT] Lucky wheel is now inactive in room (ALL users closed)');
+
         setIsLuckyWheelActiveInRoom(false);
         setLuckyWheelOpenedBy(null);
 
-        // Only close locally if open (when ALL users have closed)
         if (luckyWheelVisible || visibleModal === 'luckyWheel') {
-            console.log('🔒 Closing lucky wheel because room became inactive (all users closed)');
-            handleLuckyWheelCloseLocal(); // Local close without server notification
+            handleLuckyWheelCloseLocal();
         }
-    }, [luckyWheelVisible, visibleModal]);
+    }, [luckyWheelVisible, visibleModal, handleLuckyWheelCloseLocal]);
 
     // ✅ NEW: Handle individual close confirmation from server
     const handleLuckyWheelCloseConfirmation = useCallback(() => {
-        console.log('✅ [CLIENT] Received close confirmation from server');
-        // Server confirmed our close - no need to do anything extra
-        // This is just for debugging/confirmation
     }, []);
 
     // ✅ NEW: Local close function (without server notification)
-    const handleLuckyWheelCloseLocal = () => {
-        console.log('🚪 [CLIENT] Closing lucky wheel locally only');
+    const handleLuckyWheelCloseLocal = useCallback(() => {
+
         setLuckyWheelVisible(false);
         setLuckyWheelOpenedBy(null);
-        setActiveGame(null); // Always clear active game
-        setVisibleModal(null); // Always clear visible modal
-    };
+        setActiveGame(null);
 
+        if (
+            slotGameActiveRef.current &&
+            activeGame === 'slot-game'
+        ) {
+            return;
+        }
 
-    useEffect(() => {
-        console.log('luckyWheelVisible', luckyWheelVisible);
-        console.log('visibleModal', visibleModal);
-        console.log('giftModalVisible', giftModalVisible);
-    }, [luckyWheelVisible, visibleModal, giftModalVisible]);
+        setVisibleModal(null);
+        setSlotGameVisible(false);
 
-
+    }, [activeGame]);
 
     // ✅ Fixed: Enhanced game open/close handlers
     const handleLuckyWheelOpen = () => {
         // ✅ FIX: First, ensure any modal state is cleared before opening
         if (visibleModal && visibleModal !== 'luckyWheel') {
-            setVisibleModal(null);
+            if (slotGameActiveRef.current && activeGame === 'slot-game') {
+                return;
+            }
+            setVisibleModal(null); setSlotGameVisible(false);
         }
 
         // If already open, close it locally (per-user close)
         if (luckyWheelVisible || visibleModal === 'luckyWheel') {
-            console.log('🚪 [CLIENT] Closing lucky wheel locally (per-user)');
             handleLuckyWheelClose();
             return;
         }
@@ -269,8 +624,6 @@ const StreamRoom = ({
             userName: userData?.screenName,
             timestamp: Date.now(),
         };
-
-        console.log('🎯 [CLIENT] Emitting user-opened-lucky-wheel (for red dot):', streamInfo?.roomID.toString(), userOpenData);
         socket.emit('user-opened-lucky-wheel', streamInfo?.roomID.toString(), userOpenData);
 
         // Open locally
@@ -278,7 +631,7 @@ const StreamRoom = ({
         setLuckyWheelOpenedBy(userOpenData);
         setActiveGame('luckyWheel');
         setLuckyWheelVisible(true);
-
+        luckyWheelActiveRef.current = true;
         // Set as active locally (for other users' red dots)
         setIsLuckyWheelActiveInRoom(true);
     };
@@ -286,22 +639,19 @@ const StreamRoom = ({
 
     // ✅ UPDATED: Listen for bet placed event to auto-open
     const handleBetPlacedInRoom = useCallback((betData) => {
-        console.log('💰 [CLIENT] Received bet-placed-in-room event:', betData);
+        if (luckyWheelClosingRef.current) {
+            return;
+        }
 
         // Don't auto-open if already in lucky wheel modal
         if (visibleModal === 'luckyWheel' || luckyWheelVisible) {
-            console.log('🚫 Already in lucky wheel, not auto-opening');
             return;
         }
 
         // Don't auto-open if playing slot game
         if (activeGame === 'slot-game') {
-            console.log('🚫 Playing slot game, not auto-opening lucky wheel');
             return;
         }
-
-        // Auto-open lucky wheel
-        console.log('✅ Auto-opening lucky wheel because bet was placed');
 
         const userOpenData = {
             userId: userData?.userid,
@@ -321,68 +671,98 @@ const StreamRoom = ({
 
     // slot game open close handlers
     const handleSlotGameOpen = () => {
+
+        // Toggle close
         if (visibleModal === 'slot-game' || slotGameVisible) {
-            // Close locally (no emit)
-            console.log('🚪 [CLIENT] Closing slot game locally');
-            setVisibleModal(null);
+
+            if (
+                slotGameActiveRef.current &&
+                activeGame !== 'slot-game'
+            ) {
+                return;
+            }
+            setVisibleModal(null); setSlotGameVisible(false);
             setActiveGame(null);
             setSlotGameOpenedBy(null);
             setSlotGameVisible(false);
+            slotGameActiveRef.current = false;
             return;
         }
 
-        // Close any other game first (local)
+        // Close other games
         if (activeGame && activeGame !== 'slot-game') {
             handleGameClose(activeGame);
         }
 
-        // Local open only (no emit/broadcast)
         const userOpenData = {
             userId: userData?.userid,
             userName: userData?.screenName,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         };
-        console.log('🎰 [CLIENT] Opening slot game locally (individual)');
+
         setVisibleModal('slot-game');
         setSlotGameOpenedBy(userOpenData);
         setActiveGame('slot-game');
         setSlotGameVisible(true);
+        slotGameActiveRef.current = true;
     };
 
-    // juke box open
-    // const handleJukeBoxOpen = () => {
-    //     setVisibleModal('juke-box');
-    // };
-
-    const handleGameClose = (gameType) => {
-        console.log(`🚪 [CLIENT] Closing ${gameType} locally`);
-
-        if (gameType === 'luckyWheel') {
-            handleLuckyWheelClose();
-        } else if (gameType === 'slot-game') {
-            setSlotGameVisible(false);
-            setSlotGameOpenedBy(null);
-            if (activeGame === 'slot-game') {
-                setActiveGame(null);
+    useEffect(() => {
+        const openHorseRace = (data) => {
+            if (firstBetTimer) {
+                clearTimeout(firstBetTimer);
+                setFirstBetTimer(null);
             }
-            if (visibleModal === 'slot-game') {
-                setVisibleModal(null);
+
+            setHorseGameVisible(true);
+            setVisibleModal('horse-game');
+            setActiveGame('horse-game');
+
+            if (data?.roomID) {
+                setHorseRoomId(data.roomID);
             }
+        };
+
+        socket.on('horseRaceBroadcast', openHorseRace);
+
+        return () => {
+            socket.off('horseRaceBroadcast', openHorseRace);
+        };
+    }, [firstBetTimer]);
+
+    useEffect(() => {
+        const roomId = streamInfo?.roomID || streamInfo?.room_id;
+
+        if (!roomId) {
+            return;
         }
-    };
+
+        socket.emit('joinHorseRaceRoom', {
+            roomId,
+        });
+    }, [streamInfo?.roomID, streamInfo?.room_id]);
 
 
     const handleLuckyWheelClose = () => {
-        console.log('🚪 [CLIENT] Closing lucky wheel and notifying server for user:', userData?.userid);
 
-        // Local close first
-        handleLuckyWheelCloseLocal();
+        luckyWheelClosingRef.current = true;
 
-        // Notify server about user closing
-        if (streamInfo?.roomID && userData?.userid) {
-            console.log('🎯 [CLIENT] Emitting user-closed-lucky-wheel to server');
-            socket.emit('user-closed-lucky-wheel', streamInfo.roomID.toString(), userData.userid);
+        setLuckyWheelVisible(false);
+        setVisibleModal(null);
+        setLuckyWheelOpenedBy(null);
+
+        if (visibleModal === 'luckyWheel') {
+            setVisibleModal(null);
         }
+
+        if (activeGame === 'luckyWheel') {
+            setActiveGame(null);
+        }
+        luckyWheelActiveRef.current = false;
+
+        setTimeout(() => {
+            luckyWheelClosingRef.current = false;
+        }, 3000);
     };
 
 
@@ -393,15 +773,24 @@ const StreamRoom = ({
             if ((luckyWheelVisible || visibleModal === 'luckyWheel') &&
                 streamInfo?.roomID &&
                 userData?.userid) {
-                console.log('🧹 [CLIENT] Cleaning up lucky wheel on unmount');
                 socket.emit('user-closed-lucky-wheel', streamInfo.roomID.toString(), userData.userid);
             }
         };
     }, [luckyWheelVisible, visibleModal, streamInfo?.roomID, userData?.userid]);
 
-
     const handleSlotGameClose = () => {
-        handleGameClose('slot-game');
+
+        // ✅ Always allow local close (host/viewers + invoker-before-buy)
+        setSlotGameVisible(false);
+        setActiveGame(null);
+
+        if (visibleModal === 'slot-game') {
+            setVisibleModal(null);
+        }
+        slotGameActiveRef.current = false;
+
+        // ✅ mark locally closed so socket doesn't reopen it
+        setSlotClosedLocally(true);
     };
 
     // ✅ UPDATED: Check if should show red dot on lucky wheel button
@@ -417,62 +806,97 @@ const StreamRoom = ({
     // ✅ Handle user joining room - request current lucky wheel status
     useEffect(() => {
         if (streamInfo?.roomID && userData?.userid) {
-            console.log('🔍 [CLIENT] Requesting current lucky wheel status for room:', streamInfo.roomID);
             socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
         }
     }, [streamInfo?.roomID, userData?.userid]);
 
-
-
-    useEffect(() => {
-        console.log('isLuckyWheelActiveInRoom', isLuckyWheelActiveInRoom);
-    }, [isLuckyWheelActiveInRoom]);
-
-
     // ✅ Updated useEffect (fewer deps, uses memoized handlers)
     useEffect(() => {
-        console.log('🔌 [CLIENT] Setting up game socket listeners');
+        const handleQueueUpdate = (queueData) => {
+            setGameQueue(queueData.queue);
+        };
 
-        // Register all listeners
+        const handleGameStart = (gameData) => {
+            if (gameData.gameType === 'horse-game') {
+                setHorseGameVisible(true);
+            } else if (gameData.gameType === 'luckyWheel') {
+                setLuckyWheelVisible(true);
+            }
+        };
+
+        const handleQueueEmpty = () => {
+            setGameQueue([]);
+        };
+
+        socket.on('queue-updated', handleQueueUpdate);
+        socket.on('gameStarting', handleGameStart);
+        socket.on('queue-empty', handleQueueEmpty);
+
         socket.on('lucky-wheel-opened', handleLuckyWheelOpened);
         socket.on('lucky-wheel-active', handleLuckyWheelActive);
         socket.on('lucky-wheel-inactive', handleLuckyWheelInactive);
         socket.on('lucky-wheel-closed-confirmation', handleLuckyWheelCloseConfirmation);
         socket.on('bet-placed-in-room', handleBetPlacedInRoom);
 
-        // Cleanup
+        socket.on('phase', handlePhase);
+        socket.on('horseHorses', handleHorseHorses);
+        socket.on('horseRaceCountdown', handleHorseRaceCountdown);
+        socket.on('horseRaceUpdate', handleHorseRaceUpdate);
+        socket.on('horseRaceResult', handleHorseRaceResult);
+        socket.on('horseRaceClose', handleHorseRaceClose);
+
         return () => {
-            console.log('🧹 [CLIENT] Removing game socket listeners');
+            socket.off('queue-updated', handleQueueUpdate);
+            socket.off('gameStarting', handleGameStart);
+            socket.off('queue-empty', handleQueueEmpty);
+
             socket.off('lucky-wheel-opened', handleLuckyWheelOpened);
             socket.off('lucky-wheel-active', handleLuckyWheelActive);
             socket.off('lucky-wheel-inactive', handleLuckyWheelInactive);
             socket.off('lucky-wheel-closed-confirmation', handleLuckyWheelCloseConfirmation);
             socket.off('bet-placed-in-room', handleBetPlacedInRoom);
+
+            socket.off('phase', handlePhase);
+            socket.off('horseHorses', handleHorseHorses);
+            socket.off('horseRaceCountdown', handleHorseRaceCountdown);
+            socket.off('horseRaceUpdate', handleHorseRaceUpdate);
+            socket.off('horseRaceResult', handleHorseRaceResult);
+            socket.off('horseRaceClose', handleHorseRaceClose);
         };
-    },
-        [
-            handleLuckyWheelOpened,
-            handleLuckyWheelActive,
-            handleLuckyWheelInactive,
-            handleLuckyWheelCloseConfirmation,
-            handleBetPlacedInRoom,
-        ]
-    ); // Only deps are the memoized handlers
+    }, [
+        handleLuckyWheelOpened,
+        handleLuckyWheelActive,
+        handleLuckyWheelInactive,
+        handleLuckyWheelCloseConfirmation,
+        handleBetPlacedInRoom,
+        handlePhase,
+        handleHorseHorses,
+        handleHorseRaceCountdown,
+        handleHorseRaceUpdate,
+        handleHorseRaceResult,
+        handleHorseRaceClose,
+    ]);
 
     // ✅ Fixed: Request lucky wheel status on room join and reconnect
     useEffect(() => {
         if (streamInfo?.roomID) {
-            console.log('🔍 [CLIENT] Requesting lucky wheel status for room:', streamInfo.roomID);
             socket.emit('get-lucky-wheel-status', streamInfo.roomID.toString());
         }
     }, [streamInfo?.roomID]);
 
-    // if socket is disconnect every time then show connecting panel
     useEffect(() => {
-        if (connectingpanel) {
-            setVisibleModal(null);
+
+        if (
+            connectingpanel &&
+            (
+                slotGameActiveRef.current ||
+                horseGameActiveRef.current ||
+                luckyWheelActiveRef.current
+            )
+        ) {
+            return;
         }
-    }, [connectingpanel])
+    }, [connectingpanel, activeGame]);
 
     useEffect(() => {
         if (showTooltip) {
@@ -507,9 +931,20 @@ const StreamRoom = ({
         }
     }, [scaleAnim1, opacityAnim, showTooltip]);
 
+    useEffect(() => {
+        const handler = (data) => {
+        };
+
+        socket.on('update-user-count', handler);
+
+        return () => {
+            socket.off('update-user-count', handler); // ✅ CRITICAL
+        };
+    }, []);
+
 
     useEffect(() => {
-        setIsInStreamRoom(true); // keep global value in sync
+        setIsInStreamRoom(true);
 
         const backAction = () => {
             Alert.alert(
@@ -518,13 +953,15 @@ const StreamRoom = ({
                 [
                     { text: 'Cancel', onPress: () => null, style: 'cancel' },
                     {
-                        text: 'Yes', onPress: () => {
+                        text: 'Yes',
+                        onPress: () => {
                             leaveRoom();
                         },
                     },
                 ]
             );
-            return true; // Prevent default back button behavior
+
+            return true;
         };
 
         const backHandler = BackHandler.addEventListener(
@@ -532,88 +969,67 @@ const StreamRoom = ({
             backAction
         );
 
-        return () => backHandler.remove(); // Cleanup on unmount
+        return () => {
+            backHandler.remove();
+        };
+    }, [leaveRoom, setIsInStreamRoom]);
 
-    }, []);
-
-
-    // ✅ JukeBox open handler with logic
-    const handleJukeBoxOpen = () => {
-        console.log('🎵 [CLIENT] Handling JukeBox open/close');
-
-        // If already open, close it (per-user close)
-        if (visibleModal === 'juke-box' || jukeboxVisible) {
-            console.log('🚪 [CLIENT] Closing JukeBox locally');
-            handleJukeBoxClose();
-            return;
-        }
-
-        // Check if other games are already open
-        const hasActiveGame = luckyWheelVisible || slotGameVisible ||
-            visibleModal === 'luckyWheel' || visibleModal === 'slot-game';
-
-        if (hasActiveGame) {
-            // Open locally only (individual mode)
-            console.log('🎵 [CLIENT] Other game active, opening JukeBox locally only');
-            setVisibleModal('juke-box');
-            setJukeboxOpenedBy({
-                userId: userData?.userid,
-                userName: userData?.screenName,
-                timestamp: Date.now()
-            });
-            setJukeboxVisible(true);
-
-            // Don't broadcast to others
-            return;
-        }
-
-        // No other games active - broadcast to room
-        console.log('🎵 [CLIENT] Broadcasting JukeBox open to room');
-        const userOpenData = {
-            userId: userData?.userid,
-            userName: userData?.screenName,
-            timestamp: Date.now(),
-            forceOpen: false // Regular open
+    useEffect(() => {
+        const handleQueueUpdate = (queueData) => {
+            setGameQueue(queueData.queue);
         };
 
-        // Emit to server to notify others
-        socket.emit('user-opened-jukebox', streamInfo?.roomID.toString(), userOpenData);
+        const handleGameStart = (gameData) => {
+            if (gameData.gameType === 'horse-game') {
+                setHorseGameVisible(true);
+            } else if (gameData.gameType === 'luckyWheel') {
+                setLuckyWheelVisible(true);
+            }
+        };
 
-        // Open locally
-        setVisibleModal('juke-box');
-        setJukeboxOpenedBy(userOpenData);
-        setJukeboxVisible(true);
-        setIsJukeboxActiveInRoom(true);
-        setIsLuckyWheelActiveInRoom(false); // Clear other game states
-    };
+        const handleQueueEmpty = () => {
+            setGameQueue([]);
+        };
+
+        socket.on('queue-updated', handleQueueUpdate);
+        socket.on('gameStarting', handleGameStart);
+        socket.on('queue-empty', handleQueueEmpty);
+
+        return () => {
+            socket.off('queue-updated', handleQueueUpdate);
+            socket.off('gameStarting', handleGameStart);
+            socket.off('queue-empty', handleQueueEmpty);
+        };
+    }, []);
 
     // ✅ JukeBox close handler
-    const handleJukeBoxClose = () => {
-        console.log('🎵 [CLIENT] Closing JukeBox');
-
-        // Local close
+    const handleJukeBoxClose = useCallback(() => {
         setJukeboxVisible(false);
         setJukeboxOpenedBy(null);
-        setVisibleModal(null);
 
-        // Notify server
-        if (streamInfo?.roomID && userData?.userid) {
-            socket.emit('user-closed-jukebox', streamInfo.roomID.toString(), userData.userid);
-        }
-    };
-
-    // ✅ Handle when other users open JukeBox
-    const handleJukeboxOpened = useCallback((openerData) => {
-        console.log('🎵 [CLIENT] jukebox-opened received:', openerData);
-
-        // Don't auto-open for the user who opened it
-        if (openerData.userId === userData?.userid) {
-            console.log('✅ This is my own open, ignoring');
+        if (slotGameActiveRef.current && activeGame === 'slot-game') {
             return;
         }
 
-        // Check if we should auto-open
-        const shouldAutoOpen = !luckyWheelVisible &&
+        setVisibleModal(null);
+        setSlotGameVisible(false);
+
+        if (streamInfo?.roomID && userData?.userid) {
+            socket.emit(
+                'user-closed-jukebox',
+                streamInfo.roomID.toString(),
+                userData.userid
+            );
+        }
+    }, [activeGame, streamInfo?.roomID, userData?.userid]);
+    // ✅ Handle when other users open JukeBox
+    const handleJukeboxOpened = useCallback((openerData) => {
+        if (openerData.userId === userData?.userid) {
+            return;
+        }
+
+        const shouldAutoOpen =
+            !luckyWheelVisible &&
             !slotGameVisible &&
             !jukeboxVisible &&
             visibleModal !== 'luckyWheel' &&
@@ -621,58 +1037,64 @@ const StreamRoom = ({
             visibleModal !== 'juke-box';
 
         if (shouldAutoOpen && !openerData.forceOpen) {
-            console.log('✅ Auto-opening JukeBox for other user');
-            // Open locally for this user
             const myOpenData = {
                 userId: userData?.userid,
                 userName: userData?.screenName,
-                timestamp: Date.now()
+                timestamp: Date.now(),
             };
 
             setVisibleModal('juke-box');
             setJukeboxOpenedBy(myOpenData);
             setJukeboxVisible(true);
 
-            // Also notify server that I'm opening (for tracking)
             socket.emit('user-opened-jukebox', streamInfo?.roomID.toString(), {
                 ...myOpenData,
-                forceOpen: true // This is an auto-open, not user-initiated
+                forceOpen: true,
             });
         } else {
-            console.log('🚫 Not auto-opening JukeBox - other modals active or already open');
-            // Just update state for indicator
             setIsJukeboxActiveInRoom(true);
         }
-    }, [userData?.userid, luckyWheelVisible, slotGameVisible, jukeboxVisible, visibleModal, streamInfo?.roomID]);
+    }, [
+        userData?.userid,
+        userData?.screenName,
+        luckyWheelVisible,
+        slotGameVisible,
+        jukeboxVisible,
+        visibleModal,
+        streamInfo?.roomID,
+    ]);
 
     // ✅ Handle when room becomes inactive for JukeBox
     const handleJukeboxInactive = useCallback(() => {
-        console.log('🎵 [CLIENT] JukeBox is now inactive in room');
         setIsJukeboxActiveInRoom(false);
         setJukeboxOpenedBy(null);
 
-        // Close locally if open
         if (jukeboxVisible || visibleModal === 'juke-box') {
-            console.log('🔒 Closing JukeBox because room became inactive');
             handleJukeBoxClose();
         }
-    }, [jukeboxVisible, visibleModal]);
+    }, [jukeboxVisible, visibleModal, handleJukeBoxClose]);
 
     // ✅ Handle jukebox active status
     const handleJukeboxActive = useCallback(() => {
-        console.log('🎵 [CLIENT] JukeBox is active in room');
         setIsJukeboxActiveInRoom(true);
     }, []);
 
     // ✅ Add socket listeners for JukeBox
     useEffect(() => {
-        console.log('🔌 [CLIENT] Setting up JukeBox socket listeners');
-
         socket.on('jukebox-opened', handleJukeboxOpened);
         socket.on('jukebox-active', handleJukeboxActive);
         socket.on('jukebox-inactive', handleJukeboxInactive);
         socket.on('jukebox-closed-confirmation', () => {
-            console.log('✅ [CLIENT] Received jukebox close confirmation');
+        });
+
+        // Horse Racing Game Modal 
+
+        socket.on('horse-race-start', () => {
+            setHorseGameVisible(true);
+        });
+
+        socket.on('horse-race-finish', (result) => {
+            setHorseGameVisible(false);
         });
 
         return () => {
@@ -686,7 +1108,6 @@ const StreamRoom = ({
     // ✅ Request jukebox status on join
     useEffect(() => {
         if (streamInfo?.roomID) {
-            console.log('🔍 [CLIENT] Requesting jukebox status for room:', streamInfo.roomID);
             socket.emit('get-jukebox-status', streamInfo.roomID.toString());
         }
     }, [streamInfo?.roomID]);
@@ -697,22 +1118,10 @@ const StreamRoom = ({
             if ((jukeboxVisible || visibleModal === 'juke-box') &&
                 streamInfo?.roomID &&
                 userData?.userid) {
-                console.log('🧹 [CLIENT] Cleaning up JukeBox on unmount');
                 socket.emit('user-closed-jukebox', streamInfo.roomID.toString(), userData.userid);
             }
         };
     }, [jukeboxVisible, visibleModal, streamInfo?.roomID, userData?.userid]);
-
-    // ✅ Check if should show red dot on jukebox button
-    const shouldShowRedDotOnJukebox = () => {
-        const show = isJukeboxActiveInRoom && // Jukebox is open somewhere in room
-            !jukeboxVisible && // This user doesn't have it open
-            visibleModal !== 'juke-box' && // Not currently in jukebox modal
-            !luckyWheelVisible && // Not in lucky wheel
-            !slotGameVisible; // Not in slot game
-
-        return show;
-    };
 
 
     // get gifts from api
@@ -743,14 +1152,14 @@ const StreamRoom = ({
 
         return () => {
             KeepAwake.deactivate();
-        }
+        };
     }, []);
 
     // show notification if
-    const showNotification = (message, type = 'info') => {
+    const showNotification = (text, type = 'info') => {
         setNotification({
             isVisible: true,
-            message,
+            message: text,
             type,
         });
     };
@@ -764,23 +1173,21 @@ const StreamRoom = ({
         });
     };
 
-    // Scroll to the bottom when roomchat updates
     useEffect(() => {
-        if (scrollViewRef?.current) {
-            setTimeout(() => {
-                scrollViewRef?.current.scrollToEnd({ animated: true });
-            }, 100);
-        }
-        // if (!showUI) {
-        //     setShowUI(true);
-        // }
+        setTimeout(() => {
+            scrollViewRef?.current?.scrollToEnd?.({ animated: true });
+        }, 100);
     }, [roomchat]);
 
     // get gifts category wise
-    const getGifts = async () => {
+    const getGifts = useCallback(async () => {
         setGiftDataLoading(true);
+
         try {
-            const response = await Apiclient.get(`/getgifts?giftValue=${selectedGiftCategory}`);
+            const response = await Apiclient.get(
+                `/getgifts?giftValue=${selectedGiftCategory}`
+            );
+
             if (response) {
                 setGiftItems(response.data.data || []);
             }
@@ -789,21 +1196,29 @@ const StreamRoom = ({
         } finally {
             setGiftDataLoading(false);
         }
-    };
+    }, [selectedGiftCategory]);
 
     useEffect(() => {
+        if (!giftModalVisible) {
+            return;
+        }
+
         getGifts();
-    }, [giftModalVisible, selectedGiftCategory]);
+    }, [giftModalVisible, selectedGiftCategory, getGifts]);
 
 
     // get total likes & view count from api
-    const GetViewerAndLikeCount = async () => {
+    const GetViewerAndLikeCount = useCallback(async () => {
         try {
             const params = {
                 hostId: streamInfo?.hostID,
-            }
-            const response = await Apiclient.post('/rooms/getTotalLikesCount', params);
-            console.log('getTotalLikesCount', response.data);
+            };
+
+            const response = await Apiclient.post(
+                '/rooms/getTotalLikesCount',
+                params
+            );
+
             if (response) {
                 setLikeAndViewerCount({
                     viewerCount: response.data.totalViews || 0,
@@ -813,11 +1228,11 @@ const StreamRoom = ({
         } catch (error) {
             SendErrorTotheServer(error, 'GetViewerAndLikeCount');
         }
-    };
+    }, [streamInfo?.hostID]);
 
     useEffect(() => {
         GetViewerAndLikeCount();
-    }, []);
+    }, [GetViewerAndLikeCount]);
 
     // sort gift category
     useEffect(() => {
@@ -848,17 +1263,18 @@ const StreamRoom = ({
         setCloseStreamModal(true);
     };
 
-    // Handle keyboard events
     useEffect(() => {
-
-        if (streamInfo) {
-            GetUserDetails(streamInfo?.hostID)
+        if (streamInfo?.hostID) {
+            GetUserDetails(streamInfo.hostID);
+            checkLikeStatus();
         }
+
         const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
-            HidesettingPanel()
+            HidesettingPanel();
             LayoutAnimation.easeInEaseOut();
             setKeyboardOffset(e.endCoordinates.height);
         });
+
         const hideSub = Keyboard.addListener('keyboardDidHide', () => {
             LayoutAnimation.easeInEaseOut();
             setKeyboardOffset(0);
@@ -868,7 +1284,7 @@ const StreamRoom = ({
             showSub.remove();
             hideSub.remove();
         };
-    }, []);
+    }, [streamInfo?.hostID, GetUserDetails]);
 
     const handleScroll = (event) => {
         const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -964,7 +1380,6 @@ const StreamRoom = ({
                 '/chatlogs/saveRoomChat',
                 params
             );
-            console.log("saveRoomChat", response.data);
         } catch (error) {
             SendErrorTotheServer(error, 'saveRoomChat');
         }
@@ -976,19 +1391,27 @@ const StreamRoom = ({
     };
 
     // get user details
-    const GetUserDetails = async (userid) => {
+    const GetUserDetails = useCallback(async (userid) => {
         try {
-            const formData = { userid: userid };
+            const formData = {
+                userid,
+            };
+
             const response = await Apiclient.post('/getUserDetails', formData);
+
             if (response) {
                 const user = response.data.user;
+
                 setUserDetails(user);
-                setGiftSendData({ userName: user?.screenName, userId: user?.userid });
+                setGiftSendData({
+                    userName: user?.screenName,
+                    userId: user?.userid,
+                });
             }
         } catch (error) {
             SendErrorTotheServer(error, 'GetUserDetails');
         }
-    };
+    }, []);
 
     // listen someone want to join
     useEffect(() => {
@@ -1011,20 +1434,11 @@ const StreamRoom = ({
             const params = {
                 requesterID: userData?.userid,
                 receiverID: streamInfo?.hostID,
-            }
-            console.log('friend request to host params', params);
+            };
             const response = await Apiclient.post('/friends/request', params);
-            console.log('response friend request to host only', response.data);
 
             if (response.data?.success) {
-                // setMessage(`Request Sent To ${username}`)
-                // setVisibleModal('message-modal')
-                console.log('request sent to host successfully');
             }
-            // else {
-            //     setMessage(`${response.data?.message || 'Request Already Sent'}`) // Handle case where message is not provided
-            //     setVisibleModal('message-modal')
-            // }
         } catch (error) {
             SendErrorTotheServer(error, 'handleFriendRequestToHostOnly');
         }
@@ -1032,87 +1446,161 @@ const StreamRoom = ({
 
 
     // check friend request is pending in list or not 
-    const checkFriendRequestIsPendingOrNot = async () => {
+    const checkFriendRequestIsPendingOrNot = useCallback(async () => {
+        if (!streamInfo?.hostID) {
+            return;
+        }
+
         try {
-            const response = await Apiclient.get(`/friends/requests/${streamInfo?.hostID}`);
-            console.log('response checkFriendRequestIsPendingOrNot', response.data);
+            const response = await Apiclient.get(
+                `/friends/requests/${streamInfo.hostID}`
+            );
+
             if (response.data) {
                 setHostFriendRequestList(response.data);
             }
         } catch (error) {
             SendErrorTotheServer(error, 'checkFriendRequestIsPendingOrNot');
         }
-    };
+    }, [streamInfo?.hostID]);
 
     useEffect(() => {
         checkFriendRequestIsPendingOrNot();
-    }, []);
+    }, [checkFriendRequestIsPendingOrNot]);
 
     // toggle like-dislike
-    const ToggleLike = () => {
-        // checkFriendRequestIsPendingOrNot();
-        if (isLiked) {
-            socket.emit('Dislike-count');
-            setisLiked(!isLiked);
-        } else {
-            setisLiked(!isLiked);
-            socket.emit('like-count');
-            console.log('myFriendList', myFriendList);
+    const ToggleLike = async () => {
 
-            // check if already friend
-            const checkIsFriend = myFriendList.some(
-                (ele) => ele.userid === streamInfo?.hostID
+        // already liked
+        if (isLiked) {
+            return;
+        }
+
+        setisLiked(true);
+
+        socket.emit('like-count');
+
+        try {
+
+            const response = await Apiclient.post(
+                '/profile/profileLikes',
+                {
+                    action: 'like',
+                    likerID: userData?.userid,
+                    targetUserID: streamInfo?.hostID,
+                }
             );
 
-            // check if friend request is already pending
-            const checkIsFriendRequestPendingOrNot = hostFriendRequestList.some(
+            console.log('❤️ Like Saved:', response?.data);
+
+        } catch (error) {
+
+            console.log('Like Save Error:', error);
+
+        }
+
+        const checkIsFriend = myFriendList.some(
+            (ele) => ele.userid === streamInfo?.hostID
+        );
+
+        const checkIsFriendRequestPendingOrNot =
+            hostFriendRequestList.some(
                 (ele) => ele.RequesterID === userData?.userid
             );
 
-            console.log('checkIsFriend', checkIsFriend);
-            console.log('checkIsFriendRequestPendingOrNot', checkIsFriendRequestPendingOrNot);
+        if (
+            !checkIsFriend &&
+            !checkIsFriendRequestPendingOrNot
+        ) {
+            handleFriendRequestToHostOnly();
+        }
+    };
 
+    const checkLikeStatus = async () => {
+        try {
 
-            // ✅ only call API if NOT already friend AND NOT already requested
-            if (!checkIsFriend && !checkIsFriendRequestPendingOrNot) {
-                handleFriendRequestToHostOnly();
+            const response = await Apiclient.post(
+                '/profile/LikeStatus',
+                {
+                    likerID: userData?.userid,
+                    targetUserID: streamInfo?.hostID,
+                }
+            );
+
+            console.log('❤️ Like Status Response:', response?.data);
+
+            if (response?.data?.liked) {
+                setisLiked(true);
             }
+
+        } catch (error) {
+            console.log('Like Status Error:', error);
         }
     };
 
     // play gift sound
-    const playGiftSound = () => {
-        try {
-            const sound = new Sound('gift_received', Sound.MAIN_BUNDLE, (error) => {
+   const playGiftSound = () => {
+    try {
+
+        const sound = new Sound(
+            'gift_received',
+            Sound.MAIN_BUNDLE,
+            (error) => {
+
                 if (error) {
-                    SendErrorTotheServer(error, 'playGiftSound');
+                    SendErrorTotheServer(
+                        error,
+                        'playGiftSound'
+                    );
                     return;
                 }
-                sound.play(() => {
-                    sound.release();
-                });
-            });
-        } catch (error) {
-            SendErrorTotheServer(error, 'playGiftSound');
-        }
-    };
+
+                sound.play();
+
+            }
+        );
+
+    } catch (error) {
+
+        SendErrorTotheServer(
+            error,
+            'playGiftSound'
+        );
+
+    }
+};
 
     // play notification sound
     const playNotification = () => {
-        try {
-            const sound = new Sound('notification', Sound.MAIN_BUNDLE, (error) => {
+    try {
+
+        const sound = new Sound(
+            'notification',
+            Sound.MAIN_BUNDLE,
+            (error) => {
+
                 if (error) {
-                    SendErrorTotheServer(error, 'playNotification');
+                    SendErrorTotheServer(
+                        error,
+                        'playNotification'
+                    );
                     return;
                 }
-                sound.play(() => {
-                    sound.release();
-                });
-            });
-        } catch (error) {
-            SendErrorTotheServer(error, 'playNotification');
-        }
-    };
+
+                sound.play();
+
+            }
+        );
+
+    } catch (error) {
+
+        SendErrorTotheServer(
+            error,
+            'playNotification'
+        );
+
+    }
+};
 
     // open report modal
     const HandleReport = () => {
@@ -1120,35 +1608,14 @@ const StreamRoom = ({
     };
 
     // handle like count
-    const HandleLikeCount = (count) => {
-        setStreamupdated((prev) => ({ ...prev, LikeCount: count }));
+    const HandleLikeCount = useCallback((count) => {
+        setStreamupdated((prev) => ({
+            ...prev,
+            LikeCount: count,
+        }));
+
         GetViewerAndLikeCount();
-    };
-
-
-    // get total gifts received coins of host
-    // const getTotalGiftsReceivedCoins = async () => {
-    //     try {
-    //         const params = {
-    //             toUserId: streamInfo?.hostID,
-    //             gifterCount: 10000,
-    //         };
-    //         const response = await Apiclient.post('/topgifters', params);
-    //         // console.log('total gifts coins res', response);
-    //         if (response.status === 200) {
-    //             const data = response?.data;
-    //             const totalAmount = data.reduce((sum, item) => sum + Number(item.Amount), 0);
-    //             console.log('total gift Amount of host', totalAmount);
-    //             setTotalGiftCoinReceived(totalAmount);
-    //         }
-    //     } catch (error) {
-    //         SendErrorTotheServer(error, 'getTotalGiftsReceivedCoins');
-    //     }
-    // };
-
-    // useEffect(() => {
-    //     getTotalGiftsReceivedCoins();
-    // }, []);
+    }, [setStreamupdated, GetViewerAndLikeCount]);
 
     // get total gift by room
     const getTotalGiftByRoom = useCallback(async () => {
@@ -1158,7 +1625,6 @@ const StreamRoom = ({
                 roomid: streamInfo?.roomID,
             };
             const response = await Apiclient.post('/topGifters/getAllGiftsbyRoom', params);
-            console.log('gift by room response', response.data);
             if (response.data.status) {
                 setTotalGiftByRoom(response.data);
             }
@@ -1172,33 +1638,46 @@ const StreamRoom = ({
     }, [getTotalGiftByRoom]);
 
     // handle gift received
-    const HandleGiftReceived = async (senderName, receiverName, giftName) => {
+    const HandleGiftReceived = useCallback(async (senderName, receiverName, giftName) => {
+        if (userData?.screenName === senderName) {
+            return;
+        }
+
         try {
-            if (userData?.screenName === senderName) return
             playGiftSound();
+
             setReceiveAnimationData({
-                giftName: giftName,
-                senderName: senderName,
+                giftName,
+                senderName,
                 ReceiverName: receiverName,
             });
-            // await getTotalGiftsReceivedCoins();
+
             await GetUserDetails(streamInfo?.hostID);
             await getTotalGiftByRoom();
+
             setShowReceiveAnimation(true);
         } catch (error) {
             SendErrorTotheServer(error, 'HandleGiftReceived');
         }
-    };
+    }, [
+        userData?.screenName,
+        streamInfo?.hostID,
+        GetUserDetails,
+        getTotalGiftByRoom,
+    ]);
 
     // friend request modal open
-    const HandleFriendRequestMessage = (msg) => {
+    const HandleFriendRequestMessage = useCallback((msg) => {
         setMessage(msg);
         setVisibleModal('message-modal');
-    };
+    }, []);
 
     // get friend data
     const getFriendsData = useCallback(async () => {
-        if (!userData.userid) return
+        if (!userData?.userid) {
+            return;
+        }
+
         try {
             const postData = {
                 userId: userData.userid,
@@ -1206,6 +1685,7 @@ const StreamRoom = ({
             };
 
             const response = await Apiclient.post('/getFriendsList', postData);
+
             if (response.status === 200) {
                 const data = response.data?.friends || [];
                 setMyFriendList(data);
@@ -1213,26 +1693,38 @@ const StreamRoom = ({
         } catch (error) {
             SendErrorTotheServer(error, 'getFriendsList');
         }
-    }, []);
+    }, [userData?.userid]);
 
-    const handleUpdateTotalGifts = async (roomID) => {
-        console.log('🔄 Received update-total-gifts event for room:', roomID);
-        // Only update if it's our current room
-        if (streamInfo?.roomID?.toString() === roomID?.toString()) {
-            console.log('🔄 Calling getTotalGiftByRoom for current room');
-            await getTotalGiftByRoom();
-            await GetUserDetails(streamInfo?.hostID);
+    const handleUpdateTotalGifts = useCallback(async (roomID) => {
+        if (streamInfo?.roomID?.toString() !== roomID?.toString()) {
+            return;
+        }
+
+        await getTotalGiftByRoom();
+        await GetUserDetails(streamInfo?.hostID);
+    }, [
+        streamInfo?.roomID,
+        streamInfo?.hostID,
+        getTotalGiftByRoom,
+        GetUserDetails,
+    ]);
+
+    const handleModalClose = (invokerHasNotBuyed) => {
+        if (invokerHasNotBuyed) {
+            // user hasn't buyed, so close modal
+            setVisibleModal(null); setSlotGameVisible(false);
+        } else {
+            // user bought, modal stays open until game ends
         }
     };
 
     // socket event listen
     useEffect(() => {
         getFriendsData();
+
         socket.on('like-count', HandleLikeCount);
         socket.on('received-Gift', HandleGiftReceived);
         socket.on('receive-request', HandleFriendRequestMessage);
-
-        // ✅ ADD THIS NEW LISTENER
         socket.on('update-total-gifts', handleUpdateTotalGifts);
 
         return () => {
@@ -1241,7 +1733,13 @@ const StreamRoom = ({
             socket.off('receive-request', HandleFriendRequestMessage);
             socket.off('update-total-gifts', handleUpdateTotalGifts);
         };
-    }, []);
+    }, [
+        getFriendsData,
+        HandleLikeCount,
+        HandleGiftReceived,
+        HandleFriendRequestMessage,
+        handleUpdateTotalGifts,
+    ]);
 
 
 
@@ -1317,6 +1815,30 @@ const StreamRoom = ({
         }
     };
 
+    const handleRemoveCoHost = (streamData) => {
+        Alert.alert(
+            'Remove Co-Host',
+            `Are you sure you want to remove ${streamData?.Name} (Co-Host) from the stream?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: () => {
+                        socket.emit('host-control', {
+                            action: 'stop-stream',
+                            targetId: streamData.socketId,
+                        });
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
+
     // listen stream message if any
     useEffect(() => {
         if (streammsg !== null) {
@@ -1345,10 +1867,6 @@ const StreamRoom = ({
 
     // toggle show ui or not
     const HandleShowUi = () => {
-        // setShowUI(!showUI);
-        console.log('showUI', !showUI);
-        // Keyboard.dismiss();
-        // setIsTyping(false);
     };
 
     // update stream description
@@ -1386,7 +1904,6 @@ const StreamRoom = ({
     useEffect(() => {
         const handleStreamStoppedForCurrentUser = (targetId) => {
             if (socket.id === targetId) {
-                console.log('[StreamRoom] Current user was stopped - removing local stream');
                 setStreamLayout(prev => prev.filter(stream => stream.type !== 'local'));
             }
         };
@@ -1402,29 +1919,16 @@ const StreamRoom = ({
 
     useEffect(() => {
         const handleUserLeft = (leftUserId, userinfo) => {
-            console.log('[StreamRoom] User left, cleaning stream:', leftUserId, userinfo);
 
             setStreamLayout(prev => {
-                console.log('[StreamRoom] PREV layout before userLeft:', prev);
 
                 const updated = prev.filter(stream => {
                     if (stream.type === 'remote') {
                         // --- FIX: Only remove tile of the user who actually left ---
                         const shouldRemove = stream.socketId === leftUserId;
 
-                        console.log('[StreamRoom] CHECK stream tile:', {
-                            tileSocketId: stream.socketId,
-                            leftUserId,
-                            shouldRemove,
-                        });
-
                         if (shouldRemove && stream.stream) {
                             stream.stream.getTracks().forEach(track => {
-                                console.log('[StreamRoom] Stopping track for tile due to userLeft:', {
-                                    kind: track.kind,
-                                    id: track.id,
-                                    readyState: track.readyState,
-                                });
                                 track.stop();
                                 track.enabled = false;
                             });
@@ -1435,8 +1939,6 @@ const StreamRoom = ({
 
                     return true; // keep local stream
                 });
-
-                console.log('[StreamRoom] Updated streamLayout after user left:', updated.length, updated);
                 return updated;
             });
         };
@@ -1472,7 +1974,6 @@ const StreamRoom = ({
                 });
 
                 if (validStreams.length !== prev.length) {
-                    console.log('[cleanupUndefinedStreams] Removed invalid streams');
                 }
 
                 return validStreams;
@@ -1486,26 +1987,6 @@ const StreamRoom = ({
 
 
     useEffect(() => {
-        console.log('🎛 [StreamLayout] REBUILD (socketId-based)', {
-            remoteStreamsCount: remoteStreams.length,
-            streamerListCount: streamerList.length,
-            isStreaming,
-            hasLocalStream: !!localStream,
-        });
-
-        console.log("STREAMER LIST", streamerList.map(s => ({
-            ID: s.ID,
-            Name: s.Name,
-            UserID: s.UserID
-        })));
-
-        console.log("REMOTE STREAMS", remoteStreams.map(r => ({
-            socketId: r.id,
-            streamId: r.stream?.id,
-            videoTracks: r.stream?.getVideoTracks?.().map(t => t.id)
-        })));
-
-        // ⭐ NEW: Stabilization delay (150ms)
         const delayId = setTimeout(() => {
 
             const mapBySocketId = {};
@@ -1514,15 +1995,8 @@ const StreamRoom = ({
             remoteStreams.forEach(({ id, stream, isSpeaking, audioLevel }) => {
                 const StreamerInfo = streamerList.find((s) => s.ID === id);
 
-                console.log('🎛 [StreamLayout] PROCESS REMOTE', {
-                    socketId: id,
-                    hasStreamerInfo: !!StreamerInfo,
-                    hasStream: !!stream,
-                });
-
                 if (!StreamerInfo) return;
                 if (!stream || typeof stream.toURL !== 'function') {
-                    console.log('⚠️ [StreamLayout] remote stream missing or no toURL()', { socketId: id });
                     return;
                 }
 
@@ -1545,11 +2019,6 @@ const StreamRoom = ({
             // 2) Local Stream
             if (localStream && isStreaming) {
                 const SelfInfo = streamerList.find((s) => s.ID === socket.id);
-
-                console.log('🎛 [StreamLayout] ADD LOCAL STREAM', {
-                    socketId: socket.id,
-                    hasSelfInfo: !!SelfInfo,
-                });
 
                 mapBySocketId[socket.id] = {
                     type: 'local',
@@ -1582,13 +2051,6 @@ const StreamRoom = ({
                 return nameA.localeCompare(nameB);
             });
 
-            console.log('🎛 [StreamLayout] FINAL LAYOUT ORDER', ordered.map(s => ({
-                type: s.type,
-                socketId: s.socketId,
-                name: s.Name,
-                streamId: s.stream?.id,
-            })));
-
             setStreamLayout(ordered);
 
         }, 500); // ⭐ BEST DELAY: 120–180 ms
@@ -1618,37 +2080,16 @@ const StreamRoom = ({
         if (slotGameVisible) {
             handleSlotGameClose();
         }
-
-        // Clear visibleModal state
-        setVisibleModal(null);
+        if (slotGameActiveRef.current && activeGame === 'slot-game') {
+            return;
+        }
+        setVisibleModal(null); setSlotGameVisible(false);
         setIsLuckyWheelActiveInRoom(false);
         // Small delay for Android
         setTimeout(() => {
             setGiftModalVisible(true);
         }, 100);
     };
-
-    // const onShare = async () => {
-    //     try {
-    //         const result = await Share.share({
-    //             message: 'Check out this awesome link: https://streamalong.live',
-    //             url: 'https://example.com', // Optional, used more on iOS
-    //             title: 'Ziggsta'
-    //         });
-
-    //         if (result.action === Share.sharedAction) {
-    //             if (result.activityType) {
-    //                 console.log('Shared with activity type: ', result.activityType);
-    //             } else {
-    //                 console.log('Shared');
-    //             }
-    //         } else if (result.action === Share.dismissedAction) {
-    //             console.log('Dismissed');
-    //         }
-    //     } catch (error) {
-    //         SendErrorTotheServer(error, "onShare")
-    //     }
-    // };
 
     return (
         <>
@@ -1659,15 +2100,6 @@ const StreamRoom = ({
                             {(() => {
                                 const s = streamLayout[0];
                                 const track = s?.stream?.getVideoTracks?.()[0];
-                                console.log('🎥 [RTCView] RENDER SINGLE', {
-                                    type: s?.type,
-                                    socketId: s?.socketId,
-                                    name: s?.Name,
-                                    streamId: s?.stream?.id,
-                                    trackId: track?.id,
-                                    readyState: track?.readyState,
-                                    enabled: track?.enabled,
-                                });
                                 return (
                                     <RTCView
                                         streamURL={s?.stream.toURL()}
@@ -1677,6 +2109,18 @@ const StreamRoom = ({
                                     />
                                 );
                             })()}
+
+                            {/* ⭐ ADD QUEUE MESSAGE HERE */}
+
+                            {!isHost && gameQueue.length > 0 && (
+                                <View style={styles.queueContainer}>
+                                    <Text style={styles.queueText}>
+                                        {myGamePosition
+                                            ? `Stay connected, your game is ${myGamePosition} in the queue and will start shortly.`
+                                            : "A game is currently running. Please wait."}
+                                    </Text>
+                                </View>
+                            )}
                             {/* rest unchanged */}
 
                             <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
@@ -1707,15 +2151,6 @@ const StreamRoom = ({
                                         {(() => {
                                             const s0 = streamLayout[0];
                                             const t0 = s0?.stream?.getVideoTracks?.()[0];
-                                            console.log('🎥 [RTCView] RENDER GRID[0]', {
-                                                type: s0?.type,
-                                                socketId: s0?.socketId,
-                                                name: s0?.Name,
-                                                streamId: s0?.stream?.id,
-                                                trackId: t0?.id,
-                                                readyState: t0?.readyState,
-                                                enabled: t0?.enabled,
-                                            });
                                             return (
                                                 <RTCView
                                                     streamURL={s0.stream.toURL()}
@@ -1790,6 +2225,30 @@ const StreamRoom = ({
                                                     objectFit="cover"
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
+                                                {isHost &&
+    streamData?.type !== 'local' && (
+        <TouchableOpacity
+            onPress={() => handleRemoveCoHost(streamData)}
+            style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 99999,
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+            <Ionicons
+                name="close-circle"
+                size={28}
+                color="#ff3b30"
+            />
+        </TouchableOpacity>
+)}
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                                 </View>
@@ -1892,24 +2351,55 @@ const StreamRoom = ({
                                                                     <Text style={styles.userName}>
                                                                         {streamData?.Name ? streamData.Name : 'Unknown User'}
                                                                     </Text>
-                                                                    <TouchableOpacity
-                                                                        style={styles.friendRequestIcon}
-                                                                        disabled={streamData?.isFriend}
-                                                                        onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
-                                                                    >
-                                                                        {streamData?.isFriend ? (
-                                                                            <Image
-                                                                                style={{
-                                                                                    width: 20,
-                                                                                    height: 20,
-                                                                                }}
-                                                                                source={require('../../assets/images/icons/friend-added.png')}
-                                                                                resizeMode="contain"
-                                                                                tintColor="white"
+                                                                    <View style={{ alignItems: 'center' }}>
+                                                                        <Text style={{ color: 'red', fontSize: 30 }}>
+                                                                            X
+                                                                        </Text>
+
+                                                                        <TouchableOpacity
+                                                                            style={[
+                                                                                styles.friendRequestIcon,
+                                                                                { marginBottom: 4 }
+                                                                            ]}
+                                                                            onPress={() => handleRemoveCoHost(streamData)}
+                                                                        >
+                                                                            <Ionicons
+                                                                                name="close"
+                                                                                size={18}
+                                                                                color="#fff"
                                                                             />
-                                                                        ) : (
-                                                                            <Ionicons name="person-add" size={16} color="#fff" />)}
-                                                                    </TouchableOpacity>
+                                                                        </TouchableOpacity>
+
+                                                                        <TouchableOpacity
+                                                                            style={styles.friendRequestIcon}
+                                                                            disabled={streamData?.isFriend}
+                                                                            onPress={() =>
+                                                                                handleFriendRequest(
+                                                                                    streamData?.userId,
+                                                                                    streamData?.Name
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {streamData?.isFriend ? (
+                                                                                <Image
+                                                                                    style={{
+                                                                                        width: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
+                                                                                        height: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
+                                                                                    }}
+                                                                                    source={require('../../assets/images/icons/friend-added.png')}
+                                                                                    resizeMode="contain"
+                                                                                    tintColor="white"
+                                                                                />
+                                                                            ) : (
+                                                                                <Ionicons
+                                                                                    name="person-add"
+                                                                                    size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20}
+                                                                                    color="#fff"
+                                                                                />
+                                                                            )}
+                                                                        </TouchableOpacity>
+
+                                                                    </View>
                                                                 </View>
                                                             </ImageBackground>
                                                         </View>
@@ -1992,68 +2482,184 @@ const StreamRoom = ({
                                     {streamLayout.map((streamData, index) => {
                                         return (
                                             <Fragment key={streamData.socketId}>
-                                                <View style={[styles.videoContainer, getVideoTileStyle(streamLayout.length)]}>
+                                                <View
+                                                    style={[
+                                                        styles.videoContainer,
+                                                        getVideoTileStyle(streamLayout.length),
+                                                    ]}
+                                                >
                                                     <RTCView
-                                                        key={streamData.type === 'local' ? 'local' : streamData.userId}
+                                                        key={
+                                                            streamData.type === 'local'
+                                                                ? 'local'
+                                                                : streamData.userId
+                                                        }
                                                         streamURL={streamData.stream.toURL()}
                                                         style={[styles.streamVideo]}
                                                         objectFit="cover"
-                                                        mirror={streamData.type === 'local' && isFrontCamera}
+                                                        mirror={
+                                                            streamData.type === 'local' &&
+                                                            isFrontCamera
+                                                        }
                                                     />
-                                                    <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
-                                                        <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={streamLayout.length == 6 || streamLayout.length == 4 ? 30 : 40} color="#fff" />}</Text>
-                                                    </View>
-                                                    {streamData?.type !== 'local' && streamData?.audioLevel > 0 && (
-                                                        <View style={{
+
+                                                    <View
+                                                        style={{
                                                             position: 'absolute',
-                                                            bottom: showUI ? 60 : 10,
-                                                            left: 10,
-                                                            right: 10,
-                                                            alignItems: 'center',
-                                                        }}>
-                                                            <AudioSpectrum
-                                                                audioLevel={streamData.audioLevel}
-                                                                streamLayout={streamLayout}
-                                                            />
-                                                        </View>
-                                                    )}
-                                                    <View style={styles.videoOverlay}>
-                                                        {index !== 0 && streamData?.type !== 'local' && showUI && (
-                                                            <ImageBackground
-                                                                source={bgImage}
-                                                                style={{ padding: 3 }}
-                                                            >
-                                                                <View style={styles.userInfoContainer}>
-                                                                    <TouchableOpacity
-                                                                        onPress={() => HnadleSendGiftToCoHost(streamData?.userId, streamData?.Name)}
-                                                                    >
-                                                                        <Image source={GiftIcon} height={35} width={35} />
-                                                                    </TouchableOpacity>
-                                                                    <Text style={styles.userName}>
-                                                                        {streamData?.Name ? streamData.Name : 'Unknown User'}
-                                                                    </Text>
-                                                                    <TouchableOpacity
-                                                                        style={styles.friendRequestIcon}
-                                                                        disabled={streamData?.isFriend}
-                                                                        onPress={() => handleFriendRequest(streamData?.userId, streamData?.Name)}
-                                                                    >
-                                                                        {streamData?.isFriend ? (
-                                                                            <Image
-                                                                                style={{
-                                                                                    width: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
-                                                                                    height: streamLayout.length == 6 ? 15 : streamLayout.length == 4 ? 20 : 22,
-                                                                                }}
-                                                                                source={require('../../assets/images/icons/friend-added.png')}
-                                                                                resizeMode="contain"
-                                                                                tintColor="white"
-                                                                            />
-                                                                        ) : (
-                                                                            <Ionicons name="person-add" size={streamLayout.length == 6 || streamLayout.length == 4 ? 16 : 20} color="#fff" />)}
-                                                                    </TouchableOpacity>
-                                                                </View>
-                                                            </ImageBackground>
-                                                        )}
+                                                            left: '40%',
+                                                            top: '40%',
+                                                        }}
+                                                    >
+                                                        <Text>
+                                                            {streamData?.isMuted &&
+                                                                showUI && (
+                                                                    <Ionicons
+                                                                        name="mic-off"
+                                                                        size={
+                                                                            streamLayout.length == 6 ||
+                                                                                streamLayout.length == 4
+                                                                                ? 30
+                                                                                : 40
+                                                                        }
+                                                                        color="#fff"
+                                                                    />
+                                                                )}
+                                                        </Text>
                                                     </View>
+
+                                                    {streamData?.type !== 'local' &&
+                                                        streamData?.audioLevel > 0 && (
+                                                            <View
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    bottom: showUI ? 60 : 10,
+                                                                    left: 10,
+                                                                    right: 10,
+                                                                    alignItems: 'center',
+                                                                }}
+                                                            >
+                                                                <AudioSpectrum
+                                                                    audioLevel={
+                                                                        streamData.audioLevel
+                                                                    }
+                                                                    streamLayout={streamLayout}
+                                                                />
+                                                            </View>
+                                                        )}
+
+                                                   <View style={styles.videoOverlay}>
+    {index !== 0 &&
+        streamData?.type !== 'local' &&
+        showUI && (
+            <>
+                {isHost && (
+                    <TouchableOpacity
+                        onPress={() =>
+                            handleRemoveCoHost(streamData)
+                        }
+                        style={{
+                            position: 'absolute',
+                            right: 5,
+                            bottom: 50,
+                            zIndex: 999999,
+                            width: 26,
+                            height: 26,
+                            borderRadius: 13,
+                            backgroundColor: '#ff3b30',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Ionicons
+                            name="close"
+                            size={16}
+                            color="#fff"
+                        />
+                    </TouchableOpacity>
+                )}
+
+                <ImageBackground
+                    source={bgImage}
+                    style={{ padding: 3 }}
+                >
+                    <View
+                        style={
+                            styles.userInfoContainer
+                        }
+                    >
+                        <TouchableOpacity
+                            onPress={() =>
+                                HnadleSendGiftToCoHost(
+                                    streamData?.userId,
+                                    streamData?.Name
+                                )
+                            }
+                        >
+                            <Image
+                                source={GiftIcon}
+                                height={35}
+                                width={35}
+                            />
+                        </TouchableOpacity>
+
+                        <Text
+                            style={styles.userName}
+                        >
+                            {streamData?.Name
+                                ? streamData.Name
+                                : 'Unknown User'}
+                        </Text>
+
+                        <TouchableOpacity
+                            style={styles.friendRequestIcon}
+                            disabled={
+                                streamData?.isFriend
+                            }
+                            onPress={() =>
+                                handleFriendRequest(
+                                    streamData?.userId,
+                                    streamData?.Name
+                                )
+                            }
+                        >
+                            {streamData?.isFriend ? (
+                                <Image
+                                    style={{
+                                        width:
+                                            streamLayout.length == 6
+                                                ? 15
+                                                : streamLayout.length == 4
+                                                ? 20
+                                                : 22,
+                                        height:
+                                            streamLayout.length == 6
+                                                ? 15
+                                                : streamLayout.length == 4
+                                                ? 20
+                                                : 22,
+                                    }}
+                                    source={require('../../assets/images/icons/friend-added.png')}
+                                    resizeMode="contain"
+                                    tintColor="white"
+                                />
+                            ) : (
+                                <Ionicons
+                                    name="person-add"
+                                    size={
+                                        streamLayout.length == 6 ||
+                                        streamLayout.length == 4
+                                            ? 16
+                                            : 20
+                                    }
+                                    color="#fff"
+                                />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                </ImageBackground>
+            </>
+        )}
+</View>
                                                 </View>
                                             </Fragment>
                                         );
@@ -2084,9 +2690,38 @@ const StreamRoom = ({
                                     />
                                     <View>
                                         {/* host name */}
-                                        <Text style={[styles.strRoomHeaderLeftProfileName]}>
-                                            {userDetails?.screenName}
-                                        </Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                            }}
+                                        >
+                                            <Text style={[styles.strRoomHeaderLeftProfileName]}>
+                                                {userDetails?.screenName}
+                                            </Text>
+
+                                            {isConnectStream && (
+                                                <View
+                                                    style={{
+                                                        backgroundColor: '#de0037',
+                                                        paddingHorizontal: 8,
+                                                        paddingVertical: 2,
+                                                        borderRadius: 20,
+                                                        marginLeft: 6,
+                                                    }}
+                                                >
+                                                    <Text
+                                                        style={{
+                                                            color: '#fff',
+                                                            fontWeight: '700',
+                                                            fontSize: 10,
+                                                        }}
+                                                    >
+                                                        CONNECT
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
                                         {/* All total likes & All time coins */}
                                         <View style={[styles.strRoomHeaderLeftProfileSubInfo]}>
                                             {/* total likes */}
@@ -2141,7 +2776,9 @@ const StreamRoom = ({
                                         {isHost && (
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                                                 <Ionicons name="eye" size={13} color="#00BD35" />
-                                                <Text style={{ color: '#00BD35', fontSize: 12, fontWeight: 600 }}>{formatCount(Streamupdated.viewerCount)}</Text>
+                                                <Text style={{ color: '#00BD35', fontSize: 12, fontWeight: 600 }}> {isConnectStream
+                                                    ? `${streamerList.length}/2`
+                                                    : formatCount(Streamupdated.viewerCount)}</Text>
                                             </View>
                                         )}
                                     </TouchableOpacity>
@@ -2152,7 +2789,7 @@ const StreamRoom = ({
                                             alignItems: 'center',
                                             justifyContent: 'space-between',
                                             gap: 7,
-                                            minWidth: 45,
+                                            minWidth: 25,
                                             backgroundColor: 'rgba(36, 32, 32, 0.75)',
                                             borderRadius: 21,
                                             paddingRight: 5,
@@ -2161,7 +2798,7 @@ const StreamRoom = ({
                                         }}>
                                         <Image
                                             source={require('../../assets/images/icons/icon_z.png')}
-                                            style={{ width: 14, height: 14 }}
+                                            style={{ width: 24, height: 14, paddingLeft: 12 }}
                                             resizeMode="contain"
                                         />
                                         <Text
@@ -2203,38 +2840,52 @@ const StreamRoom = ({
                                             showsVerticalScrollIndicator={false}
                                         >
                                             {showUI && (
-                                                roomchat.map((chat, ind) => (
-                                                    <View key={ind} style={styles.streamChatItem}>
-                                                        <TouchableOpacity
-                                                            onPress={() => HandleOpenChatUserProfile(chat)}
-                                                        >
-                                                            <Image
-                                                                style={styles.streamChatItemProfileImg}
-                                                                source={!chat.userProfile || chat.userProfile === 'default'
-                                                                    ? getGenderFallbackImage(chat.Gender)
-                                                                    : { uri: chat.userProfile }
-                                                                }
-                                                            />
-                                                        </TouchableOpacity>
-                                                        <View numberOfLines={1} style={styles.streamChatMessageBox}>
-                                                            <Text
-                                                                numberOfLines={1}
-                                                                style={[styles.streamChatUserName,
-                                                                {
-                                                                    color:
-                                                                        `${chat?.TYPE === 'USERJOINED' ? '#00F6CD'
-                                                                            : chat.TYPE === 'USERLEFT' ? '#DC112C' : '#DEEE4F'}`,
-                                                                    paddingTop: `${chat?.TYPE === 'USERJOINED' ? 10 : 0}`,
-                                                                }]}>
-                                                                {chat.userName?.length > 30
-                                                                    ? chat.userName?.slice(0, 30) + '...' : chat?.userName}
-                                                            </Text>
-                                                            <Text numberOfLines={3} style={styles.streamChatMessage}>
-                                                                {chat?.message}
-                                                            </Text>
-                                                        </View>
-                                                    </View>
-                                                ))
+                                                <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false}>
+                                                    {roomchat
+                                                        .filter(chat => chat?.screenName !== 'AdminViewer') // Filter out "AdminViewer" messages
+                                                        .map((chat, ind) => (
+                                                            <View key={ind} style={styles.streamChatItem}>
+                                                                <TouchableOpacity onPress={() => HandleOpenChatUserProfile(chat)}>
+                                                                    <Image
+                                                                        style={styles.streamChatItemProfileImg}
+                                                                        source={
+                                                                            chat?.userProfile === 'ziggsta'
+                                                                                ? require('../../assets/images/logo-icon.png')
+                                                                                : !chat.userProfile || chat.userProfile === 'default'
+                                                                                    ? getGenderFallbackImage(chat.Gender)
+                                                                                    : { uri: chat.userProfile }
+                                                                        }
+                                                                    />
+                                                                </TouchableOpacity>
+                                                                <View style={styles.streamChatMessageBox}>
+                                                                    <Text
+                                                                        numberOfLines={1}
+                                                                        style={[
+                                                                            styles.streamChatUserName,
+                                                                            {
+                                                                                color: `${chat?.TYPE === 'USERJOINED'
+                                                                                    ? '#00F6CD'
+                                                                                    : chat.TYPE === 'USERLEFT'
+                                                                                        ? '#DC112C'
+                                                                                        : '#DEEE4F'
+                                                                                    }`,
+                                                                                paddingTop: `${chat?.TYPE === 'USERJOINED' ? 10 : 0}`,
+                                                                            },
+                                                                        ]}
+                                                                    >
+                                                                        {chat?.screenName === 'AdminViewer'
+                                                                            ? 'Viewer'
+                                                                            : chat?.userName?.length > 30
+                                                                                ? chat.userName.slice(0, 30) + '...'
+                                                                                : chat?.userName}
+                                                                    </Text>
+                                                                    <Text style={styles.streamChatMessage}>
+                                                                        {chat?.message}
+                                                                    </Text>
+                                                                </View>
+                                                            </View>
+                                                        ))}
+                                                </ScrollView>
                                             )}
                                         </ScrollView>
                                     </View>
@@ -2305,6 +2956,23 @@ const StreamRoom = ({
                                                     )}
                                                 </TouchableOpacity>
                                             )}
+
+                                            {/* horse race */}
+                                            {!isHost && (
+                                                <TouchableOpacity
+                                                    style={[styles.strRoomFooterSocialActionsBtn, { position: 'relative' }]}
+                                                    onPress={() => {
+                                                        handleHorseGameOpen();
+                                                    }}
+                                                >
+                                                    <Image
+                                                        style={{ width: 35, height: 35 }}
+                                                        source={require('../../assets/images/HorseRaceGame/horse_icon.png')}
+                                                        resizeMode="contain"
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
+
                                             {/* send friend request to host  */}
                                             {/* {!isHost && streamerList?.length === 1 && (
                                                 <TouchableOpacity style={styles.strRoomFooterSocialActionsBtn} disabled={streamLayout[0]?.isFriend} onPress={() => handleFriendRequest(userDetails?.userid, userDetails?.screenName)}>
@@ -2388,7 +3056,7 @@ const StreamRoom = ({
                                                 <TouchableOpacity
                                                     style={styles.strRoomBottomBoxIconBox}
                                                     onPress={ToggleLike}
-                                                    disabled={isHost}
+                                                    disabled={isHost || isLiked}
                                                 >
                                                     <Ionicons name="heart" size={30} color={isLiked ? 'red' : '#fff'} />
                                                 </TouchableOpacity>
@@ -2463,28 +3131,30 @@ const StreamRoom = ({
                                             <Ionicons name="camera-reverse" size={20} color="#fff" />
                                         </TouchableOpacity>
                                         {/* Join As a Guest */}
-                                        {!isHost && (
+                                        {!isHost && streamInfo?.streamType !== 'connect' && (
                                             <TouchableOpacity
                                                 onPress={() => {
-                                                    requestStreamPermission(),
-                                                        HidesettingPanel(),
-                                                        setVisibleModal('message-modal'),
-                                                        setMessage('Request Send To the Host')
+                                                    requestStreamPermission();
+                                                    HidesettingPanel();
+                                                    setVisibleModal('message-modal');
+                                                    setMessage('Request Send To the Host');
                                                 }}
                                                 style={styles.strMoreSettingListItem}
                                                 disabled={hasRequestedStream}
                                             >
                                                 <Text
-                                                    style={
-                                                        [styles.strMoreSettingListItemText,
-                                                        { color: hasRequestedStream ? '#007ACC' : 'white' }]}
+                                                    style={[
+                                                        styles.strMoreSettingListItemText,
+                                                        { color: hasRequestedStream ? '#007ACC' : 'white' }
+                                                    ]}
                                                 >
                                                     {hasRequestedStream ? 'Already Requested' : 'Join As a Guest'}
                                                 </Text>
+
                                                 <MaterialCommunityIcons
                                                     name="video-plus"
                                                     size={21}
-                                                    color={`${hasRequestedStream ? '#007ACC' : 'white'}`}
+                                                    color={hasRequestedStream ? '#007ACC' : 'white'}
                                                 />
                                             </TouchableOpacity>
                                         )}
@@ -2572,7 +3242,7 @@ const StreamRoom = ({
                     >
                         <View style={[styles.profileModalOverlay,
                         themeStyles[theme].profileModalOverlay, { flex: 1, maxHeight: screenHeight * 0.4 }]}>
-                            <View style={{ flexDirection: "row", justifyContent: 'flex-end', marginBottom: 5 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 5 }}>
                                 <TouchableOpacity
                                     onPress={() => setGiftModalVisible(false)}
                                     style={[styles.modalCloseBtn]}
@@ -2646,7 +3316,10 @@ const StreamRoom = ({
                                             }
                                             renderItem={({ item }) => {
                                                 const localImage = giftImages[item.giftIcon];
-                                                if (!localImage) return null;
+
+                                                if (!localImage) {
+                                                    return null;
+                                                }
 
                                                 return (
                                                     <TouchableOpacity
@@ -2687,9 +3360,14 @@ const StreamRoom = ({
             }
             {/* Request Modal */}
 
-            {isHost && <RequestModal visible={togglerequest} onClose={() => setTogglerequest(false)} StreamRequestList={streamrequestlist} streamGuest={streamGuest} />}
-
-
+            {isHost && (
+                <RequestModal
+                    visible={togglerequest}
+                    onClose={() => setTogglerequest(false)}
+                    StreamRequestList={streamrequestlist}
+                    streamGuest={streamGuest}
+                />
+            )}
             {/* close stream modal  */}
             {
                 closeStreamModal && (
@@ -2808,18 +3486,42 @@ const StreamRoom = ({
             )
             }
             {/* Slot Game Modal */}
-            {(visibleModal === 'slot-game' || slotGameVisible) && (
-                <SlotGameModal
-                    visible={visibleModal === 'slot-game' || slotGameVisible}
-                    onClose={handleSlotGameClose}
-                    userData={userData}
-                    hostDetails={userDetails}
-                    roomId={streamInfo?.roomID}
-                    openedBy={slotGameOpenedBy}
-                    isSelfOpened={visibleModal === 'slot-game'}
-                />
-            )
-            }
+            {/* Slot Game Modal */}
+
+            <SlotGameModal
+                visible={visibleModal === 'slot-game' || slotGameVisible}
+                onClose={handleSlotGameClose}
+                userData={userData}
+                hostDetails={userDetails}
+                roomId={streamInfo?.roomID}
+                openedBy={slotGameOpenedBy}
+                isSelfOpened={visibleModal === 'slot-game'}
+                onGameStart={handleSlotGameStart}
+                setHasBought={setHasBought}
+                onForceOpen={() => setSlotGameVisible(true)}
+            />
+
+
+            {horseGameVisible && (() => {
+
+                const hostId = streamInfo?.hostID;
+                const currentUserId = userData?.userid;
+
+                const isHost = Number(currentUserId) === Number(hostId);
+
+                return (
+                    <HorseRaceGameModal
+                        visible={horseGameVisible}
+                        onClose={() => setHorseGameVisible(false)}
+                        userData={userData}
+                        socket={socket}
+                        roomId={streamInfo?.roomID}
+                        isHost={isHost}             // ← ensure this is the boolean you logged
+                    />
+                );
+            })()}
+
+
             {/* Jukebox Modal */}
             {/* {visibleModal === 'juke-box' && (
                 <JukeBoxModal

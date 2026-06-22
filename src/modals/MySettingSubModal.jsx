@@ -136,7 +136,7 @@ const MySettingSubModal = ({ visible, onClose }) => {
                     },
                     // { label: 'Distance (km)', icon: 'people-arrows', type: 'slider', onPress: () => { }, rightArrowVisible: false },
                     // { label: 'Adult content:', icon: 'male', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
-                    { label: 'Only verified profiles:', icon: 'user-check', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
+                    { label: 'Only verified profiles:', icon: 'User_check', type: 'toggle', onPress: () => { }, rightArrowVisible: false },
                 ];
             case 'Notification':
                 return [

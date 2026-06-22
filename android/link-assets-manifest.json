@@ -1,0 +1,177 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/bootstrap-icons.woff",
+      "sha1": "d5831fd39baf13aff7626e483b9a089730f18604"
+    },
+    {
+      "path": "assets/fonts/bootstrap-icons.woff2",
+      "sha1": "020c3c6f9280a315e8425d7f92e15bcd0cdda1b2"
+    },
+    {
+      "path": "assets/fonts/fa-brands-400.ttf",
+      "sha1": "acaf5320927fc169b0089f8f25afb9cfbad353b4"
+    },
+    {
+      "path": "assets/fonts/fa-brands-400.woff2",
+      "sha1": "4022f95e001d734ca8f082b8e7627abd205609ec"
+    },
+    {
+      "path": "assets/fonts/fa-regular-400.ttf",
+      "sha1": "784b4d493ab9a7996b07e4f9f71674b2f2e43e22"
+    },
+    {
+      "path": "assets/fonts/fa-regular-400.woff2",
+      "sha1": "2ed706340547d19c10a409ee02fb08f3d52ff670"
+    },
+    {
+      "path": "assets/fonts/fa-solid-900.ttf",
+      "sha1": "54217d79e7b35011798d712a96d1c4ea08a0ca70"
+    },
+    {
+      "path": "assets/fonts/fa-solid-900.woff2",
+      "sha1": "1aae708e3b94ee981b452a918d28ed037fbb5e18"
+    },
+    {
+      "path": "assets/fonts/fa-v4compatibility.ttf",
+      "sha1": "e47d5bf853d39ec86e62f4897cbcac7dd5c3b5b9"
+    },
+    {
+      "path": "assets/fonts/fa-v4compatibility.woff2",
+      "sha1": "7009126c938f8dad77426a5b44bc21685ee8dfec"
+    },
+    {
+      "path": "assets/fonts/feather.eot",
+      "sha1": "a4b7950838a591b820a82b591e8505af485ab351"
+    },
+    {
+      "path": "assets/fonts/feather.svg",
+      "sha1": "f9a1ae83508a9f93be5a19a4987f523aab633056"
+    },
+    {
+      "path": "assets/fonts/feather.ttf",
+      "sha1": "2bde853cbb769aab80b18f3544a7e7c1f2cbd31b"
+    },
+    {
+      "path": "assets/fonts/feather.woff",
+      "sha1": "7e6a306e6fb6178f325e6ad9a99c761ba5074044"
+    },
+    {
+      "path": "assets/fonts/icomoon.eot",
+      "sha1": "beb01be5dde164107a6e867d602f6eb908d800ca"
+    },
+    {
+      "path": "assets/fonts/icomoon.svg",
+      "sha1": "bca9644a52b1861888f187578ac8dc951c05b96c"
+    },
+    {
+      "path": "assets/fonts/icomoon.ttf",
+      "sha1": "dff7c6a1fa75b92b23f4bf00d98fa0c38a1d94aa"
+    },
+    {
+      "path": "assets/fonts/icomoon.woff",
+      "sha1": "0d48469cec6b87fc8665f2dc05c53a7e7c5f3826"
+    },
+    {
+      "path": "assets/fonts/Lato-Black.ttf",
+      "sha1": "a001eb827743636e04f8efa7d4aeedf0541c46ac"
+    },
+    {
+      "path": "assets/fonts/Lato-BlackItalic.ttf",
+      "sha1": "b490ec02c69bb74f5b4f487c59e984891c8da71c"
+    },
+    {
+      "path": "assets/fonts/Lato-Bold.ttf",
+      "sha1": "542498221d97bee5bdbccf86ee8890bf8e8005c9"
+    },
+    {
+      "path": "assets/fonts/Lato-BoldItalic.ttf",
+      "sha1": "6bf491e78e16d3b9c8a55752e1bd658e15ed7f19"
+    },
+    {
+      "path": "assets/fonts/Lato-Italic.ttf",
+      "sha1": "190187b720ec2f2ff2e4281237e301000e09673f"
+    },
+    {
+      "path": "assets/fonts/Lato-Light.ttf",
+      "sha1": "ad0d178564445a535b15d417f5b18019923d3bab"
+    },
+    {
+      "path": "assets/fonts/Lato-LightItalic.ttf",
+      "sha1": "34388d9a3b64380c9f08d424d0adaa88a0d1650a"
+    },
+    {
+      "path": "assets/fonts/Lato-Regular.ttf",
+      "sha1": "e923c72eda5e50a87e18ff5c71e9ef4b3b6455a3"
+    },
+    {
+      "path": "assets/fonts/Lato-Thin.ttf",
+      "sha1": "07290446bee3f81ce501a3c3dbfde6097c70ca15"
+    },
+    {
+      "path": "assets/fonts/Lato-ThinItalic.ttf",
+      "sha1": "ff4a1a9fe2dcc41d993f4c5067a3baa1c456ff97"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-black-58646a6b80d5a.otf",
+      "sha1": "95a211f130be0584bca8b96f8886fa26e54e4c33"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-heavy-586470160b9e5.otf",
+      "sha1": "07db5cccbe455aa9d3741ce76e1254a714a4d0de"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-semibold-58646eddcae92.otf",
+      "sha1": "8e147d5a6d7902810cfae7d30b637c84f9e8315f"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-thin-58646e9b26e8b.otf",
+      "sha1": "1bac9bcddeb5bac4bbf3a86e2006351ead8e5b90"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-ultralight-58646b19bf205.otf",
+      "sha1": "554e2532435878343790ce55a0a877224548bee8"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Bold.otf",
+      "sha1": "7e7bc546371839f6261b7aa3614a7ee270a12504"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Light.otf",
+      "sha1": "9bbfb53fa3a4004f6da5820bb2d3ea92135308bb"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Regular.otf",
+      "sha1": "cdedea75635f4ca94dc758b2c8022334b5bb1d6b"
+    },
+    {
+      "path": "assets/fonts/themify.eot",
+      "sha1": "df12a0942cf1933f0915fe3d910fa2379f092d83"
+    },
+    {
+      "path": "assets/fonts/themify.svg",
+      "sha1": "106a9ed6d6b0936376b5723611a602a2e3da66c6"
+    },
+    {
+      "path": "assets/fonts/themify.ttf",
+      "sha1": "5bb1fe69452a484566a81076af7567728fe7e43b"
+    },
+    {
+      "path": "assets/fonts/themify.woff",
+      "sha1": "9394f35bd2addd24666b79bfc36d4f9d247cb01d"
+    },
+    {
+      "path": "ios/StreamingApp/assets/bugle.mp3",
+      "sha1": "1ecb69910c2f83932e9722e597660d74125e7a20"
+    },
+    {
+      "path": "ios/StreamingApp/assets/crowdcheer.mp3",
+      "sha1": "6a3a032962b082678c300eb525019ceb2d388cf6"
+    },
+    {
+      "path": "ios/StreamingApp/assets/fastextreme.mp3",
+      "sha1": "45342483ab4857e45120691013e1f647fe974f45"
+    }
+  ]
+}

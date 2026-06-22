@@ -5,7 +5,7 @@ import {
 import { AppState } from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import { mediaDevices, RTCIceCandidate, RTCPeerConnection, RTCSessionDescription } from 'react-native-webrtc';
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 import { styles, themeStyles } from '../../assets/styles/ThemeStyles';
 import themeColors from '../../assets/styles/Colors';
@@ -57,6 +57,35 @@ export const MainScreen = () => {
   const pendingReofferTimeoutsRef = useRef({});
 
   useEffect(() => {
+
+  const handleConnectCohost = async () => {
+
+    const granted =
+      await requestPermissions();
+
+    if (!granted) {
+      return;
+    }
+
+    requestStreamPermission();
+  };
+
+  socket.on(
+    'connect-cohost-enabled',
+    handleConnectCohost
+  );
+
+  return () => {
+
+    socket.off(
+      'connect-cohost-enabled',
+      handleConnectCohost
+    );
+  };
+
+}, []);
+
+  useEffect(() => {
     setIsInStreamRoom(joined); // keep global value in sync
     fetchProfileDetails();
   }, [joined, isSocketConnected]);
@@ -66,7 +95,7 @@ export const MainScreen = () => {
       try {
         // Intentionally do nothing on background/active to keep mic/camera intact.
         // This prevents any renegotiation or stopping of tracks when the user minimizes the app.
-        console.log('[handleAppStateChange] app state =>', nextAppState, '- no-op (tracks preserved)');
+        //console.log('[handleAppStateChange] app state =>', nextAppState, '- no-op (tracks preserved)');
       } catch (err) {
         // Use your existing error logger
         SendErrorTotheServer(err, 'handleAppStateChange');
@@ -115,10 +144,10 @@ export const MainScreen = () => {
             };
           }
         } catch (e) {
-          console.log('Error reading saved userLocation', e);
+          //console.log('Error reading saved userLocation', e);
         }
 
-        console.log("request modal address", Address);
+        //console.log("request modal address", Address);
 
         socket.emit('requestStream', {
           ...Address,
@@ -134,7 +163,7 @@ export const MainScreen = () => {
   };
 
   const HandleConnect = () => {
-    console.log('✅ Connected to Socket.IO server');
+    //console.log('✅ Connected to Socket.IO server');
     setconnectingpanel(false);
     setIsSocketConnected(true);
 
@@ -150,7 +179,7 @@ export const MainScreen = () => {
 
       // Add validation before reconnecting
       if (roomID && userData?.userid) {
-        console.log(`🔄 [Client-Reconnect] Attempting reconnection to room ${roomID}`);
+        //console.log(`🔄 [Client-Reconnect] Attempting reconnection to room ${roomID}`);
 
         socket.emit('reconnectUser',
           userData.userid,
@@ -167,7 +196,7 @@ export const MainScreen = () => {
           }, 1500); // Slightly longer delay for stability
         }
       } else {
-        console.error('❌ [Client-Reconnect] Missing roomID or userID');
+        //console.error('❌ [Client-Reconnect] Missing roomID or userID');
       }
     }
   };
@@ -207,6 +236,13 @@ export const MainScreen = () => {
         }, 2000);
         setIsStreaming(true);
       }
+      if (
+    streamInfo?.streamType === 'connect' &&
+    !IsHost
+) {
+    await startLocalStream();
+    setIsUserStreaming(true);
+}
 
       users.forEach(userId => {
         if (!peersRef.current[userId]) {
@@ -237,38 +273,38 @@ export const MainScreen = () => {
         const peer = createPeer(userId);
         peersRef.current[userId] = peer;
 
-        console.log('🧪 [HandleNewUser] BEFORE OFFER for', userId, {
-          senders: peer.getSenders().map(s => ({
-            kind: s.track?.kind,
-            id: s.track?.id,
-            readyState: s.track?.readyState,
-          })),
-          transceivers: peer.getTransceivers().map(t => ({
-            mid: t.mid,
-            direction: t.direction,
-            currentDirection: t.currentDirection,
-            recvKind: t.receiver?.track?.kind,
-          })),
-        });
+        // console.log('🧪 [HandleNewUser] BEFORE OFFER for', userId, {
+        //   senders: peer.getSenders().map(s => ({
+        //     kind: s.track?.kind,
+        //     id: s.track?.id,
+        //     readyState: s.track?.readyState,
+        //   })),
+        //   transceivers: peer.getTransceivers().map(t => ({
+        //     mid: t.mid,
+        //     direction: t.direction,
+        //     currentDirection: t.currentDirection,
+        //     recvKind: t.receiver?.track?.kind,
+        //   })),
+        // });
 
         const offer = await peer.createOffer();
-        console.log('🧪 [HandleNewUser] createOffer DONE for', userId, {
-          sdpSnippet: offer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
-        });
+        // console.log('🧪 [HandleNewUser] createOffer DONE for', userId, {
+        //   sdpSnippet: offer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        // });
 
         await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
-        console.log('🧪 [HandleNewUser] setLocalDescription DONE for', userId, {
-          localDescType: peer.localDescription?.type,
-        });
+        // console.log('🧪 [HandleNewUser] setLocalDescription DONE for', userId, {
+        //   localDescType: peer.localDescription?.type,
+        // });
 
         socket.emit('signal', { to: userId, data: peer.localDescription });
 
-        console.log('📡 [HandleNewUser] OFFER SENT to', userId);
+        //console.log('📡 [HandleNewUser] OFFER SENT to', userId);
       } else {
-        console.log('ℹ️ [HandleNewUser] Peer already exists for', userId, '- skipping.');
+        //console.log('ℹ️ [HandleNewUser] Peer already exists for', userId, '- skipping.');
       }
     } catch (error) {
-      console.log('❌ [HandleNewUser] ERROR for', userId, String(error));
+      //console.log('❌ [HandleNewUser] ERROR for', userId, String(error));
       SendErrorTotheServer(error, 'HandleNewUser');
     }
   };
@@ -276,106 +312,106 @@ export const MainScreen = () => {
 
   const HandleSignal = async ({ from, data }) => {
     try {
-      console.log('📨 [HandleSignal] CALLED from', from, {
-        dataType: data?.type,
-        hasCandidate: !!data?.candidate,
-      });
+      // console.log('📨 [HandleSignal] CALLED from', from, {
+      //   dataType: data?.type,
+      //   hasCandidate: !!data?.candidate,
+      // });
 
       let peer = peersRef.current[from];
       if (!peer) {
-        console.log('🛠 [HandleSignal] No existing peer for', from, '→ creating new one');
+        //console.log('🛠 [HandleSignal] No existing peer for', from, '→ creating new one');
         peer = createPeer(from);
         peersRef.current[from] = peer;
       }
       if (pendingReofferTimeoutsRef.current[from]) {
         clearTimeout(pendingReofferTimeoutsRef.current[from]);
         delete pendingReofferTimeoutsRef.current[from];
-        console.log(`⏳ [HandleSignal] Cleared pending re-offer timeout for ${from}`);
+        //console.log(`⏳ [HandleSignal] Cleared pending re-offer timeout for ${from}`);
       }
 
-      console.log('🔍 [HandleSignal] Peer state BEFORE handling', from, {
-        signalingState: peer.signalingState,
-        connectionState: peer.connectionState,
-        iceConnectionState: peer.iceConnectionState,
-        senders: peer.getSenders().map(s => ({
-          kind: s.track?.kind,
-          id: s.track?.id,
-          readyState: s.track?.readyState,
-        })),
-        transceivers: peer.getTransceivers().map(t => ({
-          mid: t.mid,
-          direction: t.direction,
-          currentDirection: t.currentDirection,
-          recvKind: t.receiver?.track?.kind,
-        })),
-      });
+      // console.log('🔍 [HandleSignal] Peer state BEFORE handling', from, {
+      //   signalingState: peer.signalingState,
+      //   connectionState: peer.connectionState,
+      //   iceConnectionState: peer.iceConnectionState,
+      //   senders: peer.getSenders().map(s => ({
+      //     kind: s.track?.kind,
+      //     id: s.track?.id,
+      //     readyState: s.track?.readyState,
+      //   })),
+      //   transceivers: peer.getTransceivers().map(t => ({
+      //     mid: t.mid,
+      //     direction: t.direction,
+      //     currentDirection: t.currentDirection,
+      //     recvKind: t.receiver?.track?.kind,
+      //   })),
+      // });
 
       if (data.type === 'offer') {
-        console.log('📡 [HandleSignal] Handling OFFER from', from, {
-          sdpSnippet: data.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
-        });
+        // console.log('📡 [HandleSignal] Handling OFFER from', from, {
+        //   sdpSnippet: data.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        // });
 
         await peer.setRemoteDescription(new RTCSessionDescription(data));
-        console.log('📡 [HandleSignal] setRemoteDescription(OFFER) DONE for', from);
+        //console.log('📡 [HandleSignal] setRemoteDescription(OFFER) DONE for', from);
 
         const answer = await peer.createAnswer();
-        console.log('📡 [HandleSignal] createAnswer DONE for', from, {
-          sdpSnippet: answer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
-        });
+        // console.log('📡 [HandleSignal] createAnswer DONE for', from, {
+        //   sdpSnippet: answer.sdp?.split('\n').filter(l => l.startsWith('m=') || l.startsWith('a=msid')).join(' | '),
+        // });
 
         await peer.setLocalDescription({ type: 'answer', sdp: preferVP8(answer.sdp) });
-        console.log('📡 [HandleSignal] setLocalDescription(ANSWER) DONE for', from, {
-          localDescType: peer.localDescription?.type,
-        });
+        // console.log('📡 [HandleSignal] setLocalDescription(ANSWER) DONE for', from, {
+        //   localDescType: peer.localDescription?.type,
+        // });
 
         socket.emit('signal', { to: from, data: peer.localDescription });
-        console.log('📡 [HandleSignal] ANSWER SENT to', from);
+        //console.log('📡 [HandleSignal] ANSWER SENT to', from);
 
         (pendingCandidates.current[from] || []).forEach(c => {
-          console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
+          //console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
           peer.addIceCandidate(c);
         });
         pendingCandidates.current[from] = [];
       } else if (data.type === 'answer') {
-        console.log('📡 [HandleSignal] Handling ANSWER from', from, {
-          hasRemoteDescription: !!peer.remoteDescription,
-        });
+        // console.log('📡 [HandleSignal] Handling ANSWER from', from, {
+        //   hasRemoteDescription: !!peer.remoteDescription,
+        // });
 
         if (!peer.remoteDescription) {
           await peer.setRemoteDescription(new RTCSessionDescription(data));
-          console.log('📡 [HandleSignal] setRemoteDescription(ANSWER) DONE for', from);
+          //console.log('📡 [HandleSignal] setRemoteDescription(ANSWER) DONE for', from);
 
           (pendingCandidates.current[from] || []).forEach(c => {
-            console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
+            //console.log('🧊 [HandleSignal] Flushing pending candidate for', from);
             peer.addIceCandidate(c);
           });
           pendingCandidates.current[from] = [];
         } else {
-          console.log('ℹ️ [HandleSignal] ANSWER ignored for', from, '- remoteDescription already set.');
+          //console.log('ℹ️ [HandleSignal] ANSWER ignored for', from, '- remoteDescription already set.');
         }
       } else if (data.candidate) {
         const candidate = new RTCIceCandidate(data.candidate);
-        console.log('🧊 [HandleSignal] ICE candidate from', from, {
-          candidate: data.candidate.candidate,
-          hasRemoteDescription: !!peer.remoteDescription,
-        });
+        // console.log('🧊 [HandleSignal] ICE candidate from', from, {
+        //   candidate: data.candidate.candidate,
+        //   hasRemoteDescription: !!peer.remoteDescription,
+        // });
 
         if (peer.remoteDescription?.type) {
           await peer.addIceCandidate(candidate);
-          console.log('🧊 [HandleSignal] addIceCandidate DONE for', from);
+          //console.log('🧊 [HandleSignal] addIceCandidate DONE for', from);
         } else {
-          console.log('🧊 [HandleSignal] No remoteDescription yet, queuing candidate for', from);
+          //console.log('🧊 [HandleSignal] No remoteDescription yet, queuing candidate for', from);
           (pendingCandidates.current[from] = pendingCandidates.current[from] || []).push(candidate);
         }
       }
 
-      console.log('🔍 [HandleSignal] Peer state AFTER handling', from, {
-        signalingState: peer.signalingState,
-        connectionState: peer.connectionState,
-        iceConnectionState: peer.iceConnectionState,
-      });
+      // console.log('🔍 [HandleSignal] Peer state AFTER handling', from, {
+      //   signalingState: peer.signalingState,
+      //   connectionState: peer.connectionState,
+      //   iceConnectionState: peer.iceConnectionState,
+      // });
     } catch (error) {
-      console.log('❌ [HandleSignal] ERROR for', String(error));
+      //console.log('❌ [HandleSignal] ERROR for', String(error));
       socket.emit('Clientlogs', error);
       SendErrorTotheServer(error, 'HandleSignal');
     }
@@ -431,7 +467,7 @@ export const MainScreen = () => {
 
   const HandlereconnectWithNewPeer = async ({ socketId, userId, isHost }) => {
     try {
-      console.log(`🔄 [Peer-Reconnect] Handling peer for socket: ${socketId}, user: ${userId}`);
+      //console.log(`🔄 [Peer-Reconnect] Handling peer for socket: ${socketId}, user: ${userId}`);
 
       // Only proceed if it's not our own socket and we have local stream
       if (socket.id !== socketId && localStreamRef.current) {
@@ -440,7 +476,7 @@ export const MainScreen = () => {
         if (peersRef.current[socketId]) {
           peersRef.current[socketId].close();
           delete peersRef.current[socketId];
-          console.log(`   ↪ Cleaned up existing peer for ${socketId}`);
+          //console.log(`   ↪ Cleaned up existing peer for ${socketId}`);
         }
 
         const peer = createPeer(socketId);
@@ -448,16 +484,16 @@ export const MainScreen = () => {
 
         // Add tracks if we're streaming
         if (isuserstreaming) {
-          console.log("➕ addTrack ->", track.kind, {
-            id: track.id,
-            readyState: track.readyState,
-            enabled: track.enabled
-          });
+          // console.log("➕ addTrack ->", track.kind, {
+          //   id: track.id,
+          //   readyState: track.readyState,
+          //   enabled: track.enabled
+          // });
 
           try {
             peer.addTrack(track, localStreamRef.current);
           } catch (trackError) {
-            console.warn(`⚠️ Failed to add track:`, trackError);
+            //console.warn(`⚠️ Failed to add track:`, trackError);
           }
         }
 
@@ -465,10 +501,10 @@ export const MainScreen = () => {
         await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
         socket.emit('signal', { to: socketId, data: peer.localDescription });
 
-        console.log(`✅ [Peer-Reconnect] Offer sent to ${socketId}`);
+        //console.log(`✅ [Peer-Reconnect] Offer sent to ${socketId}`);
       }
     } catch (error) {
-      console.error(`❌ [Peer-Reconnect] Error:`, error);
+      //console.error(`❌ [Peer-Reconnect] Error:`, error);
       SendErrorTotheServer(error, 'HandlereconnectWithNewPeer');
     }
   };
@@ -478,7 +514,7 @@ export const MainScreen = () => {
   };
 
   const HandleUserLeft = (socketId, userinfo) => {
-    console.log('🚪 [HandleUserLeft] user left', userinfo, 'socket:', socketId);
+    //console.log('🚪 [HandleUserLeft] user left', userinfo, 'socket:', socketId);
     try {
       const checkUserInfo = userinfo || {
         ID: socketId,
@@ -488,37 +524,37 @@ export const MainScreen = () => {
         Gender: null,
       };
 
-      console.log('🔍 [HandleUserLeft] checkUserInfo:', checkUserInfo);
+      //console.log('🔍 [HandleUserLeft] checkUserInfo:', checkUserInfo);
 
       if (checkUserInfo.Name && checkUserInfo.Name !== 'Unknown User') {
         HandleUserLeftStream(checkUserInfo);
       }
 
-      console.log('🔍 [HandleUserLeft] BEFORE PEER CLOSE for', socketId, {
-        localTracks: localStreamRef.current?.getTracks().map(t => ({
-          kind: t.kind,
-          id: t.id,
-          readyState: t.readyState,
-          enabled: t.enabled,
-        })),
-        peerExists: !!peersRef.current[socketId],
-        peerSenders: peersRef.current[socketId]?.getSenders().map(s => ({
-          kind: s.track?.kind,
-          id: s.track?.id,
-          readyState: s.track?.readyState,
-        })),
-        peerReceivers: peersRef.current[socketId]?.getReceivers().map(r => ({
-          kind: r.track?.kind,
-          id: r.track?.id,
-          readyState: r.track?.readyState,
-        })),
-        remoteStreamsBefore: remoteStreams.map(s => ({
-          id: s.id,
-          streamId: s.stream?.id,
-          hasVideoTracks: s.stream?.getVideoTracks().length,
-        })),
-        allPeers: Object.keys(peersRef.current || {}),
-      });
+      // console.log('🔍 [HandleUserLeft] BEFORE PEER CLOSE for', socketId, {
+      //   localTracks: localStreamRef.current?.getTracks().map(t => ({
+      //     kind: t.kind,
+      //     id: t.id,
+      //     readyState: t.readyState,
+      //     enabled: t.enabled,
+      //   })),
+      //   peerExists: !!peersRef.current[socketId],
+      //   peerSenders: peersRef.current[socketId]?.getSenders().map(s => ({
+      //     kind: s.track?.kind,
+      //     id: s.track?.id,
+      //     readyState: s.track?.readyState,
+      //   })),
+      //   peerReceivers: peersRef.current[socketId]?.getReceivers().map(r => ({
+      //     kind: r.track?.kind,
+      //     id: r.track?.id,
+      //     readyState: r.track?.readyState,
+      //   })),
+      //   remoteStreamsBefore: remoteStreams.map(s => ({
+      //     id: s.id,
+      //     streamId: s.stream?.id,
+      //     hasVideoTracks: s.stream?.getVideoTracks().length,
+      //   })),
+      //   allPeers: Object.keys(peersRef.current || {}),
+      // });
 
       // Clear from audio levels ref
       delete audioLevelsRef.current[socketId];
@@ -530,10 +566,10 @@ export const MainScreen = () => {
 
       setRemoteStreams(prev => {
         const next = prev.filter(s => s.id !== socketId);
-        console.log('🌐 [HandleUserLeft] setRemoteStreams AFTER for', socketId, {
-          before: prev.map(s => ({ id: s.id, streamId: s.stream?.id })),
-          after: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
-        });
+        // console.log('🌐 [HandleUserLeft] setRemoteStreams AFTER for', socketId, {
+        //   before: prev.map(s => ({ id: s.id, streamId: s.stream?.id })),
+        //   after: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
+        // });
         return next;
       });
 
@@ -543,17 +579,17 @@ export const MainScreen = () => {
       if (isuserstreaming && !isHost) {
         const wasHost = streamerList.find(s => s.ID === socketId && s.IsHost);
         if (wasHost) {
-          console.log('🏠 [HandleUserLeft] Host left, enforcing viewer mode for self');
+          //console.log('🏠 [HandleUserLeft] Host left, enforcing viewer mode for self');
           setIsUserStreaming(false);
           setStreamGuest([]);
         }
       }
 
-      console.log('✅ [HandleUserLeft] DONE for', socketId, {
-        remainingPeers: Object.keys(peersRef.current || {}),
-      });
+      // console.log('✅ [HandleUserLeft] DONE for', socketId, {
+      //   remainingPeers: Object.keys(peersRef.current || {}),
+      // });
     } catch (error) {
-      console.log('❌ [HandleUserLeft] ERROR:', String(error));
+      //console.log('❌ [HandleUserLeft] ERROR:', String(error));
       SendErrorTotheServer(error, 'HandleUserLeft');
     }
   };
@@ -576,7 +612,7 @@ export const MainScreen = () => {
       pendingCandidates.current = {};
       // Reset state
       setRemoteStreams([]);
-      console.log("inside HostLeft Clearing streamerList");
+      //console.log("inside HostLeft Clearing streamerList");
       setStrimerList([]);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setJoined(false);
@@ -657,16 +693,16 @@ export const MainScreen = () => {
         socketId = payloadOrSocketId.socketId || payloadOrSocketId.socketID || payloadOrSocketId.id || null;
       }
 
-      console.log('[User-streamStopped] Processing for socketId:', socketId);
+      //console.log('[User-streamStopped] Processing for socketId:', socketId);
 
       if (!socketId) {
-        console.warn('[User-streamStopped] no socketId found');
+        //console.warn('[User-streamStopped] no socketId found');
         return;
       }
 
       // If this is the current user being stopped
       if (socket.id === socketId) {
-        console.log('[User-streamStopped] Current user was stopped by host');
+        //console.log('[User-streamStopped] Current user was stopped by host');
 
         // Stop local stream
         if (localStreamRef.current) {
@@ -687,7 +723,7 @@ export const MainScreen = () => {
       }
 
       // For other users: remove their stream from all states
-      console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
+      //console.log(`[User-streamStopped] Removing stream for other user: ${socketId}`);
 
       // Clean up peer connection
       if (peersRef.current[socketId]) {
@@ -727,7 +763,7 @@ export const MainScreen = () => {
 
   const HandleDisconnected = () => {
     IsVerified.current = false;
-    console.log('❌ Disconnected from socket server');
+    //console.log('❌ Disconnected from socket server');
     setIsSocketConnected(false)
     setconnectingpanel(true)
     setHasRequestedStream(false)
@@ -750,11 +786,11 @@ export const MainScreen = () => {
 
   const HandleSoftRtcReload = ({ promotedSocket }) => {
     try {
-      console.log('➡️ [softRtcReload] received promotedSocket:', promotedSocket);
+      //console.log('➡️ [softRtcReload] received promotedSocket:', promotedSocket);
 
       // Only viewers should perform this (do not run if I'm the host)
       if (isHost) {
-        console.log('➡️ [softRtcReload] I am host — ignoring');
+        //console.log('➡️ [softRtcReload] I am host — ignoring');
         return;
       }
 
@@ -762,19 +798,19 @@ export const MainScreen = () => {
       if (peersRef.current[promotedSocket]) {
         try { peersRef.current[promotedSocket].close(); } catch (e) { /* ignore */ }
         delete peersRef.current[promotedSocket];
-        console.log('🧹 [softRtcReload] closed local peer for', promotedSocket);
+        //console.log('🧹 [softRtcReload] closed local peer for', promotedSocket);
       }
 
       // 2) Remove remoteStreams tile immediately so UI won't show stale/blank tile
       setRemoteStreams(prev => {
         const next = prev.filter(s => s.id !== promotedSocket);
-        console.log('🧹 [softRtcReload] removed remoteStreams entry for', promotedSocket, { before: prev.length, after: next.length });
+        //console.log('🧹 [softRtcReload] removed remoteStreams entry for', promotedSocket, { before: prev.length, after: next.length });
         return next;
       });
 
       // 3) Ask server to ask promoted streamer to create a fresh offer to this viewer
       socket.emit('requestReoffer', { to: promotedSocket });
-      console.log('📨 [softRtcReload] emitted requestReoffer to server for promotedSocket:', promotedSocket);
+      //console.log('📨 [softRtcReload] emitted requestReoffer to server for promotedSocket:', promotedSocket);
 
       // 4) Start a timeout; if no offer arrives within X ms, fallback to single rejoin
       const TIMEOUT_MS = 7000;
@@ -782,26 +818,26 @@ export const MainScreen = () => {
         clearTimeout(pendingReofferTimeoutsRef.current[promotedSocket]);
       }
       pendingReofferTimeoutsRef.current[promotedSocket] = setTimeout(() => {
-        console.warn('[softRtcReload] reoffer timeout for', promotedSocket, '-> trigger forceSingleRejoin');
+        //console.warn('[softRtcReload] reoffer timeout for', promotedSocket, '-> trigger forceSingleRejoin');
         socket.emit('forceSingleRejoin', { socketId: socket.id });
         delete pendingReofferTimeoutsRef.current[promotedSocket];
       }, TIMEOUT_MS);
 
     } catch (err) {
-      console.error('❌ [softRtcReload] handler error', err);
+      //console.error('❌ [softRtcReload] handler error', err);
       SendErrorTotheServer(err, 'softRtcReload');
     }
   }
 
   const HandlePleaseCreateOffer = async ({ toSocket }) => {
     try {
-      console.log('📣 [pleaseCreateOffer] asked to create fresh offer for', toSocket);
+      //console.log('📣 [pleaseCreateOffer] asked to create fresh offer for', toSocket);
 
       // Clean up any existing peer for that viewer on this client
       if (peersRef.current[toSocket]) {
         try { peersRef.current[toSocket].close(); } catch (e) { }
         delete peersRef.current[toSocket];
-        console.log('🧹 [pleaseCreateOffer] closed existing peer for', toSocket);
+        //console.log('🧹 [pleaseCreateOffer] closed existing peer for', toSocket);
       }
 
       // Create a new peer using your createPeer helper
@@ -813,45 +849,45 @@ export const MainScreen = () => {
       await peer.setLocalDescription({ type: 'offer', sdp: preferVP8(offer.sdp) });
 
       socket.emit('signal', { to: toSocket, data: peer.localDescription });
-      console.log('📡 [pleaseCreateOffer] OFFER SENT to', toSocket);
+      //console.log('📡 [pleaseCreateOffer] OFFER SENT to', toSocket);
 
     } catch (err) {
-      console.error('❌ [pleaseCreateOffer] error', err);
+      //console.error('❌ [pleaseCreateOffer] error', err);
       SendErrorTotheServer(err, 'pleaseCreateOffer');
     }
   }
 
   const HandleFallbackToViewer = (data) => {
-    console.log("📩 [fallback-to-viewer] event received:", data);
+    //console.log("📩 [fallback-to-viewer] event received:", data);
 
     if (!data) {
-      console.warn("⚠️ No data received in fallback-to-viewer event");
+      //console.warn("⚠️ No data received in fallback-to-viewer event");
       return;
     }
 
     const { hostStreamers } = data;
-    console.log("✅ Parsed hostStreamers:", hostStreamers);
+    //console.log("✅ Parsed hostStreamers:", hostStreamers);
 
     // Only process if we're not the host
     if (!isHost) {
-      console.log("🔄 Switching this client to viewer mode");
+      //console.log("🔄 Switching this client to viewer mode");
       setIsHost(false);
       setIsUserStreaming(false);
       setconnectingpanel(false);
 
       // Update streamer list with host streamers only
-      console.log("👥 Updating streamer list with host streamers only:", hostStreamers);
+      //console.log("👥 Updating streamer list with host streamers only:", hostStreamers);
       setStrimerList(hostStreamers || []);
 
       // Clear guest/co-host streams
-      console.log("🧹 Clearing guest/co-host streams");
+      //console.log("🧹 Clearing guest/co-host streams");
       setStreamGuest([]);
 
       // Clean up any peer connections that shouldn't exist
       Object.keys(peersRef.current).forEach(peerSocketId => {
         const isHostPeer = hostStreamers?.some(host => host.ID === peerSocketId);
         if (!isHostPeer && peerSocketId !== socket.id) {
-          console.log(`🧹 Cleaning up non-host peer: ${peerSocketId}`);
+          //console.log(`🧹 Cleaning up non-host peer: ${peerSocketId}`);
           if (peersRef.current[peerSocketId]) {
             peersRef.current[peerSocketId].close();
             delete peersRef.current[peerSocketId];
@@ -881,7 +917,7 @@ export const MainScreen = () => {
 
   useEffect(() => {
     socket.on('rejoin-as-viewer', ({ roomID, RoomInfo }) => {
-      console.log('💡 Rejoining as viewer due to host removal:', roomID);
+      //console.log('💡 Rejoining as viewer due to host removal:', roomID);
       joinRoom(roomID, RoomInfo); // call your existing joinRoom function
     });
 
@@ -922,7 +958,12 @@ export const MainScreen = () => {
       socket.on('fallback-to-viewer', HandleFallbackToViewer)
       socket.on('softRtcReload', HandleSoftRtcReload)
       socket.on('pleaseCreateOffer', HandlePleaseCreateOffer)
-
+      // Add handler for room-terminated
+      socket.on('room-terminated', ({ message }) => {
+        Alert.alert('Room Ended', message || 'This room has been terminated by the admin.', [
+          { text: 'OK', onPress: () => leaveRoom() },
+        ]);
+      });
     }
 
     return () => {
@@ -940,22 +981,23 @@ export const MainScreen = () => {
         socket.off('reconnectWithNewPeer', HandlereconnectWithNewPeer);
         socket.off('approvedStreamers', HandleGetListStreamers);
         socket.off('host-action', HandleHostAction);
-        socket.off('User-streamStopped', HandleUserStreamStoped)
+        socket.off('User-streamStopped', HandleUserStreamStoped);
         socket.off('userLeft', HandleUserLeft);
         socket.off('Hostleft', HandleHostLeft)
-        socket.off('roomInfo', HandleRoomInfo)
-        socket.off('new_stream', HandleNewStream)
-        socket.off('Close_stream', HandleLeaveStream)
-        socket.off('roomFull', HandleRoomFull)
+        socket.off('roomInfo', HandleRoomInfo);
+        socket.off('new_stream', HandleNewStream);
+        socket.off('Close_stream', HandleLeaveStream);
+        socket.off('roomFull', HandleRoomFull);
         socket.off('disconnect', HandleDisconnected);
-        socket.off('Host-Disconnected', HandleUserLeft)
-        socket.off('streamer-List', HandleStreamList)
-        socket.off('newuser-joined', HandlenewUserJoined)
+        socket.off('Host-Disconnected', HandleUserLeft);
+        socket.off('streamer-List', HandleStreamList);
+        socket.off('newuser-joined', HandlenewUserJoined);
         socket.off('Total-GiftValue', HandleTotalGiftValue)
         // socket.off('Force-Stop-Stream', HandleforceStopStream);
-        socket.off('fallback-to-viewer', HandleFallbackToViewer)
-        socket.off('softRtcReload', HandleSoftRtcReload)
-        socket.off('pleaseCreateOffer', HandlePleaseCreateOffer)
+        socket.off('fallback-to-viewer', HandleFallbackToViewer);
+        socket.off('softRtcReload', HandleSoftRtcReload);
+        socket.off('pleaseCreateOffer', HandlePleaseCreateOffer);
+        socket.off('room-terminated');
       }
     }
   }, [isHost, isSocketConnected]);
@@ -971,22 +1013,22 @@ export const MainScreen = () => {
 
   const createPeer = (socketId) => {
     try {
-      console.log('🛠 [createPeer] CALLED for:', socketId, {
-        hasLocalStream: !!localStreamRef.current,
-        localVideoTracks: localStreamRef.current?.getVideoTracks().map(t => ({
-          id: t.id,
-          kind: t.kind,
-          readyState: t.readyState,
-          enabled: t.enabled,
-        })) || [],
-        localAudioTracks: localStreamRef.current?.getAudioTracks().map(t => ({
-          id: t.id,
-          kind: t.kind,
-          readyState: t.readyState,
-          enabled: t.enabled,
-        })) || [],
-        existingPeers: Object.keys(peersRef.current || {}),
-      });
+      // console.log('🛠 [createPeer] CALLED for:', socketId, {
+      //   hasLocalStream: !!localStreamRef.current,
+      //   localVideoTracks: localStreamRef.current?.getVideoTracks().map(t => ({
+      //     id: t.id,
+      //     kind: t.kind,
+      //     readyState: t.readyState,
+      //     enabled: t.enabled,
+      //   })) || [],
+      //   localAudioTracks: localStreamRef.current?.getAudioTracks().map(t => ({
+      //     id: t.id,
+      //     kind: t.kind,
+      //     readyState: t.readyState,
+      //     enabled: t.enabled,
+      //   })) || [],
+      //   existingPeers: Object.keys(peersRef.current || {}),
+      // });
 
       const peer = new RTCPeerConnection({ iceServers });
 
@@ -994,143 +1036,153 @@ export const MainScreen = () => {
       if (pendingReofferTimeoutsRef.current[socketId]) {
         clearTimeout(pendingReofferTimeoutsRef.current[socketId]);
         delete pendingReofferTimeoutsRef.current[socketId];
-        console.log(`⏳ [createPeer] Cleared pending re-offer timeout for ${socketId}`);
+        //console.log(`⏳ [createPeer] Cleared pending re-offer timeout for ${socketId}`);
       }
       /* ⭐⭐⭐ END INSERT ⭐⭐⭐ */
 
-      console.log('🛠 [createPeer] NEW RTCPeerConnection for:', socketId, {
-        iceServers,
-      });
+      // console.log('🛠 [createPeer] NEW RTCPeerConnection for:', socketId, {
+      //   iceServers,
+      // });
 
       // Add local tracks if present
       if (localStreamRef.current) {
         const tracks = localStreamRef.current.getTracks();
-        console.log('➕ [createPeer] ADDING LOCAL TRACKS to', socketId, {
-          trackCount: tracks.length,
-        });
+        // console.log('➕ [createPeer] ADDING LOCAL TRACKS to', socketId, {
+        //   trackCount: tracks.length,
+        // });
 
         tracks.forEach(track => {
-          console.log('➕ [createPeer] addTrack()', socketId, {
-            kind: track.kind,
-            id: track.id,
-            readyState: track.readyState,
-            enabled: track.enabled,
-          });
+          // console.log('➕ [createPeer] addTrack()', socketId, {
+          //   kind: track.kind,
+          //   id: track.id,
+          //   readyState: track.readyState,
+          //   enabled: track.enabled,
+          // });
           try {
             peer.addTrack(track, localStreamRef.current);
           } catch (e) {
-            console.log('⚠️ [createPeer] addTrack FAILED for', socketId, {
-              error: String(e),
-            });
+            // console.log('⚠️ [createPeer] addTrack FAILED for', socketId, {
+            //   error: String(e),
+            // });
           }
         });
       } else {
-        console.log('ℹ️ [createPeer] NO localStreamRef.current for', socketId);
+        //console.log('ℹ️ [createPeer] NO localStreamRef.current for', socketId);
       }
 
       // Immediately log senders/transceivers
       try {
-        console.log('🛰 [createPeer] AFTER addTrack for', socketId, {
-          senders: peer.getSenders().map(s => ({
-            kind: s.track?.kind,
-            id: s.track?.id,
-            readyState: s.track?.readyState,
-          })),
-          receivers: peer.getReceivers().map(r => ({
-            kind: r.track?.kind,
-            id: r.track?.id,
-            readyState: r.track?.readyState,
-          })),
-          transceivers: peer.getTransceivers().map(t => ({
-            mid: t.mid,
-            direction: t.direction,
-            currentDirection: t.currentDirection,
-            recvTrackKind: t.receiver?.track?.kind,
-            recvTrackId: t.receiver?.track?.id,
-            recvReadyState: t.receiver?.track?.readyState,
-          })),
-        });
+        // console.log('🛰 [createPeer] AFTER addTrack for', socketId, {
+        //   senders: peer.getSenders().map(s => ({
+        //     kind: s.track?.kind,
+        //     id: s.track?.id,
+        //     readyState: s.track?.readyState,
+        //   })),
+        //   receivers: peer.getReceivers().map(r => ({
+        //     kind: r.track?.kind,
+        //     id: r.track?.id,
+        //     readyState: r.track?.readyState,
+        //   })),
+        //   transceivers: peer.getTransceivers().map(t => ({
+        //     mid: t.mid,
+        //     direction: t.direction,
+        //     currentDirection: t.currentDirection,
+        //     recvTrackKind: t.receiver?.track?.kind,
+        //     recvTrackId: t.receiver?.track?.id,
+        //     recvReadyState: t.receiver?.track?.readyState,
+        //   })),
+        // });
       } catch (e) {
-        console.log('⚠️ [createPeer] Error inspecting transceivers/senders:', String(e));
+        //console.log('⚠️ [createPeer] Error inspecting transceivers/senders:', String(e));
       }
 
       // ontrack sets remote stream in state
       peer.ontrack = (event) => {
+        //console.log('Received remote track:', event.streams);
         try {
           const stream = event.streams && event.streams[0];
 
-          // ⭐⭐⭐ VIDEO TRACK FIX — ADDED ⭐⭐⭐
+          // ⭐ NEW FIX: Ensure ALL video tracks are enabled
+          const videoTracks = stream?.getVideoTracks() || [];
+          if (videoTracks.length > 0) {
+            videoTracks.forEach(track => {
+              if (!track.enabled) {
+                //console.log('🎥 Enabling video track:', track.id);
+                track.enabled = true;
+              }
+            });
+          }
+
+          // ⭐⭐⭐ VIDEO TRACK FIX ⭐⭐⭐
           const videoTrack = stream?.getVideoTracks()[0];
 
           if (videoTrack) {
-            console.log("🎥 Remote video track received:", {
-              enabled: videoTrack.enabled,
-              state: videoTrack.readyState,
-            });
+            // console.log("🎥 Remote video track received:", {
+            //   enabled: videoTrack.enabled,
+            //   state: videoTrack.readyState,
+            // });
 
-            // ★ Force video ON (fix blank video)
+            // Force video ON
             videoTrack.enabled = true;
 
-            //autorecover id video track are muted 
+            // autorecover if track muted
             videoTrack.onmute = () => {
-              console.log("❌ Remote video track muted → re-enabling for", socketId);
+              //console.log("❌ Remote video track muted → re-enabling for", socketId);
               videoTrack.enabled = true;
             };
 
             videoTrack.onunmute = () => {
-              console.log("✅ Remote video active again for", socketId);
+              //console.log("✅ Remote video active again for", socketId);
             };
 
-
             if (videoTrack.readyState === "ended") {
-              console.log("⚠️ Remote video track ended → requesting restart", socketId);
+              //console.log("⚠️ Remote video track ended → requesting restart", socketId);
               socket.emit("requestVideoRestart", socketId);
             }
           }
 
-
-          console.log('📥 [ontrack] RAW EVENT from:', socketId, {
-            hasStreams: !!event.streams,
-            streamCount: event.streams?.length || 0,
-            streamId: stream?.id,
-            allTracks: stream ? stream.getTracks().map(t => ({
-              kind: t.kind,
-              id: t.id,
-              readyState: t.readyState,
-              enabled: t.enabled,
-            })) : [],
-            videoTracks: stream ? stream.getVideoTracks().map(t => ({
-              kind: t.kind,
-              id: t.id,
-              readyState: t.readyState,
-              enabled: t.enabled,
-            })) : [],
-          });
+          // console.log('📥 [ontrack] RAW EVENT from:', socketId, {
+          //   hasStreams: !!event.streams,
+          //   streamCount: event.streams?.length || 0,
+          //   streamId: stream?.id,
+          //   allTracks: stream ? stream.getTracks().map(t => ({
+          //     kind: t.kind,
+          //     id: t.id,
+          //     readyState: t.readyState,
+          //     enabled: t.enabled,
+          //   })) : [],
+          //   videoTracks: stream ? stream.getVideoTracks().map(t => ({
+          //     kind: t.kind,
+          //     id: t.id,
+          //     readyState: t.readyState,
+          //     enabled: t.enabled,
+          //   })) : [],
+          // });
 
           if (!stream || !stream.getVideoTracks().length) {
-            console.log('⚠️ [ontrack] No valid VIDEO tracks for', socketId, {
-              streamId: stream?.id,
-            });
+            // console.log('⚠️ [ontrack] No valid VIDEO tracks for', socketId, {
+            //   streamId: stream?.id,
+            // });
             return;
           }
 
-          console.log('✅ [ontrack] VALID VIDEO TRACK for', socketId, {
-            streamId: stream.id,
-            videoTracks: stream.getVideoTracks().map(t => ({
-              id: t.id,
-              readyState: t.readyState,
-              enabled: t.enabled,
-            })),
-          });
+          // console.log('✅ [ontrack] VALID VIDEO TRACK for', socketId, {
+          //   streamId: stream.id,
+          //   videoTracks: stream.getVideoTracks().map(t => ({
+          //     id: t.id,
+          //     readyState: t.readyState,
+          //     enabled: t.enabled,
+          //   })),
+          // });
 
           setRemoteStreams(prev => {
             const existing = prev.find(s => s.id === socketId);
 
-            console.log('🌐 [setRemoteStreams] BEFORE update for', socketId, {
-              prevCount: prev.length,
-              hasExisting: !!existing,
-              existingStreamId: existing?.stream?.id,
-            });
+            // console.log('🌐 [setRemoteStreams] BEFORE update for', socketId, {
+            //   prevCount: prev.length,
+            //   hasExisting: !!existing,
+            //   existingStreamId: existing?.stream?.id,
+            // });
 
             let next;
             if (existing && existing.stream === stream) {
@@ -1141,10 +1193,10 @@ export const MainScreen = () => {
               next = [...prev, { id: socketId, stream, isSpeaking: false, audioLevel: 0 }];
             }
 
-            console.log('🌐 [setRemoteStreams] AFTER update for', socketId, {
-              nextCount: next.length,
-              ids: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
-            });
+            // console.log('🌐 [setRemoteStreams] AFTER update for', socketId, {
+            //   nextCount: next.length,
+            //   ids: next.map(s => ({ id: s.id, streamId: s.stream?.id })),
+            // });
 
             return next;
           });
@@ -1153,10 +1205,11 @@ export const MainScreen = () => {
             InCallManager.start({ media: 'video', auto: true });
             InCallManager.setForceSpeakerphoneOn(true);
           } catch (e) {
-            console.log('⚠️ [ontrack] InCallManager error:', String(e));
+            //console.log('⚠️ [ontrack] InCallManager error:', String(e));
           }
+
         } catch (e) {
-          console.log('❌ [ontrack] ERROR handling track for', socketId, String(e));
+          //console.log('❌ [ontrack] ERROR handling track for', socketId, String(e));
         }
       };
 
@@ -1183,21 +1236,21 @@ export const MainScreen = () => {
           const ip = ipPortMatch ? ipPortMatch[0].split(" ")[0] : "unknown";
           const port = ipPortMatch ? ipPortMatch[0].split(" ")[1] : "unknown";
 
-          console.log("🔍 ICE CANDIDATE FOUND", {
-            socketId,
-            candidateType,
-            transport,
-            ip,
-            port,
-            raw: cand,
-          });
+          // console.log("🔍 ICE CANDIDATE FOUND", {
+          //   socketId,
+          //   candidateType,
+          //   transport,
+          //   ip,
+          //   port,
+          //   raw: cand,
+          // });
 
           if (candidateType === "relay") {
-            console.log("🚀 RELAY CANDIDATE ✔ (TURN WORKING)", {
-              relayIP: ip,
-              relayPort: port,
-              transport,
-            });
+            // console.log("🚀 RELAY CANDIDATE ✔ (TURN WORKING)", {
+            //   relayIP: ip,
+            //   relayPort: port,
+            //   transport,
+            // });
           }
 
           // 🔁 IMPORTANT: keep signaling behavior identical
@@ -1206,21 +1259,21 @@ export const MainScreen = () => {
             data: { candidate: event.candidate },
           });
         } else {
-          console.log("✅ [onicecandidate] ICE gathering complete for", socketId);
+          //console.log("✅ [onicecandidate] ICE gathering complete for", socketId);
         }
       };
 
 
       peer.onconnectionstatechange = () => {
-        console.log('📶 [RTCPeerConnection] connectionState for', socketId, '=', peer.connectionState);
+        //console.log('📶 [RTCPeerConnection] connectionState for', socketId, '=', peer.connectionState);
       };
 
       peer.oniceconnectionstatechange = () => {
-        console.log('🌐 [RTCPeerConnection] iceConnectionState for', socketId, '=', peer.iceConnectionState);
+        //console.log('🌐 [RTCPeerConnection] iceConnectionState for', socketId, '=', peer.iceConnectionState);
       };
 
       peer.onsignalingstatechange = () => {
-        console.log('📡 [RTCPeerConnection] signalingState for', socketId, '=', peer.signalingState);
+        //console.log('📡 [RTCPeerConnection] signalingState for', socketId, '=', peer.signalingState);
       };
 
       const audioIntervalId = setInterval(async () => {
@@ -1250,26 +1303,26 @@ export const MainScreen = () => {
 
       const origClose = peer.close.bind(peer);
       peer.close = () => {
-        console.log('🧹 [peer.close] CALLED for', socketId, {
-          senders: peer.getSenders().map(s => ({
-            kind: s.track?.kind,
-            id: s.track?.id,
-            readyState: s.track?.readyState,
-          })),
-          receivers: peer.getReceivers().map(r => ({
-            kind: r.track?.kind,
-            id: r.track?.id,
-            readyState: r.track?.readyState,
-          })),
-          transceivers: peer.getTransceivers().map(t => ({
-            mid: t.mid,
-            direction: t.direction,
-            currentDirection: t.currentDirection,
-            recvKind: t.receiver?.track?.kind,
-            recvId: t.receiver?.track?.id,
-            recvReadyState: t.receiver?.track?.readyState,
-          })),
-        });
+        // console.log('🧹 [peer.close] CALLED for', socketId, {
+        //   senders: peer.getSenders().map(s => ({
+        //     kind: s.track?.kind,
+        //     id: s.track?.id,
+        //     readyState: s.track?.readyState,
+        //   })),
+        //   receivers: peer.getReceivers().map(r => ({
+        //     kind: r.track?.kind,
+        //     id: r.track?.id,
+        //     readyState: r.track?.readyState,
+        //   })),
+        //   transceivers: peer.getTransceivers().map(t => ({
+        //     mid: t.mid,
+        //     direction: t.direction,
+        //     currentDirection: t.currentDirection,
+        //     recvKind: t.receiver?.track?.kind,
+        //     recvId: t.receiver?.track?.id,
+        //     recvReadyState: t.receiver?.track?.readyState,
+        //   })),
+        // });
 
         try {
           if (peer._audioIntervalId) {
@@ -1280,14 +1333,14 @@ export const MainScreen = () => {
 
         try { origClose(); } catch (e) { }
 
-        console.log('🧹 [peer.close] FINISHED for', socketId);
+        //console.log('🧹 [peer.close] FINISHED for', socketId);
       };
 
-      console.log('✅ [createPeer] Peer CREATED for', socketId);
+      //console.log('✅ [createPeer] Peer CREATED for', socketId);
 
       return peer;
     } catch (error) {
-      console.log('❌ [createPeer] ERROR for', socketId, String(error));
+      //console.log('❌ [createPeer] ERROR for', socketId, String(error));
       SendErrorTotheServer(error, 'createPeer');
     }
   };
@@ -1366,24 +1419,25 @@ export const MainScreen = () => {
         }
 
       } catch (e) {
-        console.log('Error reading userLocation', e);
+        //console.log('Error reading userLocation', e);
       }
 
       // -----------------------------
       // 🔥 Emit join room with final Address
       // -----------------------------
       socket.emit(
-        'joinRoom',
-        false,
-        roomID,
-        userData?.userid,
-        userData?.screenName,
-        Address,
-        userData?.avatar,
-        userData?.gender
-      );
+  'joinRoom',
+  false,
+  roomID,
+  userData.userid,
+  userData.screenName,
+  Address,
+  userData.avatar,
+  userData.gender,
+  RoomInfo?.streamType || 'public'
+);
 
-      console.log(`🚪 Joining room ${roomID} with address:`, Address);
+      //console.log(`🚪 Joining room ${roomID} with address:`, Address);
 
     } catch (err) {
       SendErrorTotheServer(err, 'joinRoom');
@@ -1428,26 +1482,27 @@ export const MainScreen = () => {
           };
         }
 
-        console.log(`🚪 Joining room ${roomID} with address:`, Address);
+        //console.log(`🚪 Joining room ${roomID} with address:`, Address);
 
 
       } catch (e) {
-        console.log('Error reading saved userLocation', e);
+        //console.log('Error reading saved userLocation', e);
       }
 
       // -------------------------------------
       // 🔥 Emit joinRoom for HOST
       // -------------------------------------
-      socket.emit(
-        'joinRoom',
-        true,                    // Host creating room
-        roomID,
-        userData?.userid,
-        userData?.screenName,
-        Address,
-        userData?.avatar,
-        userData?.gender
-      );
+     socket.emit(
+  'joinRoom',
+  true,
+  roomID,
+  userData.userid,
+  userData.screenName,
+  Address,
+  userData.avatar,
+  userData.gender,
+  RoomInfo?.streamType || 'public'
+);
     } catch (err) {
       SendErrorTotheServer(err, 'CreateRoom');
     }
@@ -1473,51 +1528,80 @@ export const MainScreen = () => {
     }
   };
 
-  const leaveRoom = () => {
+  const leaveRoom = useCallback(async () => {
     try {
       // Stop local stream if exists
       if (!socket.id) {
-        console.log('Socket ID not found, cannot emit LeaveRoom');
+        //console.log('Socket ID not found, cannot emit LeaveRoom');
         return;
       }
-      console.log('emiting leaveroom for the server for the socket:', socket.id);
+      //console.log('emiting leaveroom for the server for the socket:', socket.id);
 
-      socket.emit('leaveRoom', socket.id)
+      socket.emit('leaveRoom', socket.id);
+
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(track => track.stop());
-        // remote streams close 
+        //console.log('Local Stream Tracks:', localStreamRef.current.getTracks());
+        // close all peer connections
         Object.values(peersRef.current).forEach(peer => peer.close());
         peersRef.current = {};
         localStreamRef.current = null;
         setLocalStream(null);
         setRemoteStreams([]);
       }
-      setRoomchat([])
+      setRoomchat([]);
       setHasRequestedStream(false);
       InCallManager.setForceSpeakerphoneOn(false);
       InCallManager.stop();
+
       if (streamInfo?.hostID === userData?.userid) {
-        socket.emit('Hostleft')
-        HandleSetLivestatus(streamInfo?.roomID);
+        socket.emit('Hostleft');
+        handleSetLivestatus(streamInfo?.roomID);
       }
+
       setJoined(false);
       setStreamupdated({ viewerCount: 0, LikeCount: 0 });
       setStreamInfo(null);
       setIsHost(false);
-      setIsInStreamRoom(false); // Reset isInStreamRoom
-      AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false)); // Persist reset state
+      setIsInStreamRoom(false);
+      await AsyncStorage.setItem('isInStreamRoom', JSON.stringify(false));
     } catch (error) {
       SendErrorTotheServer(error, 'leaveRoom');
     }
-  };
+  }, [
+    socket,
+    localStreamRef,
+    peersRef,
+    streamInfo,
+    userData,
+    handleSetLivestatus
+  ]);
+
+  // Inside your MainScreen component
+
+  useEffect(() => {
+    const handleRoomTerminated = ({ message }) => {
+      Alert.alert(
+        'Room Ended',
+        message || 'This room has been terminated by the admin.',
+        [{ text: 'OK', onPress: () => leaveRoom() }]
+      );
+    };
+
+    socket.on('room-terminated', handleRoomTerminated);
+
+    return () => {
+      socket.off('room-terminated', handleRoomTerminated);
+    };
+  }, [socket, leaveRoom]);// ensure socket is stable or include it in deps if needed
 
 
   const HandleTimeout = () => {
-    console.log('⏰ Reconnection timeout reached, leaving room');
+    //console.log('⏰ Reconnection timeout reached, leaving room');
 
     // First, check if we reconnected but auto-rejoin failed
     if (socket.connected && streamInfo) {
-      console.log('🔄 Socket connected but auto-rejoin failed, attempting manual rejoin');
+      //console.log('🔄 Socket connected but auto-rejoin failed, attempting manual rejoin');
 
       const roomID = streamInfo?.roomID.toString();
       if (roomID && userData?.userid) {
@@ -1534,7 +1618,7 @@ export const MainScreen = () => {
         // Give it 2 more seconds
         setTimeout(() => {
           if (connectingpanel) { // If still disconnected after 2s
-            console.log('❌ Final reconnection attempt failed, leaving room');
+            //console.log('❌ Final reconnection attempt failed, leaving room');
             leaveRoom();
           }
         }, 2000);
@@ -1603,7 +1687,7 @@ export const MainScreen = () => {
         userProfile: userData?.avatar,
         Gender: userData?.gender
       };
-      console.log(newMessage);
+      //console.log(newMessage);
 
       socket.emit('send-message', newMessage);
 
@@ -1612,18 +1696,16 @@ export const MainScreen = () => {
     }
   };
 
-  const HandleSetLivestatus = async (roomID) => {
+  const handleSetLivestatus = useCallback(async (roomID) => {
     try {
       const response = await Apiclient.get(`/rooms/updaterooms?roomID=${roomID}&isLive=0`);
-      if (response.status === 200) {
-        return;
-      } else {
+      if (response.status !== 200) {
         Alert.alert('Error', 'Failed to update live status. Please try again later.');
       }
     } catch (error) {
       SendErrorTotheServer(error, 'HandleSetLivestatus');
     }
-  };
+  }, [/* no dependencies needed unless you use other variables */]);
 
   return (
     <View style={[styles.SafeAreaView, themeStyles[theme].SafeAreaView, { paddingTop: insets.top }]}>

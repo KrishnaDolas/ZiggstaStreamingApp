@@ -87,7 +87,7 @@ export const ProfileScreen = ({ userData, onLogout, address }) => {
                     <View style={[styles.profileHeader, themeStyles[theme].profileHeader]}>
                         <View style={[styles.profileBlockLeftBox]}>
                             <Image
-                                source={require('../../assets/images/logo-icon.png')}
+                                source={require('../../assets/images/logo_icon.png')}
                                 style={styles.profileHeaderLogo}
                                 resizeMode="contain"
                             />

@@ -165,7 +165,7 @@ export const WalletDashboardScreen = ({ navigation }) => {
 
             console.log('create-intent payload:', payload);
 
-            const response = await fetch('https://api.streamalong.live/airwallex/create-intent', {
+            const response = await fetch('http://192.168.0.114:5000/airwallex/create-intent', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

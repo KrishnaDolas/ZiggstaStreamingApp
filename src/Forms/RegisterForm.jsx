@@ -312,7 +312,7 @@ export const RegisterForm = ({
       } else {
         setUsernameStatus(null);
         setUsernameCheckMessage('');
-        validateStep(); // Trigger validation for invalid username
+        validateStep(step); // Trigger validation for invalid username
       }
     }, 500); // Debounce for 500ms
 
@@ -324,7 +324,7 @@ export const RegisterForm = ({
     if (!isValidUsername(trimmedUserName)) {
       setUsernameStatus(null);
       setUsernameCheckMessage('');
-      validateStep(); // Trigger validation for invalid username
+      validateStep(step); // Trigger validation for invalid username
       return;
     }
     setUsernameStatus('checking');
@@ -335,7 +335,7 @@ export const RegisterForm = ({
         setUsernameCheckMessage(''); // Clear message for available username
         setErrors(prev => ({ ...prev, userName: '' })); // Clear userName error
         // setIsValidStep(true); // Enable Next button
-        validateStep();
+        validateStep(step);
       } else {
         setUsernameStatus('taken');
         setUsernameCheckMessage(res.data.message || 'Username is already taken.');
@@ -344,7 +344,7 @@ export const RegisterForm = ({
           userName: res.data.message || 'Username is already taken.',
         })); // Set error
         // setIsValidStep(false); // Disable Next button
-        validateStep();
+        validateStep(step);
       }
     } catch (err) {
       console.log('user name taken catch err', err);
@@ -441,13 +441,13 @@ export const RegisterForm = ({
       const dobValue = `${selectedYear}-${selectedMonth}-${selectedDay}`;
       handleChange('dob', dobValue);
     }
-    validateStep();
+    validateStep(step);
   }, [selectedYear, selectedMonth, selectedDay]);
 
 
   useEffect(() => {
     // Validate current step whenever formData changes
-    validateStep();
+    validateStep(step);
   }, [formData, step, usernameStatus]);
 
   const handleChange = (field, value) => {
@@ -457,26 +457,34 @@ export const RegisterForm = ({
     }
     if (field === 'userName') {
       setUsernameCheckMessage(''); // Clear username check message from API
-      validateStep(); // Validate immediately to set error for invalid username
+      validateStep(step); // Validate immediately to set error for invalid username
     }
   };
 
-  const toggleInterest = interest => {
-    setFormData(prev => {
-      const alreadySelected = prev.interests.includes(interest);
-      if (alreadySelected) {
-        return {
-          ...prev,
-          interests: prev.interests.filter(i => i !== interest),
-        };
-      } else {
-        return {
-          ...prev,
-          interests: [...prev.interests, interest],
-        };
-      }
-    });
-  };
+  useEffect(() => {
+  console.log('Interests:', formData.interests);
+  console.log('isValidStep:', isValidStep);
+}, [formData.interests, isValidStep]);
+
+ const toggleInterest = interest => {
+  setFormData(prev => {
+    const alreadySelected = prev.interests.includes(interest);
+
+    let updatedInterests;
+
+    if (alreadySelected) {
+      updatedInterests = prev.interests.filter(i => i !== interest);
+    } else {
+      if (prev.interests.length >= 3) return prev;
+      updatedInterests = [...prev.interests, interest];
+    }
+
+    return {
+      ...prev,
+      interests: updatedInterests,
+    };
+  });
+};
 
   // Handle location search with autocomplete
   const handleLocationSearch = async text => {
@@ -694,31 +702,48 @@ export const RegisterForm = ({
     if (question.field === 'interests') {
       return (
         <View>
-          <ScrollView
-            contentContainerStyle={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              paddingBottom: 20,
-            }}
-            showsVerticalScrollIndicator={true}>
-            {interestOptions.map(interest => (
-              <TouchableOpacity
-                key={interest}
-                onPress={() => toggleInterest(interest)}
-                style={[
-                  styles.btnInterest,
-                  formData.interests.includes(interest) &&
-                  styles.btnInterestActive,
-                ]}>
-                <Text style={{ color: 'white' }}>{interest}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          {/* {errors[question.field] && formData.interests.length > 0 ? (
+         <ScrollView
+  showsVerticalScrollIndicator={true}
+  contentContainerStyle={{
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingBottom: 20,
+  }}
+>
+  {interestOptions.map(interest => (
+  <TouchableOpacity
+  key={interest}
+  onPress={() => toggleInterest(interest)}
+  style={[
+    styles.btnInterest,
+    {
+      width: '48%',
+      minWidth: '48%',
+      maxWidth: '48%',
+      marginBottom: 10,
+      marginHorizontal: 0,
+    },
+    formData.interests.includes(interest) &&
+      styles.btnInterestActive,
+  ]}>
+      <Text
+        style={{
+          color: 'white',
+          textAlign: 'center',
+        }}
+      >
+        {interest}
+      </Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
+          {errors[question.field] && formData.interests.length > 0 ? (
             <Text style={{ color: '#0035ff', marginTop: 5 }}>
               {errors[question.field]}
             </Text>
-          ) : null} */}
+          ) : null}
           <Text style={{ color: formData.interests.length === 0 ? '#000' : '#0035ff', marginTop: 5 }}>
             Choose 3 Interests to help you attract the right audience.
           </Text>
@@ -1041,7 +1066,7 @@ export const RegisterForm = ({
     );
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateStep()) {
       return;
     }
@@ -1081,33 +1106,30 @@ export const RegisterForm = ({
 
       console.log('✅ Final Payload to POST:', finalData);
 
-      setIsSubmitting(true); // Start loader
+   setIsSubmitting(true);
 
-      //  send to API here using fetch()
-      fetch('https://api.streamalong.live/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'g-api-key': '6cca5d4e-719b-4c28-aabd-4aeb2618ee1d',
-        },
-        body: JSON.stringify(finalData),
-      })
-        .then(res => res.json())
-        .then(async data => {
-          if (data.message === 'User registered successfully') {
-            await userLogedIn();
-          } else {
-            setErrors(data.message || 'Registration failed');
-            Alert.alert('Registration failed', data.message);
-          }
-        })
-        .catch(err => {
-          console.error('API Error:', err);
-          SendErrorTotheServer(err, 'handleRegistration');
-        })
-        .finally(() => {
-          setIsSubmitting(false); // Stop loader
-        });
+try {
+  const res = await Apiclient.post('/register', finalData);
+
+  console.log('API RESPONSE:', res.data);
+
+  if (res.data.message === 'User registered successfully') {
+    await userLogedIn();
+  } else {
+    Alert.alert('Registration failed', res.data.message);
+  }
+
+} catch (err) {
+  console.error('API ERROR:', err);
+
+  Alert.alert(
+    'Error',
+    err?.response?.data?.message || 'Something went wrong'
+  );
+
+} finally {
+  setIsSubmitting(false);
+}
     }
   };
 
@@ -1116,8 +1138,7 @@ export const RegisterForm = ({
       email: userData?.email,
       password: userData?.password,
     };
-    const res = await axios.post(
-      'https://api.streamalong.live/auth/login',
+   const res = await Apiclient.post('/auth/login',
       parameter,
       {
         headers: {
@@ -1213,8 +1234,8 @@ export const RegisterForm = ({
     }
   };
 
-  const validateStep = () => {
-    const currentQuestion = questions[step];
+  const validateStep = (currentStep = step) => {
+  const currentQuestion = questions[currentStep];
     let error = {};
     let isValid = true;
 
@@ -1288,14 +1309,14 @@ export const RegisterForm = ({
             error.gender = ''; // Clear error
           }
           break;
-        case 'interests':
-          if (!value || value.length < 3) {
-            error.interests = 'Choose 3 Interests to help you attract the right audience.';
-            isValid = false;
-          } else {
-            error.interests = ''; // Clear error
-          }
-          break;
+       case 'interests':
+  if (!Array.isArray(value) || value.length !== 3) {
+    error.interests = 'Please select exactly 3 interests';
+    isValid = false;
+  } else {
+    error.interests = '';
+  }
+  break;
         default:
           break;
       }

@@ -1371,18 +1371,21 @@ export const styles = StyleSheet.create({
     margin: 0,
   },
 
-  modalCategoryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    gap: 8,
-  },
-  modalCategoryButton: {
-    backgroundColor: 'rgba(184, 58, 243, 1)',
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
+ modalCategoryContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  paddingBottom: 20,
+},
+ modalCategoryButton: {
+  width: '48%', // 2 columns
+  marginBottom: 12,
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#be0069',
+},
   modalCategoryButtonActive: {
     backgroundColor: '#6a0dad',
   },
@@ -1396,10 +1399,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#d93a63',
   },
   modalCategoryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
+  color: '#fff',
+  fontSize: 14,
+  fontWeight: '500',
+  textAlign: 'center',
+},
 
   // modal css end
 
@@ -1549,6 +1553,26 @@ export const styles = StyleSheet.create({
     paddingRight: 15,
     // minWidth: 130
   },
+  lightBlackBackground: {
+  backgroundColor: 'rgba(0, 0, 0, 0.2)', // light semi-transparent black
+  borderRadius: 5,
+  paddingHorizontal: 8,
+  paddingVertical: 4,
+  marginVertical: 4,
+},
+headerContainer: {
+  flexDirection: 'column',
+  alignItems: 'stretch',
+  marginBottom: 10,
+},
+headerLeft: {
+  alignSelf: 'flex-start',
+  marginBottom: 4,
+},
+headerCenter: {
+  alignSelf: 'center',
+  alignItems: 'center',
+},
 
   strRoomHeaderLeftProfileImg: {
     width: 35,
@@ -1665,9 +1689,10 @@ export const styles = StyleSheet.create({
   },
   streamChatItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
+    alignItems: 'flex-start',
+    width: '100%',
+    marginBottom: 8,
+},
   streamChatItemProfileImg: {
     width: 37,
     height: 37,
@@ -1676,9 +1701,11 @@ export const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderWidth: 1,
   },
-  streamChatMessageBox: {
-    marginLeft: 6,
-  },
+ streamChatMessageBox: {
+    flex: 1,
+    flexShrink: 1,
+    maxWidth: '85%',
+},
   streamChatUserName: {
     fontSize: 15,
     fontWeight: '500',
@@ -1687,14 +1714,13 @@ export const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 3,
   },
-  streamChatMessage: {
-    fontSize: 14,
-    fontWeight: '400',
+ streamChatMessage: {
     color: '#fff',
-    textShadowColor: '#000',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 3,
-  },
+    fontSize: 14,
+    lineHeight: 20,
+    flexWrap: 'wrap',
+    flexShrink: 1,
+},
   strRoomFooterSocialActions: {
     flexDirection: 'column',
     justifyContent: 'flex-end',
@@ -3683,5 +3709,19 @@ export const themeStyles = {
       backgroundColor: Colors.blackCardColor,
       borderColor: Colors.blackDividers,
     },
+    queueContainer:{
+    position:'absolute',
+    bottom:120,
+    alignSelf:'center',
+    backgroundColor:'rgba(0,0,0,0.7)',
+    paddingHorizontal:15,
+    paddingVertical:8,
+    borderRadius:10
+},
+
+queueText:{
+    color:'#fff',
+    fontSize:14
+}
   },
 };

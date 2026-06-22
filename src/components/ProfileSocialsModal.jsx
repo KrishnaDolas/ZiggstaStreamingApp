@@ -1,6 +1,6 @@
 // components/ProfileSocialsModal.js
 import React, { useContext, useEffect, useState } from 'react';
-import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image, Dimensions } from 'react-native';
+import { View, TouchableOpacity, TextInput, Text, ActivityIndicator, Image, Dimensions, ScrollView } from 'react-native';
 import Modal from 'react-native-modal';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,29 +17,71 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
     const { userData } = useAppContext();
     const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState({
-        instagramUrl: '',
-        twitterUrl: '',
-        facebookUrl: '',
-    });
+    instagramUrl: '',
+    twitterUrl: '',
+    facebookUrl: '',
+    snapchatUrl: '',
+    tiktokUrl: '',
+    youtubeUrl: '',
+});
     const [loading, setLoading] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
     const socials = [
-        { key: 'instagramUrl', icon: 'instagram', type: 'icon', placeholder: 'your insta id' },
-        { key: 'twitterUrl', image: require('../../assets/images/tx-logo-black.png'), type: 'image', placeholder: 'your twitter X handle' },
-        { key: 'facebookUrl', icon: 'facebook', type: 'icon', placeholder: 'your facebook id' },
-    ];
+    {
+        key: 'instagramUrl',
+        icon: 'instagram',
+        type: 'icon',
+        placeholder: 'your insta id',
+    },
+    {
+        key: 'twitterUrl',
+        image: require('../../assets/images/tx-logo-black.png'),
+        type: 'image',
+        placeholder: 'your twitter X handle',
+    },
+    {
+        key: 'facebookUrl',
+        icon: 'facebook',
+        type: 'icon',
+        placeholder: 'your facebook id',
+    },
+    {
+        key: 'snapchatUrl',
+        icon: 'snapchat',
+        type: 'icon',
+        placeholder: 'your snapchat username',
+    },
+    {
+    key: 'tiktokUrl',
+    icon: 'tiktok',
+    type: 'icon',
+    placeholder: 'your tiktok username',
+},
+    {
+        key: 'youtubeUrl',
+        icon: 'youtube',
+        type: 'icon',
+        placeholder: 'your youtube channel',
+    },
+];
 
     const platformKeyMap = {
-        instagram: 'instagramUrl',
-        twitter: 'twitterUrl',
-        facebook: 'facebookUrl',
-    };
+    instagram: 'instagramUrl',
+    twitter: 'twitterUrl',
+    facebook: 'facebookUrl',
+    snapchat: 'snapchatUrl',
+    tiktok: 'tiktokUrl',
+    youtube: 'youtubeUrl',
+};
 
-    const platformDomainMap = {
-        instagramUrl: 'https://instagram.com/',
-        twitterUrl: 'https://twitter.com/',
-        facebookUrl: 'https://facebook.com/',
-    };
+   const platformDomainMap = {
+    instagramUrl: 'https://instagram.com/',
+    twitterUrl: 'https://twitter.com/',
+    facebookUrl: 'https://facebook.com/',
+    snapchatUrl: 'https://snapchat.com/add/',
+    tiktokUrl: 'https://www.tiktok.com/@',
+    youtubeUrl: 'https://youtube.com/@',
+};
 
     // Function to fetch social data from the API
     useEffect(() => {
@@ -82,12 +124,39 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
     const handleUpdateSocialData = async () => {
         if (submitting) return; // prevent multiple submissions
         setSubmitting(true);
-        const postData = {
-            userid: userData.userid,
-            socialSet1: { platform: "Instagram", handle_or_url: formData.instagramUrl === '' ? null : formData.instagramUrl },
-            socialSet2: { platform: "Twitter", handle_or_url: formData.twitterUrl === '' ? null : formData.twitterUrl },
-            socialSet3: { platform: "Facebook", handle_or_url: formData.facebookUrl === '' ? null : formData.facebookUrl },
-        };
+       const postData = {
+    userid: userData.userid,
+
+    socialSet1: {
+        platform: 'Instagram',
+        handle_or_url: formData.instagramUrl || null,
+    },
+
+    socialSet2: {
+        platform: 'Twitter',
+        handle_or_url: formData.twitterUrl || null,
+    },
+
+    socialSet3: {
+        platform: 'Facebook',
+        handle_or_url: formData.facebookUrl || null,
+    },
+
+    socialSet4: {
+        platform: 'Snapchat',
+        handle_or_url: formData.snapchatUrl || null,
+    },
+
+    socialSet5: {
+        platform: 'TikTok',
+        handle_or_url: formData.tiktokUrl || null,
+    },
+
+    socialSet6: {
+        platform: 'YouTube',
+        handle_or_url: formData.youtubeUrl || null,
+    },
+};
         console.log('postData', postData);
         try {
             const response = await Apiclient.post('/userSocials', postData);
@@ -122,12 +191,25 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                 swipeDirection={['down']}
                 onSwipeComplete={onClose}
             >
-                <View style={[styles.profileModalOverlay,
-                themeStyles[theme].profileModalOverlay]}>
+                <View
+    style={[
+        styles.profileModalOverlay,
+        themeStyles[theme].profileModalOverlay,
+        {
+            maxHeight: screenHeight * 0.8,
+            minHeight: screenHeight * 0.7,
+        }
+    ]}
+>
                     <TouchableOpacity onPress={onClose} style={styles.profileModalClose}>
                         <Ionicons name="close" size={28} color={theme === 'light' ? '#333' : '#fff'} />
                     </TouchableOpacity>
-                    <View style={[styles.profileMSocialBox]}>
+                    <ScrollView
+    style={{ flex: 1 }}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 20 }}
+>
+    <View style={[styles.profileMSocialBox]}>
                         {loading ? (
                             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', height: screenHeight * 0.3 }}>
                                 <ActivityIndicator size="large" />
@@ -173,7 +255,9 @@ const ProfileSocialsModal = ({ visible, onClose }) => {
                             )
                         })}
                     </View>
-                    {saveMessage ? (
+</ScrollView>
+
+{saveMessage ? (
                         <Text style={{ color: '#28a745', textAlign: 'center' }}>{saveMessage}</Text>
                     ) : null}
                     {(visible && !loading) && (

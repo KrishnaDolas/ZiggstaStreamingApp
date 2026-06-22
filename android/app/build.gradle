@@ -101,14 +101,19 @@ android {
             }
         }
     }
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-        }
+  buildTypes {
+    release {
+        signingConfig signingConfigs.release
+
+        // TEMPORARY TEST
+        shrinkResources false
+
+        minifyEnabled true
+
+        proguardFiles getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
     }
+}
 }
 
 dependencies {

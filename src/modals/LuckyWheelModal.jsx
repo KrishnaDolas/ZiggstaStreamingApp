@@ -1,6 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
-// LuckyWheelModal.js
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -15,7 +14,15 @@ import {
     Platform,
 } from 'react-native';
 import Modal from 'react-native-modal';
-import Svg, { Circle, G, Path, Text as SvgText } from 'react-native-svg';
+import Svg, {
+    Circle,
+    G,
+    Path,
+    Text as SvgText,
+    Defs,
+    RadialGradient,
+    Stop
+} from 'react-native-svg';
 import Sound from 'react-native-sound';
 import { styles } from '../../assets/styles/ThemeStyles';
 import { SendErrorTotheServer, socket } from '../utils/constant';
@@ -23,22 +30,37 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import CustomConfirmDialog from './CustomConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { debugLog } from '../utils/debugLogger';
 
 const { width: screenWidth } = Dimensions.get('window');
 const screenHeight = Dimensions.get('window').height;
 
 
 const SEGMENTS = [
-    '5x', 'Triple', 'Double', 'Triple', '5x', 'Double', 'Triple', 'Double',
-    '5x', 'Double', 'Triple', 'Double', '5x', 'Triple', 'Double', '25x',
+    'Double',
+    'Triple',
+    'Double',
+    '10x',
+
+    'Double',
+    'Triple',
+    'Double',
+    '20x',
+
+    'Double',
+    'Double',
+    '10x',
+    'Double',
+    'Triple',
+
+    'Double',
 ];
 
 const COLORS = {
-    Double: '#00a3ccff',
-    Triple: '#ff9a27ff',
-    '5x': '#d93a2d',
-    '25x': '#834fffff',
+    Double: '#00a3ccff',   // Blue (same as old)
+    Triple: '#ff9a27ff',   // Orange (same as old)
+    '10x': '#d93a2d',      // Red (old 5x color)
+    '20x': '#834fffff',    // Purple (old 25x color)
 };
 
 const winIcon = require('../../assets/images/lucky-wheel/win.png');
@@ -47,8 +69,8 @@ const blueChipIcon = require('../../assets/images/lucky-wheel/blue-chip.png');
 const redChipIcon = require('../../assets/images/lucky-wheel/red_chip.png');
 
 
-const wheelSize = screenWidth * 0.7 + 15; // 80% of screen width
-const svgSize = wheelSize * 0.8 + 25;     // Slightly smaller than outer wheel
+const wheelSize = screenWidth * 0.7 + 15;
+const svgSize = wheelSize * 0.8 + 25;
 
 
 const LuckyWheelModal = (
@@ -63,11 +85,11 @@ const LuckyWheelModal = (
 ) => {
     const insets = useSafeAreaInsets();
     const [countdown, setCountdown] = useState(0);
-    const [selectedMultiplier, setSelectedMultiplier] = useState('Double');
+    const [selectedMultiplier, setSelectedMultiplier] = useState(null);
     const [message, setMessage] = useState('Get Ready');
     const [spinResultMessage, setSpinResultMessage] = useState('');
     const [activeBetAmount, setActiveBetAmount] = useState(null);
-    const [mycredit, setMyCredit] = useState(0); // Track user's credit
+    const [mycredit, setMyCredit] = useState(0);
     const spinValue = useRef(new Animated.Value(0)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const [bigCountdownNumber, setBigCountdownNumber] = useState(null);
@@ -104,6 +126,99 @@ const LuckyWheelModal = (
     const rotation = useRef(new Animated.Value(0)).current;
     const currentRotation = useRef(0);
 
+    const [oddsSelected, setOddsSelected] = useState(false);
+    const [betAmountEnabled, setBetAmountEnabled] = useState(false);
+    const [isSpinning, setIsSpinning] = useState(false);
+    const isSpinningRef = useRef(false);
+    const pendingResultRef = useRef(null);
+    const pendingSpinRef = useRef(null);
+    const isClosingRef = useRef(false);
+    const [betPlacedByCurrentUser, setBetPlacedByCurrentUser] = useState(false);
+    const [hasPlacedBet, setHasPlacedBet] = useState(false);
+    const idleLoopRef = useRef(null);
+    const roomIdRef = useRef(RoomID);
+    const userIdRef = useRef(userData?.userid);
+    const onCloseRef = useRef(onClose);
+    const isHost = userData?.userid === hostDetails?.userid;
+    const countdownRef = useRef(0);
+
+    useEffect(() => {
+        countdownRef.current = countdown;
+    }, [countdown]);
+
+    useEffect(() => {
+        console.log('[STATE] visible =>', visible);
+    }, [visible]);
+
+    useEffect(() => {
+        console.log('[STATE] countdown =>', countdown);
+    }, [countdown]);
+
+    useEffect(() => {
+        console.log('[STATE] selectedMultiplier =>', selectedMultiplier);
+    }, [selectedMultiplier]);
+
+    useEffect(() => {
+        console.log('[STATE] activeBetAmount =>', activeBetAmount);
+    }, [activeBetAmount]);
+
+    useEffect(() => {
+        console.log('[STATE] spinResultMessage =>', spinResultMessage);
+    }, [spinResultMessage]);
+
+    useEffect(() => {
+        console.log('[STATE] betButtonsDisabled =>', betButtonsDisabled);
+    }, [betButtonsDisabled]);
+
+    useEffect(() => {
+        console.log('[STATE] hideBetButtons =>', hideBetButtons);
+    }, [hideBetButtons]);
+
+    useEffect(() => {
+        console.log('[STATE] isSpinning =>', isSpinning);
+    }, [isSpinning]);
+
+    useEffect(() => {
+        console.log('[STATE] userBets length =>', userBets.length);
+    }, [userBets]);
+
+    useEffect(() => {
+        console.log('[STATE] displayCredit =>', displayCredit);
+    }, [displayCredit]);
+
+    useEffect(() => {
+        console.log('[STATE] mycredit =>', mycredit);
+    }, [mycredit]);
+
+    useEffect(() => {
+        console.log('[STATE] betPlacedByCurrentUser =>', betPlacedByCurrentUser);
+    }, [betPlacedByCurrentUser]);
+
+    useEffect(() => {
+        console.log('[STATE] message =>', message);
+    }, [message]);
+
+    useEffect(() => {
+
+        const debug = setInterval(() => {
+
+            console.log('[LIVE_DEBUG]', {
+                visible,
+                isSpinning: isSpinningRef.current,
+                pendingResult: pendingResultRef.current,
+                closing: isClosingRef.current,
+                countdown,
+                cleanupTimeout: !!cleanupTimeoutRef.current,
+                betPlaced: betPlacedByCurrentUser,
+            });
+
+        }, 1000);
+
+        return () => clearInterval(debug);
+
+    }, [visible, countdown, betPlacedByCurrentUser]);
+
+
     // ✅ ADD: Mount/unmount effect
     useEffect(() => {
         isMountedRef.current = true;
@@ -120,6 +235,59 @@ const LuckyWheelModal = (
         };
     }, []);
 
+    useEffect(() => {
+        console.log('hasPlacedBet changed:', hasPlacedBet);
+    }, [hasPlacedBet]);
+
+    useEffect(() => {
+        roomIdRef.current = RoomID;
+        userIdRef.current = userData?.userid;
+        onCloseRef.current = onClose;
+    }, [RoomID, userData?.userid, onClose]);
+
+    useEffect(() => {
+
+        if (visible) {
+
+            rotation.setValue(0);
+            currentRotation.current = 0;
+
+            spinValue.setValue(0);
+            idleSpin.setValue(0);
+
+            pendingResultRef.current = null;
+
+            setSpinResultMessage('');
+            setSelectedMultiplier(null);
+            setActiveBetAmount(null);
+            setMessage('Get Ready');
+
+            setHideBetButtons(false);
+            setBetButtonsDisabled(false);
+
+            setBigCountdownNumber(null);
+            setCountdown(0);
+
+            setUserBets([]);
+
+            setBetPlacedByCurrentUser(false);
+
+            placeBetButtonRef.current = false;
+
+            startIdleRotation();
+
+        } else {
+
+            stopIdleRotation();
+            clearCountdown();
+        }
+
+        return () => {
+            stopIdleRotation();
+            clearCountdown();
+        };
+
+    }, [visible]);
 
     useEffect(() => {
         const id = rotation.addListener(({ value }) => {
@@ -130,14 +298,21 @@ const LuckyWheelModal = (
 
 
     const startIdleRotation = () => {
-        Animated.loop(
+
+        if (idleLoopRef.current) {
+            idleLoopRef.current.stop();
+        }
+
+        idleLoopRef.current = Animated.loop(
             Animated.timing(rotation, {
                 toValue: currentRotation.current + 360,
                 duration: 8000,
                 easing: Easing.linear,
                 useNativeDriver: true,
             })
-        ).start();
+        );
+
+        idleLoopRef.current.start();
     };
 
     // ✅ UPDATE: Safe state updates
@@ -148,6 +323,11 @@ const LuckyWheelModal = (
     };
 
     const stopIdleRotation = () => {
+        if (idleLoopRef.current) {
+            idleLoopRef.current.stop();
+            idleLoopRef.current = null;
+        }
+
         rotation.stopAnimation((value) => {
             currentRotation.current = value;
         });
@@ -171,22 +351,22 @@ const LuckyWheelModal = (
         myCreditRef.current = mycredit; // Update ref whenever mycredit changes
     }, [mycredit]);
 
-    useEffect(() => {
-        if (visible) {
-            spinValue.setValue(0); // Reset spin
-            idleSpin.setValue(0); // Reset idle
-            startIdleRotation(); // Start idle spinning
-        } else {
-            stopIdleRotation();  // Stop idle spinning when modal closes
-        }
+    const HandleUpdatedCredit = useCallback((amount) => {
+        debugLog(
+            'LuckyWheel',
+            'UPDATED_CREDIT_SOCKET',
+            {
+                amount,
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
 
-        return () => {
-            stopIdleRotation();
-        };
-    }, [visible]);
-
-    const HandleUpdatedCredit = (amount) => {
-        console.log('Updated Credit received:', amount);
+        console.log('[CREDIT_FLOW]', {
+            prevCredit: prevCreditRef.current,
+            currentRef: myCreditRef.current,
+            freezeUI: freezeCreditUIRef.current,
+        });
         // store previous credit only once
         if (!freezeCreditUIRef.current && !prevCapturedRef.current) {
             prevCreditRef.current = myCreditRef.current ?? amount;
@@ -204,49 +384,47 @@ const LuckyWheelModal = (
 
         // Animate UI credit from old → new
         // animateCredits(previous, next);
+    }, []);
+
+    const handleOddsSelect = (odds) => {
+        setSelectedMultiplier(odds);
+        setOddsSelected(true);
+        setBetAmountEnabled(true);
+        setActiveBetAmount(null);
     };
 
     const HandleBetUserList = (users) => {
-        // console.log('Received user bets:', users);
+        const isFirstBet = userBets.length === 0 && users.length > 0;
+
         setUserBets(users);
-    };
 
-
-    useEffect(() => {
-        if (visible && userData && userBets.length > 0) {
-            const userBet = userBets.find(bet => bet.userid === userData?.userid);
-            // console.log('Checking user bet:', userBet);
-            if (userBet) {
-                // User has an active bet
-                // console.log('User has bet:', userBet.betAmount, userBet.multiplier);
-                setBetButtonsDisabled(true);
-                setActiveBetAmount(Number(userBet.betAmount));
-                setSelectedMultiplier(userBet.multiplier);
-                placeBetButtonRef.current = true;
-                setMessage(`Bet placed on ${userBet.multiplier}`);
-            } else {
-                // No active bet, reset states
-                // console.log('No active bet for user');
-                setBetButtonsDisabled(false);
-                setActiveBetAmount(null);
-                setSelectedMultiplier('Double');
-                placeBetButtonRef.current = false;
-                setMessage('Get Ready');
-            }
+        if (isFirstBet && countdown > 5) {
+            startCountdown(10); // optional shorter reset
         }
-    }, [visible, userBets, userData]);
+    };
 
 
     // 1️⃣ Always clear interval safely
     const clearCountdown = () => {
+        console.log('[CLEAR_COUNTDOWN]');
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
+            console.log('[COUNTDOWN_INTERVAL_CLEARED]');
         }
     };
 
 
     const startCountdown = (duration) => {
+        debugLog(
+            'LuckyWheel',
+            'COUNTDOWN_START',
+            {
+                duration,
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
         clearCountdown(); // ⬅️ clear any previous countdown first
         // Only start a new interval if none exists
         let counter = duration;
@@ -254,21 +432,24 @@ const LuckyWheelModal = (
 
         intervalRef.current = setInterval(() => {
             counter -= 1;
+            console.log('[COUNTDOWN_TICK]', counter);
             setCountdown(counter);
 
             if (counter === 3) {
+                console.log('[COUNTDOWN_LAST_3_SEC]');
                 setClosePlaceBetDialog(false);
-            }
-            if (counter === 3) {
+
                 const sound = new Sound('no_more_gifting', Sound.MAIN_BUNDLE, (error) => {
                     sound.play(() => {
-                        sound.release();
+                        sound.stop();
                     });
                 });
+
                 setBetButtonsDisabled(true);
             }
 
             if (counter <= 3) {
+                console.log('[BIG_COUNTDOWN_VISIBLE]', counter);
                 setBigCountdownNumber(counter);
                 fadeAnim.setValue(0);
 
@@ -290,25 +471,45 @@ const LuckyWheelModal = (
             }
 
             if (counter <= 0) {
+
                 clearCountdown();
+
                 setMessage('Spinning...');
                 setBigCountdownNumber(null);
-                // setBetButtonsDisabled(false);
+
+                if (pendingSpinRef.current) {
+
+                    const result = pendingSpinRef.current;
+
+                    pendingSpinRef.current = null;
+
+                    handleSpin(result);
+                }
             }
         }, 1000);
     };
 
     // 2️⃣ Socket handlers
-    const HandleTimer = (time) => {
+    const HandleTimer = useCallback(() => {
+        debugLog(
+            'LuckyWheel',
+            'SPINWHEEL_TIMER_RECEIVED',
+            {
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
+        startCountdown(20);
+        setSelectedMultiplier(null);
         setHideBetButtons(false);
+        pendingSpinRef.current = null;
         setMessage('');
         setSpinResultMessage('');
-        startCountdown(time); // This will clear any old countdown and restart
         setActiveBetAmount(null);
         setBetButtonsDisabled(false);
         startIdleRotation();
         placeBetButtonRef.current = false;
-    };
+    }, []);
 
     const startCreditAndChipAnimation = (winAmount, resultLabel) => {
         if (!isMountedRef.current) return;
@@ -345,10 +546,11 @@ const LuckyWheelModal = (
         const startY = screenHeight / 2;
         const defaultChipsBoxLayout = chipsBoxLayout || { x: 20, y: 20, width: 80, height: 40 };
 
-        const multiplierNum = resultLabel === 'Double' ? 2 :
-            resultLabel === 'Triple' ? 3 :
-                resultLabel === '5x' ? 5 :
-                    resultLabel === '25x' ? 25 : 2;
+        const multiplierNum =
+            resultLabel === 'Double' ? 2 :
+                resultLabel === 'Triple' ? 3 :
+                    resultLabel === '10x' ? 10 :
+                        resultLabel === '20x' ? 20 : 2;
 
         const newFlyingChips = [];
         for (let i = 0; i < multiplierNum; i++) {
@@ -497,48 +699,85 @@ const LuckyWheelModal = (
         setTimeout(() => setWinParticles([]), 2000);
     };
 
-    const handleSpinResult = ({ isWin, WinAmount, resultLabel }) => {
+    const normalizeMultiplier = (value) => {
+
+        if (value === '2x') return 'Double';
+        if (value === '3x') return 'Triple';
+
+        return value;
+    };
+
+    const handleSpinResult = useCallback(({ isWin, WinAmount, resultLabel }) => {
+        console.log(
+            '[WIN_CHECK]',
+            {
+                selectedMultiplier,
+                resultLabel,
+                equal: selectedMultiplier === resultLabel
+            }
+        );
+        debugLog(
+            'LuckyWheel',
+            'SPIN_RESULT_RECEIVED',
+            {
+                isWin,
+                WinAmount,
+                resultLabel,
+                spinning: isSpinningRef.current,
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
+        // ⛔ If wheel is still spinning → HOLD result
+        if (isSpinningRef.current) {
+            pendingResultRef.current = { isWin, WinAmount, resultLabel };
+            return;
+        }
+
+        // ✅ Process result ONLY after spin completes
         const resultMessage = isWin
             ? `✅ You WON ${WinAmount} chips!`
-            : `❌ You LOST! because Wheel Landed on ${resultLabel}`;
+            : ` You LOST! because Wheel Landed on ${resultLabel}`;
 
         safeSetSpinResultMessage(resultMessage);
 
         if (isWin) {
-            // Play winner sound
+            // 🔊 Play winner sound
             const sound = new Sound('winner', Sound.MAIN_BUNDLE, (error) => {
                 if (error) {
                     SendErrorTotheServer(error, 'LuckyWheelModal');
                     return;
                 }
+
                 sound.play((success) => {
                     if (!success) {
                         SendErrorTotheServer(error, 'LuckyWheelModal');
                     }
-                    sound.release();
+
+                    sound.stop();
                 });
             });
+
             startWinAnimation(WinAmount);
         }
 
-        // Start chip collection animation if user won
+        // 💰 Start chip animation after delay
         if (isWin && WinAmount > 0) {
             setTimeout(() => {
                 startCreditAndChipAnimation(WinAmount, resultLabel);
             }, 3000);
         }
 
+        // ❌ Losing case → reset credit UI safely
         if (!isWin) {
             freezeCreditUIRef.current = false;
             prevCapturedRef.current = false;
             prevCreditRef.current = myCreditRef.current;
             setDisplayCredit(myCreditRef.current);
         }
-
-    };
+    }, []);
 
     const handleHostWin = ({ HostAmount, resultLabel }) => {
-        console.log("🔥 Host won chips:", HostAmount);
 
         // Run chip collection animation for host
         if (HostAmount > 0) {
@@ -559,28 +798,46 @@ const LuckyWheelModal = (
     // Sound setup
 
     useEffect(() => {
-        if (userData) {
-            socket.emit('User-joined-SpinWheel', RoomID, userData?.userid, userData?.screenName, userData?.avatar);
-        }
+        if (!userData) return;
+
+        socket.emit(
+            'User-joined-SpinWheel',
+            RoomID,
+            userData?.userid,
+            userData?.screenName,
+            userData?.avatar
+        );
+
         socket.on('updated_Credit', HandleUpdatedCredit);
         socket.on('spinwheel_timer', HandleTimer);
         socket.on('betPlace-Users', HandleBetUserList);
-        socket.on('start_spin', handleSpin);
+        socket.on('luckywheel_round_finished', handleRoundFinished);
         socket.on('Spin-result', handleSpinResult);
         socket.on('bet_error', handleBetError);
         socket.on('Bet-Success', handleBetSuccess);
         socket.on('Host-win', handleHostWin);
+        socket.on('start_spin', handleStartSpin);
+
         return () => {
             socket.off('updated_Credit', HandleUpdatedCredit);
             socket.off('spinwheel_timer', HandleTimer);
             socket.off('betPlace-Users', HandleBetUserList);
-            socket.off('start_spin', handleSpin);
+            socket.off('luckywheel_round_finished', handleRoundFinished);
             socket.off('Spin-result', handleSpinResult);
             socket.off('bet_error', handleBetError);
             socket.off('Bet-Success', handleBetSuccess);
             socket.off('Host-win', handleHostWin);
+            socket.off('start_spin', handleStartSpin);
         };
-    }, [visible]);
+    }, [
+        userData,
+        RoomID,
+        HandleUpdatedCredit,
+        HandleTimer,
+        handleSpin,
+        handleSpinResult,
+        handleRoundFinished,
+    ]);
 
 
     // 4️⃣ Cleanup on unmount
@@ -602,7 +859,7 @@ const LuckyWheelModal = (
                     if (!success) {
                         SendErrorTotheServer(error, 'LuckyWheelModal');
                     }
-                    sound.release(); // Free up resources
+                    sound.stop(); // Free up resources
                 });
             });
         } else {
@@ -610,13 +867,47 @@ const LuckyWheelModal = (
         }
     }, [visible]);
 
+    const handleStartSpin = useCallback((resultLabel) => {
 
+        debugLog(
+            'LuckyWheel',
+            'START_SPIN_RECEIVED',
+            {
+                resultLabel,
+                countdown: countdownRef.current,
+            }
+        );
+
+        if (countdownRef.current <= 0) {
+
+            handleSpin(resultLabel);
+
+            return;
+        }
+
+        pendingSpinRef.current = resultLabel;
+
+    }, [handleSpin]);
 
 
     const placeBet = (val) => {
         // 🚫 Host restriction
+        debugLog(
+            'LuckyWheel',
+            'PLACE_BET_CLICKED',
+            {
+                selectedMultiplier,
+                val,
+                userId: userData?.userid,
+                roomId: RoomID,
+            }
+        );
         if (userData?.userid === hostDetails?.userid) {
             Alert.alert('Message', 'You are host, you can’t play the game.');
+            return;
+        }
+        if (!selectedMultiplier) {
+            Alert.alert('Select Option', 'Please select an option first');
             return;
         }
         if (!placeBetButtonRef.current) {
@@ -629,15 +920,12 @@ const LuckyWheelModal = (
                 RoomId: RoomID,
             });
             setClosePlaceBetDialog(false);
-            // const sound = new Sound('place_your_bet', Sound.MAIN_BUNDLE, (error) => {
-            //     sound.play(() => {
-            //         sound.release();
-            //     });
-            // });
             setBetButtonsDisabled(true);
             setActiveBetAmount(val); // 👈 track which button is active
             setMessage(`Bet placed on ${selectedMultiplier}`);
             placeBetButtonRef.current = true;
+            setBetPlacedByCurrentUser(true);
+            console.log('Bet placed by invoker, hasPlacedBet:', true);
         }
     };
 
@@ -655,74 +943,261 @@ const LuckyWheelModal = (
         return ((angle % 360) + 360) % 360;
     };
 
-    const handleSpin = (resultLabel) => {
+    const handleRoundFinished = useCallback(() => {
+
+        debugLog(
+            'LuckyWheel',
+            'ROUND_FINISHED',
+            {
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
+
+        if (cleanupTimeoutRef.current) {
+            clearTimeout(cleanupTimeoutRef.current);
+        }
+
+        cleanupTimeoutRef.current = setTimeout(() => {
+
+            closeModal();
+
+        }, 7000);
+
+    }, [closeModal]);
+
+    const handleSpin = useCallback((resultLabel) => {
+        console.log('[HANDLE_SPIN_CALLED]', resultLabel);
+        debugLog(
+            'LuckyWheel',
+            'HANDLE_SPIN_START',
+            {
+                resultLabel,
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
+
+        // ✅ reset completion flag for new round
+        // hard reset previous pending result
+        pendingResultRef.current = null;
+
+        // stop any previous animation
+        rotation.stopAnimation();
+
+        if (cleanupTimeoutRef.current) {
+            clearTimeout(cleanupTimeoutRef.current);
+            cleanupTimeoutRef.current = null;
+        }
+
+        setIsSpinning(true);
+        isSpinningRef.current = true;
+
+        debugLog(
+  'LuckyWheel',
+  'WHEEL_SOUND_ATTEMPT',
+  {
+    roomId: RoomID,
+    userId: userData?.userid,
+  }
+);
+
+      const sound = new Sound(
+    'wheelspin3',
+    Sound.MAIN_BUNDLE,
+    (error) => {
+
+        debugLog(
+            'LuckyWheel',
+            'WHEEL_SOUND_CALLBACK',
+           {
+        code: error?.code,
+        message: error?.message,
+        soundName: 'wheelspin3',
+      }
+        );
+
+        if (error) {
+
+            debugLog(
+                'LuckyWheel',
+                'WHEEL_SOUND_ERROR',
+                {
+                    error: String(error),
+                }
+            );
+
+            return;
+        }
+
+        debugLog(
+            'LuckyWheel',
+            'WHEEL_SOUND_STARTED',
+            {}
+        );
+
+        sound.play((success) => {
+
+            debugLog(
+                'LuckyWheel',
+                'WHEEL_SOUND_FINISHED',
+                {
+                    success,
+                }
+            );
+                    sound.stop();
+
+                    sound.release();
+
+                });
+
+            }
+        );
+
         freezeCreditUIRef.current = true;
-        prevCapturedRef.current = false; // ✅ reset here
+        prevCapturedRef.current = false;
 
-        // stop idle rotation
         stopIdleRotation();
-        // idleSpin.setValue(0);
-        // spinValue.setValue(0);
-
-        // Hide bet buttons during spin
+        console.log('[IDLE_ROTATION_STOPPED]');
         setHideBetButtons(true);
 
-        // 🎯 Find target segment
         const segmentCount = SEGMENTS.length;
         const anglePerSegment = 360 / segmentCount;
 
-        // 🔑 Find all matching segments
+        let normalizedResult = resultLabel;
+
+        if (resultLabel === '2x') {
+            normalizedResult = 'Double';
+        }
+
+        if (resultLabel === '3x') {
+            normalizedResult = 'Triple';
+        }
+
+        console.log(
+            '[NORMALIZED_RESULT]',
+            resultLabel,
+            '=>',
+            normalizedResult
+        );
+
+        console.log('[SERVER_RESULT]', resultLabel);
+        console.log('[SEGMENTS]', SEGMENTS);
+
         const matches = SEGMENTS
             .map((label, idx) => ({ label, idx }))
-            .filter(s => s.label === resultLabel);
+            .filter(s => s.label === normalizedResult);
 
-        if (!matches.length) return;
-
-        // 🎯 Select appropriate segment instance
-        const selected =
-            resultLabel === '25x'
-                ? matches[matches.length - 1]
-                : matches[0];
-
-        // 🎯 Segment math
-        const segmentCenter =
-            selected.idx * anglePerSegment + anglePerSegment / 2;
-
-        // 🔑 Normalize current angle
+        if (!matches.length) {
+            console.log('[NO_MATCHING_SEGMENT]');
+            return;
+        }
+        console.log('[MATCHING_SEGMENTS]', matches);
         const currentAngle = getNormalizedAngle(currentRotation.current);
 
-        // 🔑 Required delta to land exactly on segment
-        let delta = (360 - segmentCenter - currentAngle) % 360;
-        if (delta < 0) delta += 360;
+        const selected = matches.reduce((closest, seg) => {
 
-        // 🎰 Natural spin feel
-        const fullRotations = 8 + Math.floor(Math.random() * 4);
+            const segCenter =
+                seg.idx * anglePerSegment +
+                anglePerSegment / 2;
+
+            const diff = Math.abs(segCenter - currentAngle);
+
+            if (!closest || diff < closest.diff) {
+                return {
+                    ...seg,
+                    diff,
+                };
+            }
+
+            return closest;
+
+        }, null);
+
+        const segmentCenter =
+            selected.idx * anglePerSegment +
+            anglePerSegment / 2;
+
+        let delta =
+            (360 - segmentCenter - currentAngle) % 360;
+
+        if (delta < 0) {
+            delta += 360;
+        }
+
+        const fullRotations =
+            10 + Math.floor(Math.random() * 5);
 
         const finalRotation =
             currentRotation.current +
             fullRotations * 360 +
             delta;
 
+        // ✅ FAIL SAFE
+        // if animation callback fails in release build
+        // modal can still close
+        debugLog(
+            'LuckyWheel',
+            'SPIN_VALUES',
+            {
+                currentAngle,
+                selectedIndex: selected.idx,
+                segmentCenter,
+                delta,
+                finalRotation,
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
+        debugLog(
+            'LuckyWheel',
+            'SPIN_ANIMATION_STARTED',
+            {
+                roomId: RoomID,
+                userId: userData?.userid,
+            }
+        );
         Animated.timing(rotation, {
             toValue: finalRotation,
-            duration: 4500,
-            easing: Easing.out(Easing.cubic),
+            easing: Easing.bezier(0.12, 0.8, 0.32, 1),
+            duration: 6000,
             useNativeDriver: true,
-        }).start(() => {
-            // Lock precision after stop
+        }).start();
+
+        setTimeout(() => {
+            console.log('[SPIN_TIMEOUT_COMPLETED]');
             currentRotation.current = finalRotation;
 
-            // ✅ DEBUG: check final stop angle
-            console.log(
-                '🎯 Final normalized angle:',
-                getNormalizedAngle(currentRotation.current),
-                'Expected segment:',
-                resultLabel
+            isSpinningRef.current = false;
+
+            setIsSpinning(false);
+
+            debugLog(
+                'LuckyWheel',
+                'SPIN_VISUAL_FINISHED',
+                {
+                    roomId: RoomID,
+                    userId: userData?.userid,
+                }
             );
 
-        });
-    };
+            if (pendingResultRef.current) {
 
+                handleSpinResult(pendingResultRef.current);
+
+                pendingResultRef.current = null;
+                console.log('[PROCESSING_PENDING_RESULT]');
+            }
+
+        }, 6100);
+
+        console.log(
+            '[SPIN_STARTED]',
+            'roundFinished:',
+            'spinCompleted:',
+        );
+
+    }, [handleSpinResult]);
 
     const renderSegments = useMemo(() => {
         const radius = 200;
@@ -757,7 +1232,7 @@ const LuckyWheelModal = (
 
             segments.push(
                 <G key={i}>
-                    <Path d={path} fill={color} />
+                    <Path d={path} fill={color} stroke="#FFD700" strokeWidth={2} />
                     <SvgText
                         x={textX}
                         y={textY}
@@ -778,27 +1253,88 @@ const LuckyWheelModal = (
     }, []);
 
 
-    const closeModal = () => {
-        // Clear any pending timeouts
+    const closeModal = useCallback(() => {
+
+        debugLog(
+            'LuckyWheel',
+            'CLOSE_MODAL',
+            {
+                roomId: RoomID,
+                userId: userData?.userid,
+                betPlacedByCurrentUser,
+            }
+        );
+
+        // prevent Double close
+        if (isClosingRef.current) {
+            return;
+        }
+
+        isClosingRef.current = true;
+
+        // clear timers
         if (cleanupTimeoutRef.current) {
             clearTimeout(cleanupTimeoutRef.current);
             cleanupTimeoutRef.current = null;
         }
 
-        // Clear interval
         clearCountdown();
 
-        // Stop animations
+        // stop animations
         stopIdleRotation();
 
-        // Notify server
-        socket.emit('LeaveFromSpinWheel', RoomID, userData?.userid);
+        try {
 
-        // Call parent onClose
-        if (onClose) {
-            onClose();
+            rotation.stopAnimation();
+            fadeAnim.stopAnimation();
+            creditCountAnim.stopAnimation();
+            chipsGlowAnim.stopAnimation();
+
+        } catch (e) {
+            console.log('[STOP_ANIMATION_ERROR]', e);
         }
-    };
+
+        // reset refs
+        isSpinningRef.current = false;
+        pendingResultRef.current = null;
+        freezeCreditUIRef.current = false;
+        prevCapturedRef.current = false;
+
+        placeBetButtonRef.current = false;
+
+        // reset states
+        setIsSpinning(false);
+
+        setSpinResultMessage('');
+        setSelectedMultiplier(null);
+        setActiveBetAmount(null);
+
+        setMessage('Get Ready');
+
+        setUserBets([]);
+
+        setBigCountdownNumber(null);
+        setCountdown(0);
+
+        setHideBetButtons(false);
+        setBetButtonsDisabled(false);
+
+        setBetPlacedByCurrentUser(false);
+
+        // notify server
+        socket.emit(
+            'LeaveFromSpinWheel',
+            roomIdRef.current,
+            userIdRef.current
+        );
+
+        // close modal
+        onCloseRef.current?.();
+
+        // IMPORTANT
+        isClosingRef.current = false;
+
+    }, []);
 
 
     // Render flying chips
@@ -829,11 +1365,19 @@ const LuckyWheelModal = (
         ));
     };
 
+
+    const shouldShowCloseIcon = !betPlacedByCurrentUser;
+
     return (
         <>
             <Modal
                 isVisible={visible}
-                onBackdropPress={onClose}
+                onBackdropPress={() => {
+                    // only block the user who placed bet
+                    if (!betPlacedByCurrentUser) {
+                        closeModal();
+                    }
+                }}
                 animationIn="slideInUp"
                 animationOut="slideOutDown"
                 animationInTiming={300}
@@ -841,7 +1385,6 @@ const LuckyWheelModal = (
                 useNativeDriver={true}
                 avoidKeyboard={false}
                 backdropOpacity={0}
-                animationType="slide"
                 style={[styles.profileModalMain]}
                 propagateSwipe={true}
                 swipeDirection={null}
@@ -849,7 +1392,7 @@ const LuckyWheelModal = (
                 <LinearGradient
                     colors={['rgba(0, 0, 0, 0.34)', 'rgba(0, 0, 0, 0.34)', '#000000']}
                     locations={[0, 0.4, 1]}
-                    style={[mainStyle.LWModalOverlay, { maxHeight: screenHeight * 0.9 - insets.top - 20 }]}
+                    style={[mainStyle.LWModalOverlay, { maxHeight: screenHeight * 0.83 - insets.top - 20 }]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                 >
@@ -894,9 +1437,14 @@ const LuckyWheelModal = (
                             />
                             <Text style={[mainStyle.chips]}>{Number(displayCredit).toFixed(0)}</Text>
                         </Animated.View>
-                        <TouchableOpacity onPress={closeModal} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                            <Ionicons name="close" size={30} color="#fff" />
-                        </TouchableOpacity>
+                        {shouldShowCloseIcon && (
+                            <TouchableOpacity
+                                onPress={closeModal}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <Ionicons name="close" size={30} color="#fff" />
+                            </TouchableOpacity>
+                        )}
                     </View>
                     {/* Flying chips overlay */}
                     <View style={mainStyle.flyingChipsContainer} pointerEvents="none">
@@ -986,6 +1534,35 @@ const LuckyWheelModal = (
                                 >
                                     <Svg width={svgSize} height={svgSize} viewBox="0 0 400 400">
                                         {renderSegments}
+                                        <Defs>
+                                            <RadialGradient
+                                                id="wheelShade"
+                                                cx="50%"
+                                                cy="50%"
+                                                r="50%"
+                                            >
+                                                <Stop
+                                                    offset="0%"
+                                                    stopColor="rgba(255,255,255,0)"
+                                                />
+                                                <Stop
+                                                    offset="70%"
+                                                    stopColor="rgba(255,255,255,0)"
+                                                />
+                                                <Stop
+                                                    offset="100%"
+                                                    stopColor="rgba(0,0,0,0.45)"
+                                                />
+                                            </RadialGradient>
+                                        </Defs>
+
+                                        <Circle
+                                            cx="200"
+                                            cy="200"
+                                            r="200"
+                                            fill="url(#wheelShade)"
+                                            opacity={0.25}
+                                        />
                                         <Circle cx="200" cy="200" r="10" fill="gold" />
                                     </Svg>
                                 </Animated.View>
@@ -1071,9 +1648,10 @@ const LuckyWheelModal = (
                         )}
 
                         {/* multiplier buttons */}
-                        {!hideBetButtons && (
+                        {/* multiplier buttons */}
+                        {!hideBetButtons && !isHost && (
                             <View style={[mainStyle.betGroup, { marginTop: userBets.length > 0 ? 0 : 10 }]}>
-                                {['Double', 'Triple', '5x', '25x'].map((option, ind, arr) => {
+                                {['Double', 'Triple', '10x', '20x'].map((option, ind, arr) => {
                                     const isActive = selectedMultiplier === option;
                                     const isFirst = ind === 0;
                                     const isLast = ind === arr.length - 1;
@@ -1100,8 +1678,8 @@ const LuckyWheelModal = (
                                                     opacity: betButtonsDisabled ? 0.6 : 1,
                                                 },
                                             ]}
-                                            onPress={() => setSelectedMultiplier(option)}
                                             disabled={betButtonsDisabled}
+                                            onPress={() => handleOddsSelect(option)}
                                         >
                                             <Text style={[
                                                 mainStyle.betButtonText,
@@ -1119,7 +1697,7 @@ const LuckyWheelModal = (
                         )}
 
                         {/* User Bet Buttons */}
-                        {!hideBetButtons && (
+                        {!hideBetButtons && !isHost && (
                             <View style={[mainStyle.placeBetBtnGroup]}>
                                 <TouchableOpacity
                                     style={[
@@ -1133,7 +1711,11 @@ const LuckyWheelModal = (
                                         },
                                     ]}
                                     onPress={() => placeBet(200)}
-                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 200)}
+                                    disabled={
+                                        betButtonsDisabled ||
+                                        !selectedMultiplier || // 👈 IMPORTANT
+                                        (activeBetAmount && activeBetAmount !== 200)
+                                    }
                                 >
                                     <Text style={mainStyle.placeBetBtnText}>
                                         BET 200
@@ -1152,7 +1734,11 @@ const LuckyWheelModal = (
                                         },
                                     ]}
                                     onPress={() => placeBet(500)}
-                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 500)}
+                                    disabled={
+                                        betButtonsDisabled ||
+                                        !selectedMultiplier ||
+                                        (activeBetAmount && activeBetAmount !== 500)
+                                    }
                                 >
                                     <Text style={mainStyle.placeBetBtnText}>
                                         BET 500
@@ -1171,7 +1757,11 @@ const LuckyWheelModal = (
                                         },
                                     ]}
                                     onPress={() => placeBet(1000)}
-                                    disabled={betButtonsDisabled || (activeBetAmount && activeBetAmount !== 1000)}
+                                    disabled={
+                                        betButtonsDisabled ||
+                                        !selectedMultiplier ||
+                                        (activeBetAmount && activeBetAmount !== 1000)
+                                    }
                                 >
                                     <Text style={mainStyle.placeBetBtnText}>
                                         BET 1000

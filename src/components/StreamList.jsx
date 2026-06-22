@@ -16,6 +16,7 @@ import GoogleBannerAd from './GoogleBannerAd';
 import { getGenderFallbackImage, requestPermissions, showPermissionAlert, socket } from '../utils/constant';
 import { LeaderBoards } from './LeaderBoards';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useWindowDimensions } from 'react-native';
 
 const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefresh, setCurrentStreamData }) => {
     const route = useRoute();
@@ -25,7 +26,10 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         headerMainTab } = useAppContext();
 
     const screenHeight = Dimensions.get('window').height;
-    const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
+    const screenWidth = Dimensions.get('window').width;
+    const [openConnectModal, setOpenConnectModal] = useState(false);
+    const [connectRoomTitle, setConnectRoomTitle] = useState('');
+    const [isCreatingConnectRoom, setIsCreatingConnectRoom] = useState(false);
     const [roomIdInput, setRoomIdInput] = useState('');
     const [apiRooms, setApiRooms] = useState([]);
     const [selectedCategoryIndices, setSelectedCategoryIndices] = useState([]); // store selected indices
@@ -40,8 +44,12 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const [searchFilteredData, setSearchFilteredData] = useState([]);
     const [isDisable, setIsDisable] = useState(false); // for disabling the button when creating room
     const [refreshing, setRefreshing] = useState(false);
-
+    const { width, height } = useWindowDimensions();
+    const isTablet = width >= 768;
     const disableBtnRef = useRef(null);
+    const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
+
+
 
     useEffect(() => {
         if (searchFilteredData?.length > 0) {
@@ -283,6 +291,115 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     };
 
 
+    const createConnectRoom = async () => {
+
+        try {
+
+            if (isCreatingConnectRoom) {
+                return;
+            }
+
+            const IsAccepted = await requestPermissions();
+
+            if (!IsAccepted && socket?.connected) {
+                showPermissionAlert();
+                return;
+            }
+
+            setIsCreatingConnectRoom(true);
+
+            // location
+            const savedLocationStr = await AsyncStorage.getItem('userLocation');
+
+            let lat = 0;
+            let lon = 0;
+            let formattedLocation = 'Unknown';
+
+            if (savedLocationStr) {
+
+                const savedLocation = JSON.parse(savedLocationStr);
+
+                lat = savedLocation.lat;
+                lon = savedLocation.lon;
+                formattedLocation = savedLocation.formatted;
+
+            } else if (userAddress?.latitude && userAddress?.longitude) {
+
+                lat = userAddress.latitude;
+                lon = userAddress.longitude;
+                formattedLocation = userAddress.city;
+            }
+
+            const roomData = {
+
+                RoomName: connectRoomTitle || 'Connect Stream',
+
+                hostID: userData.userid,
+
+                startDate: format(
+                    new Date(),
+                    "yyyy-MM-dd'T'HH:mm:ss"
+                ),
+
+                endDate: format(
+                    new Date(Date.now() + 60 * 60 * 1000),
+                    "yyyy-MM-dd'T'HH:mm:ss"
+                ),
+
+                participants: '',
+
+                thumbNail: 'dummyimg.jpg',
+
+                physicalLocation: formattedLocation,
+
+                Categories: '',
+
+                geoLocation: `${lat},${lon}`,
+
+                streamType: 'connect',
+
+                maxParticipants: 2,
+
+                allowViewers: false,
+
+                allowMultipleCohosts: false,
+            };
+
+            console.log('🚀 CONNECT ROOM:', roomData);
+
+            const response = await Apiclient.post(
+                '/rooms',
+                roomData
+            );
+
+            if (response?.data?.roomID) {
+
+                const roominfo = {
+                    ...roomData,
+                    roomID: response.data.roomID,
+                };
+
+                // IMPORTANT
+                roominfo.streamType = 'connect';
+
+                createRoom(roominfo);
+
+                setOpenConnectModal(false);
+
+                setConnectRoomTitle('');
+            }
+
+        } catch (error) {
+
+            console.log('CONNECT ROOM ERROR:', error);
+
+        } finally {
+
+            setIsCreatingConnectRoom(false);
+        }
+    };
+
+
     const viewerjoinedroom = (item) => {
         setCurrentStreamData(item);
         const roomId = item.roomID.toString();
@@ -293,7 +410,30 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
         }
     };
 
+    const joinConnectRoom = (item) => {
 
+        setCurrentStreamData(item);
+
+        if (
+            item.maxParticipants === 2 &&
+            item.viewerCount >= 2
+        ) {
+
+            Alert.alert(
+                'Room Full',
+                'Connect stream already has 2 users.'
+            );
+
+            return;
+        }
+
+        const roomId = item.roomID.toString();
+
+        joinRoom(roomId, {
+            ...item,
+            streamType: 'connect'
+        });
+    };
 
 
     // Function to fetch user interest from the API
@@ -351,11 +491,20 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 style={[
                     styles.streamListCard,
                     {
-                        marginRight: isLeftItem ? 10 : 0  // space between columns
+                        marginRight: isLeftItem ? 10 : 0
                     }
                 ]}
-                onPress={() => viewerjoinedroom(item)
-                }
+                onPress={() => {
+
+                    if (item.streamType === 'connect') {
+
+                        joinConnectRoom(item);
+
+                    } else {
+
+                        viewerjoinedroom(item);
+                    }
+                }}
             >
                 <Image
                     // source={image}
@@ -370,22 +519,187 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     colors={['transparent', 'rgba(0,0,0,0.7)']}
                     style={styles.gradientOverlay}
                 />
-                <View style={[styles.streamListEyeCountContainer, themeStyles[theme].streamListEyeCountContainer]}>
+
+                {/* CONNECT BADGE */}
+                {
+                    item.streamType === 'connect' && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 10,
+                                left: 10,
+                                backgroundColor: '#de0037',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 20,
+                                zIndex: 99,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: '#fff',
+                                    fontSize: 11,
+                                    fontWeight: '700',
+                                }}
+                            >
+                                CONNECT
+                            </Text>
+                        </View>
+                    )
+                }
+
+                {/* Location and flag render */}
+
+                <View
+    style={{
+        position: 'absolute',
+        top: 10,
+        left: 10,
+        right: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 99,
+    }}
+>
+    {/* Viewer Count */}
+   <View
+    style={{
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+    }}
+>
+    <Ionicons
+        name="eye-outline"
+        size={14}
+        color="#fff"
+    />
+
+    <Text
+        style={{
+            color: '#fff',
+            fontSize: 11,
+            fontWeight: '600',
+            marginLeft: 4,
+        }}
+    >
+        {item.viewerCount || 0}
+    </Text>
+</View>
+
+    {/* Location */}
+    <View
+        style={{
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            maxWidth: '65%',
+        }}
+    >
+        <Text
+            style={{
+                color: '#fff',
+                fontSize: 11,
+                marginRight: 4,
+            }}
+        >
+            🇮🇳
+        </Text>
+
+        <Text
+            numberOfLines={1}
+            style={{
+                color: '#fff',
+                fontSize: 11,
+                fontWeight: '600',
+            }}
+        >
+            {item.city && item.state
+                ? `${item.city}, ${item.state}`
+                : item.physicalLocation || ''}
+        </Text>
+    </View>
+</View>
+
+                {/* <View
+                    style={[
+                        styles.streamListEyeCountContainer,
+                        themeStyles[theme].streamListEyeCountContainer
+                    ]}
+                >
+                    <Text
+                        style={[
+                            styles.streamListEyeCount,
+                            themeStyles[theme].streamListEyeCount
+                        ]}
+                    >
+                        {item.viewerCount || 0}
+                    </Text>
+
+                    <Ionicons
+                        name="eye-outline"
+                        size={14}
+                        color="#fff"
+                    />
+                </View> */}
+
+                {/* <View style={[styles.streamListEyeCountContainer, themeStyles[theme].streamListEyeCountContainer]}>
                     <Text style={[styles.streamListEyeCount, themeStyles[theme].streamListEyeCount]}>{item.viewerCount || 0}</Text>
                     <Ionicons name="eye-outline" size={14} color={theme === 'light' ? '#fff' : '#fff'} />
-                </View>
-                <View style={styles.streamListOverlay}>
-                    <Text
-                        style={[styles.streamListName, themeStyles[theme].streamListName]}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                    >
-                        {item.hostScreenName || item.screenName}
-                    </Text>
-                    <Text style={styles.streamListStatus}
-                        numberOfLines={1}
-                        ellipsizeMode="tail">{item.RoomName}</Text>
-                </View>
+                </View> */}
+            <View
+    style={[
+        styles.streamListOverlay,
+        {
+            position: 'absolute',
+            bottom: 10,
+            left: 0,
+            right: 0,
+
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            paddingHorizontal: 10,
+        }
+    ]}
+>
+   <Text
+    numberOfLines={1}
+    ellipsizeMode="tail"
+    style={[
+        styles.streamListName,
+        themeStyles[theme].streamListName,
+        {
+            textAlign: 'center',
+            alignSelf: 'center',
+        }
+    ]}
+>
+    {item.hostScreenName || item.screenName}
+</Text>
+
+ <Text
+    numberOfLines={2}
+    ellipsizeMode="tail"
+    style={[
+        styles.streamListStatus,
+        {
+            textAlign: 'center',
+            alignSelf: 'center',
+            maxWidth: '85%',
+        }
+    ]}
+>
+    {item.RoomName}
+</Text>
+</View>
             </TouchableOpacity>
         );
     };
@@ -409,6 +723,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 selectedCategoryIndices={selectedCategoryIndices}
                 searchFilteredData={searchFilteredData}
                 setSearchFilteredData={setSearchFilteredData}
+                onConnectPress={() => setOpenConnectModal(true)}
             />
             {headerMainTab === 'foryou' ? (
                 <>
@@ -437,10 +752,14 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                         }
                         ListEmptyComponent={
                             !isInitialLoading && (
-                                <View style={{ alignItems: 'center' }}>
+                                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                     <Image
                                         source={require('../../assets/images/NoStreamAvailable.png')}
-                                        style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                                        style={{
+                                            width: screenWidth * 0.85,
+                                            height: screenHeight * 0.6,
+                                            resizeMode: 'contain',
+                                        }}
                                     />
                                 </View>
                             )
@@ -544,6 +863,128 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     </Modal>
                 )
             }
+            {
+    openConnectModal && (
+
+        <Modal
+            isVisible={openConnectModal}
+            onBackdropPress={() =>
+                setOpenConnectModal(false)
+            }
+            animationIn="slideInUp"
+            animationOut="slideOutDown"
+            useNativeDriver={true}
+            backdropOpacity={0.4}
+            style={[styles.profileModalMain]}
+        >
+
+            <View
+                style={[
+                    styles.profileModalOverlay,
+                    themeStyles[theme].profileModalOverlay,
+                    {
+                        padding: 20,
+                    }
+                ]}
+            >
+
+                <TouchableOpacity
+                    onPress={() =>
+                        setOpenConnectModal(false)
+                    }
+                    style={{
+                        alignSelf: 'flex-end'
+                    }}
+                >
+                    <Ionicons
+                        name="close"
+                        size={24}
+                        color="#fff"
+                    />
+                </TouchableOpacity>
+
+                <Text
+                    style={{
+                        color: '#fff',
+                        fontSize: 20,
+                        fontWeight: '700',
+                        marginBottom: 20,
+                    }}
+                >
+                    Start Connect Stream
+                </Text>
+
+                <TextInput
+                    value={connectRoomTitle}
+                    onChangeText={setConnectRoomTitle}
+                    placeholder="Enter title"
+                    placeholderTextColor="#999"
+                    style={[
+                        styles.strHedSearchModalInput,
+                        {
+                            marginBottom: 20,
+                        }
+                    ]}
+                />
+
+                <View
+                    style={{
+                        backgroundColor: '#1f1f1f',
+                        padding: 15,
+                        borderRadius: 12,
+                        marginBottom: 20,
+                    }}
+                >
+
+                    <Text
+                        style={{
+                            color: '#fff',
+                            fontSize: 14,
+                            lineHeight: 22,
+                        }}
+                    >
+                        • One on One ChitChat{"\n"}
+                        • Camera ON by default{"\n"}
+                        • Mic ON by default{"\n"}
+                        • Viewers can also Join{"\n"}
+                        • Games supported
+                    </Text>
+
+                </View>
+
+                <TouchableOpacity
+                    onPress={createConnectRoom}
+                    disabled={isCreatingConnectRoom}
+                    style={{
+                        backgroundColor: '#de0037',
+                        height: 52,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        borderRadius: 14,
+                    }}
+                >
+
+                    <Text
+                        style={{
+                            color: '#fff',
+                            fontWeight: '700',
+                            fontSize: 16,
+                        }}
+                    >
+                        {
+                            isCreatingConnectRoom
+                                ? 'Starting...'
+                                : 'Start Connect Stream'
+                        }
+                    </Text>
+
+                </TouchableOpacity>
+
+            </View>
+
+        </Modal>
+    )
+}
             {/* <Footer /> */}
         </View>
     );

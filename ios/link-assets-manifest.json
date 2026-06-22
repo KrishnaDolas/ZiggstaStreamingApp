@@ -1,0 +1,653 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/bootstrap-icons.woff",
+      "sha1": "d5831fd39baf13aff7626e483b9a089730f18604"
+    },
+    {
+      "path": "assets/fonts/bootstrap-icons.woff2",
+      "sha1": "020c3c6f9280a315e8425d7f92e15bcd0cdda1b2"
+    },
+    {
+      "path": "assets/fonts/fa-brands-400.ttf",
+      "sha1": "acaf5320927fc169b0089f8f25afb9cfbad353b4"
+    },
+    {
+      "path": "assets/fonts/fa-brands-400.woff2",
+      "sha1": "4022f95e001d734ca8f082b8e7627abd205609ec"
+    },
+    {
+      "path": "assets/fonts/fa-regular-400.ttf",
+      "sha1": "784b4d493ab9a7996b07e4f9f71674b2f2e43e22"
+    },
+    {
+      "path": "assets/fonts/fa-regular-400.woff2",
+      "sha1": "2ed706340547d19c10a409ee02fb08f3d52ff670"
+    },
+    {
+      "path": "assets/fonts/fa-solid-900.ttf",
+      "sha1": "54217d79e7b35011798d712a96d1c4ea08a0ca70"
+    },
+    {
+      "path": "assets/fonts/fa-solid-900.woff2",
+      "sha1": "1aae708e3b94ee981b452a918d28ed037fbb5e18"
+    },
+    {
+      "path": "assets/fonts/fa-v4compatibility.ttf",
+      "sha1": "e47d5bf853d39ec86e62f4897cbcac7dd5c3b5b9"
+    },
+    {
+      "path": "assets/fonts/fa-v4compatibility.woff2",
+      "sha1": "7009126c938f8dad77426a5b44bc21685ee8dfec"
+    },
+    {
+      "path": "assets/fonts/feather.eot",
+      "sha1": "a4b7950838a591b820a82b591e8505af485ab351"
+    },
+    {
+      "path": "assets/fonts/feather.svg",
+      "sha1": "f9a1ae83508a9f93be5a19a4987f523aab633056"
+    },
+    {
+      "path": "assets/fonts/feather.ttf",
+      "sha1": "2bde853cbb769aab80b18f3544a7e7c1f2cbd31b"
+    },
+    {
+      "path": "assets/fonts/feather.woff",
+      "sha1": "7e6a306e6fb6178f325e6ad9a99c761ba5074044"
+    },
+    {
+      "path": "assets/fonts/icomoon.eot",
+      "sha1": "beb01be5dde164107a6e867d602f6eb908d800ca"
+    },
+    {
+      "path": "assets/fonts/icomoon.svg",
+      "sha1": "bca9644a52b1861888f187578ac8dc951c05b96c"
+    },
+    {
+      "path": "assets/fonts/icomoon.ttf",
+      "sha1": "dff7c6a1fa75b92b23f4bf00d98fa0c38a1d94aa"
+    },
+    {
+      "path": "assets/fonts/icomoon.woff",
+      "sha1": "0d48469cec6b87fc8665f2dc05c53a7e7c5f3826"
+    },
+    {
+      "path": "assets/fonts/Lato-Black.ttf",
+      "sha1": "a001eb827743636e04f8efa7d4aeedf0541c46ac"
+    },
+    {
+      "path": "assets/fonts/Lato-BlackItalic.ttf",
+      "sha1": "b490ec02c69bb74f5b4f487c59e984891c8da71c"
+    },
+    {
+      "path": "assets/fonts/Lato-Bold.ttf",
+      "sha1": "542498221d97bee5bdbccf86ee8890bf8e8005c9"
+    },
+    {
+      "path": "assets/fonts/Lato-BoldItalic.ttf",
+      "sha1": "6bf491e78e16d3b9c8a55752e1bd658e15ed7f19"
+    },
+    {
+      "path": "assets/fonts/Lato-Italic.ttf",
+      "sha1": "190187b720ec2f2ff2e4281237e301000e09673f"
+    },
+    {
+      "path": "assets/fonts/Lato-Light.ttf",
+      "sha1": "ad0d178564445a535b15d417f5b18019923d3bab"
+    },
+    {
+      "path": "assets/fonts/Lato-LightItalic.ttf",
+      "sha1": "34388d9a3b64380c9f08d424d0adaa88a0d1650a"
+    },
+    {
+      "path": "assets/fonts/Lato-Regular.ttf",
+      "sha1": "e923c72eda5e50a87e18ff5c71e9ef4b3b6455a3"
+    },
+    {
+      "path": "assets/fonts/Lato-Thin.ttf",
+      "sha1": "07290446bee3f81ce501a3c3dbfde6097c70ca15"
+    },
+    {
+      "path": "assets/fonts/Lato-ThinItalic.ttf",
+      "sha1": "ff4a1a9fe2dcc41d993f4c5067a3baa1c456ff97"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-black-58646a6b80d5a.otf",
+      "sha1": "95a211f130be0584bca8b96f8886fa26e54e4c33"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-heavy-586470160b9e5.otf",
+      "sha1": "07db5cccbe455aa9d3741ce76e1254a714a4d0de"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-semibold-58646eddcae92.otf",
+      "sha1": "8e147d5a6d7902810cfae7d30b637c84f9e8315f"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-thin-58646e9b26e8b.otf",
+      "sha1": "1bac9bcddeb5bac4bbf3a86e2006351ead8e5b90"
+    },
+    {
+      "path": "assets/fonts/sf-ui-display-ultralight-58646b19bf205.otf",
+      "sha1": "554e2532435878343790ce55a0a877224548bee8"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Bold.otf",
+      "sha1": "7e7bc546371839f6261b7aa3614a7ee270a12504"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Light.otf",
+      "sha1": "9bbfb53fa3a4004f6da5820bb2d3ea92135308bb"
+    },
+    {
+      "path": "assets/fonts/SFUIDisplay-Regular.otf",
+      "sha1": "cdedea75635f4ca94dc758b2c8022334b5bb1d6b"
+    },
+    {
+      "path": "assets/fonts/themify.eot",
+      "sha1": "df12a0942cf1933f0915fe3d910fa2379f092d83"
+    },
+    {
+      "path": "assets/fonts/themify.svg",
+      "sha1": "106a9ed6d6b0936376b5723611a602a2e3da66c6"
+    },
+    {
+      "path": "assets/fonts/themify.ttf",
+      "sha1": "5bb1fe69452a484566a81076af7567728fe7e43b"
+    },
+    {
+      "path": "assets/fonts/themify.woff",
+      "sha1": "9394f35bd2addd24666b79bfc36d4f9d247cb01d"
+    },
+    {
+      "path": "assets/images/confirmation_email.png",
+      "sha1": "e5a05f110adf8653ae64f15ee79c5a4ec1eea16b"
+    },
+    {
+      "path": "assets/images/default_avatar_female.png",
+      "sha1": "bdabbf4f68feee57c789ec301626505e2ff0a31b"
+    },
+    {
+      "path": "assets/images/default_avatar_male.png",
+      "sha1": "5360b54fa271565b7e0f41d508ae73da0d1915eb"
+    },
+    {
+      "path": "assets/images/default_avatar_trans.png",
+      "sha1": "431ae387a36d7386faaf4f39a331a9cfaa5f9283"
+    },
+    {
+      "path": "assets/images/default_streamer.jpg",
+      "sha1": "87472611123b227721dd4b96bfe0f460dfc8a4c9"
+    },
+    {
+      "path": "assets/images/favicon.png",
+      "sha1": "be3458272ec00f153fe6e49a38251ffb29e2a02b"
+    },
+    {
+      "path": "assets/images/friends_no_data_found.png",
+      "sha1": "c55263246f86a7b4b4a439efc9f24981b5ce11b0"
+    },
+    {
+      "path": "assets/images/gifts/gif_gif_420.gif",
+      "sha1": "bed5e11f94bec7d5a64b98c3fd8cdaaa485fb9d6"
+    },
+    {
+      "path": "assets/images/gifts/award.gif",
+      "sha1": "1a6edd85d51072071ec6f59fb001f2f27bd4b6bf"
+    },
+    {
+      "path": "assets/images/gifts/balloons.gif",
+      "sha1": "8425b600b4c4f8d4f84570aa6c537604737267df"
+    },
+    {
+      "path": "assets/images/gifts/boss.gif",
+      "sha1": "2b092eb2c3e4c207e26f5d1db8722610136c3242"
+    },
+    {
+      "path": "assets/images/gifts/broken_heart.gif",
+      "sha1": "985949fd492df90a1299fd680b8ed55514a6badf"
+    },
+    {
+      "path": "assets/images/gifts/casino_chip.gif",
+      "sha1": "29040d740f191f6cd236ec28811c4f3ef765a033"
+    },
+    {
+      "path": "assets/images/gifts/casino_chip2.gif",
+      "sha1": "d40b2460946c75efe6ead7a7af762acb54edfb7d"
+    },
+    {
+      "path": "assets/images/gifts/casino_chip3.gif",
+      "sha1": "583dcac1d544881d52bf3a9ebb6845828624ec96"
+    },
+    {
+      "path": "assets/images/gifts/casino_chip5.gif",
+      "sha1": "dea7f8fefafda3bdbf05e81888b67864f98d52f6"
+    },
+    {
+      "path": "assets/images/gifts/clown.gif",
+      "sha1": "a861e6e8503a8031da02739f33d949b82a99da0b"
+    },
+    {
+      "path": "assets/images/gifts/crown.gif",
+      "sha1": "d9d566ed7a7ef0ed708c16b5d96a1b03e1dee289"
+    },
+    {
+      "path": "assets/images/gifts/diamond.gif",
+      "sha1": "cd65d143ccbe65bf581e8c5275dc9e7c51b9d6fd"
+    },
+    {
+      "path": "assets/images/gifts/diamond2.gif",
+      "sha1": "6d4d8509c0ddde641162aacee696195d0ab3296f"
+    },
+    {
+      "path": "assets/images/gifts/diamond3.gif",
+      "sha1": "20215c7ef1b1f0e68f538e53b33d09b158047316"
+    },
+    {
+      "path": "assets/images/gifts/dollar.gif",
+      "sha1": "d6dc5c782fe3b8e355b1a44309a276cd123de2bd"
+    },
+    {
+      "path": "assets/images/gifts/financial_freedom.gif",
+      "sha1": "85ef799adf7abf604b8901eb753d1f04318fc0d1"
+    },
+    {
+      "path": "assets/images/gifts/hearts.gif",
+      "sha1": "aa3e3f02aa052785fae9e649177fa0554583adea"
+    },
+    {
+      "path": "assets/images/gifts/in_love.gif",
+      "sha1": "6b433d6e528194558e44bc086832db40d208793a"
+    },
+    {
+      "path": "assets/images/gifts/jack_in_the_box.gif",
+      "sha1": "475ea670e499e28554aa457f14e744119fe1884b"
+    },
+    {
+      "path": "assets/images/gifts/laugh.gif",
+      "sha1": "6764fc270a169d8e3a37cd5972079d2759522f37"
+    },
+    {
+      "path": "assets/images/gifts/like.gif",
+      "sha1": "6ae362885bddd7915bb51e3c96b3969a782c6e02"
+    },
+    {
+      "path": "assets/images/gifts/love.gif",
+      "sha1": "1818d55b93ab9dc127601064592eb7c15540d52e"
+    },
+    {
+      "path": "assets/images/gifts/piggy_bank.gif",
+      "sha1": "753f50488fcc5fde22e9c6993a6af015b0102709"
+    },
+    {
+      "path": "assets/images/gifts/popcorn.gif",
+      "sha1": "b88ea45b6e169d36e1d46c1218c8885acbefcfce"
+    },
+    {
+      "path": "assets/images/gifts/popcorn2.gif",
+      "sha1": "cb57a224b683a33818ac1da5f491c811f1c8405a"
+    },
+    {
+      "path": "assets/images/gifts/profit.gif",
+      "sha1": "06aa5f8c264bde40f862f8718eb0a5c3b158001b"
+    },
+    {
+      "path": "assets/images/gifts/savings3.gif",
+      "sha1": "e5677cae95689f295f014f151a89cbbfff7860d4"
+    },
+    {
+      "path": "assets/images/gifts/sunrise.gif",
+      "sha1": "9682fef76b5f579dd65b860063669be7ebd97355"
+    },
+    {
+      "path": "assets/images/gifts/ticket.gif",
+      "sha1": "b26d7931feb3237cf50ae10d3e2006bba8d57144"
+    },
+    {
+      "path": "assets/images/gifts/ticket2.gif",
+      "sha1": "b53f0f470b6abb9933131f39a78a5ff8f199f3a2"
+    },
+    {
+      "path": "assets/images/gifts/valentines_day.gif",
+      "sha1": "a08fb7ed66bd673c58f5fd19a2e093062f99cf82"
+    },
+    {
+      "path": "assets/images/gifts/wallet.gif",
+      "sha1": "07978067effacd46f714021a29ab19dca5cfd60d"
+    },
+    {
+      "path": "assets/images/gifts/wave.gif",
+      "sha1": "0e2fd30ed83e20099b85577957b13175a640e421"
+    },
+    {
+      "path": "assets/images/gifts/win_win.gif",
+      "sha1": "dd404a3f43a63aba8f7d7371e02de5588997b842"
+    },
+    {
+      "path": "assets/images/HorseRaceGame/horse_icon.png",
+      "sha1": "3b6a718dbef9b75e363d9ac3f2e6fdaa884a3929"
+    },
+    {
+      "path": "assets/images/HorseRaceGame/racing_horse.png",
+      "sha1": "d1cc523833c1ce7319e55bb377ebe7f694ca3503"
+    },
+    {
+      "path": "assets/images/HorseRaceGame/racing_horsegif.gif",
+      "sha1": "5f1c4e0ab96871598ae9340863103446ed5e85e5"
+    },
+    {
+      "path": "assets/images/icons/filter_remove.png",
+      "sha1": "4dff41cdc00579346189502b253b8d07366efc89"
+    },
+    {
+      "path": "assets/images/icons/friend_added.png",
+      "sha1": "47489c24cb5d4c0d5e79980caa615b246816529a"
+    },
+    {
+      "path": "assets/images/icons/icon_add_users.png",
+      "sha1": "c2dfd0a3596d77ad08c947f97ea760709b363180"
+    },
+    {
+      "path": "assets/images/icons/icon_gift.png",
+      "sha1": "416b9b2c3e69b092fd5c57cbda4035451e194383"
+    },
+    {
+      "path": "assets/images/icons/icon_video.png",
+      "sha1": "aaf65aef30ce0ea344dca18c7d4e70440f5d429b"
+    },
+    {
+      "path": "assets/images/icons/icon_z.png",
+      "sha1": "b2c55dcefea6fa464293372c1359ff8516899149"
+    },
+    {
+      "path": "assets/images/icons/jukebox.png",
+      "sha1": "5592878d883d97424cd5df52d205dd619dd55625"
+    },
+    {
+      "path": "assets/images/icons/name_bg.png",
+      "sha1": "361bfbdc752446268e8caf237701b154dff8ff22"
+    },
+    {
+      "path": "assets/images/icons/received.png",
+      "sha1": "b67e750eba3dbe7d5122fa622d61706a8af3ddab"
+    },
+    {
+      "path": "assets/images/icons/sent.png",
+      "sha1": "882f6489e311d1dddee899571b2b10b2f3fca307"
+    },
+    {
+      "path": "assets/images/icons/star.png",
+      "sha1": "4fa96b13ae7178892b45d55dbdd36a76666d87f5"
+    },
+    {
+      "path": "assets/images/icons/user_check.png",
+      "sha1": "b41ad7e4585e36ebddab61107601ebce90662248"
+    },
+    {
+      "path": "assets/images/logo_ziggsta_hor.png",
+      "sha1": "e490d063c952e1c8188e6f9863b1e01d1978ec0e"
+    },
+    {
+      "path": "assets/images/logo_ziggsta_hor.svg",
+      "sha1": "caf5cc2ddaefd4d7d14dd6a2f8e0091ab03d6603"
+    },
+    {
+      "path": "assets/images/logo_ziggsta_slogan.png",
+      "sha1": "eb37555b0cbb64d479d7d62e78eb102da371315e"
+    },
+    {
+      "path": "assets/images/logo_icon.png",
+      "sha1": "f51b93e45dd2d7e3ff4759a9d2ea2536f15a62a4"
+    },
+    {
+      "path": "assets/images/logo_icon.svg",
+      "sha1": "898d6045903d4769e3ae8894734efdd079118fc6"
+    },
+    {
+      "path": "assets/images/logo.png",
+      "sha1": "41f8d9c92fdcb656ccd3b382301d6f99d0f6f596"
+    },
+    {
+      "path": "assets/images/lucky-wheel/blue_chip.png",
+      "sha1": "416d7bac6b8d691434f58ec7041f51a8205a7f6d"
+    },
+    {
+      "path": "assets/images/lucky-wheel/lose.png",
+      "sha1": "545df16f2e08eb9f4bb81e6ecbb3721616ef52b1"
+    },
+    {
+      "path": "assets/images/lucky-wheel/lw_home.png",
+      "sha1": "1bf0cdfa7f24d395eb79c003ea66e7068f0c3bc4"
+    },
+    {
+      "path": "assets/images/lucky-wheel/red_chip.png",
+      "sha1": "b451129562ef629e73f4fb86e5429bf4c43ba49a"
+    },
+    {
+      "path": "assets/images/lucky-wheel/wheel_outer.png",
+      "sha1": "0131abe666deb69d3796c76ed5e183d60532c166"
+    },
+    {
+      "path": "assets/images/lucky-wheel/win.png",
+      "sha1": "f027b6715e951e3e5b97b023ea6366901b9a7d2b"
+    },
+    {
+      "path": "assets/images/nostreamavailable.png",
+      "sha1": "da973e0a7e21878e50a52c331d90542471cd1041"
+    },
+    {
+      "path": "assets/images/solt-game/bet_10_dis.png",
+      "sha1": "ff89ab86dc0005c1af28864938d1bde763f8e7cc"
+    },
+    {
+      "path": "assets/images/solt-game/bet_10.png",
+      "sha1": "82fd67229d74a0c4607172352b1428a08a456bc4"
+    },
+    {
+      "path": "assets/images/solt-game/bet_1000_dis.png",
+      "sha1": "1550138c226343254a3d87a2af8a2a935fc29671"
+    },
+    {
+      "path": "assets/images/solt-game/bet_1000.png",
+      "sha1": "080f8c7701f5bd1cda74802d48f8083df1b06f20"
+    },
+    {
+      "path": "assets/images/solt-game/bet_2_dis.png",
+      "sha1": "811b059b922b90b63b581dc8c7b4beb6e1e474b0"
+    },
+    {
+      "path": "assets/images/solt-game/bet_2.png",
+      "sha1": "dfeba3d539477767dce3dc586d23d151221e762c"
+    },
+    {
+      "path": "assets/images/solt-game/bet_200_dis.png",
+      "sha1": "50c78e8595fe4f55fd0e9c64ef19b62512954dd9"
+    },
+    {
+      "path": "assets/images/solt-game/bet_200.png",
+      "sha1": "c5c87b49e9aa4801b71e7903ee59f74b74508088"
+    },
+    {
+      "path": "assets/images/solt-game/bet_5_dis.png",
+      "sha1": "1727cd1efbe6bcfffdd162d722d6a34ac60cfc9f"
+    },
+    {
+      "path": "assets/images/solt-game/bet_5.png",
+      "sha1": "1a4cdb752bbdcb214a7d376d6a33bc25f2a4265b"
+    },
+    {
+      "path": "assets/images/solt-game/bet_500_dis.png",
+      "sha1": "c0647b587be408249a1eeb26a490197d9e2dc854"
+    },
+    {
+      "path": "assets/images/solt-game/bet_500.png",
+      "sha1": "6ada524f3c3fd47f997fa27aa78f4ef2cc8727ef"
+    },
+    {
+      "path": "assets/images/solt-game/bet_blank.png",
+      "sha1": "b6f3bda4fb9f42cee613a3923e0d5f49e61ff86d"
+    },
+    {
+      "path": "assets/images/solt-game/btn_spin_dis.png",
+      "sha1": "6a8cbd8af9516169a2e6322adb86cc055050df95"
+    },
+    {
+      "path": "assets/images/solt-game/btn_spin.png",
+      "sha1": "583817502e4c1acb78d3c4d58f9dd3e9992c82a0"
+    },
+    {
+      "path": "assets/images/solt-game/credit_bg.png",
+      "sha1": "6b92e4a8c9df948d723019e7ac081e0ac7a34a32"
+    },
+    {
+      "path": "assets/images/solt-game/game_ui.png",
+      "sha1": "ecc7092757a23a9f0f05e59488f7164c53144ef6"
+    },
+    {
+      "path": "assets/images/solt-game/icon_7_2.png",
+      "sha1": "620458ebf120143526a0e43b9fd25ccdb4181279"
+    },
+    {
+      "path": "assets/images/solt-game/icon_7.png",
+      "sha1": "3aa13ad9b654cd076817897a765be3b890a29bd8"
+    },
+    {
+      "path": "assets/images/solt-game/icon_ace.png",
+      "sha1": "83dbd6a4607965af37a106f982c7f9299bb1b8d8"
+    },
+    {
+      "path": "assets/images/solt-game/icon_cherry.png",
+      "sha1": "2b3a10aa698ef78c8d22a73b9bf73522b532db7b"
+    },
+    {
+      "path": "assets/images/solt-game/icon_gift_glow.png",
+      "sha1": "06470cc212a55da3e0c16475521e06496f7507ec"
+    },
+    {
+      "path": "assets/images/solt-game/icon_gift.png",
+      "sha1": "20646083613004b5d0cf594bd530d8bac3d4788e"
+    },
+    {
+      "path": "assets/images/solt-game/icon_giftbox.png",
+      "sha1": "bc1be0040c27a8fe68e9fda0ac1510a1d33c2d8e"
+    },
+    {
+      "path": "assets/images/solt-game/icon_king.png",
+      "sha1": "3aecdfb205a2c43a5f49ac47c5980ae99d2aae0a"
+    },
+    {
+      "path": "assets/images/solt-game/icon_queen.png",
+      "sha1": "e4dacb6e235848b8c81e34af340ba4a8dd129209"
+    },
+    {
+      "path": "assets/images/solt-game/icon_scatter.png",
+      "sha1": "5c71e4c338a95885a6ef846f158db895030631cd"
+    },
+    {
+      "path": "assets/images/solt-game/icon_star.png",
+      "sha1": "9a9485c956383bc8df4ae08f01f32b5fda0f4724"
+    },
+    {
+      "path": "assets/images/solt-game/icon_wild.png",
+      "sha1": "d35421ecb5f60e7ac071393b3a6e891815071f58"
+    },
+    {
+      "path": "assets/images/solt-game/slot_machine.png",
+      "sha1": "476bb1e705c72920145e8e41ae438fe1f4d783a4"
+    },
+    {
+      "path": "assets/images/solt-game/slotgame_bg.png",
+      "sha1": "87518ff136c9a7455392eac2bd8408e634f07a2c"
+    },
+    {
+      "path": "assets/images/solt-game/spincount_bg.png",
+      "sha1": "b34d28723fa591cedf55a02367b727f2294fd16e"
+    },
+    {
+      "path": "assets/images/solt-game/win_bg.png",
+      "sha1": "a92b18979be080612bb15c49ecf7a78d25a8267e"
+    },
+    {
+      "path": "assets/images/solt-game/win.png",
+      "sha1": "80277bea0dcd768e836686495ae38992f93e8e55"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/rank_1.png",
+      "sha1": "fb969aec86158383777a109f3c13bb1cc9f6b1bf"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/rank_2.png",
+      "sha1": "20bfaa4a638a9b626f35f929b8afb13840373ead"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/rank_3.png",
+      "sha1": "9e3b22a07d10bee5018c1dbc5dfd5058b001ef93"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/top_gifters_leftbg1.png",
+      "sha1": "6e4753c2725e3ca28d201aab5d0f90ada0ecb323"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/top_gifters_leftbg2.png",
+      "sha1": "aa716c9b590c80560181ea50127cad4fd94bc76a"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/top_gifters_leftbg3.png",
+      "sha1": "b846b8f1b4dcc964485a9586a9a39692a5f0fc35"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/trophy_1.png",
+      "sha1": "b552d7fc1ced9b40df03ef85f3952ba9234d52d2"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/trophy_2.png",
+      "sha1": "efe711f866fd50afdd1c39ac381fb91712a78ef9"
+    },
+    {
+      "path": "assets/images/TopGifterBedge/trophy_3.png",
+      "sha1": "2532349f731412561a642e419953d4a4a5be2ec4"
+    },
+    {
+      "path": "assets/images/tx_logo_black.png",
+      "sha1": "887e824ffe810d7f6e5ae0c82117330fd4454769"
+    },
+    {
+      "path": "assets/images/tx-logo-white.png",
+      "sha1": "0aa41878d0ceb77292d9f847b2f4e21d688460c1"
+    },
+    {
+      "path": "assets/sounds/bugle.mp3",
+      "sha1": "1ecb69910c2f83932e9722e597660d74125e7a20"
+    },
+    {
+      "path": "assets/sounds/crowd.mp3",
+      "sha1": "6a3a032962b082678c300eb525019ceb2d388cf6"
+    },
+    {
+      "path": "assets/sounds/fast.mp3",
+      "sha1": "45342483ab4857e45120691013e1f647fe974f45"
+    },
+    {
+      "path": "assets/styles/Colors.js",
+      "sha1": "33197e1be503a2b58b4aa90e7d771260bd6766b6"
+    },
+    {
+      "path": "assets/styles/GlobalStyles.js",
+      "sha1": "a6659cb5a32f8c838b003be3b10b14c447dc6928"
+    },
+    {
+      "path": "assets/styles/ThemeStyles.js",
+      "sha1": "b6f0155af038c4d4e2eb4eb0bee2dbe79b4f088b"
+    },
+    {
+      "path": "ios/StreamingApp/assets/crowdcheer.mp3",
+      "sha1": "6a3a032962b082678c300eb525019ceb2d388cf6"
+    },
+    {
+      "path": "ios/StreamingApp/assets/fastextreme.mp3",
+      "sha1": "45342483ab4857e45120691013e1f647fe974f45"
+    }
+  ]
+}

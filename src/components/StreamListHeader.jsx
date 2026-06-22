@@ -27,6 +27,7 @@ export const StreamListHeader = ({
     setIsNearBy,
     isFavourite,
     setIsFavourite,
+    onConnectPress,
 }) => {
     const { theme } = useContext(ThemeContext);
     const navigation = useNavigation();
@@ -51,10 +52,10 @@ export const StreamListHeader = ({
         setHeaderMainTab('foryou');
     };
 
-    const handleConnect = (item) => {
-        setMessage('This feature is not implemented yet.');
-        setVisibleModal('message-modal');
-    };
+    // const handleConnect = (item) => {
+    //     setMessage('This feature is not implemented yet.');
+    //     setVisibleModal('message-modal');
+    // };
 
 
     const handleLeaderBoards = (item) => {
@@ -186,7 +187,7 @@ export const StreamListHeader = ({
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={handleConnect}
+                            onPress={onConnectPress}
                             style={[
                                 styles.strHeaderCategoryButton,
                                 themeStyles[theme].strHeaderCategoryButton,
@@ -219,7 +220,7 @@ export const StreamListHeader = ({
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={handleConnect}
+                            onPress={onConnectPress}
                             style={[
                                 styles.strHeaderCategoryButton,
                                 themeStyles[theme].strHeaderCategoryButton,

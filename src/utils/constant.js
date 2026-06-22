@@ -18,13 +18,54 @@ const userOtherFallbackImage = require('../../assets/images/default-avatar-trans
 
 export const socket = io('https://streamalong.live', {
   path: '/socket.io/',
-  transports: ['websocket'],
+  transports: ['websocket', 'polling'],
   reconnection: true,
   reconnectionAttempts: Infinity,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  timeout: 20000,
+  timeout: 30000,
   autoConnect: true,
+});
+
+socket.on("connect", () => {
+  console.log("✅ Connected to backend:", socket.id);
+
+  if (global.currentRoomID && global.currentUserData) {
+    console.log("🔄 Rejoining room after reconnect");
+
+    socket.emit("joinRoom",
+      global.currentUserData.isHost,
+      global.currentRoomID,
+      global.currentUserData.userid,
+      global.currentUserData.screenName,
+      global.currentUserData.address,
+      global.currentUserData.avatar,
+      global.currentUserData.gender
+    );
+  }
+});
+
+socket.on("reconnect", (attempt) => {
+  console.log("♻️ Reconnected after", attempt, "attempts");
+
+  if (global.currentRoomID) {
+    socket.emit("reconnectUser",
+      global.currentUserData.userid,
+      global.currentUserData.screenName,
+      global.currentRoomID,
+      global.currentUserData.isHost,
+      global.currentUserData.avatar,
+      global.currentUserData.gender
+    );
+  }
+});
+
+socket.on("disconnect", (reason) => {
+  console.log("❌ Disconnected:", reason);
+});
+
+socket.on("connect_error", (err) => {
+  console.log("🚨 Connection error:", err.message);
 });
 
 
@@ -133,29 +174,29 @@ export const showPermissionAlert = () => {
 };
 
 export const giftImages = {
-  '420.gif': require('../../assets/images/gifts/420.gif'),
+  'gif_gif_420.gif': require('../../assets/images/gifts/gif_420.gif'),
   'award.gif': require('../../assets/images/gifts/award.gif'),
   'balloons.gif': require('../../assets/images/gifts/balloons.gif'),
   'boss.gif': require('../../assets/images/gifts/boss.gif'),
-  'broken-heart.gif': require('../../assets/images/gifts/broken-heart.gif'),
-  'casino-chip.gif': require('../../assets/images/gifts/casino-chip.gif'),
-  'casino-chip2.gif': require('../../assets/images/gifts/casino-chip2.gif'),
-  'casino-chip3.gif': require('../../assets/images/gifts/casino-chip3.gif'),
-  'casino-chip5.gif': require('../../assets/images/gifts/casino-chip5.gif'),
+  'broken_heart.gif': require('../../assets/images/gifts/broken-heart.gif'),
+  'casino_chip.gif': require('../../assets/images/gifts/casino-chip.gif'),
+  'casino_chip2.gif': require('../../assets/images/gifts/casino-chip2.gif'),
+  'casino_chip3.gif': require('../../assets/images/gifts/casino-chip3.gif'),
+  'casino_chip5.gif': require('../../assets/images/gifts/casino-chip5.gif'),
   'clown.gif': require('../../assets/images/gifts/clown.gif'),
   'crown.gif': require('../../assets/images/gifts/crown.gif'),
   'diamond.gif': require('../../assets/images/gifts/diamond.gif'),
   'diamond2.gif': require('../../assets/images/gifts/diamond2.gif'),
   'diamond3.gif': require('../../assets/images/gifts/diamond3.gif'),
   'dollar.gif': require('../../assets/images/gifts/dollar.gif'),
-  'financial-freedom.gif': require('../../assets/images/gifts/financial-freedom.gif'),
+  'financial_freedom.gif': require('../../assets/images/gifts/financial-freedom.gif'),
   'hearts.gif': require('../../assets/images/gifts/hearts.gif'),
-  'in-love.gif': require('../../assets/images/gifts/in-love.gif'),
-  'jack-in-the-box.gif': require('../../assets/images/gifts/jack-in-the-box.gif'),
+  'in_love.gif': require('../../assets/images/gifts/in-love.gif'),
+  'jack_in_the_box.gif': require('../../assets/images/gifts/jack-in-the-box.gif'),
   'laugh.gif': require('../../assets/images/gifts/laugh.gif'),
   'like.gif': require('../../assets/images/gifts/like.gif'),
   'love.gif': require('../../assets/images/gifts/love.gif'),
-  'piggy-bank.gif': require('../../assets/images/gifts/piggy-bank.gif'),
+  'piggy_bank.gif': require('../../assets/images/gifts/piggy-bank.gif'),
   'popcorn.gif': require('../../assets/images/gifts/popcorn.gif'),
   'popcorn2.gif': require('../../assets/images/gifts/popcorn2.gif'),
   'profit.gif': require('../../assets/images/gifts/profit.gif'),
@@ -163,8 +204,8 @@ export const giftImages = {
   'sunrise.gif': require('../../assets/images/gifts/sunrise.gif'),
   'ticket.gif': require('../../assets/images/gifts/ticket.gif'),
   'ticket2.gif': require('../../assets/images/gifts/ticket2.gif'),
-  'valentines-day.gif': require('../../assets/images/gifts/valentines-day.gif'),
+  'valentines_day.gif': require('../../assets/images/gifts/valentines-day.gif'),
   'wallet.gif': require('../../assets/images/gifts/wallet.gif'),
   'wave.gif': require('../../assets/images/gifts/wave.gif'),
-  'win-win.gif': require('../../assets/images/gifts/win-win.gif'),
+  'win_win.gif': require('../../assets/images/gifts/win-win.gif'),
 };
