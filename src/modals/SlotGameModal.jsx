@@ -111,30 +111,14 @@ export default function SlotGameModal({
 
         const subscription = AppState.addEventListener(
             'change',
-            nextState => {
-
-                if (
-                    nextState === 'active' &&
-                    autoSpinActiveRef.current &&
-                    spinsRemainingRef.current > 0 &&
-                    !spinningRef.current
-                ) {
-
-                    spin(
-                        true,
-                        spinsRemainingRef.current
-                    );
-
-                }
-
-            }
+            () => { }
         );
 
         return () => {
             subscription.remove();
         };
 
-    }, [spin]);
+    }, []);
 
     // const canClose =
     //     !isInvoker || !closeLocked;
@@ -239,11 +223,6 @@ export default function SlotGameModal({
         }
     };
     const disableAuto = (reason) => {
-
-        console.log(
-            '[AUTO_DISABLED]',
-            reason
-        );
 
         autoSpinActiveRef.current = false;
 
@@ -397,157 +376,71 @@ export default function SlotGameModal({
         setHasPurchased(true);
 
         // IMPORTANT
-        spinPurchasedRef.current = payload.spinPurchased;
+        spinPurchasedRef.current =
+            payload.spinPurchased;
 
-        setSpinPurchased(payload.spinPurchased);
+        setSpinPurchased(
+            payload.spinPurchased
+        );
 
-        setTotalSpinCost(payload.totalCost);
+        setTotalSpinCost(
+            payload.totalCost
+        );
 
-        setBalance(payload.balance ?? 0);
+        setBalance(
+            payload.balance ?? 0
+        );
 
-        setSpinsRemaining(payload.spinsRemaining ?? 0);
+        setSpinsRemaining(
+            payload.spinsRemaining ?? 0
+        );
 
-        setPurchasedSpins(payload.purchasedSpins ?? 0);
+        setPurchasedSpins(
+            payload.purchasedSpins ?? 0
+        );
 
-        setActiveButtonIndex(payload.buttonIndex ?? null);
+        setActiveButtonIndex(
+            payload.buttonIndex ?? null
+        );
 
-        setCurrentSpinner(payload.userId);
+        setCurrentSpinner(
+            payload.userId
+        );
 
-        setOpenedBy({ userId: payload.userId });
+        setOpenedBy({
+            userId: payload.userId
+        });
 
-        console.log('BUY CONFIRMED', payload);
-
-        animationCompleteSentRef.current = false;
+        animationCompleteSentRef.current =
+            false;
 
         // KEEP REFS IN SYNC IMMEDIATELY
+
         spinsRemainingRef.current =
             payload.spinsRemaining ?? 0;
 
         spinPurchasedRef.current =
             payload.spinPurchased;
 
-        // =========================
-        // START 5 SECOND COUNTDOWN
-        // =========================
-
-        let counter = 5;
-
-        setCountdown(counter);
-
-        if (countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-        }
-
-        countdownIntervalRef.current = setInterval(() => {
-
-            counter--;
-
-            console.log('[COUNTDOWN_TICK]', counter);
-
-            if (counter <= 0) {
-
-                clearInterval(countdownIntervalRef.current);
-                countdownIntervalRef.current = null;
-
-                setCountdown(null);
-
-                debugLog(
-                    'SlotGame',
-                    'COUNTDOWN_FINISHED',
-                    {
-                        spinPurchased:
-                            payload.spinPurchased,
-                        spinsRemaining:
-                            payload.spinsRemaining,
-                        roomId,
-                        userId:
-                            userData?.userid,
-                    }
-                );
-
-                // AUTO START ENABLE
-                autoSpinActiveRef.current = true;
-                setAutoSpinActive(true);
-
-                firstManualSpinRef.current = true;
-                setFirstManualSpinDone(true);
-
-                // EXTRA SAFETY
-                spinsRemainingRef.current =
-                    payload.spinsRemaining ?? 0;
-
-                spinPurchasedRef.current =
-                    payload.spinPurchased;
-
-                console.log('[AUTO_SPIN_ENABLED]', {
-                    autoSpinActive:
-                        autoSpinActiveRef.current,
-                    spinsRemaining:
-                        spinsRemainingRef.current,
-                    spinPurchased:
-                        spinPurchasedRef.current,
-                });
-
-                // GIVE STATE TIME TO SETTLE
-                setTimeout(() => {
-
-                    debugLog(
-                        'SlotGame',
-                        'FIRST_AUTO_SPIN_TRIGGER',
-                        {
-                            spinPurchasedRef:
-                                spinPurchasedRef.current,
-                            spinsRemainingRef:
-                                spinsRemainingRef.current,
-                            spinning:
-                                spinningRef.current,
-                            auto:
-                                autoSpinActiveRef.current,
-                            roomId,
-                            userId:
-                                userData?.userid,
-                        }
-                    );
-
-                    if (
-                        autoSpinActiveRef.current &&
-                        spinsRemainingRef.current > 0
-                    ) {
-
-                        spin(
-                            true,
-                            spinsRemainingRef.current
-                        );
-
-                    } else {
-
-                        console.log(
-                            '[FIRST_AUTO_SPIN_ABORTED]',
-                            {
-                                auto:
-                                    autoSpinActiveRef.current,
-                                spins:
-                                    spinsRemainingRef.current,
-                            }
-                        );
-
-                    }
-
-                }, 500); // increased from 300 -> 500
-
-            } else {
-
-                setCountdown(counter);
-
+        debugLog(
+            'SlotGame',
+            'BUY_CONFIRMED_READY',
+            {
+                spinsRemaining:
+                    payload.spinsRemaining,
+                purchasedSpins:
+                    payload.purchasedSpins,
+                spinPurchased:
+                    payload.spinPurchased,
+                roomId,
+                userId:
+                    userData?.userid,
             }
-
-        }, 1000);
+        );
 
     }, [
         onGameStart,
         onForceOpen,
-        spin,
     ]);
 
 
@@ -557,7 +450,6 @@ export default function SlotGameModal({
     };
 
     const handleErrorMsg = (msg) => {
-        console.log('SERVER SPIN ERROR:', msg);
         Alert.alert('Server error', JSON.stringify(msg));
     };
     // spin -> ask server for final indexes, then animate to them
@@ -584,37 +476,10 @@ export default function SlotGameModal({
         );
 
         if (spinningRef.current) {
-
-            console.log('[SPIN_EXIT_ALREADY_SPINNING]');
-
-            if (
-                isAuto &&
-                autoSpinActiveRef.current &&
-                spinsRemainingRef.current > 0
-            ) {
-
-                setTimeout(() => {
-
-                    if (!spinningRef.current) {
-
-                        console.log('[AUTO_RETRY_AFTER_BLOCK]');
-
-                        spin(
-                            true,
-                            spinsRemainingRef.current
-                        );
-
-                    }
-
-                }, 500);
-
-            }
-
             return;
         }
 
         if (isReadOnly && !isAuto) {
-            console.log('[SPIN_EXIT_READ_ONLY]');
             return;
         }
 
@@ -622,7 +487,6 @@ export default function SlotGameModal({
             forcedSpinsRemaining ?? spinsRemainingRef.current;
 
         if (spinsToUse <= 0) {
-            console.log('[SPIN_EXIT_NO_SPINS]', spinsToUse);
             return;
         }
 
@@ -634,27 +498,16 @@ export default function SlotGameModal({
                 !spinPurchasedRef.current
             )
         ) {
-            console.log('[SPIN_EXIT_NO_PURCHASE]');
             return;
         }
 
         if (!socketRef.current) {
-            console.log('[SPIN_EXIT_NO_SOCKET]');
             return;
         }
 
         const sessionID = Number(
             await AsyncStorage.getItem('slotSessionID')
         );
-
-        console.log('SESSION ID FOR SPIN', sessionID);
-
-        console.log('SPIN PAYLOAD', {
-            userId: userData?.userid,
-            roomId,
-            spinPurchased: spinPurchasedRef.current,
-            sessionID,
-        });
 
         // LOCK
         spinningRef.current = true;
@@ -665,6 +518,7 @@ export default function SlotGameModal({
             spinWatchdogRef.current = null;
         }
 
+        // WATCHDOG
         // WATCHDOG
         spinWatchdogRef.current = setTimeout(() => {
 
@@ -684,30 +538,14 @@ export default function SlotGameModal({
                 }
             );
 
+            // unlock only
             spinningRef.current = false;
-
-            if (
-                autoSpinActiveRef.current &&
-                spinsRemainingRef.current > 0
-            ) {
-                console.log('[WATCHDOG_RETRY_SPIN]');
-
-                spin(
-                    true,
-                    spinsRemainingRef.current
-                );
-            }
 
         }, 10000);
 
         setShowSpinResult(false);
 
         setWinningCells({});
-
-        console.log('BUY USER VS SPIN USER', {
-            buyConfirmedUser: currentSpinner,
-            spinUser: userData?.userid,
-        });
 
         debugLog(
             'SlotGame',
@@ -737,14 +575,28 @@ export default function SlotGameModal({
         currentSpinner,
     ]);
 
+    const handleCloseSlotGame = () => {
+
+        if (closeTimeoutRef.current) {
+            clearTimeout(closeTimeoutRef.current);
+            closeTimeoutRef.current = null;
+        }
+
+        fullResetGame();
+
+        locallyClosedRef.current = true;
+
+        onClose?.();
+    };
+
 
     const handleSpinResult = useCallback(async (payload) => {
- if (!spinSoundPlayingRef.current) {
+        if (!spinSoundPlayingRef.current) {
 
-        spinSoundPlayingRef.current = true;
+            spinSoundPlayingRef.current = true;
 
-        playSpinSound();
-    }
+            playSpinSound();
+        }
         debugLog(
             'SlotGame',
             'HANDLE_SPIN_RESULT_ENTER',
@@ -782,11 +634,16 @@ export default function SlotGameModal({
             stopSpinSound();
             spinSoundPlayingRef.current = false;
 
-            console.log('[ANIMATION_RESULT]', animationResult);
         } catch (err) {
             console.error('❌ Reel animation error:', err);
         }
-        console.log('[REEL_ANIMATION_COMPLETE]');
+
+        // SAFE NEXT SPINS
+        const nextSpins = Number(
+            payload?.spinsRemaining ??
+            spinsRemainingRef.current ??
+            0
+        );
 
         // SAFE GRID
         const newGrid =
@@ -799,15 +656,6 @@ export default function SlotGameModal({
             payload?.winnings ??
             payload?.winAmount ??
             0;
-
-        // SAFE NEXT SPINS
-        const nextSpins = Number(
-            payload?.spinsRemaining ??
-            spinsRemainingRef.current ??
-            0
-        );
-
-        console.log('[SPINS LEFT AFTER RESULT]', nextSpins);
 
         // =========================
         // UPDATE UI FIRST
@@ -824,16 +672,6 @@ export default function SlotGameModal({
         if (hasWin) {
             playSound('win');
         }
-
-        console.log(
-            '[WIN_PAYLOAD_FULL]',
-            JSON.stringify(payload?.winCells, null, 2)
-        );
-
-        console.log(
-            '[LINE_RESULTS_FULL]',
-            JSON.stringify(payload?.lineResults, null, 2)
-        );
 
         await new Promise((resolve) => {
 
@@ -927,6 +765,15 @@ export default function SlotGameModal({
         spinsRemainingRef.current = nextSpins;
 
         setSpinsRemaining(nextSpins);
+
+        socketRef.current?.emit(
+            'client_animation_complete',
+            {
+                roomId,
+                userId: userData?.userid,
+            }
+        );
+
         debugLog(
             'SlotGame',
             'SPIN_RESULT_PROCESSED',
@@ -991,131 +838,9 @@ export default function SlotGameModal({
         // NEXT AUTO SPIN
         // =========================
 
-        console.log('[AUTO_TIMER_CREATED]', {
-            nextSpins,
-            delay: 300,
-        });
-
-        autoSpinTimeoutRef.current = setTimeout(() => {
-
-            // HARD SAFETY CHECKS
-
-            if (spinningRef.current) {
-
-                console.log('[SPIN BLOCKED]');
-
-                if (autoSpinActiveRef.current) {
-
-                    setTimeout(() => {
-
-                        // AUTO SPIN MAY HAVE BEEN TURNED OFF
-                        if (!autoSpinActiveRef.current) {
-                            console.log('[AUTO_RETRY_ABORTED_AUTO_OFF]');
-                            return;
-                        }
-
-                        if (
-                            !spinningRef.current &&
-                            spinsRemainingRef.current > 0
-                        ) {
-
-                            debugLog(
-                                'SlotGame',
-                                'AUTO_RETRY_AFTER_BLOCK',
-                                {
-                                    spinsRemaining:
-                                        spinsRemainingRef.current,
-                                    roomId,
-                                    userId:
-                                        userData?.userid,
-                                }
-                            );
-
-                            spin(
-                                true,
-                                spinsRemainingRef.current
-                            );
-                        }
-
-                        console.log('[AUTO_TIMER_FIRED]', {
-                            spinsRemainingRef: spinsRemainingRef.current,
-                            spinning: spinningRef.current,
-                            auto: autoSpinActiveRef.current,
-                        });
-
-                    }, 500);
-
-                }
-
-                return;
-            }
-
-            if (!autoSpinActiveRef.current) {
-                console.log('[AUTO BLOCKED - AUTO OFF]');
-                return;
-            }
-
-            const spinsLeft = Number(spinsRemainingRef.current || 0);
-
-            console.log('[AUTO CHECK]', {
-                spinsLeft,
-                spinning: spinningRef.current,
-                auto: autoSpinActiveRef.current,
-            });
-
-            if (spinsLeft <= 0) {
-
-                console.log('[AUTO STOP NO SPINS]');
-
-                disableAuto('autoStopNoSpins');
-
-
-                return;
-            }
-
-            console.log('[START NEXT SPIN]', spinsLeft);
-
-            spinningRef.current = false;
-
-            setTimeout(() => {
-
-                if (
-                    autoSpinActiveRef.current &&
-                    !spinningRef.current &&
-                    spinsRemainingRef.current > 0
-                ) {
-
-                    debugLog(
-                        'SlotGame',
-                        'AUTO_NEXT_SPIN_FIRE',
-                        {
-                            spinsRemaining:
-                                spinsRemainingRef.current,
-                            roomId,
-                            userId:
-                                userData?.userid,
-                        }
-                    );
-
-                    spin(
-                        true,
-                        spinsRemainingRef.current
-                    );
-                }
-
-            }, 50);
-
-        }, 300);
-
     }, [spinReelTo, spin]);
 
     const handleSpinResultBroadcast = useCallback(async (payload) => {
-
-        console.log('[SPIN_RESULT_RECEIVED]', {
-            spinsRemaining: payload?.spinsRemaining,
-            winnings: payload?.winnings,
-            playerId: payload?.playerId,
-        });
 
         // WAIT for animation completion
         await handleSpinResult({
@@ -1125,40 +850,20 @@ export default function SlotGameModal({
             lastSpinWin: payload.winnings,
         });
 
+        const remainingSpins =
+            Number(payload?.spinsRemaining ?? 0);
+
         // FINAL SPIN
-        if (payload.spinsRemaining <= 0) {
+        if (remainingSpins <= 0) {
 
-            console.log('[FINAL_SPIN_ANIMATION_COMPLETED]');
-
-            // stop everything
             spinningRef.current = false;
 
             disableAuto('finalSpin');
 
-            // clear auto timer
             if (autoSpinTimeoutRef.current) {
                 clearTimeout(autoSpinTimeoutRef.current);
                 autoSpinTimeoutRef.current = null;
             }
-
-            // clear old close timer
-            if (closeTimeoutRef.current) {
-                clearTimeout(closeTimeoutRef.current);
-            }
-
-            // IMPORTANT:
-            // EVERY CLIENT WAITS 5 SEC LOCALLY
-            closeTimeoutRef.current = setTimeout(() => {
-
-                console.log('[LOCAL_5_SEC_CLOSE]');
-
-                fullResetGame();
-
-                locallyClosedRef.current = true;
-
-                onClose?.();
-
-            }, 5000);
         }
 
     }, [
@@ -1182,6 +887,7 @@ export default function SlotGameModal({
         socket.on('buy_confirmed', handleBuyConfirmed);
         socket.on('buy_failed', handleBuyFailed);
         socket.on('error_msg', handleErrorMsg);
+        socket.on('close_slot_game', handleCloseSlotGame);
 
         //         socket.on('close_slot_game', () => {
 
@@ -1200,26 +906,11 @@ export default function SlotGameModal({
                 {
                     spinsRemaining:
                         spinsRemainingRef.current,
-                    auto:
-                        autoSpinActiveRef.current,
                     roomId,
                     userId:
                         userData?.userid,
                 }
             );
-
-            if (
-                autoSpinActiveRef.current &&
-                spinsRemainingRef.current > 0 &&
-                !spinningRef.current
-            ) {
-
-                spin(
-                    true,
-                    spinsRemainingRef.current
-                );
-
-            }
 
         });
 
@@ -1238,22 +929,6 @@ export default function SlotGameModal({
             );
 
             spinningRef.current = false;
-
-            if (
-                autoSpinActiveRef.current &&
-                spinsRemainingRef.current > 0
-            ) {
-
-                setTimeout(() => {
-
-                    spin(
-                        true,
-                        spinsRemainingRef.current
-                    );
-
-                }, 500);
-
-            }
 
         });
 
@@ -1296,15 +971,6 @@ export default function SlotGameModal({
         });
 
         socket.on('slotGameBroadcast', (data) => {
-            console.log(
-                '[ROOM CHECK]',
-                {
-                    broadcastRoom: data.roomId,
-                    currentRoom: roomId,
-                }
-            );
-
-            console.log('[SLOT_GAME_BROADCAST_RECEIVED]', data);
 
             setCurrentSpinner(data.playerId);
 
@@ -1327,76 +993,72 @@ export default function SlotGameModal({
 
         });
 
-        socket.on('modalOpenedForAll', () => {
-            console.log('[INVOKER_CHECK]', {
-                openedBy,
-                userId: userData?.userid,
-                currentInvoker:
-                    openedBy?.userId === userData?.userid,
-            });
+        socket.on(
+            'modalOpenedForAll',
+            () => {
 
-            console.log('[MODAL_OPENED_FOR_ALL]');
+                let counter = 5;
 
-            let counter = 5;
+                setCountdown(counter);
 
-            setCountdown(counter);
-
-            if (countdownIntervalRef.current) {
-                clearInterval(countdownIntervalRef.current);
-            }
-
-            countdownIntervalRef.current = setInterval(() => {
-
-                counter--;
-
-                if (counter <= 0) {
-
+                if (countdownIntervalRef.current) {
                     clearInterval(
                         countdownIntervalRef.current
                     );
-
-                    countdownIntervalRef.current = null;
-
-                    setCountdown(null);
-
-                    // ONLY INVOKER STARTS FIRST SPIN
-                    const currentInvoker =
-                        openedByRef.current?.userId ===
-                        userData?.userid;
-
-                    console.log('[INVOKER_CHECK]', {
-                        openedByState: openedBy,
-                        openedByRef: openedByRef.current,
-                        userId: userData?.userid,
-                        currentInvoker,
-                    });
-
-                    if (currentInvoker) {
-                        setAutoSpinActive(true);
-                        autoSpinActiveRef.current = true;
-
-                        console.log('[STARTING_FIRST_SPIN]', {
-                            spinsRemainingRef:
-                                spinsRemainingRef.current,
-                            auto:
-                                autoSpinActiveRef.current,
-                        });
-
-                        spin(
-                            true,
-                            spinsRemainingRef.current
-                        );
-                    }
-
-                } else {
-
-                    setCountdown(counter);
-
                 }
 
-            }, 1000);
+                countdownIntervalRef.current =
+                    setInterval(() => {
 
-        });
+                        counter--;
+
+                        if (counter <= 0) {
+
+                            clearInterval(
+                                countdownIntervalRef.current
+                            );
+
+                            setCountdown(null);
+
+                            autoSpinActiveRef.current =
+                                true;
+
+                            setAutoSpinActive(true);
+
+                            firstManualSpinRef.current =
+                                true;
+
+                            setFirstManualSpinDone(true);
+
+                        } else {
+
+                            setCountdown(counter);
+
+                        }
+
+                    }, 1000);
+
+            }
+        );
+
+        socket.on(
+            'server_request_next_spin',
+            ({ roomId }) => {
+
+                if (spinningRef.current) {
+                    return;
+                }
+
+                if (spinsRemainingRef.current <= 0) {
+                    return;
+                }
+
+                spin(
+                    true,
+                    spinsRemainingRef.current
+                );
+            }
+        );
 
         socket.on('spin_result_self', (payload) => {
 
@@ -1448,6 +1110,9 @@ export default function SlotGameModal({
             socket.off('modalOpenedForAll');
             socket.off('spin_busy');
             socket.off('reconnect');
+            socket.off('server_request_next_spin');
+            socket.off('close_slot_game', handleCloseSlotGame);
+
         };
     }, [
         roomId,

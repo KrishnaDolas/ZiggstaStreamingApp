@@ -220,7 +220,10 @@ export const StreamListHeader = ({
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={onConnectPress}
+                            onPress={() => {
+                                setMessage('Coming Soon');
+                                setVisibleModal('message-modal');
+                            }}
                             style={[
                                 styles.strHeaderCategoryButton,
                                 themeStyles[theme].strHeaderCategoryButton,

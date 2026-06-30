@@ -30,8 +30,6 @@ export const LoginForm = ({
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotEmailTouched, setForgotEmailTouched] = useState(false);
 
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
 
   const [error, setError] = useState('');
   const [forgotPasswordError, setForgotPasswordError] = useState('');
@@ -40,15 +38,10 @@ export const LoginForm = ({
 
   const [loading, setLoading] = useState(false);
   const { setUserData } = useAppContext();
+
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  // Email validation
-  const isValidEmail = (email) => {
-    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-      email.trim(),
-    );
-  };
 
 
   // Login handler
@@ -62,17 +55,6 @@ export const LoginForm = ({
 
     if (!trimmedEmail || !trimmedPassword) {
       setError('Please fill in all fields');
-      return;
-    }
-
-    // Email validation only
-    if (email !== trimmedEmail) {
-      setError('Email should not start or end with spaces');
-      return;
-    }
-
-    if (!isValidEmail(trimmedEmail)) {
-      setError('Please enter a valid email address');
       return;
     }
 
@@ -102,9 +84,26 @@ export const LoginForm = ({
         setError(res.data.message);
       }
     } catch (err) {
-      setError(
-        err?.response?.data?.error || 'Invalid credentials',
-      );
+      const message =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        'Invalid credentials';
+
+      setEmailError('');
+      setPasswordError('');
+      setError('');
+
+      if (
+        message.toLowerCase().includes('email')
+      ) {
+        setEmailError(message);
+      } else if (
+        message.toLowerCase().includes('password')
+      ) {
+        setPasswordError(message);
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -381,25 +380,7 @@ export const LoginForm = ({
                     value={email}
                     onChangeText={(text) => {
                       setEmail(text);
-                    }}
-                    onBlur={() => {
-                      setEmailTouched(true);
-
-                      const trimmedEmail = email.trim();
-
-                      if (!trimmedEmail) {
-                        setEmailError('Email is required');
-                      } else if (email !== trimmedEmail) {
-                        setEmailError(
-                          'Email should not start or end with spaces',
-                        );
-                      } else if (!isValidEmail(trimmedEmail)) {
-                        setEmailError(
-                          'Please enter a valid email address',
-                        );
-                      } else {
-                        setEmailError('');
-                      }
+                      setEmailError('');
                     }}
                     style={[
                       styles.input,
@@ -421,34 +402,13 @@ export const LoginForm = ({
                       top: 23,
                     }}
                   >
-                    {email.length > 0 ? (
-                      isValidEmail(email.trim()) ? (
-                        <Icon
-                          name="check-circle"
-                          size={20}
-                          color="green"
-                        />
-                      ) : (
-                        <Icon
-                          name="times-circle"
-                          size={20}
-                          color="red"
-                        />
-                      )
-                    ) : (
-                      <Icon
-                        name="envelope-o"
-                        size={18}
-                        color={
-                          theme === 'light'
-                            ? '#1e1e1e'
-                            : 'white'
-                        }
-                      />
-                    )}
+                    <Icon
+                      name="envelope-o"
+                      size={18}
+                      color={theme === 'light' ? '#1e1e1e' : 'white'}
+                    />
                   </View>
                 </View>
-
                 {emailError ? (
                   <Text
                     style={{
@@ -461,23 +421,6 @@ export const LoginForm = ({
                     {emailError}
                   </Text>
                 ) : null}
-
-                {emailTouched &&
-                  email.length > 0 && (
-                    <Text
-                      style={{
-                        color: isValidEmail(email.trim())
-                          ? 'green'
-                          : 'red',
-                        marginTop: 5,
-                        fontSize: 13,
-                      }}
-                    >
-                      {isValidEmail(email.trim())
-                        ? 'Valid email address'
-                        : 'Invalid email address'}
-                    </Text>
-                  )}
               </View>
 
               {/* PASSWORD */}
@@ -501,17 +444,7 @@ export const LoginForm = ({
                     value={password}
                     onChangeText={(text) => {
                       setPassword(text);
-                    }}
-                    onBlur={() => {
-                      setPasswordTouched(true);
-
-                      if (!password.trim()) {
-                        setPasswordError(
-                          'Password is required',
-                        );
-                      } else {
-                        setPasswordError('');
-                      }
+                      setPasswordError('');
                     }}
                     style={[
                       styles.input,
@@ -524,22 +457,6 @@ export const LoginForm = ({
                     }
                     maxLength={12}
                   />
-
-                  <View
-                    style={{
-                      position: 'absolute',
-                      right: 50,
-                      top: 23,
-                    }}
-                  >
-                    {passwordTouched && password.length > 0 ? (
-                      <Icon
-                        name="check-circle"
-                        size={20}
-                        color="green"
-                      />
-                    ) : null}
-                  </View>
 
                   <TouchableOpacity
                     onPress={
@@ -567,7 +484,6 @@ export const LoginForm = ({
                     />
                   </TouchableOpacity>
                 </View>
-
                 {passwordError ? (
                   <Text
                     style={{
@@ -580,20 +496,6 @@ export const LoginForm = ({
                     {passwordError}
                   </Text>
                 ) : null}
-
-                {passwordTouched &&
-                  password.length > 0 &&
-                  !passwordError && (
-                    <Text
-                      style={{
-                        color: 'green',
-                        marginTop: 5,
-                        fontSize: 13,
-                      }}
-                    >
-                      Password looks good
-                    </Text>
-                  )}
               </View>
 
               {/* ERROR */}

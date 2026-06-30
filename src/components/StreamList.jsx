@@ -48,6 +48,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
     const isTablet = width >= 768;
     const disableBtnRef = useRef(null);
     const [openStreamInputModal, setOpenStreamInputModal] = useState(false);
+    const [connectCategories, setConnectCategories] = useState([]);
 
 
 
@@ -352,7 +353,7 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
 
                 physicalLocation: formattedLocation,
 
-                Categories: '',
+                Categories: connectCategories.join(','),
 
                 geoLocation: `${lat},${lon}`,
 
@@ -551,82 +552,82 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 {/* Location and flag render */}
 
                 <View
-    style={{
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        right: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        zIndex: 99,
-    }}
->
-    {/* Viewer Count */}
-   <View
-    style={{
-        backgroundColor: 'rgba(0,0,0,0.45)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-    }}
->
-    <Ionicons
-        name="eye-outline"
-        size={14}
-        color="#fff"
-    />
+                    style={{
+                        position: 'absolute',
+                        top: 10,
+                        left: 10,
+                        right: 10,
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        zIndex: 99,
+                    }}
+                >
+                    {/* Viewer Count */}
+                    <View
+                        style={{
+                            backgroundColor: 'rgba(0,0,0,0.45)',
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            borderRadius: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <Ionicons
+                            name="eye-outline"
+                            size={14}
+                            color="#fff"
+                        />
 
-    <Text
-        style={{
-            color: '#fff',
-            fontSize: 11,
-            fontWeight: '600',
-            marginLeft: 4,
-        }}
-    >
-        {item.viewerCount || 0}
-    </Text>
-</View>
+                        <Text
+                            style={{
+                                color: '#fff',
+                                fontSize: 11,
+                                fontWeight: '600',
+                                marginLeft: 4,
+                            }}
+                        >
+                            {item.viewerCount || 0}
+                        </Text>
+                    </View>
 
-    {/* Location */}
-    <View
-        style={{
-            backgroundColor: 'rgba(0,0,0,0.45)',
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            borderRadius: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            maxWidth: '65%',
-        }}
-    >
-        <Text
-            style={{
-                color: '#fff',
-                fontSize: 11,
-                marginRight: 4,
-            }}
-        >
-            🇮🇳
-        </Text>
+                    {/* Location */}
+                    <View
+                        style={{
+                            backgroundColor: 'rgba(0,0,0,0.45)',
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            borderRadius: 12,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            maxWidth: '65%',
+                        }}
+                    >
+                        <Text
+                            style={{
+                                color: '#fff',
+                                fontSize: 11,
+                                marginRight: 4,
+                            }}
+                        >
+                            🇮🇳
+                        </Text>
 
-        <Text
-            numberOfLines={1}
-            style={{
-                color: '#fff',
-                fontSize: 11,
-                fontWeight: '600',
-            }}
-        >
-            {item.city && item.state
-                ? `${item.city}, ${item.state}`
-                : item.physicalLocation || ''}
-        </Text>
-    </View>
-</View>
+                        <Text
+                            numberOfLines={1}
+                            style={{
+                                color: '#fff',
+                                fontSize: 11,
+                                fontWeight: '600',
+                            }}
+                        >
+                            {item.city && item.state
+                                ? `${item.city}, ${item.state}`
+                                : item.physicalLocation || ''}
+                        </Text>
+                    </View>
+                </View>
 
                 {/* <View
                     style={[
@@ -654,52 +655,52 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                     <Text style={[styles.streamListEyeCount, themeStyles[theme].streamListEyeCount]}>{item.viewerCount || 0}</Text>
                     <Ionicons name="eye-outline" size={14} color={theme === 'light' ? '#fff' : '#fff'} />
                 </View> */}
-            <View
-    style={[
-        styles.streamListOverlay,
-        {
-            position: 'absolute',
-            bottom: 10,
-            left: 0,
-            right: 0,
+                <View
+                    style={[
+                        styles.streamListOverlay,
+                        {
+                            position: 'absolute',
+                            bottom: 10,
+                            left: 0,
+                            right: 0,
 
-            alignItems: 'center',
-            justifyContent: 'center',
+                            alignItems: 'center',
+                            justifyContent: 'center',
 
-            paddingHorizontal: 10,
-        }
-    ]}
->
-   <Text
-    numberOfLines={1}
-    ellipsizeMode="tail"
-    style={[
-        styles.streamListName,
-        themeStyles[theme].streamListName,
-        {
-            textAlign: 'center',
-            alignSelf: 'center',
-        }
-    ]}
->
-    {item.hostScreenName || item.screenName}
-</Text>
+                            paddingHorizontal: 10,
+                        }
+                    ]}
+                >
+                    <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={[
+                            styles.streamListName,
+                            themeStyles[theme].streamListName,
+                            {
+                                textAlign: 'center',
+                                alignSelf: 'center',
+                            }
+                        ]}
+                    >
+                        {item.hostScreenName || item.screenName}
+                    </Text>
 
- <Text
-    numberOfLines={2}
-    ellipsizeMode="tail"
-    style={[
-        styles.streamListStatus,
-        {
-            textAlign: 'center',
-            alignSelf: 'center',
-            maxWidth: '85%',
-        }
-    ]}
->
-    {item.RoomName}
-</Text>
-</View>
+                    <Text
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                        style={[
+                            styles.streamListStatus,
+                            {
+                                textAlign: 'center',
+                                alignSelf: 'center',
+                                maxWidth: '85%',
+                            }
+                        ]}
+                    >
+                        {item.RoomName}
+                    </Text>
+                </View>
             </TouchableOpacity>
         );
     };
@@ -864,127 +865,179 @@ const StreamList = ({ theme, joinRoom, createRoom, refreshlobby, leaveroomrefres
                 )
             }
             {
-    openConnectModal && (
+                openConnectModal && (
 
-        <Modal
-            isVisible={openConnectModal}
-            onBackdropPress={() =>
-                setOpenConnectModal(false)
+                    <Modal
+                        isVisible={openConnectModal}
+                        onBackdropPress={() =>
+                            setOpenConnectModal(false)
+                        }
+                        animationIn="slideInUp"
+                        animationOut="slideOutDown"
+                        useNativeDriver={true}
+                        backdropOpacity={0.4}
+                        style={[styles.profileModalMain]}
+                    >
+
+                        <View
+                            style={[
+                                styles.profileModalOverlay,
+                                themeStyles[theme].profileModalOverlay,
+                                {
+                                    padding: 15,
+                                }
+                            ]}
+                        >
+
+                            <TouchableOpacity
+                                onPress={() =>
+                                    setOpenConnectModal(false)
+                                }
+                                style={{
+                                    alignSelf: 'flex-end'
+                                }}
+                            >
+                                <Ionicons
+                                    name="close"
+                                    size={24}
+                                    color="#fff"
+                                />
+                            </TouchableOpacity>
+
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: 8,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: theme === 'light' ? '#000' : '#fff',
+                                        fontSize: 20,
+                                        fontWeight: '700',
+                                    }}
+                                >
+                                    Connect
+                                </Text>
+
+                                <TouchableOpacity
+                                    onPress={() => setOpenConnectModal(false)}
+                                    style={{
+                                        padding: 5,
+                                    }}
+                                >
+                                    <Ionicons
+                                        name="close"
+                                        size={28}
+                                        color={theme === 'light' ? '#000' : '#fff'}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+
+                            <TextInput
+                                value={connectRoomTitle}
+                                onChangeText={setConnectRoomTitle}
+                                placeholder="Enter title"
+                                placeholderTextColor="#999"
+                                style={[
+                                    styles.strHedSearchModalInput,
+                                    {
+                                        marginBottom: 20,
+                                    }
+                                ]}
+                            />
+
+                            <Text
+                                style={{
+                                    color: theme === 'light' ? '#000' : '#fff',
+                                    fontSize: 18,
+                                    fontWeight: '600',
+                                    marginBottom: 8,
+                                }}
+                            >
+                                Select Categories
+                            </Text>
+
+                            <ScrollView
+                                style={{
+                                    maxHeight: 300,
+                                    marginBottom: 20,
+                                }}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                <View style={styles.modalCategoryContainer}>
+                                    {categoryData.map(category => {
+                                        const isSelected =
+                                            connectCategories.includes(category.categoryID);
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={category.categoryID}
+                                                onPress={() => {
+                                                    if (isSelected) {
+                                                        setConnectCategories(prev =>
+                                                            prev.filter(
+                                                                id =>
+                                                                    id !== category.categoryID
+                                                            )
+                                                        );
+                                                    } else {
+                                                        setConnectCategories(prev => [
+                                                            ...prev,
+                                                            category.categoryID,
+                                                        ]);
+                                                    }
+                                                }}
+                                                style={[
+                                                    styles.modalCategoryButton,
+                                                    isSelected &&
+                                                    styles.modalCategoryButtonActive,
+                                                ]}
+                                            >
+                                                <Text style={styles.modalCategoryText}>
+                                                    {category.categoryName}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </ScrollView>
+
+                            <TouchableOpacity
+                                onPress={createConnectRoom}
+                                disabled={isCreatingConnectRoom}
+                                style={{
+                                    backgroundColor: '#de0037',
+                                    height: 52,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderRadius: 14,
+                                }}
+                            >
+
+                                <Text
+                                    style={{
+                                        color: '#fff',
+                                        fontWeight: '700',
+                                        fontSize: 16,
+                                    }}
+                                >
+                                    {
+                                        isCreatingConnectRoom
+                                            ? 'Starting...'
+                                            : 'Start Connect Stream'
+                                    }
+                                </Text>
+
+                            </TouchableOpacity>
+
+                        </View>
+
+                    </Modal>
+                )
             }
-            animationIn="slideInUp"
-            animationOut="slideOutDown"
-            useNativeDriver={true}
-            backdropOpacity={0.4}
-            style={[styles.profileModalMain]}
-        >
-
-            <View
-                style={[
-                    styles.profileModalOverlay,
-                    themeStyles[theme].profileModalOverlay,
-                    {
-                        padding: 20,
-                    }
-                ]}
-            >
-
-                <TouchableOpacity
-                    onPress={() =>
-                        setOpenConnectModal(false)
-                    }
-                    style={{
-                        alignSelf: 'flex-end'
-                    }}
-                >
-                    <Ionicons
-                        name="close"
-                        size={24}
-                        color="#fff"
-                    />
-                </TouchableOpacity>
-
-                <Text
-                    style={{
-                        color: '#fff',
-                        fontSize: 20,
-                        fontWeight: '700',
-                        marginBottom: 20,
-                    }}
-                >
-                    Start Connect Stream
-                </Text>
-
-                <TextInput
-                    value={connectRoomTitle}
-                    onChangeText={setConnectRoomTitle}
-                    placeholder="Enter title"
-                    placeholderTextColor="#999"
-                    style={[
-                        styles.strHedSearchModalInput,
-                        {
-                            marginBottom: 20,
-                        }
-                    ]}
-                />
-
-                <View
-                    style={{
-                        backgroundColor: '#1f1f1f',
-                        padding: 15,
-                        borderRadius: 12,
-                        marginBottom: 20,
-                    }}
-                >
-
-                    <Text
-                        style={{
-                            color: '#fff',
-                            fontSize: 14,
-                            lineHeight: 22,
-                        }}
-                    >
-                        • One on One ChitChat{"\n"}
-                        • Camera ON by default{"\n"}
-                        • Mic ON by default{"\n"}
-                        • Viewers can also Join{"\n"}
-                        • Games supported
-                    </Text>
-
-                </View>
-
-                <TouchableOpacity
-                    onPress={createConnectRoom}
-                    disabled={isCreatingConnectRoom}
-                    style={{
-                        backgroundColor: '#de0037',
-                        height: 52,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderRadius: 14,
-                    }}
-                >
-
-                    <Text
-                        style={{
-                            color: '#fff',
-                            fontWeight: '700',
-                            fontSize: 16,
-                        }}
-                    >
-                        {
-                            isCreatingConnectRoom
-                                ? 'Starting...'
-                                : 'Start Connect Stream'
-                        }
-                    </Text>
-
-                </TouchableOpacity>
-
-            </View>
-
-        </Modal>
-    )
-}
             {/* <Footer /> */}
         </View>
     );

@@ -47,6 +47,7 @@ export const Signup = ({
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotEmailTouched, setForgotEmailTouched] = useState(false);
   const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Email validation
   const isValidEmail = (email) => {
@@ -129,7 +130,7 @@ export const Signup = ({
 
     if (!isValidPassword(trimmedPassword)) {
 
-      if (passwordTouched) {
+      if (submitAttempted) {
         setPasswordError(
           'Password must be 6-12 chars with uppercase, lowercase and number',
         );
@@ -151,7 +152,7 @@ export const Signup = ({
 
     if (trimmedPassword !== trimmedConfirmPassword) {
 
-      if (confirmPasswordTouched) {
+      if (submitAttempted) {
         setConfirmPasswordError('Passwords do not match');
       } else {
         setConfirmPasswordError('');
@@ -220,24 +221,26 @@ export const Signup = ({
   };
 
   // Signup
- const handleSignUp = async () => {
-  setEmailTouched(true);
-  setPasswordTouched(true);
-  setConfirmPasswordTouched(true);
+  const handleSignUp = async () => {
+    setSubmitAttempted(true);
 
-  validateForm();
+    setEmailTouched(true);
+    setPasswordTouched(true);
+    setConfirmPasswordTouched(true);
 
-  if (!isFormValid) {
-    return;
-  }
+    validateForm();
 
-  setUserData({
-    email: email.trim(),
-    password: password.trim(),
-  });
+    if (!isFormValid) {
+      return;
+    }
 
-  onToggleForm();
-};
+    setUserData({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    onToggleForm();
+  };
 
   // Forgot Password
   const handleForgotPassword = () => {
@@ -445,21 +448,21 @@ export const Signup = ({
                   }}
                 >
                   <TextInput
-  value={email}
-  onChangeText={(text) => {
-    setEmail(text);
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
 
-    if (emailTouched) {
-      setEmailError('');
-    }
-  }}
-  onFocus={() => {
-    setEmailError('');
-  }}
-  onBlur={() => {
-    setEmailTouched(true);
-    validateForm();
-  }}
+                      if (emailTouched) {
+                        setEmailError('');
+                      }
+                    }}
+                    onFocus={() => {
+                      setEmailError('');
+                    }}
+                    onBlur={() => {
+                      setEmailTouched(true);
+                      validateForm();
+                    }}
                     style={[
                       styles.input,
                       themeStyles[theme].input,
@@ -535,22 +538,22 @@ export const Signup = ({
                     alignItems: 'center',
                   }}
                 >
-                 <TextInput
-  value={password}
-  onChangeText={(text) => {
-    setPassword(text);
+                  <TextInput
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
 
-    if (passwordTouched) {
-      setPasswordError('');
-    }
-  }}
-  onFocus={() => {
-    setPasswordError('');
-  }}
-  onBlur={() => {
-    setPasswordTouched(true);
-    validateForm();
-  }}
+                      if (passwordTouched) {
+                        setPasswordError('');
+                      }
+                    }}
+                    onFocus={() => {
+                      setPasswordError('');
+                    }}
+                    onBlur={() => {
+                      setPasswordTouched(true);
+                      validateForm();
+                    }}
                     style={[
                       styles.input,
                       themeStyles[theme].input,
@@ -562,31 +565,6 @@ export const Signup = ({
                     placeholder="Password"
                     maxLength={12}
                   />
-
-                  <View
-                    style={{
-                      position: 'absolute',
-                      right: 50,
-                      top: 23,
-                    }}
-                  >
-                    {passwordTouched &&
-                      password.length > 0 ? (
-                      isValidPassword(password.trim()) ? (
-                        <Icon
-                          name="check-circle"
-                          size={20}
-                          color="green"
-                        />
-                      ) : (
-                        <Icon
-                          name="times-circle"
-                          size={20}
-                          color="red"
-                        />
-                      )
-                    ) : null}
-                  </View>
 
                   <TouchableOpacity
                     onPress={() =>
@@ -627,20 +605,6 @@ export const Signup = ({
                     {passwordError}
                   </Text>
                 ) : null}
-
-               {passwordTouched &&
-  password.length > 0 &&
-  !passwordError && (
-    <Text
-      style={{
-        color: 'green',
-        marginTop: 5,
-        fontSize: 13,
-      }}
-    >
-      Strong password
-    </Text>
-)}
               </View>
 
               {/* CONFIRM PASSWORD */}
@@ -652,21 +616,21 @@ export const Signup = ({
                   }}
                 >
                   <TextInput
-  value={confirmPassword}
-  onChangeText={(text) => {
-    setConfirmPassword(text);
+                    value={confirmPassword}
+                    onChangeText={(text) => {
+                      setConfirmPassword(text);
 
-    if (confirmPasswordTouched) {
-      setConfirmPasswordError('');
-    }
-  }}
-  onFocus={() => {
-    setConfirmPasswordError('');
-  }}
-  onBlur={() => {
-    setConfirmPasswordTouched(true);
-    validateForm();
-  }}
+                      if (confirmPasswordTouched) {
+                        setConfirmPasswordError('');
+                      }
+                    }}
+                    onFocus={() => {
+                      setConfirmPasswordError('');
+                    }}
+                    onBlur={() => {
+                      setConfirmPasswordTouched(true);
+                      validateForm();
+                    }}
                     style={[
                       styles.input,
                       themeStyles[theme].input,
@@ -680,31 +644,6 @@ export const Signup = ({
                     placeholder="Confirm Password"
                     maxLength={12}
                   />
-
-                  <View
-                    style={{
-                      position: 'absolute',
-                      right: 50,
-                      top: 23,
-                    }}
-                  >
-                    {confirmPasswordTouched &&
-                      confirmPassword.length > 0 ? (
-                      passwordsMatch ? (
-                        <Icon
-                          name="check-circle"
-                          size={20}
-                          color="green"
-                        />
-                      ) : (
-                        <Icon
-                          name="times-circle"
-                          size={20}
-                          color="red"
-                        />
-                      )
-                    ) : null}
-                  </View>
 
                   <TouchableOpacity
                     onPress={() =>
@@ -748,19 +687,6 @@ export const Signup = ({
                   </Text>
                 ) : null}
 
-                {confirmPasswordTouched &&
-                  confirmPassword.length > 0 &&
-                  passwordsMatch && (
-                    <Text
-                      style={{
-                        color: 'green',
-                        marginTop: 5,
-                        fontSize: 13,
-                      }}
-                    >
-                      Passwords match
-                    </Text>
-                  )}
               </View>
 
               {/* REFERRER CODE */}
@@ -840,6 +766,7 @@ export const Signup = ({
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
+                    marginBottom: 15,
                   }}
                 >
                   <Icon
@@ -886,7 +813,6 @@ export const Signup = ({
 
               {/* SIGNUP BUTTON */}
               <TouchableOpacity
-                disabled={!isFormValid}
                 style={[
                   styles.button,
                   themeStyles[theme].button,

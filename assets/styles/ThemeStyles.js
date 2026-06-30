@@ -1389,12 +1389,16 @@ export const styles = StyleSheet.create({
   modalCategoryButtonActive: {
     backgroundColor: '#6a0dad',
   },
-  categoryBtn: {
-    backgroundColor: '#be0069',
-    borderRadius: 24,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
+ categoryBtn: {
+  width: '48%',
+  backgroundColor: '#be0069',
+  borderRadius: 12,
+  paddingVertical: 14,
+  paddingHorizontal: 10,
+  marginBottom: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
   categoryBtnActive: {
     backgroundColor: '#d93a63',
   },

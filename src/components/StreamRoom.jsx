@@ -42,6 +42,7 @@ import { UpdateStreamDescriptionModal } from '../modals/StreamDescription';
 import SlotGameModal from '../modals/SlotGameModal';
 import GlowingRedDot from './GlowingRedDot';
 import HorseRaceGameModal from '../modals/HorseRaceGameModal';
+import { debugLog } from '../utils/debugLogger';
 
 const StreamRoom = ({
     remoteStreams,
@@ -75,6 +76,7 @@ const StreamRoom = ({
     const [giftsData, setGiftItems] = useState([]);
     const {
         userData,
+        setUserData,
         setIsInStreamRoom,
     } = useAppContext();
     const [giftsCategoryData, setGiftCategoryItems] = useState([]);
@@ -191,31 +193,27 @@ const StreamRoom = ({
     ]);
 
     useEffect(() => {
+        const handleStreamTotalUpdated = ({ addedAmount }) => {
+            setTotalGiftByRoom(prev => ({
+                ...prev,
+                totalGameGifts: (prev.totalGameGifts || 0) + addedAmount,
+                grandTotal: (prev.grandTotal || 0) + addedAmount,
+            }));
+        };
 
         const handleRoomFull = (msg) => {
-
-            Alert.alert(
-                'Room Full',
-                msg || 'Connect room is full'
-            );
-
+            Alert.alert('Room Full', msg || 'Connect room is full');
             leaveRoom();
         };
 
-        socket.on(
-            'roomFull',
-            handleRoomFull
-        );
+        socket.on('stream_total_updated', handleStreamTotalUpdated);
+        socket.on('roomFull', handleRoomFull);
 
         return () => {
-
-            socket.off(
-                'roomFull',
-                handleRoomFull
-            );
+            socket.off('stream_total_updated', handleStreamTotalUpdated);
+            socket.off('roomFull', handleRoomFull);
         };
-
-    }, []);
+    }, [leaveRoom]);
 
     useEffect(() => {
         // ✅ only show to joiners/viewers, never host
@@ -1079,6 +1077,33 @@ const StreamRoom = ({
         setIsJukeboxActiveInRoom(true);
     }, []);
 
+    useEffect(() => {
+        const onWalletUpdate = ({ userId, balance }) => {
+            if (Number(userId) !== Number(userData?.userid)) return;
+
+            const newBalance = Number(balance);
+
+            if (isNaN(newBalance)) return;
+
+            setUserData(prev => ({
+                ...prev,
+                CreditBalance: newBalance,
+                balance: newBalance,
+            }));
+
+            debugLog('StreamRoom', 'GLOBAL_WALLET_UPDATE', {
+                userId,
+                balance: newBalance,
+            });
+        };
+
+        socket.on('walletUpdate', onWalletUpdate);
+
+        return () => {
+            socket.off('walletUpdate', onWalletUpdate);
+        };
+    }, [userData?.userid, setUserData]);
+
     // ✅ Add socket listeners for JukeBox
     useEffect(() => {
         socket.on('jukebox-opened', handleJukeboxOpened);
@@ -1539,68 +1564,68 @@ const StreamRoom = ({
     };
 
     // play gift sound
-   const playGiftSound = () => {
-    try {
+    const playGiftSound = () => {
+        try {
 
-        const sound = new Sound(
-            'gift_received',
-            Sound.MAIN_BUNDLE,
-            (error) => {
+            const sound = new Sound(
+                'gift_received',
+                Sound.MAIN_BUNDLE,
+                (error) => {
 
-                if (error) {
-                    SendErrorTotheServer(
-                        error,
-                        'playGiftSound'
-                    );
-                    return;
+                    if (error) {
+                        SendErrorTotheServer(
+                            error,
+                            'playGiftSound'
+                        );
+                        return;
+                    }
+
+                    sound.play();
+
                 }
+            );
 
-                sound.play();
+        } catch (error) {
 
-            }
-        );
+            SendErrorTotheServer(
+                error,
+                'playGiftSound'
+            );
 
-    } catch (error) {
-
-        SendErrorTotheServer(
-            error,
-            'playGiftSound'
-        );
-
-    }
-};
+        }
+    };
 
     // play notification sound
     const playNotification = () => {
-    try {
+        try {
 
-        const sound = new Sound(
-            'notification',
-            Sound.MAIN_BUNDLE,
-            (error) => {
+            const sound = new Sound(
+                'notification',
+                Sound.MAIN_BUNDLE,
+                (error) => {
 
-                if (error) {
-                    SendErrorTotheServer(
-                        error,
-                        'playNotification'
-                    );
-                    return;
+                    if (error) {
+                        SendErrorTotheServer(
+                            error,
+                            'playNotification'
+                        );
+                        return;
+                    }
+
+                    sound.play();
+
                 }
+            );
 
-                sound.play();
+        } catch (error) {
 
-            }
-        );
+            SendErrorTotheServer(
+                error,
+                'playNotification'
+            );
 
-    } catch (error) {
-
-        SendErrorTotheServer(
-            error,
-            'playNotification'
-        );
-
-    }
-};
+        }
+    };
 
     // open report modal
     const HandleReport = () => {
@@ -2226,29 +2251,29 @@ const StreamRoom = ({
                                                     mirror={streamData.type === 'local' && isFrontCamera}
                                                 />
                                                 {isHost &&
-    streamData?.type !== 'local' && (
-        <TouchableOpacity
-            onPress={() => handleRemoveCoHost(streamData)}
-            style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                zIndex: 99999,
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <Ionicons
-                name="close-circle"
-                size={28}
-                color="#ff3b30"
-            />
-        </TouchableOpacity>
-)}
+                                                    streamData?.type !== 'local' && (
+                                                        <TouchableOpacity
+                                                            onPress={() => handleRemoveCoHost(streamData)}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: 8,
+                                                                right: 8,
+                                                                zIndex: 99999,
+                                                                width: 32,
+                                                                height: 32,
+                                                                borderRadius: 16,
+                                                                backgroundColor: 'rgba(0,0,0,0.6)',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                            }}
+                                                        >
+                                                            <Ionicons
+                                                                name="close-circle"
+                                                                size={28}
+                                                                color="#ff3b30"
+                                                            />
+                                                        </TouchableOpacity>
+                                                    )}
                                                 <View style={{ position: 'absolute', left: '40%', top: '40%' }}>
                                                     <Text>{streamData?.isMuted && showUI && <Ionicons name="mic-off" size={30} color="#fff" />}</Text>
                                                 </View>
@@ -2547,119 +2572,119 @@ const StreamRoom = ({
                                                             </View>
                                                         )}
 
-                                                   <View style={styles.videoOverlay}>
-    {index !== 0 &&
-        streamData?.type !== 'local' &&
-        showUI && (
-            <>
-                {isHost && (
-                    <TouchableOpacity
-                        onPress={() =>
-                            handleRemoveCoHost(streamData)
-                        }
-                        style={{
-                            position: 'absolute',
-                            right: 5,
-                            bottom: 50,
-                            zIndex: 999999,
-                            width: 26,
-                            height: 26,
-                            borderRadius: 13,
-                            backgroundColor: '#ff3b30',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <Ionicons
-                            name="close"
-                            size={16}
-                            color="#fff"
-                        />
-                    </TouchableOpacity>
-                )}
+                                                    <View style={styles.videoOverlay}>
+                                                        {index !== 0 &&
+                                                            streamData?.type !== 'local' &&
+                                                            showUI && (
+                                                                <>
+                                                                    {isHost && (
+                                                                        <TouchableOpacity
+                                                                            onPress={() =>
+                                                                                handleRemoveCoHost(streamData)
+                                                                            }
+                                                                            style={{
+                                                                                position: 'absolute',
+                                                                                right: 5,
+                                                                                bottom: 50,
+                                                                                zIndex: 999999,
+                                                                                width: 26,
+                                                                                height: 26,
+                                                                                borderRadius: 13,
+                                                                                backgroundColor: '#ff3b30',
+                                                                                justifyContent: 'center',
+                                                                                alignItems: 'center',
+                                                                            }}
+                                                                        >
+                                                                            <Ionicons
+                                                                                name="close"
+                                                                                size={16}
+                                                                                color="#fff"
+                                                                            />
+                                                                        </TouchableOpacity>
+                                                                    )}
 
-                <ImageBackground
-                    source={bgImage}
-                    style={{ padding: 3 }}
-                >
-                    <View
-                        style={
-                            styles.userInfoContainer
-                        }
-                    >
-                        <TouchableOpacity
-                            onPress={() =>
-                                HnadleSendGiftToCoHost(
-                                    streamData?.userId,
-                                    streamData?.Name
-                                )
-                            }
-                        >
-                            <Image
-                                source={GiftIcon}
-                                height={35}
-                                width={35}
-                            />
-                        </TouchableOpacity>
+                                                                    <ImageBackground
+                                                                        source={bgImage}
+                                                                        style={{ padding: 3 }}
+                                                                    >
+                                                                        <View
+                                                                            style={
+                                                                                styles.userInfoContainer
+                                                                            }
+                                                                        >
+                                                                            <TouchableOpacity
+                                                                                onPress={() =>
+                                                                                    HnadleSendGiftToCoHost(
+                                                                                        streamData?.userId,
+                                                                                        streamData?.Name
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <Image
+                                                                                    source={GiftIcon}
+                                                                                    height={35}
+                                                                                    width={35}
+                                                                                />
+                                                                            </TouchableOpacity>
 
-                        <Text
-                            style={styles.userName}
-                        >
-                            {streamData?.Name
-                                ? streamData.Name
-                                : 'Unknown User'}
-                        </Text>
+                                                                            <Text
+                                                                                style={styles.userName}
+                                                                            >
+                                                                                {streamData?.Name
+                                                                                    ? streamData.Name
+                                                                                    : 'Unknown User'}
+                                                                            </Text>
 
-                        <TouchableOpacity
-                            style={styles.friendRequestIcon}
-                            disabled={
-                                streamData?.isFriend
-                            }
-                            onPress={() =>
-                                handleFriendRequest(
-                                    streamData?.userId,
-                                    streamData?.Name
-                                )
-                            }
-                        >
-                            {streamData?.isFriend ? (
-                                <Image
-                                    style={{
-                                        width:
-                                            streamLayout.length == 6
-                                                ? 15
-                                                : streamLayout.length == 4
-                                                ? 20
-                                                : 22,
-                                        height:
-                                            streamLayout.length == 6
-                                                ? 15
-                                                : streamLayout.length == 4
-                                                ? 20
-                                                : 22,
-                                    }}
-                                    source={require('../../assets/images/icons/friend-added.png')}
-                                    resizeMode="contain"
-                                    tintColor="white"
-                                />
-                            ) : (
-                                <Ionicons
-                                    name="person-add"
-                                    size={
-                                        streamLayout.length == 6 ||
-                                        streamLayout.length == 4
-                                            ? 16
-                                            : 20
-                                    }
-                                    color="#fff"
-                                />
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                </ImageBackground>
-            </>
-        )}
-</View>
+                                                                            <TouchableOpacity
+                                                                                style={styles.friendRequestIcon}
+                                                                                disabled={
+                                                                                    streamData?.isFriend
+                                                                                }
+                                                                                onPress={() =>
+                                                                                    handleFriendRequest(
+                                                                                        streamData?.userId,
+                                                                                        streamData?.Name
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {streamData?.isFriend ? (
+                                                                                    <Image
+                                                                                        style={{
+                                                                                            width:
+                                                                                                streamLayout.length == 6
+                                                                                                    ? 15
+                                                                                                    : streamLayout.length == 4
+                                                                                                        ? 20
+                                                                                                        : 22,
+                                                                                            height:
+                                                                                                streamLayout.length == 6
+                                                                                                    ? 15
+                                                                                                    : streamLayout.length == 4
+                                                                                                        ? 20
+                                                                                                        : 22,
+                                                                                        }}
+                                                                                        source={require('../../assets/images/icons/friend-added.png')}
+                                                                                        resizeMode="contain"
+                                                                                        tintColor="white"
+                                                                                    />
+                                                                                ) : (
+                                                                                    <Ionicons
+                                                                                        name="person-add"
+                                                                                        size={
+                                                                                            streamLayout.length == 6 ||
+                                                                                                streamLayout.length == 4
+                                                                                                ? 16
+                                                                                                : 20
+                                                                                        }
+                                                                                        color="#fff"
+                                                                                    />
+                                                                                )}
+                                                                            </TouchableOpacity>
+                                                                        </View>
+                                                                    </ImageBackground>
+                                                                </>
+                                                            )}
+                                                    </View>
                                                 </View>
                                             </Fragment>
                                         );

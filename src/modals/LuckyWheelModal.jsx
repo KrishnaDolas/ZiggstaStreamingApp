@@ -47,7 +47,7 @@ const SEGMENTS = [
     'Double',
     '20x',
 
-    'Double',
+    'Triple',
     'Double',
     '10x',
     'Double',
@@ -141,76 +141,55 @@ const LuckyWheelModal = (
     const onCloseRef = useRef(onClose);
     const isHost = userData?.userid === hostDetails?.userid;
     const countdownRef = useRef(0);
+    const allAnimationsCompletedRef = useRef(false);
+    const roundFinishedCheckRef = useRef(null);
 
     useEffect(() => {
         countdownRef.current = countdown;
     }, [countdown]);
 
     useEffect(() => {
-        console.log('[STATE] visible =>', visible);
     }, [visible]);
 
     useEffect(() => {
-        console.log('[STATE] countdown =>', countdown);
     }, [countdown]);
 
     useEffect(() => {
-        console.log('[STATE] selectedMultiplier =>', selectedMultiplier);
     }, [selectedMultiplier]);
 
     useEffect(() => {
-        console.log('[STATE] activeBetAmount =>', activeBetAmount);
     }, [activeBetAmount]);
 
     useEffect(() => {
-        console.log('[STATE] spinResultMessage =>', spinResultMessage);
     }, [spinResultMessage]);
 
     useEffect(() => {
-        console.log('[STATE] betButtonsDisabled =>', betButtonsDisabled);
     }, [betButtonsDisabled]);
 
     useEffect(() => {
-        console.log('[STATE] hideBetButtons =>', hideBetButtons);
     }, [hideBetButtons]);
 
     useEffect(() => {
-        console.log('[STATE] isSpinning =>', isSpinning);
     }, [isSpinning]);
 
     useEffect(() => {
-        console.log('[STATE] userBets length =>', userBets.length);
     }, [userBets]);
 
     useEffect(() => {
-        console.log('[STATE] displayCredit =>', displayCredit);
     }, [displayCredit]);
 
     useEffect(() => {
-        console.log('[STATE] mycredit =>', mycredit);
     }, [mycredit]);
 
     useEffect(() => {
-        console.log('[STATE] betPlacedByCurrentUser =>', betPlacedByCurrentUser);
     }, [betPlacedByCurrentUser]);
 
     useEffect(() => {
-        console.log('[STATE] message =>', message);
     }, [message]);
 
     useEffect(() => {
 
         const debug = setInterval(() => {
-
-            console.log('[LIVE_DEBUG]', {
-                visible,
-                isSpinning: isSpinningRef.current,
-                pendingResult: pendingResultRef.current,
-                closing: isClosingRef.current,
-                countdown,
-                cleanupTimeout: !!cleanupTimeoutRef.current,
-                betPlaced: betPlacedByCurrentUser,
-            });
 
         }, 1000);
 
@@ -236,7 +215,6 @@ const LuckyWheelModal = (
     }, []);
 
     useEffect(() => {
-        console.log('hasPlacedBet changed:', hasPlacedBet);
     }, [hasPlacedBet]);
 
     useEffect(() => {
@@ -361,12 +339,6 @@ const LuckyWheelModal = (
                 userId: userData?.userid,
             }
         );
-
-        console.log('[CREDIT_FLOW]', {
-            prevCredit: prevCreditRef.current,
-            currentRef: myCreditRef.current,
-            freezeUI: freezeCreditUIRef.current,
-        });
         // store previous credit only once
         if (!freezeCreditUIRef.current && !prevCapturedRef.current) {
             prevCreditRef.current = myCreditRef.current ?? amount;
@@ -406,11 +378,9 @@ const LuckyWheelModal = (
 
     // 1️⃣ Always clear interval safely
     const clearCountdown = () => {
-        console.log('[CLEAR_COUNTDOWN]');
         if (intervalRef.current) {
             clearInterval(intervalRef.current);
             intervalRef.current = null;
-            console.log('[COUNTDOWN_INTERVAL_CLEARED]');
         }
     };
 
@@ -432,11 +402,9 @@ const LuckyWheelModal = (
 
         intervalRef.current = setInterval(() => {
             counter -= 1;
-            console.log('[COUNTDOWN_TICK]', counter);
             setCountdown(counter);
 
             if (counter === 3) {
-                console.log('[COUNTDOWN_LAST_3_SEC]');
                 setClosePlaceBetDialog(false);
 
                 const sound = new Sound('no_more_gifting', Sound.MAIN_BUNDLE, (error) => {
@@ -449,7 +417,6 @@ const LuckyWheelModal = (
             }
 
             if (counter <= 3) {
-                console.log('[BIG_COUNTDOWN_VISIBLE]', counter);
                 setBigCountdownNumber(counter);
                 fadeAnim.setValue(0);
 
@@ -620,9 +587,19 @@ const LuckyWheelModal = (
         //     }, 400);
         // }
 
-        setTimeout(() => {
-            setFlyingChips([]);
-        }, 2000);
+      setTimeout(() => {
+
+    setFlyingChips([]);
+
+    socket.emit(
+        'luckywheel_animation_complete',
+        {
+            roomId: RoomID,
+            userId: userData?.userid,
+        }
+    );
+
+}, 2000);
     };
 
     // Animated credit counting - only for visual effect, doesn't update actual credit
@@ -708,14 +685,6 @@ const LuckyWheelModal = (
     };
 
     const handleSpinResult = useCallback(({ isWin, WinAmount, resultLabel }) => {
-        console.log(
-            '[WIN_CHECK]',
-            {
-                selectedMultiplier,
-                resultLabel,
-                equal: selectedMultiplier === resultLabel
-            }
-        );
         debugLog(
             'LuckyWheel',
             'SPIN_RESULT_RECEIVED',
@@ -730,6 +699,18 @@ const LuckyWheelModal = (
         );
         // ⛔ If wheel is still spinning → HOLD result
         if (isSpinningRef.current) {
+
+            debugLog(
+                'LuckyWheel',
+                'RESULT_HELD_UNTIL_SPIN_FINISH',
+                {
+                    isWin,
+                    WinAmount,
+                    resultLabel,
+                    roomId: RoomID,
+                    userId: userData?.userid,
+                }
+            );
             pendingResultRef.current = { isWin, WinAmount, resultLabel };
             return;
         }
@@ -808,6 +789,24 @@ const LuckyWheelModal = (
             userData?.avatar
         );
 
+        socket.on(
+            'luckywheel_all_animations_complete',
+            () => {
+
+                debugLog(
+                    'LuckyWheel',
+                    'ALL_WHEEL_ANIMATIONS_COMPLETE',
+                    {
+                        userId: userData?.userid,
+                        roomId: RoomID,
+                    }
+                );
+
+                allAnimationsCompletedRef.current = true;
+
+            }
+        );
+
         socket.on('updated_Credit', HandleUpdatedCredit);
         socket.on('spinwheel_timer', HandleTimer);
         socket.on('betPlace-Users', HandleBetUserList);
@@ -828,6 +827,7 @@ const LuckyWheelModal = (
             socket.off('Bet-Success', handleBetSuccess);
             socket.off('Host-win', handleHostWin);
             socket.off('start_spin', handleStartSpin);
+            socket.off('luckywheel_all_animations_complete');
         };
     }, [
         userData,
@@ -925,7 +925,6 @@ const LuckyWheelModal = (
             setMessage(`Bet placed on ${selectedMultiplier}`);
             placeBetButtonRef.current = true;
             setBetPlacedByCurrentUser(true);
-            console.log('Bet placed by invoker, hasPlacedBet:', true);
         }
     };
 
@@ -947,7 +946,7 @@ const LuckyWheelModal = (
 
         debugLog(
             'LuckyWheel',
-            'ROUND_FINISHED',
+            'ROUND_FINISHED_RECEIVED',
             {
                 roomId: RoomID,
                 userId: userData?.userid,
@@ -960,14 +959,22 @@ const LuckyWheelModal = (
 
         cleanupTimeoutRef.current = setTimeout(() => {
 
+            debugLog(
+                'LuckyWheel',
+                'ROUND_FINISHED_FORCE_CLOSE',
+                {
+                    roomId: RoomID,
+                    userId: userData?.userid,
+                }
+            );
+
             closeModal();
 
-        }, 7000);
+        }, 3500);
 
     }, [closeModal]);
 
     const handleSpin = useCallback((resultLabel) => {
-        console.log('[HANDLE_SPIN_CALLED]', resultLabel);
         debugLog(
             'LuckyWheel',
             'HANDLE_SPIN_START',
@@ -981,6 +988,7 @@ const LuckyWheelModal = (
         // ✅ reset completion flag for new round
         // hard reset previous pending result
         pendingResultRef.current = null;
+        allAnimationsCompletedRef.current = false;
 
         // stop any previous animation
         rotation.stopAnimation();
@@ -1058,7 +1066,6 @@ const LuckyWheelModal = (
         prevCapturedRef.current = false;
 
         stopIdleRotation();
-        console.log('[IDLE_ROTATION_STOPPED]');
         setHideBetButtons(true);
 
         const segmentCount = SEGMENTS.length;
@@ -1074,25 +1081,13 @@ const LuckyWheelModal = (
             normalizedResult = 'Triple';
         }
 
-        console.log(
-            '[NORMALIZED_RESULT]',
-            resultLabel,
-            '=>',
-            normalizedResult
-        );
-
-        console.log('[SERVER_RESULT]', resultLabel);
-        console.log('[SEGMENTS]', SEGMENTS);
-
         const matches = SEGMENTS
             .map((label, idx) => ({ label, idx }))
             .filter(s => s.label === normalizedResult);
 
         if (!matches.length) {
-            console.log('[NO_MATCHING_SEGMENT]');
             return;
         }
-        console.log('[MATCHING_SEGMENTS]', matches);
         const currentAngle = getNormalizedAngle(currentRotation.current);
 
         const selected = matches.reduce((closest, seg) => {
@@ -1165,37 +1160,56 @@ const LuckyWheelModal = (
         }).start();
 
         setTimeout(() => {
-            console.log('[SPIN_TIMEOUT_COMPLETED]');
+
+            debugLog(
+                'LuckyWheel',
+                'SPIN_TIMEOUT_COMPLETED',
+                {
+                    userId: userData?.userid,
+                    roomId: RoomID,
+                    hasPendingResult: !!pendingResultRef.current,
+                    pendingResult: pendingResultRef.current,
+                }
+            );
+
             currentRotation.current = finalRotation;
 
             isSpinningRef.current = false;
 
             setIsSpinning(false);
 
+            // PROCESS HELD RESULT
+            if (pendingResultRef.current) {
+
+                const result =
+                    pendingResultRef.current;
+
+                pendingResultRef.current = null;
+
+                debugLog(
+                    'LuckyWheel',
+                    'PROCESSING_PENDING_RESULT',
+                    {
+                        userId: userData?.userid,
+                        roomId: RoomID,
+                        result,
+                    }
+                );
+
+                handleSpinResult(result);
+            }
+
+            // ✅ SEND ACK ONLY AFTER WHEEL COMPLETELY FINISHES
             debugLog(
                 'LuckyWheel',
-                'SPIN_VISUAL_FINISHED',
+                'SENDING_LUCKYWHEEL_ACK',
                 {
-                    roomId: RoomID,
+                    roomID: RoomID,
                     userId: userData?.userid,
                 }
             );
 
-            if (pendingResultRef.current) {
-
-                handleSpinResult(pendingResultRef.current);
-
-                pendingResultRef.current = null;
-                console.log('[PROCESSING_PENDING_RESULT]');
-            }
-
         }, 6100);
-
-        console.log(
-            '[SPIN_STARTED]',
-            'roundFinished:',
-            'spinCompleted:',
-        );
 
     }, [handleSpinResult]);
 
@@ -1279,6 +1293,15 @@ const LuckyWheelModal = (
         }
 
         clearCountdown();
+
+        if (roundFinishedCheckRef.current) {
+
+            clearInterval(
+                roundFinishedCheckRef.current
+            );
+
+            roundFinishedCheckRef.current = null;
+        }
 
         // stop animations
         stopIdleRotation();

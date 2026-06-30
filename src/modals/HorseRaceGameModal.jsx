@@ -589,7 +589,9 @@ export default function HorseRaceGameModal({
         clearTimeout(autoCloseTimeoutRef.current);
       }
 
-      autoCloseTimeoutRef.current = setTimeout(() => {
+      autoCloseTimeoutRef.current = setTimeout(async () => {
+        await loadLatestBalance();
+        resetRace(true);
         setShowTrack(false);
         setIsSubModuleVisible(true);
         onClose();
@@ -607,6 +609,18 @@ export default function HorseRaceGameModal({
       setIsSubModuleVisible(true);
       setRaceStarted(false);
       setCanBet(true);
+      debugLog(
+  'HorseRace',
+  'BALANCE_RESET',
+  {
+    balance: 0,
+    roomId,
+    userId: userData?.userid,
+    source: 'RESET',
+  }
+);
+
+setBalance(0);
     };
 
     socket.on('phase', onPhase);
@@ -641,7 +655,54 @@ export default function HorseRaceGameModal({
     };
   }, [visible, userData, roomId]);
 
+  const loadLatestBalance = async () => {
+    try {
+      const formData = new FormData();
+      formData.append('userID', userData.userid);
 
+      const response = await Apiclient.post('/getUserDetails', formData);
+
+      const latestBalance = Number(
+        response?.data?.user?.CreditBalance ??
+        response?.data?.user?.balance ??
+        0
+      );
+
+      if (!isNaN(latestBalance)) {
+        setBalance(latestBalance);
+
+        debugLog(
+          'HorseRace',
+          'LATEST_BALANCE_LOADED',
+          {
+            latestBalance,
+            roomId,
+            userId: userData?.userid,
+          }
+        );
+      }
+      debugLog(
+  'HorseRace',
+  'BALANCE_FROM_API',
+  {
+    balance: latestBalance,
+    roomId,
+    userId: userData?.userid,
+    source: 'LOAD_LATEST_BALANCE',
+  }
+);
+
+setBalance(latestBalance);
+    } catch (e) {
+      console.log('LOAD_BALANCE_ERROR', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!visible) return;
+
+    loadLatestBalance();
+  }, [visible]);
 
   const onRaceResultFast = ({ winningHorse }) => {
     debugLog(
@@ -691,7 +752,88 @@ export default function HorseRaceGameModal({
   };
 
   useEffect(() => {
+    if (!visible || !userData?.userid) {
+      return;
+    }
+
+    const fetchLatestBalance = async () => {
+      try {
+        const formData = new FormData();
+        formData.append('userID', userData.userid);
+
+        const response = await Apiclient.post(
+          '/getUserDetails',
+          formData
+        );
+
+        const latestBalance = Number(
+          response?.data?.user?.CreditBalance ??
+          response?.data?.user?.balance ??
+          0
+        );
+
+        if (!isNaN(latestBalance)) {
+          setBalance(latestBalance);
+
+          debugLog(
+            'HorseRace',
+            'LATEST_BALANCE_LOADED',
+            {
+              latestBalance,
+            }
+          );
+        }
+      } catch (error) {
+        console.log('Failed to fetch latest balance:', error);
+      }
+    };
+
+    fetchLatestBalance();
+  }, [visible, userData?.userid]);
+
+  useEffect(() => {
+  debugLog(
+    'HorseRace',
+    'BALANCE_STATE_CHANGED',
+    {
+      balance,
+      roomId,
+      userId: userData?.userid,
+    }
+  );
+}, [balance]);
+
+useEffect(() => {
+  if (!visible) return;
+
+  debugLog(
+    'HorseRace',
+    'MODAL_OPENED_BALANCE',
+    {
+      balance,
+      userDataBalance: userData?.CreditBalance ?? userData?.balance,
+      roomId,
+      userId: userData?.userid,
+    }
+  );
+}, [visible]);
+
+  useEffect(() => {
     const onWalletUpdate = (data) => {
+
+      debugLog(
+  'HorseRace',
+  'BALANCE_FROM_SOCKET',
+  {
+    balance: newBalance,
+    roomId,
+    userId: userData?.userid,
+    source: 'WALLET_UPDATE',
+  }
+);
+
+setBalance(newBalance);
+
       debugLog(
         'HorseRace',
         'WALLET_UPDATE',
@@ -701,29 +843,33 @@ export default function HorseRaceGameModal({
           userId: userData?.userid,
         }
       );
-      if (Number(data.userId) === Number(userData?.userid)) {
-        if (data.balance !== undefined && !isNaN(data.balance)) {
-          setBalance(Number(data.balance));
-        }
+
+      // Ignore updates for other users
+      if (Number(data.userId) !== Number(userData?.userid)) {
+        return;
+      }
+
+      const newBalance = Number(data.balance);
+
+      if (!isNaN(newBalance)) {
+        setBalance(newBalance);
+
+        debugLog(
+          'HorseRace',
+          'BALANCE_UPDATED',
+          {
+            newBalance,
+          }
+        );
       }
     };
 
-    socket.on("walletUpdate", onWalletUpdate);
+    socket.on('walletUpdate', onWalletUpdate);
 
     return () => {
-      socket.off("walletUpdate", onWalletUpdate);
+      socket.off('walletUpdate', onWalletUpdate);
     };
-  }, [userData]);
-
-  useEffect(() => {
-    const newBalance =
-      userData?.CreditBalance ??
-      userData?.balance;
-
-    if (newBalance !== undefined && !isNaN(newBalance)) {
-      setBalance(Number(newBalance));
-    }
-  }, [userData]);
+  }, [socket, userData?.userid, roomId]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -762,6 +908,7 @@ export default function HorseRaceGameModal({
     setHasAnyBetPlaced(false);
 
     setHasPlacedBet(false);
+    setBalance(0);
   };
 
   const startHostCoinAnimation = () => {
@@ -919,6 +1066,18 @@ export default function HorseRaceGameModal({
 
   /* AUTO BET ON HORSE TAP */
   const selectHorse = (horseId, amount) => {
+    debugLog(
+      'HorseRace',
+      'SELECT_HORSE_CALLED',
+      {
+        horseId,
+        amount,
+        balance,
+        roomId,
+        userId: userData?.userid,
+        time: Date.now(),
+      }
+    );
     if (isHost || readOnly) return;
 
     if (!canBet) {
@@ -969,8 +1128,21 @@ export default function HorseRaceGameModal({
       user_id: userData.userid,
       horse_number: horseId,   // ✅ FIXED
       amount: Number(amount),
-      roomID: Number(roomId)   // ✅ match backend naming
+      roomID: Number(roomId),  // ✅ match backend naming
     }, (response) => {
+
+      debugLog(
+  'HorseRace',
+  'BALANCE_FROM_ACK',
+  {
+    balance: Number(response.balance),
+    roomId,
+    userId: userData?.userid,
+    source: 'PLACE_BET_ACK',
+  }
+);
+
+setBalance(Number(response.balance));
 
       if (response?.status === "error") {
         Alert.alert(response.message);
@@ -978,7 +1150,11 @@ export default function HorseRaceGameModal({
         setSelectedHorse(null);
         return;
       }
+      setBalance(Number(response.balance));
+
     });
+
+    
 
     // 👉 Trigger flip animation after bet
     setTimeout(() => {
@@ -1331,6 +1507,10 @@ export default function HorseRaceGameModal({
                             style={[
                               styles.trackRow,
                               winner === horse.id && styles.winningTrackRow,
+                              winner === horse.id && {
+                                zIndex: 100,
+                                elevation: 100,
+                              },
                             ]}
                           >
                             {/* 🏷 HORSE LABEL */}
@@ -1380,7 +1560,8 @@ export default function HorseRaceGameModal({
                             <View
                               style={[
                                 styles.trackStripe,
-                                { opacity: i % 2 === 0 ? 0.4 : 1 },
+                                winner === horse.id && styles.winningTrackStripe,
+                                !winner && { opacity: i % 2 === 0 ? 0.4 : 1 },
                               ]}
                             />
 
@@ -1480,7 +1661,8 @@ export default function HorseRaceGameModal({
                                   <View
                                     style={[
                                       styles.trackStripe,
-                                      { opacity: i % 2 === 0 ? 0.4 : 1 },
+                                      winner === horse.id && styles.winningTrackStripe,
+                                      !winner && { opacity: i % 2 === 0 ? 0.4 : 1 },
                                     ]}
                                   />
 
@@ -1631,6 +1813,7 @@ const styles = StyleSheet.create({
   },
   winningTrackRow: {
     backgroundColor: 'rgba(250, 204, 21, 0.55)',
+    borderBottomWidth: 0,
   },
   container: {
     width: '103%', // increased modal width
@@ -1768,6 +1951,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 10,
     paddingBottom: 0,
+  },
+
+  winningTrackStripe: {
+    backgroundColor: 'rgba(250, 204, 21, 0.55)',
+    opacity: 1,
   },
 
   /* ================= HEADER ================= */
